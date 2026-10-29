@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>De Champions Digital Service (DCDS)</title>
+<meta name="description" content="Learn modern digital skills with De Champions Digital Service. Create. Learn. Innovate. Earn.">
+<style>
+:root{--p:#6C2BD9;--d:#2B124C;--l:#F2EAFE;--bg:#fff;--card:#fff;--t:#241B2F;--mut:#5d5070;--g:#D4AF37;--bd:#e3d6f7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#170d28;--card:#231238;--t:#f3ecff;--mut:#bfaedb;--l:#2b1748;--bd:#3d2763}}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--t);line-height:1.6}
+h1,h2,h3{line-height:1.2;margin:0 0 .5em}a{color:inherit}
+.wrap{max-width:1100px;margin:auto;padding:0 20px}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--d);color:#fff}
+.nav{display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px}
+.logo{font-weight:800;letter-spacing:.5px;text-decoration:none;display:flex;gap:8px;align-items:center}
+.logo b{background:var(--g);color:var(--d);border-radius:8px;padding:2px 8px}
+nav{display:flex;gap:18px;font-size:.92rem;overflow-x:auto}nav a{text-decoration:none;opacity:.9;white-space:nowrap}nav a:hover{opacity:1;color:var(--g)}
+.btn{display:inline-block;border:0;border-radius:999px;padding:12px 24px;font-weight:700;font-size:1rem;cursor:pointer;text-decoration:none;font-family:inherit}
+.gold{background:var(--g);color:var(--d)}.pur{background:var(--p);color:#fff}.ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6)}
+.out{background:transparent;color:var(--p);border:2px solid var(--p)}
+@media(prefers-color-scheme:dark){.out{color:#d9c2ff;border-color:#a67cf0}}
+.hero{background:radial-gradient(circle at 80% 20%,#8b4df0 0,transparent 45%),linear-gradient(135deg,var(--d),#4a1d8c);color:#fff;padding:70px 0 80px}
+.hero .wrap{display:grid;gap:36px;grid-template-columns:1.2fr .8fr;align-items:center}
+.hero h1{font-size:clamp(2rem,5vw,3.2rem)}.hero h1 span{color:var(--g)}
+.hero p{font-size:1.1rem;opacity:.92;max-width:520px}.tag{letter-spacing:2px;font-weight:700;color:var(--g);font-size:.85rem}
+.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
+.art{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.art div{aspect-ratio:1;border-radius:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;font-size:2.2rem}
+section{padding:64px 0}.alt{background:var(--l)}
+.sub{color:var(--mut);max-width:640px}.c{text-align:center}.c .sub{margin:0 auto 28px}
+.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
+.box{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:22px;box-shadow:0 6px 20px rgba(43,18,76,.07)}
+.mv{border-top:4px solid var(--g)}
+.tools{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 22px}
+input,select{font:inherit;padding:12px 16px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--t);min-width:0}
+#q{flex:1;min-width:200px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.chip{border:1px solid var(--p);background:transparent;color:var(--p);border-radius:999px;padding:7px 14px;cursor:pointer;font:inherit;font-size:.88rem}
+@media(prefers-color-scheme:dark){.chip{color:#d9c2ff;border-color:#a67cf0}}
+.chip.on{background:var(--p);color:#fff}
+.card{display:flex;flex-direction:column;gap:8px}
+.ico{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--p),var(--d));display:grid;place-items:center;font-size:1.6rem}
+.price{font-size:1.4rem;font-weight:800;color:var(--p)}
+@media(prefers-color-scheme:dark){.price{color:#d9c2ff}}
+.meta{font-size:.78rem;color:var(--mut)}.card p{margin:0;color:var(--mut);font-size:.93rem;flex:1}
+.row{display:flex;gap:8px}.row .btn{flex:1;padding:10px 8px;font-size:.9rem}
+.steps{counter-reset:s}.steps .box{position:relative;padding-top:40px}
+.steps .box:before{counter-increment:s;content:counter(s);position:absolute;top:-16px;left:20px;width:38px;height:38px;border-radius:50%;background:var(--g);color:var(--d);display:grid;place-items:center;font-weight:800}
+.bio{display:grid;gap:28px;grid-template-columns:240px 1fr;align-items:center}
+.avatar{aspect-ratio:1;border-radius:28px;background:linear-gradient(135deg,var(--p),var(--d));display:grid;place-items:center;font-size:4rem;color:var(--g);font-weight:800}
+.svc{background:linear-gradient(135deg,var(--d),#4a1d8c);color:#fff}.svc .box{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);box-shadow:none}
+details{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 18px;margin-bottom:10px}summary{cursor:pointer;font-weight:700}
+details p{margin:.6em 0 0;color:var(--mut)}
+.final{background:linear-gradient(135deg,#4a1d8c,var(--d));color:#fff;text-align:center}
+footer{background:#160a28;color:#cdbbe8;padding:40px 0 90px;font-size:.9rem}footer .wrap{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;padding:3px 0}
+.modal{position:fixed;inset:0;background:rgba(20,8,36,.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
+.modal.on{display:flex}.sheet{background:var(--card);color:var(--t);border-radius:24px;max-width:480px;width:100%;padding:26px;max-height:90vh;overflow:auto}
+.note{background:var(--l);border-left:4px solid var(--g);padding:10px 14px;border-radius:8px;font-size:.88rem;margin:14px 0}
+.sum{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)}
+@media(max-width:760px){.hero .wrap,.bio{grid-template-columns:1fr}.art{display:none}.bio .avatar{max-width:160px}nav{display:none}}
+.bottom{display:none}
+@media(max-width:760px){.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--d);justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));z-index:30}.bottom a{color:#fff;text-decoration:none;font-size:.72rem;text-align:center}.bottom a span{display:block;font-size:1.2rem}}
+</style>
+
+<!-- Supabase & Flutterwave Integration Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://checkout.flutterwave.com/v3.js"></script>
+</head>
+<body>
+<header><div class="wrap nav">
+<a class="logo" href="#home"><b>DCDS</b><span>De Champions</span></a>
+<nav><a href="#home">Home</a><a href="#courses">Courses</a><a href="#about">About Us</a><a href="#services">Services</a><a href="#faq">Support</a></nav>
+<a class="btn gold" href="#courses" style="padding:8px 18px;font-size:.9rem">Enroll</a>
+</div></header>
+
+<main id="home">
+<div class="hero"><div class="wrap">
+<div>
+<div class="tag">CREATE • LEARN • INNOVATE • EARN.</div>
+<h1>TURN YOUR CREATIVITY INTO <span>DIGITAL SKILLS.</span></h1>
+<p>Learn modern digital skills, explore AI-powered creativity, and build the knowledge to create valuable digital projects.</p>
+<div class="cta"><a class="btn gold" href="#courses">Explore Courses</a><a class="btn ghost" href="#how">Start Learning</a></div>
+</div>
+<div class="art" aria-hidden="true"><div>🎬</div><div>🤖</div><div>🎨</div><div>💻</div><div>📱</div><div>🎓</div></div>
+</div></div>
+
+<section id="about"><div class="wrap">
+<h2>Welcome to De Champions Digital Service</h2>
+<p class="sub"><b>Your Creativity. Your Skills. Your Digital Future.</b></p>
+<p class="sub">DCDS is a digital learning and creative platform helping people develop practical digital skills and explore opportunities in the digital economy. Your background should not limit your potential. With the right knowledge, hands-on training and determination, creativity becomes a skill that opens doors.</p>
+<p class="sub">Whether you are a beginner, student, creator, business owner or professional, you do not need to know everything before you begin. You only need the willingness to learn and the courage to start.</p>
+<div class="grid" style="margin-top:24px">
+<div class="box mv"><h3>🎯 Our Mission</h3><p>To empower individuals with practical digital skills, creative knowledge, and the confidence to participate in the evolving digital world.</p></div>
+<div class="box mv"><h3>🔭 Our Vision</h3><p>A community of skilled, innovative, forward-thinking digital creators who use technology to solve problems, create value and pursue sustainable opportunities.</p></div>
+<div class="box mv"><h3>💡 Our Philosophy</h3><p>Learn a skill. Build your creativity. Solve real problems. Create opportunities.</p></div>
+</div></div></section>
+
+<section class="alt"><div class="wrap">
+<h2>The DCDS Learning Experience</h2>
+<p class="sub">We teach the way beginners actually learn: one practical skill at a time, in plain language, with real projects instead of theory overload.</p>
+<div class="grid" style="margin-top:20px">
+<div class="box"><h3>🌱 Start where you are</h3><p>Lessons assume no prior experience. You move from basics to confident, finished work at your own pace.</p></div>
+<div class="box"><h3>🛠️ Learn by making</h3><p>Every skill is tied to something you can build: a video, a design, a website or an app for your portfolio.</p></div>
+<div class="box"><h3>🤝 Grow with a community</h3><p>Learning is easier with people around you. DCDS is built to connect learners, creators and innovators.</p></div>
+<div class="box"><h3>💰 Skills that earn</h3><p>Our courses point toward real opportunities: freelancing, content, business growth and digital services.</p></div>
+</div></div></section>
+
+<section id="courses"><div class="wrap">
+<h2>Explore Our Courses</h2>
+<p class="sub">Choose the skill you want to learn. Prices are in Nigerian naira (₦).</p>
+<div class="tools"><input id="q" type="search" placeholder="🔍 Search courses…" aria-label="Search courses"></div>
+<div class="chips" id="chips"></div>
+<div class="grid" id="grid"></div>
+<p id="none" class="sub" style="display:none">No course matches your search. Try another word.</p>
+<div class="box c" style="margin-top:22px"><h3>✨ Explore More Skills</h3><p class="sub" style="margin:auto">More digital skills and training programs are coming soon. Stay with us.</p></div>
+</div></section>
+
+<section class="alt"><div class="wrap">
+<h2 class="c">Why Learn with DCDS?</h2>
+<div class="grid" style="margin-top:20px">
+<div class="box">✅ Beginner-friendly learning experience</div><div class="box">✅ Practical digital skills</div>
+<div class="box">✅ Modern creative tools and techniques</div><div class="box">✅ Organized learning materials</div>
+<div class="box">✅ Build a digital portfolio</div><div class="box">✅ A growing community of learners and creators</div>
+</div></div></section>
+
+<section id="how"><div class="wrap">
+<h2 class="c">How It Works</h2>
+<div class="grid steps" style="margin-top:30px">
+<div class="box"><h3>Explore</h3><p>Browse the available courses.</p></div>
+<div class="box"><h3>Select</h3><p>Pick the skill you want to learn.</p></div>
+<div class="box"><h3>Pay securely</h3><p>Complete your secure payment.</p></div>
+<div class="box"><h3>Learn</h3><p>Access your course and begin.</p></div>
+</div></div></section>
+
+<section class="alt" id="author"><div class="wrap bio">
+<div class="avatar" aria-label="Photo placeholder">JC</div>
+<div>
+<div class="tag" style="color:var(--p)">MEET THE FOUNDER</div>
+<h2>Jeremiah Chuks Godspower <span style="color:var(--p)">“De Champions”</span></h2>
+<p>Jeremiah Chuks Godspower, widely known as <b>De Champions</b>, is the founder of De Champions Academy, a platform that helps individuals, innovators, professionals and everyday people learn and acquire valuable digital skills.</p>
+<p>Because the academy offers digital skills and services, it operates as <b>De Champions Digital Service (DCDS)</b>.</p>
+<p>A God-fearing leader with a passion for building a Godly community, Jeremiah’s mission is simple: to raise people to become champions in the digital world, equipped with skills, character and purpose.</p>
+</div></div></section>
+
+<section class="svc" id="services"><div class="wrap c">
+<h2>Need a Digital Service?</h2>
+<p class="sub" style="color:#e6d8fb">Beyond training, DCDS offers professional services to help you and your brand stand out.</p>
+<div class="grid" style="margin:24px 0">
+<div class="box">🎨<h3>Graphic Design</h3></div><div class="box">🎬<h3>Video Editing</h3></div>
+<div class="box">💰<h3>Content Monetization</h3></div><div class="box">💬<h3>Social Media Engagement</h3></div>
+<div class="box">📣<h3>Page Promotion</h3></div>
+</div>
+<p>Need any of these services? Message us.</p>
+<a class="btn gold" href="#" id="msg">Message Us</a>
+</div></section>
+
+<section id="faq"><div class="wrap" style="max-width:760px">
+<h2 class="c">Frequently Asked Questions</h2>
+<div id="faqs"></div>
+</div></section>
+
+<section class="final"><div class="wrap">
+<h2>YOUR NEXT LEVEL STARTS WITH ONE SKILL.</h2>
+<p class="sub" style="margin:0 auto 20px;color:#e6d8fb">Take the first step toward expanding your creativity, developing valuable digital skills, and exploring new possibilities.</p>
+<a class="btn gold" href="#courses">EXPLORE COURSES NOW</a>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+<div><h4>DCDS</h4>CREATE • LEARN • INNOVATE • EARN.<br>Empowering creativity. Developing digital skills. Building possibilities.</div>
+<div><h4>Explore</h4><a href="#about">About Us</a><a href="#courses">Course Catalog</a><a href="#services">Contact and Support</a></div>
+<div><h4>Legal</h4><a href="#" data-p="Privacy Policy">Privacy Policy</a><a href="#" data-p="Terms and Conditions">Terms and Conditions</a><a href="#" data-p="Refund Policy">Refund Policy</a></div>
+<div>© 2026 De Champions Digital Service. All rights reserved.</div>
+</div></footer>
+
+<div class="bottom"><a href="#home"><span>🏠</span>Home</a><a href="#courses"><span>📚</span>Courses</a><a href="#how"><span>🎓</span>Learn</a><a href="#author"><span>👤</span>About</a><a href="#faq"><span>💬</span>Support</a></div>
+
+<div class="modal" id="m"><div class="sheet" id="sheet"></div></div>
+
+<script>
+// ===== ADMIN CONFIG: edit these details =====
+var CONFIG={
+  whatsapp:"2348109146285", 
+  email:"dechampions82@gmail.com", 
+  flutterwave_key:"FLWPUBK-9010cf11eda017748a85ee4d4de38794-X", 
+  policies:{}, 
+  access:"Lifetime course access",
+  refund:"To be confirmed by the administrator"
+};
+
+// ===== SUPABASE INITIALIZATION =====
+const SUPABASE_URL = 'https://qxsenflgaweeadvggnyp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0';
+
+const supabase = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+// ===================================
+
+var COURSES=[
+{t:"Video Editing",p:15000,c:"Video & Animation",i:"🎬",d:"Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion."},
+{t:"AI Video Creativity",p:10000,c:"AI & Digital Creativity",i:"🤖",d:"Explore AI-powered video creation techniques and develop creative video content with modern AI tools."},
+{t:"Graphic Design",p:10000,c:"Graphic Design",i:"🎨",d:"Create attractive graphics for branding, social media, advertising and digital communication."},
+{t:"Access to ChatGPT Prompts, Claude, Gemini, and Grok",p:30000,c:"AI & Digital Creativity",i:"✨",d:"Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity.",n:"Package inclusions (training, prompt resources, tool access) are confirmed by the administrator. Paid subscriptions are not promised unless stated."},
+{t:"AI Image Creativity",p:7000,c:"AI & Digital Creativity",i:"🖼️",d:"Use AI creative tools to generate visual concepts, develop image ideas and produce compelling digital artwork."},
+{t:"Whiteboard Animation",p:5000,c:"Video & Animation",i:"✏️",d:"Learn the basics of animated whiteboard videos for education, storytelling, presentations and business communication."},
+{t:"Website Designing",p:20000,c:"Website & App Development",i:"💻",d:"Learn to design and develop websites for individuals, businesses, brands and online projects."},
+{t:"App Building",p:20000,c:"Website & App Development",i:"📱",d:"Plan, design and build functional applications using suitable app development tools and platforms."},
+{t:"Kids’ Nursery Rhymes",p:12000,c:"Video & Animation",i:"🎵",d:"Develop engaging children’s nursery-rhyme content using storytelling, music, animation and digital production tools."},
+{t:"Advanced 3D Cartoon Animation",p:6000,c:"Video & Animation",i:"🧸",d:"Explore 3D cartoon animation for expressive characters, animated scenes and engaging visual stories."},
+{t:"Affiliate Marketing",p:40000,c:"Digital Marketing",i:"📈",d:"Learn to select products, create promotional content, attract audiences and understand commission-based marketing."},
+{t:"Social Media Management",p:70000,c:"Digital Marketing",i:"📲",d:"Build skills in strategy, content planning, audience engagement, brand positioning, analytics and managing accounts professionally."}];
+
+var FAQ=[["Is DCDS suitable for beginners?","Yes. Courses are designed so you can start with no prior experience."],
+["How do I enroll in a course?","Open the course catalog, choose a course and tap Enroll Now."],
+["How do I make payment?","Payment is made securely online at checkout in Nigerian naira (₦)."],
+["How do I access my purchased course?","After your payment is verified, the course appears in your learning dashboard."],
+["Can I learn more than one skill?","Yes. You can enroll in as many courses as you like."],
+["How can I contact support?","Use the Message Us button in the Services section."],
+["Are course fees refundable?","@refund"],["How long will I have access to a purchased course?","@access"]];
+
+var cats=["All"].concat(COURSES.map(function(c){return c.c}).filter(function(v,i,a){return a.indexOf(v)==i}));
+var cur="All",$=function(i){return document.getElementById(i)};
+var N=function(n){return "₦"+n.toLocaleString("en-NG")};
+
+function show(h){$("sheet").innerHTML=h+'<p style="text-align:center;margin:14px 0 0"><button class="btn out" onclick="hide()">Close</button></p>';$("m").classList.add("on")}
+function hide(){$("m").classList.remove("on")}
+$("m").onclick=function(e){if(e.target==this)hide()};
+
+function render(){var q=$("q").value.toLowerCase(),h="",n=0;
+ $("chips").innerHTML=cats.map(function(c){return '<button class="chip'+(c==cur?" on":"")+'" data-c="'+c+'">'+c+'</button>'}).join("");
+ COURSES.forEach(function(c,i){if((cur=="All"||c.c==cur)&&(c.t+c.d+c.c).toLowerCase().indexOf(q)>-1){n++;
+ h+='<div class="box card"><div class="ico">'+c.i+'</div><div class="meta">'+c.c+' • Level: Beginner-friendly</div><h3>'+c.t+'</h3><p>'+c.d+'</p><div class="price">'+N(c.p)+'</div><div class="row"><button class="btn out" data-v="'+i+'">View Course</button><button class="btn pur" data-e="'+i+'">Enroll Now</button></div></div>'}});
+ $("grid").innerHTML=h;$("none").style.display=n?"none":"block"}
+
+document.addEventListener("click",function(e){var t=e.target;
+ if(t.dataset.c){cur=t.dataset.c;render()}
+ if(t.dataset.v!=null)view(+t.dataset.v);
+ if(t.dataset.e!=null)enroll(+t.dataset.e);
+ if(t.dataset.p){e.preventDefault();show("<h3>"+t.dataset.p+"</h3><p>"+(CONFIG.policies[t.dataset.p]||"This policy will be published by the administrator.")+"</p>")}});
+$("q").oninput=render;
+
+function view(i){var c=COURSES[i];show('<div class="ico">'+c.i+'</div><h3 style="margin-top:12px">'+c.t+'</h3><p>'+c.d+'</p><div class="price">'+N
