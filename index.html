@@ -1,217 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>De Champions Digital Service (DCDS)</title>
-<meta name="description" content="Learn modern digital skills with De Champions Digital Service. Create. Learn. Innovate. Earn.">
-<style>
-:root{--p:#6C2BD9;--d:#2B124C;--l:#F2EAFE;--bg:#fff;--card:#fff;--t:#241B2F;--mut:#5d5070;--g:#D4AF37;--bd:#e3d6f7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#170d28;--card:#231238;--t:#f3ecff;--mut:#bfaedb;--l:#2b1748;--bd:#3d2763}}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--t);line-height:1.6}
-h1,h2,h3{line-height:1.2;margin:0 0 .5em}a{color:inherit}
-.wrap{max-width:1100px;margin:auto;padding:0 20px}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--d);color:#fff}
-.nav{display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px}
-.logo{font-weight:800;letter-spacing:.5px;text-decoration:none;display:flex;gap:8px;align-items:center}
-.logo b{background:var(--g);color:var(--d);border-radius:8px;padding:2px 8px}
-nav{display:flex;gap:18px;font-size:.92rem;overflow-x:auto}nav a{text-decoration:none;opacity:.9;white-space:nowrap}nav a:hover{opacity:1;color:var(--g)}
-.btn{display:inline-block;border:0;border-radius:999px;padding:12px 24px;font-weight:700;font-size:1rem;cursor:pointer;text-decoration:none;font-family:inherit}
-.gold{background:var(--g);color:var(--d)}.pur{background:var(--p);color:#fff}.ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6)}
-.out{background:transparent;color:var(--p);border:2px solid var(--p)}
-@media(prefers-color-scheme:dark){.out{color:#d9c2ff;border-color:#a67cf0}}
-.hero{background:radial-gradient(circle at 80% 20%,#8b4df0 0,transparent 45%),linear-gradient(135deg,var(--d),#4a1d8c);color:#fff;padding:70px 0 80px}
-.hero .wrap{display:grid;gap:36px;grid-template-columns:1.2fr .8fr;align-items:center}
-.hero h1{font-size:clamp(2rem,5vw,3.2rem)}.hero h1 span{color:var(--g)}
-.hero p{font-size:1.1rem;opacity:.92;max-width:520px}.tag{letter-spacing:2px;font-weight:700;color:var(--g);font-size:.85rem}
-.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
-.art{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.art div{aspect-ratio:1;border-radius:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;font-size:2.2rem}
-section{padding:64px 0}.alt{background:var(--l)}
-.sub{color:var(--mut);max-width:640px}.c{text-align:center}.c .sub{margin:0 auto 28px}
-.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:22px;box-shadow:0 6px 20px rgba(43,18,76,.07)}
-.mv{border-top:4px solid var(--g)}
-.tools{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 22px}
-input,select{font:inherit;padding:12px 16px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--t);min-width:0}
-#q{flex:1;min-width:200px}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
-.chip{border:1px solid var(--p);background:transparent;color:var(--p);border-radius:999px;padding:7px 14px;cursor:pointer;font:inherit;font-size:.88rem}
-@media(prefers-color-scheme:dark){.chip{color:#d9c2ff;border-color:#a67cf0}}
-.chip.on{background:var(--p);color:#fff}
-.card{display:flex;flex-direction:column;gap:8px}
-.ico{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--p),var(--d));display:grid;place-items:center;font-size:1.6rem}
-.price{font-size:1.4rem;font-weight:800;color:var(--p)}
-@media(prefers-color-scheme:dark){.price{color:#d9c2ff}}
-.meta{font-size:.78rem;color:var(--mut)}.card p{margin:0;color:var(--mut);font-size:.93rem;flex:1}
-.row{display:flex;gap:8px}.row .btn{flex:1;padding:10px 8px;font-size:.9rem}
-.steps{counter-reset:s}.steps .box{position:relative;padding-top:40px}
-.steps .box:before{counter-increment:s;content:counter(s);position:absolute;top:-16px;left:20px;width:38px;height:38px;border-radius:50%;background:var(--g);color:var(--d);display:grid;place-items:center;font-weight:800}
-.bio{display:grid;gap:28px;grid-template-columns:240px 1fr;align-items:center}
-.avatar{aspect-ratio:1;border-radius:28px;background:linear-gradient(135deg,var(--p),var(--d));display:grid;place-items:center;font-size:4rem;color:var(--g);font-weight:800}
-.svc{background:linear-gradient(135deg,var(--d),#4a1d8c);color:#fff}.svc .box{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);box-shadow:none}
-details{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 18px;margin-bottom:10px}summary{cursor:pointer;font-weight:700}
-details p{margin:.6em 0 0;color:var(--mut)}
-.final{background:linear-gradient(135deg,#4a1d8c,var(--d));color:#fff;text-align:center}
-footer{background:#160a28;color:#cdbbe8;padding:40px 0 90px;font-size:.9rem}footer .wrap{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
-footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;padding:3px 0}
-.modal{position:fixed;inset:0;background:rgba(20,8,36,.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
-.modal.on{display:flex}.sheet{background:var(--card);color:var(--t);border-radius:24px;max-width:480px;width:100%;padding:26px;max-height:90vh;overflow:auto}
-.note{background:var(--l);border-left:4px solid var(--g);padding:10px 14px;border-radius:8px;font-size:.88rem;margin:14px 0}
-.sum{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)}
-@media(max-width:760px){.hero .wrap,.bio{grid-template-columns:1fr}.art{display:none}.bio .avatar{max-width:160px}nav{display:none}}
-.bottom{display:none}
-@media(max-width:760px){.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--d);justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));z-index:30}.bottom a{color:#fff;text-decoration:none;font-size:.72rem;text-align:center}.bottom a span{display:block;font-size:1.2rem}}
-.stars{display:flex;gap:2px}.star{background:none;border:0;font-size:2rem;line-height:1;color:var(--bd);cursor:pointer;padding:2px;min-width:44px;min-height:44px}.star.on{color:var(--g)}
-.rv{display:grid;gap:14px;margin-top:18px}.rv .box strong{display:block}
-.avg{font-size:2.4rem;font-weight:800;color:var(--p)}
-@media(prefers-color-scheme:dark){.avg{color:#d9c2ff}}
-.fl{display:block;margin:12px 0 4px;font-weight:700;font-size:.9rem}
-.in{width:100%;min-height:46px}textarea.in{min-height:100px;resize:vertical;font:inherit;padding:12px 16px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--t)}
-.err{color:#e5484d;font-size:.88rem;min-height:1.3em;margin:6px 0}
-.rvw{display:grid;gap:20px;grid-template-columns:1fr 1fr;align-items:start}
-@media(max-width:760px){.rvw{grid-template-columns:1fr}}
-@media(max-width:420px){.logo span{display:none}}
-</style>
-</head>
-<body>
-<header><div class="wrap nav">
-<a class="logo" href="#home"><b>DCDS</b><span>De Champions</span></a>
-<nav><a href="#home">Home</a><a href="#courses">Courses</a><a href="#about">About Us</a><a href="#reviews">Reviews</a><a href="#services">Services</a><a href="#faq">Support</a></nav>
-<div style="display:flex;gap:8px"><button class="btn ghost" id="si" style="padding:8px 14px;font-size:.9rem">Sign in</button><a class="btn gold" href="#courses" style="padding:8px 18px;font-size:.9rem">Enroll</a></div>
-</div></header>
-
-<main id="home">
-<div class="hero"><div class="wrap">
-<div>
-<div class="tag">CREATE • LEARN • INNOVATE • EARN.</div>
-<h1>TURN YOUR CREATIVITY INTO <span>DIGITAL SKILLS.</span></h1>
-<p>Learn modern digital skills, explore AI-powered creativity, and build the knowledge to create valuable digital projects.</p>
-<div class="cta"><a class="btn gold" href="#courses">Explore Courses</a><a class="btn ghost" href="#how">Start Learning</a></div>
-</div>
-<div class="art" aria-hidden="true"><div>🎬</div><div>🤖</div><div>🎨</div><div>💻</div><div>📱</div><div>🎓</div></div>
-</div></div>
-
-<section id="about"><div class="wrap">
-<h2>Welcome to De Champions Digital Service</h2>
-<p class="sub"><b>Your Creativity. Your Skills. Your Digital Future.</b></p>
-<p class="sub">DCDS is a digital learning and creative platform helping people develop practical digital skills and explore opportunities in the digital economy. Your background should not limit your potential. With the right knowledge, hands-on training and determination, creativity becomes a skill that opens doors.</p>
-<p class="sub">Whether you are a beginner, student, creator, business owner or professional, you do not need to know everything before you begin. You only need the willingness to learn and the courage to start.</p>
-<div class="grid" style="margin-top:24px">
-<div class="box mv"><h3>🎯 Our Mission</h3><p>To empower individuals with practical digital skills, creative knowledge, and the confidence to participate in the evolving digital world.</p></div>
-<div class="box mv"><h3>🔭 Our Vision</h3><p>A community of skilled, innovative, forward-thinking digital creators who use technology to solve problems, create value and pursue sustainable opportunities.</p></div>
-<div class="box mv"><h3>💡 Our Philosophy</h3><p>Learn a skill. Build your creativity. Solve real problems. Create opportunities.</p></div>
-</div></div></section>
-
-<section class="alt"><div class="wrap">
-<h2>The DCDS Learning Experience</h2>
-<p class="sub">We teach the way beginners actually learn: one practical skill at a time, in plain language, with real projects instead of theory overload.</p>
-<div class="grid" style="margin-top:20px">
-<div class="box"><h3>🌱 Start where you are</h3><p>Lessons assume no prior experience. You move from basics to confident, finished work at your own pace.</p></div>
-<div class="box"><h3>🛠️ Learn by making</h3><p>Every skill is tied to something you can build: a video, a design, a website or an app for your portfolio.</p></div>
-<div class="box"><h3>🤝 Grow with a community</h3><p>Learning is easier with people around you. DCDS is built to connect learners, creators and innovators.</p></div>
-<div class="box"><h3>💰 Skills that earn</h3><p>Our courses point toward real opportunities: freelancing, content, business growth and digital services.</p></div>
-</div></div></section>
-
-<section id="courses"><div class="wrap">
-<h2>Explore Our Courses</h2>
-<p class="sub">Choose the skill you want to learn. Prices are in Nigerian naira (₦).</p>
-<div class="tools"><input id="q" type="search" placeholder="🔍 Search courses…" aria-label="Search courses"></div>
-<div class="chips" id="chips"></div>
-<div class="grid" id="grid"></div>
-<p id="none" class="sub" style="display:none">No course matches your search. Try another word.</p>
-<div class="box c" style="margin-top:22px"><h3>✨ Explore More Skills</h3><p class="sub" style="margin:auto">More digital skills and training programs are coming soon. Stay with us.</p></div>
-</div></section>
-
-<section class="alt"><div class="wrap">
-<h2 class="c">Why Learn with DCDS?</h2>
-<div class="grid" style="margin-top:20px">
-<div class="box">✅ Beginner-friendly learning experience</div><div class="box">✅ Practical digital skills</div>
-<div class="box">✅ Modern creative tools and techniques</div><div class="box">✅ Organized learning materials</div>
-<div class="box">✅ Build a digital portfolio</div><div class="box">✅ A growing community of learners and creators</div>
-</div></div></section>
-
-<section id="how"><div class="wrap">
-<h2 class="c">How It Works</h2>
-<div class="grid steps" style="margin-top:30px">
-<div class="box"><h3>Explore</h3><p>Browse the available courses.</p></div>
-<div class="box"><h3>Select</h3><p>Pick the skill you want to learn.</p></div>
-<div class="box"><h3>Pay securely</h3><p>Complete your secure payment.</p></div>
-<div class="box"><h3>Learn</h3><p>Access your course and begin.</p></div>
-</div></div></section>
-
-<section class="alt" id="author"><div class="wrap bio">
-<div class="avatar" aria-label="Photo placeholder">JC</div>
-<div>
-<div class="tag" style="color:var(--p)">MEET THE FOUNDER</div>
-<h2>Jeremiah Chuks Godspower <span style="color:var(--p)">“De Champions”</span></h2>
-<p>Jeremiah Chuks Godspower, widely known as <b>De Champions</b>, is the founder of De Champions Academy, a platform that helps individuals, innovators, professionals and everyday people learn and acquire valuable digital skills.</p>
-<p>Because the academy offers digital skills and services, it operates as <b>De Champions Digital Service (DCDS)</b>.</p>
-<p>A God-fearing leader with a passion for building a Godly community, Jeremiah’s mission is simple: to raise people to become champions in the digital world, equipped with skills, character and purpose.</p>
-</div></div></section>
-
-<section id="reviews"><div class="wrap">
-<h2>Student Reviews</h2>
-<p class="sub">Share what you learned and rate a course. Your recommendation helps the next student choose.</p>
-<div class="rvw" style="margin-top:22px">
-<div class="box"><div class="avg" id="avg">&ndash;</div><div class="meta" id="cnt">No reviews yet</div><div class="rv" id="rv"></div></div>
-<div class="box"><h3>Leave a Review</h3>
-<label class="fl" for="rc">Course</label><select class="in" id="rc"></select>
-<span class="fl">Your rating</span><div class="stars" id="stars" role="radiogroup" aria-label="Rating"></div>
-<label class="fl" for="rn">Your name</label><input class="in" id="rn" maxlength="40" autocomplete="name">
-<label class="fl" for="rt">Your recommendation</label><textarea class="in" id="rt" maxlength="500"></textarea>
-<div class="err" id="re" role="alert"></div>
-<button class="btn pur" onclick="postRev()">Post Review</button>
-<div class="note">Reviews posted here are a preview for now. They will be saved and shared once the database is connected.</div>
-</div></div></div></section>
-
-<section class="svc" id="services"><div class="wrap c">
-<h2>Need a Digital Service?</h2>
-<p class="sub" style="color:#e6d8fb">Beyond training, DCDS offers professional services to help you and your brand stand out.</p>
-<div class="grid" style="margin:24px 0">
-<div class="box">🎨<h3>Graphic Design</h3></div><div class="box">🎬<h3>Video Editing</h3></div>
-<div class="box">💰<h3>Content Monetization</h3></div><div class="box">💬<h3>Social Media Engagement</h3></div>
-<div class="box">📣<h3>Page Promotion</h3></div>
-</div>
-<p>Need any of these services? Message us.</p>
-<a class="btn gold" href="#" id="msg">Message Us</a>
-</div></section>
-
-<section id="faq"><div class="wrap" style="max-width:760px">
-<h2 class="c">Frequently Asked Questions</h2>
-<div id="faqs"></div>
-</div></section>
-
-<section class="final"><div class="wrap">
-<h2>YOUR NEXT LEVEL STARTS WITH ONE SKILL.</h2>
-<p class="sub" style="margin:0 auto 20px;color:#e6d8fb">Take the first step toward expanding your creativity, developing valuable digital skills, and exploring new possibilities.</p>
-<a class="btn gold" href="#courses">EXPLORE COURSES NOW</a>
-</div></section>
-</main>
-
-<footer><div class="wrap">
-<div><h4>DCDS</h4>CREATE • LEARN • INNOVATE • EARN.<br>Empowering creativity. Developing digital skills. Building possibilities.</div>
-<div><h4>Explore</h4><a href="#about">About Us</a><a href="#courses">Course Catalog</a><a href="#services">Contact and Support</a></div>
-<div><h4>Legal</h4><a href="#" data-p="Privacy Policy">Privacy Policy</a><a href="#" data-p="Terms and Conditions">Terms and Conditions</a><a href="#" data-p="Refund Policy">Refund Policy</a></div>
-<div>© 2026 De Champions Digital Service. All rights reserved.</div>
-</div></footer>
-
-<div class="bottom"><a href="#home"><span>🏠</span>Home</a><a href="#courses"><span>📚</span>Courses</a><a href="#how"><span>🎓</span>Learn</a><a href="#author"><span>👤</span>About</a><a href="#faq"><span>💬</span>Support</a></div>
-
-<div class="modal" id="m"><div class="sheet" id="sheet"></div></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-// ===== ADMIN CONFIG: edit these, no other code changes needed =====
-var CONFIG={
-  whatsapp:"+2348109146285",
-  email:"dechampions82@gmail.com",
-  flutterwave_public_key:"FLWPUBK-9010cf11eda017748a85ee4d4de38794-X",
-  supabase_url:"https://qxsenflgaweedvgngnyp.supabase.co",
-  supabase_anon_key:"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0",
-  policies:{}, // e.g. {"Refund Policy":"Your text here"}
-  access:"To be confirmed by the administrator",
-  refund:"To be confirmed by the administrator"
-};
+// ===== ADMIN CONFIG =====
+var CONFIG={whatsapp:"",email:"",
+ policies:{}, 
+ access:"To be confirmed by the administrator",refund:"To be confirmed by the administrator"};
 var COURSES=[
 {t:"Video Editing",p:15000,c:"Video & Animation",i:"🎬",d:"Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion."},
 {t:"AI Video Creativity",p:10000,c:"AI & Digital Creativity",i:"🤖",d:"Explore AI-powered video creation techniques and develop creative video content with modern AI tools."},
@@ -249,8 +41,8 @@ document.addEventListener("click",function(e){var t=e.target;
  if(t.dataset.e!=null)enroll(+t.dataset.e);
  if(t.dataset.p){e.preventDefault();show("<h3>"+t.dataset.p+"</h3><p>"+(CONFIG.policies[t.dataset.p]||"This policy will be published by the administrator.")+"</p>")}});
 $("q").oninput=render;
-function view(i){var c=COURSES[i];show('<div class="ico">'+c.i+'</div><h3 style="margin-top:12px">'+c.t+'</h3><p>'+c.d+'</p><div class="price">'+N(c.p)+'</div>'+(c.n?'<div class="note">'+c.n+'</div>':'')+'<div class="note">Duration, lessons and learning outcomes will be added by the administrator.</div><button class="btn pur" style="width:100%" onclick="enroll('+i+')">Enroll Now</button>')}
-function enroll(i){var c=COURSES[i];show('<h3>Order Summary</h3><div class="sum"><span>'+c.t+'</span><b>'+N(c.p)+'</b></div><div class="sum"><span>Total</span><b>'+N(c.p)+'</b></div><div class="note">Secure checkout (Flutterwave) is connected with your public key. Complete checkout to process payment securely.</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout Processing</h3><p>Flutterwave SDK integration initialized for course payment.</p>\')">Proceed to Checkout</button>')}
+function view(i){var c=COURSES[i];show('<div class="ico">'+c.i+'</div><h3 style="margin-top:12px">'+c.t+'</h3><p>'+c.d+'</p><div class="price">'+N(c.p)+'</div>'+(c.n?'<div class="note">'+c.n+'</div>':'')+'<div class="note">Duration, lessons and learning outcomes will be added by the administrator.</div><button class="btn pur" style="width:100%" onclick="enroll('+i.')">Enroll Now</button>')}
+function enroll(i){var c=COURSES[i];show('<h3>Order Summary</h3><div class="sum"><span>'+c.t+'</span><b>'+N(c.p)+'</b></div><div class="sum"><span>Total</span><b>'+N(c.p)+'</b></div><div class="note">Secure checkout (Flutterwave) is not connected yet. Once your backend and Flutterwave keys are added, this button will start payment, and access will only be granted after server-side verification.</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout not yet active</h3><p>This is a preview of the enrollment flow. No payment was taken.</p>\')">Proceed to Checkout</button>')}
 var E=function(x){return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;")};
 var rate=0,REV=[],mode="in";
 function stars(){$("stars").innerHTML=[1,2,3,4,5].map(function(n){return '<button class="star'+(n<=rate?' on':'')+'" data-s="'+n+'" role="radio" aria-checked="'+(n===rate)+'" aria-label="'+n+' star'+(n>1?'s':'')+'">\u2605</button>'}).join("")}
@@ -276,60 +68,44 @@ function authGo(){var em=$("ae").value.trim(),pw=$("ap").value;
 $("si").onclick=function(){mode="in";authView()};
 document.addEventListener("keydown",function(e){if(e.key=="Escape")hide()});
 $("msg").onclick=function(e){e.preventDefault();
- if(CONFIG.whatsapp){
-   var cleanWa=CONFIG.whatsapp.replace(/[^0-9]/g,"");
-   location.href="https://wa.me/"+cleanWa;
- }
+ if(CONFIG.whatsapp)location.href="https://wa.me/"+CONFIG.whatsapp;
  else if(CONFIG.email)location.href="mailto:"+CONFIG.email;
  else show("<h3>Contact details coming soon</h3><p>Official contact details will be published here shortly.</p>")};
 $("faqs").innerHTML=FAQ.map(function(f){var a=f[1]=="@refund"?CONFIG.refund:f[1]=="@access"?CONFIG.access:f[1];return "<details><summary>"+f[0]+"</summary><p>"+a+"</p></details>"}).join("");
-render();
-        const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
-    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0';
-    const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    // ===== SUPABASE & REGISTRATION LOGIC =====
+const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0';
+const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const signUpForm = document.getElementById('signup-form');
+const signUpForm = document.getElementById('signup-form');
+if (signUpForm) {
+    signUpForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const name = document.getElementById('name').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
 
-    if (signUpForm) {
-        signUpForm.addEventListener('submit', async function(e) {
-            e.preventDefault();
+        try {
+            const { data, error } = await supabase.auth.signUp({
+                email: email,
+                password: password,
+                options: { data: { name: name } }
+            });
+            if (error) throw error;
 
-            const name = document.getElementById('name').value;
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const { data, error } = await supabase.auth.signUp({
-                    email: email,
-                    password: password,
-                    options: {
-                        data: { name: name }
-                    }
-                });
-
-                if (error) throw error;
-
-                if (data.user) {
-                    const { error: profileError } = await supabase
-                        .from('profiles')
-                        .insert([
-                            { 
-                                id: data.user.id, 
-                                name: name, 
-                                email: email, 
-                                created_at: new Date() 
-                            }
-                        ]);
-
-                    if (profileError) throw profileError;
-                }
-
-                alert('Account created successfully! Welcome to De Champions Academy.');
-
-            } catch (error) {
-                console.error('Error signing up:', error.message);
-                alert('Sign up failed: ' + error.message);
+            if (data.user) {
+                const { error: profileError } = await supabase
+                    .from('profiles')
+                    .insert([{ id: data.user.id, name: name, email: email, created_at: new Date() }]);
+                if (profileError) throw profileError;
             }
-        });
-    }
-  
+            alert('Account created successfully! Welcome to De Champions Academy.');
+        } catch (error) {
+            console.error('Error signing up:', error.message);
+            alert('Sign up failed: ' + error.message);
+        }
+    });
+}
+
+render();
+</script>
