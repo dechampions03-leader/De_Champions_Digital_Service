@@ -74,6 +74,7 @@ footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;
 @media(max-width:760px){.rvw{grid-template-columns:1fr}}
 @media(max-width:420px){.logo span{display:none}}
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
 <header><div class="wrap nav">
@@ -201,7 +202,6 @@ footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;
 
 <div class="modal" id="m"><div class="sheet" id="sheet"></div></div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var CONFIG = { 
     whatsapp: "2348109146285", 
@@ -278,7 +278,7 @@ function view(i) {
 
 function enroll(i) {
     var c = COURSES[i];
-    show('<h3>Order Summary</h3><div class="sum"><span>' + c.t + '</span><b>' + N(c.p) + '</b></div><div class="sum"><span>Total</span><b>' + N(c.p) + '</b></div><div class="note">Secure checkout via Flutterwave.</div><button class="btn pur" style="width:100%" onclick="payWithFlutterwave(\'' + c.t + '\', ' + c.p + ')">Proceed to Checkout</button>');
+    show('<h3>Order Summary</h3><div class="sum"><span>' + c.t + '</span><b>' + N(c.p) + '</b></div><div class="sum"><span>Total</span><b>' + N(c.p) + '</b></div><div class="note">Secure checkout via Flutterwave.</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout not yet active</h3><p>This is a preview of the enrollment flow. No payment was taken.</p>\')">Proceed to Checkout</button>');
 }
 
 var E = function(x){ return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); };
