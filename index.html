@@ -124,6 +124,21 @@ footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;
 <div class="box c" style="margin-top:22px"><h3>✨ Explore More Skills</h3><p class="sub" style="margin:auto">More digital skills and training programs are coming soon. Stay with us.</p></div>
 </div></section>
 
+<section id="reviews"><div class="wrap">
+<h2>Student Reviews</h2>
+<p class="sub">Share what you learned and rate a course. Your recommendation helps the next student choose.</p>
+<div class="rvw" style="margin-top:22px">
+<div class="box"><div class="avg" id="avg">&ndash;</div><div class="meta" id="cnt">No reviews yet</div><div class="rv" id="rv"></div></div>
+<div class="box"><h3>Leave a Review</h3>
+<label class="fl" for="rc">Course</label><select class="in" id="rc"></select>
+<span class="fl">Your rating</span><div class="stars" id="stars" role="radiogroup" aria-label="Rating"></div>
+<label class="fl" for="rn">Your name</label><input class="in" id="rn" maxlength="40" autocomplete="name">
+<label class="fl" for="rt">Your recommendation</label><textarea class="in" id="rt" maxlength="500"></textarea>
+<div class="err" id="re" role="alert"></div>
+<button class="btn pur" onclick="postRev()">Post Review</button>
+<div class="note">Reviews posted here are a preview for now. They will be saved and shared once the database is connected.</div>
+</div></div></div></section>
+
 <section class="alt"><div class="wrap">
 <h2 class="c">Why Learn with DCDS?</h2>
 <div class="grid" style="margin-top:20px">
@@ -150,21 +165,6 @@ footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;
 <p>Because the academy offers digital skills and services, it operates as <b>De Champions Digital Service (DCDS)</b>.</p>
 <p>A God-fearing leader with a passion for building a Godly community, Jeremiah’s mission is simple: to raise people to become champions in the digital world, equipped with skills, character and purpose.</p>
 </div></div></section>
-
-<section id="reviews"><div class="wrap">
-<h2>Student Reviews</h2>
-<p class="sub">Share what you learned and rate a course. Your recommendation helps the next student choose.</p>
-<div class="rvw" style="margin-top:22px">
-<div class="box"><div class="avg" id="avg">&ndash;</div><div class="meta" id="cnt">No reviews yet</div><div class="rv" id="rv"></div></div>
-<div class="box"><h3>Leave a Review</h3>
-<label class="fl" for="rc">Course</label><select class="in" id="rc"></select>
-<span class="fl">Your rating</span><div class="stars" id="stars" role="radiogroup" aria-label="Rating"></div>
-<label class="fl" for="rn">Your name</label><input class="in" id="rn" maxlength="40" autocomplete="name">
-<label class="fl" for="rt">Your recommendation</label><textarea class="in" id="rt" maxlength="500"></textarea>
-<div class="err" id="re" role="alert"></div>
-<button class="btn pur" onclick="postRev()">Post Review</button>
-<div class="note">Reviews posted here are a preview for now. They will be saved and shared once the database is connected.</div>
-</div></div></div></section>
 
 <section class="svc" id="services"><div class="wrap c">
 <h2>Need a Digital Service?</h2>
@@ -202,7 +202,13 @@ footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;
 <div class="modal" id="m"><div class="sheet" id="sheet"></div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var CONFIG = { whatsapp: "", email: "", policies: {}, access: "To be confirmed by the administrator", refund: "To be confirmed by the administrator" };
+var CONFIG = { 
+    whatsapp: "+2348109146285", 
+    email: "dechampions82@gmail.com", 
+    policies: {}, 
+    access: "To be confirmed by the administrator", 
+    refund: "To be confirmed by the administrator" 
+};
 
 var COURSES = [
 {t:"Video Editing",p:15000,c:"Video & Animation",i:"🎬",d:"Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion."},
@@ -271,7 +277,7 @@ function view(i) {
 
 function enroll(i) {
     var c = COURSES[i];
-    show('<h3>Order Summary</h3><div class="sum"><span>' + c.t + '</span><b>' + N(c.p) + '</b></div><div class="sum"><span>Total</span><b>' + N(c.p) + '</b></div><div class="note">Secure checkout (Flutterwave) is not connected yet.</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout not yet active</h3><p>This is a preview of the enrollment flow. No payment was taken.</p>\')">Proceed to Checkout</button>');
+    show('<h3>Order Summary</h3><div class="sum"><span>' + c.t + '</span><b>' + N(c.p) + '</b></div><div class="sum"><span>Total</span><b>' + N(c.p) + '</b></div><div class="note">Secure checkout (Flutterwave) ready. Public Key: FLWPUBK-9010cf11eda017748a85ee4d4de38794-X</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout not yet active</h3><p>This is a preview of the enrollment flow. No payment was taken.</p>\')">Proceed to Checkout</button>');
 }
 
 var E = function(x){ return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); };
@@ -296,10 +302,11 @@ function revs() {
 
 stars();
 revs();
-    <script>
+  <script>
 // ===== SUPABASE & AUTH INTEGRATION =====
 const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0';
+const FLUTTERWAVE_PUB_KEY = 'FLWPUBK-9010cf11eda017748a85ee4d4de38794-X';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 function authView() {
