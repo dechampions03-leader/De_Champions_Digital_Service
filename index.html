@@ -1,4 +1,100 @@
-<!DOCTYPE html>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+var CONFIG = { whatsapp: "", email: "", policies: {}, access: "To be confirmed by the administrator", refund: "To be confirmed by the administrator" };
+
+var COURSES = [
+{t:"Video Editing",p:15000,c:"Video & Animation",i:"🎬",d:"Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion."},
+{t:"AI Video Creativity",p:10000,c:"AI & Digital Creativity",i:"🤖",d:"Explore AI-powered video creation techniques and develop creative video content with modern AI tools."},
+{t:"Graphic Design",p:10000,c:"Graphic Design",i:"🎨",d:"Create attractive graphics for branding, social media, advertising and digital communication."},
+{t:"Access to ChatGPT Prompts, Claude, Gemini, and Grok",p:30000,c:"AI & Digital Creativity",i:"✨",d:"Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity."},
+{t:"AI Image Creativity",p:7000,c:"AI & Digital Creativity",i:"🖼️",d:"Use AI creative tools to generate visual concepts, develop image ideas and produce compelling digital artwork."},
+{t:"Whiteboard Animation",p:5000,c:"Video & Animation",i:"✏️",d:"Learn the basics of animated whiteboard videos for education, storytelling, presentations and business communication."},
+{t:"Website Designing",p:20000,c:"Website & App Development",i:"💻",d:"Learn to design and develop websites for individuals, businesses, brands and online projects."},
+{t:"App Building",p:20000,c:"Website & App Development",i:"📱",d:"Plan, design and build functional applications using suitable app development tools and platforms."},
+{t:"Kids’ Nursery Rhymes",p:12000,c:"Video & Animation",i:"🎵",d:"Develop engaging children’s nursery-rhyme content using storytelling, music, animation and digital production tools."},
+{t:"Advanced 3D Cartoon Animation",p:6000,c:"Video & Animation",i:"🧸",d:"Explore 3D cartoon animation for expressive characters, animated scenes and engaging visual stories."},
+{t:"Affiliate Marketing",p:40000,c:"Digital Marketing",i:"📈",d:"Learn to select products, create promotional content, attract audiences and understand commission-based marketing."},
+{t:"Social Media Management",p:70000,c:"Digital Marketing",i:"📲",d:"Build skills in strategy, content planning, audience engagement, brand positioning, analytics and managing accounts professionally."}];
+
+var FAQ = [
+["Is DCDS suitable for beginners?", "Yes. Courses are designed so you can start with no prior experience."],
+["How do I enroll in a course?", "Open the course catalog, choose a course and tap Enroll Now."],
+["How do I make payment?", "Payment is made securely online at checkout in Nigerian naira (₦)."],
+["How do I access my purchased course?", "After your payment is verified, the course appears in your learning dashboard."],
+["Can I learn more than one skill?", "Yes. You can enroll in as many courses as you like."],
+["How can I contact support?", "Use the Message Us button in the Services section."],
+["Are course fees refundable?", "@refund"],
+["How long will I have access to a purchased course?", "@access"]];
+
+var cats = ["All"].concat(COURSES.map(function(c){return c.c}).filter(function(v,i,a){return a.indexOf(v)==i}));
+var cur = "All";
+var $ = function(i){ return document.getElementById(i); };
+var N = function(n){ return "₦" + n.toLocaleString("en-NG"); };
+
+function show(h) {
+    $("sheet").innerHTML = h + '<p style="text-align:center;margin:14px 0 0"><button class="btn out" onclick="hide()">Close</button></p>';
+    $("m").classList.add("on");
+}
+function hide() { $("m").classList.remove("on"); }
+$("m").onclick = function(e) { if(e.target == this) hide(); };
+
+function render() {
+    var q = $("q").value.toLowerCase(), h = "", n = 0;
+    $("chips").innerHTML = cats.map(function(c){ return '<button class="chip' + (c == cur ? " on" : "") + '" data-c="' + c + '">' + c + '</button>'; }).join("");
+    
+    COURSES.forEach(function(c, i) {
+        if((cur == "All" || c.c == cur) && (c.t + c.d + c.c).toLowerCase().indexOf(q) > -1) {
+            n++;
+            h += '<div class="box card"><div class="ico">' + c.i + '</div><div class="meta">' + c.c + ' • Level: Beginner-friendly</div><h3>' + c.t + '</h3><p>' + c.d + '</p><div class="price">' + N(c.p) + '</div><div class="row"><button class="btn out" data-v="' + i + '">View Course</button><button class="btn pur" data-e="' + i + '">Enroll Now</button></div></div>';
+        }
+    });
+    $("grid").innerHTML = h;
+    $("none").style.display = n ? "none" : "block";
+}
+
+document.addEventListener("click", function(e) {
+    var t = e.target;
+    if(t.dataset.c) { cur = t.dataset.c; render(); }
+    if(t.dataset.v != null) view(+t.dataset.v);
+    if(t.dataset.e != null) enroll(+t.dataset.e);
+    if(t.dataset.p) { e.preventDefault(); show("<h3>" + t.dataset.p + "</h3><p>" + (CONFIG.policies[t.dataset.p] || "This policy will be published by the administrator.") + "</p>"); }
+});
+
+if($("q")) { $("q").oninput = render; }
+
+function view(i) {
+    var c = COURSES[i];
+    show('<div class="ico">' + c.i + '</div><h3 style="margin-top:12px">' + c.t + '</h3><p>' + c.d + '</p><div class="price">' + N(c.p) + '</div>' + (c.n ? '<div class="note">' + c.n + '</div>' : '') + '<div class="note">Duration, lessons and learning outcomes will be added by the administrator.</div><button class="btn pur" style="width:100%" onclick="enroll(' + i + ')">Enroll Now</button>');
+}
+
+function enroll(i) {
+    var c = COURSES[i];
+    show('<h3>Order Summary</h3><div class="sum"><span>' + c.t + '</span><b>' + N(c.p) + '</b></div><div class="sum"><span>Total</span><b>' + N(c.p) + '</b></div><div class="note">Secure checkout (Flutterwave) is not connected yet.</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout not yet active</h3><p>This is a preview of the enrollment flow. No payment was taken.</p>\')">Proceed to Checkout</button>');
+}
+
+var E = function(x){ return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); };
+var rate = 0, REV = [], mode = "in";
+
+function stars() {
+    $("stars").innerHTML = [1,2,3,4,5].map(function(n){ return '<button class="star' + (n <= rate ? ' on' : '') + '" data-s="' + n + '" role="radio" aria-checked="' + (n === rate) + '">★</button>'; }).join("");
+}
+if($("stars")) {
+    $("stars").onclick = function(e) { var b = e.target.closest("button"); if(!b) return; rate = +b.dataset.s; stars(); };
+}
+if($("rc")) {
+    $("rc").innerHTML = COURSES.map(function(c){ return '<option>' + E(c.t) + '</option>'; }).join("");
+}
+
+function revs() {
+    var n = REV.length;
+    if($("avg")) $("avg").textContent = n ? (REV.reduce(function(a,r){ return a + r.s; }, 0) / n).toFixed(1) + " ★" : "–";
+    if($("cnt")) $("cnt").textContent = n ? n + (n > 1 ? " reviews" : " review") : "No reviews yet";
+    if($("rv")) $("rv").innerHTML = n ? REV.map(function(r){ return '<div class="box"><strong>' + E(r.n) + '</strong><span style="color:var(--g)">' + "★".repeat(r.s) + '</span> <span class="meta">' + E(r.c) + '</span><p style="margin:.4em 0 0;color:var(--mut)">' + E(r.t) + '</p></div>'; }).join("") : '<p class="sub">Be the first to review a course.</p>';
+}
+
+stars();
+revs();
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -200,114 +296,76 @@ footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;
 <div class="bottom"><a href="#home"><span>🏠</span>Home</a><a href="#courses"><span>📚</span>Courses</a><a href="#how"><span>🎓</span>Learn</a><a href="#author"><span>👤</span>About</a><a href="#faq"><span>💬</span>Support</a></div>
 
 <div class="modal" id="m"><div class="sheet" id="sheet"></div></div>
-
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
  <script>
-// ===== ADMIN CONFIG =====
-var CONFIG={whatsapp:"",email:"",
- policies:{}, 
- access:"To be confirmed by the administrator",refund:"To be confirmed by the administrator"};
-var COURSES=[
-{t:"Video Editing",p:15000,c:"Video & Animation",i:"🎬",d:"Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion."},
-{t:"AI Video Creativity",p:10000,c:"AI & Digital Creativity",i:"🤖",d:"Explore AI-powered video creation techniques and develop creative video content with modern AI tools."},
-{t:"Graphic Design",p:10000,c:"Graphic Design",i:"🎨",d:"Create attractive graphics for branding, social media, advertising and digital communication."},
-{t:"Access to ChatGPT Prompts, Claude, Gemini, and Grok",p:30000,c:"AI & Digital Creativity",i:"✨",d:"Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity.",n:"Package inclusions (training, prompt resources, tool access) are confirmed by the administrator. Paid subscriptions are not promised unless stated."},
-{t:"AI Image Creativity",p:7000,c:"AI & Digital Creativity",i:"🖼️",d:"Use AI creative tools to generate visual concepts, develop image ideas and produce compelling digital artwork."},
-{t:"Whiteboard Animation",p:5000,c:"Video & Animation",i:"✏️",d:"Learn the basics of animated whiteboard videos for education, storytelling, presentations and business communication."},
-{t:"Website Designing",p:20000,c:"Website & App Development",i:"💻",d:"Learn to design and develop websites for individuals, businesses, brands and online projects."},
-{t:"App Building",p:20000,c:"Website & App Development",i:"📱",d:"Plan, design and build functional applications using suitable app development tools and platforms."},
-{t:"Kids’ Nursery Rhymes",p:12000,c:"Video & Animation",i:"🎵",d:"Develop engaging children’s nursery-rhyme content using storytelling, music, animation and digital production tools."},
-{t:"Advanced 3D Cartoon Animation",p:6000,c:"Video & Animation",i:"🧸",d:"Explore 3D cartoon animation for expressive characters, animated scenes and engaging visual stories."},
-{t:"Affiliate Marketing",p:40000,c:"Digital Marketing",i:"📈",d:"Learn to select products, create promotional content, attract audiences and understand commission-based marketing."},
-{t:"Social Media Management",p:70000,c:"Digital Marketing",i:"📲",d:"Build skills in strategy, content planning, audience engagement, brand positioning, analytics and managing accounts professionally."}];
-var FAQ=[["Is DCDS suitable for beginners?","Yes. Courses are designed so you can start with no prior experience."],
-["How do I enroll in a course?","Open the course catalog, choose a course and tap Enroll Now."],
-["How do I make payment?","Payment is made securely online at checkout in Nigerian naira (₦)."],
-["How do I access my purchased course?","After your payment is verified, the course appears in your learning dashboard."],
-["Can I learn more than one skill?","Yes. You can enroll in as many courses as you like."],
-["How can I contact support?","Use the Message Us button in the Services section."],
-["Are course fees refundable?","@refund"],["How long will I have access to a purchased course?","@access"]];
-var cats=["All"].concat(COURSES.map(function(c){return c.c}).filter(function(v,i,a){return a.indexOf(v)==i}));
-var cur="All",$=function(i){return document.getElementById(i)};
-var N=function(n){return "₦"+n.toLocaleString("en-NG")};
-function show(h){$("sheet").innerHTML=h+'<p style="text-align:center;margin:14px 0 0"><button class="btn out" onclick="hide()">Close</button></p>';$("m").classList.add("on")}
-function hide(){$("m").classList.remove("on")}
-$("m").onclick=function(e){if(e.target==this)hide()};
-function render(){var q=$("q").value.toLowerCase(),h="",n=0;
- $("chips").innerHTML=cats.map(function(c){return '<button class="chip'+(c==cur?" on":"")+'" data-c="'+c+'">'+c+'</button>'}).join("");
- COURSES.forEach(function(c,i){if((cur=="All"||c.c==cur)&&(c.t+c.d+c.c).toLowerCase().indexOf(q)>-1){n++;
- h+='<div class="box card"><div class="ico">'+c.i+'</div><div class="meta">'+c.c+' • Level: Beginner-friendly</div><h3>'+c.t+'</h3><p>'+c.d+'</p><div class="price">'+N(c.p)+'</div><div class="row"><button class="btn out" data-v="'+i+'">View Course</button><button class="btn pur" data-e="'+i+'">Enroll Now</button></div></div>'}});
- $("grid").innerHTML=h;$("none").style.display=n?"none":"block"}
-document.addEventListener("click",function(e){var t=e.target;
- if(t.dataset.c){cur=t.dataset.c;render()}
- if(t.dataset.v!=null)view(+t.dataset.v);
- if(t.dataset.e!=null)enroll(+t.dataset.e);
- if(t.dataset.p){e.preventDefault();show("<h3>"+t.dataset.p+"</h3><p>"+(CONFIG.policies[t.dataset.p]||"This policy will be published by the administrator.")+"</p>")}});
-$("q").oninput=render;
-function view(i){var c=COURSES[i];show('<div class="ico">'+c.i+'</div><h3 style="margin-top:12px">'+c.t+'</h3><p>'+c.d+'</p><div class="price">'+N(c.p)+'</div>'+(c.n?'<div class="note">'+c.n+'</div>':'')+'<div class="note">Duration, lessons and learning outcomes will be added by the administrator.</div><button class="btn pur" style="width:100%" onclick="enroll('+i.')">Enroll Now</button>')}
-function enroll(i){var c=COURSES[i];show('<h3>Order Summary</h3><div class="sum"><span>'+c.t+'</span><b>'+N(c.p)+'</b></div><div class="sum"><span>Total</span><b>'+N(c.p)+'</b></div><div class="note">Secure checkout (Flutterwave) is not connected yet. Once your backend and Flutterwave keys are added, this button will start payment, and access will only be granted after server-side verification.</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout not yet active</h3><p>This is a preview of the enrollment flow. No payment was taken.</p>\')">Proceed to Checkout</button>')}
-var E=function(x){return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;")};
-var rate=0,REV=[],mode="in";
-function stars(){$("stars").innerHTML=[1,2,3,4,5].map(function(n){return '<button class="star'+(n<=rate?' on':'')+'" data-s="'+n+'" role="radio" aria-checked="'+(n===rate)+'" aria-label="'+n+' star'+(n>1?'s':'')+'">\u2605</button>'}).join("")}
-$("stars").onclick=function(e){var b=e.target.closest("button");if(!b)return;rate=+b.dataset.s;stars()};
-$("rc").innerHTML=COURSES.map(function(c){return '<option>'+E(c.t)+'</option>'}).join("");
-function revs(){var n=REV.length;
- $("avg").textContent=n?(REV.reduce(function(a,r){return a+r.s},0)/n).toFixed(1)+" \u2605":"\u2013";
- $("cnt").textContent=n?n+(n>1?" reviews":" review"):"No reviews yet";
- $("rv").innerHTML=n?REV.map(function(r){return '<div class="box"><strong>'+E(r.n)+'</strong><span style="color:var(--g)">'+"\u2605".repeat(r.s)+'</span> <span class="meta">'+E(r.c)+'</span><p style="margin:.4em 0 0;color:var(--mut)">'+E(r.t)+'</p></div>'}).join(""):'<p class="sub">Be the first to review a course.</p>'}
-function postRev(){var nm=$("rn").value.trim(),tx=$("rt").value.trim(),er=$("re");
- if(!rate){er.textContent="Please choose a star rating.";return}
- if(!nm){er.textContent="Please enter your name.";return}
- if(tx.length<10){er.textContent="Please write at least a short sentence.";return}
- er.textContent="";REV.unshift({n:nm,s:rate,c:$("rc").value,t:tx});$("rt").value="";rate=0;stars();revs()}
-stars();revs();
-function authView(){var up=mode=="up";show('<h3>'+(up?"Create your account":"Welcome back")+'</h3><div class="chips"><button class="chip'+(up?" on":"")+'" onclick="mode=\'up\';authView()">Sign up</button><button class="chip'+(up?"":" on")+'" onclick="mode=\'in\';authView()">Log in</button></div>'+(up?'<label class="fl" for="an">Name</label><input class="in" id="an" autocomplete="name">':'')+'<label class="fl" for="ae">Email</label><input class="in" id="ae" type="email" autocomplete="email"><label class="fl" for="ap">Password</label><input class="in" id="ap" type="password" autocomplete="'+(up?"new-password":"current-password")+'"><div class="err" id="aerr" role="alert"></div><button class="btn pur" style="width:100%" onclick="authGo()">'+(up?"Create account":"Log in")+'</button><p style="margin:12px 0 0"><a href="#" onclick="event.preventDefault();authMsg(\'Password recovery will work once accounts are connected.\',1)">Forgot password?</a></p><div class="note">Accounts go live once the database is connected. Nothing you type here is saved or sent yet.</div>')}
-function authMsg(t,ok){var e=$("aerr");e.textContent=t;e.style.color=ok?"var(--t)":""}
-function authGo(){var em=$("ae").value.trim(),pw=$("ap").value;
- if(mode=="up"&&!$("an").value.trim())return authMsg("Please enter your name.");
- if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return authMsg("Please enter a valid email address.");
- if(pw.length<8)return authMsg("Password must be at least 8 characters.");
- authMsg("Looks good. Accounts go live once the database is connected, so nothing was saved yet.",1)}
-$("si").onclick=function(){mode="in";authView()};
-document.addEventListener("keydown",function(e){if(e.key=="Escape")hide()};
-$("msg").onclick=function(e){e.preventDefault();
- if(CONFIG.whatsapp)location.href="https://wa.me/"+CONFIG.whatsapp;
- else if(CONFIG.email)location.href="mailto:"+CONFIG.email;
- else show("<h3>Contact details coming soon</h3><p>Official contact details will be published here shortly.</p>")};
-$("faqs").innerHTML=FAQ.map(function(f){var a=f[1]=="@refund"?CONFIG.refund:f[1]=="@access"?CONFIG.access:f[1];return "<details><summary>"+f[0]+"</summary><p>"+a+"</p></details>"}).join("");
-  // ===== SUPABASE & REGISTRATION LOGIC =====
+// ===== SUPABASE & AUTH INTEGRATION =====
 const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0';
 const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-const signUpForm = document.getElementById('signup-form');
-if (signUpForm) {
-    signUpForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+function authView() {
+    var up = mode == "up";
+    show('<h3>' + (up ? "Create your account" : "Welcome back") + '</h3>' +
+         '<div class="chips"><button class="chip' + (up ? " on" : "") + '" onclick="mode=\'up\';authView()">Sign up</button>' +
+         '<button class="chip' + (up ? "" : " on") + '" onclick="mode=\'in\';authView()">Log in</button></div>' +
+         (up ? '<label class="fl" for="an">Name</label><input class="in" id="an" autocomplete="name">' : '') +
+         '<label class="fl" for="ae">Email</label><input class="in" id="ae" type="email" autocomplete="email">' +
+         '<label class="fl" for="ap">Password</label><input class="in" id="ap" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '">' +
+         '<div class="err" id="aerr" role="alert"></div>' +
+         '<button class="btn pur" style="width:100%" onclick="authGo()">' + (up ? "Create account" : "Log in") + '</button>');
+}
 
-        try {
+function authMsg(t, ok) {
+    var e = document.getElementById("aerr");
+    if(e) { e.textContent = t; e.style.color = ok ? "var(--t)" : "#e5484d"; }
+}
+
+async function authGo() {
+    var em = document.getElementById("ae").value.trim();
+    var pw = document.getElementById("ap").value;
+    var nm = mode == "up" ? document.getElementById("an").value.trim() : "";
+
+    if (mode == "up" && !nm) return authMsg("Please enter your name.");
+    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return authMsg("Please enter a valid email address.");
+    if (pw.length < 8) return authMsg("Password must be at least 8 characters.");
+
+    try {
+        if (mode == "up") {
             const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: { data: { name: name } }
+                email: em,
+                password: pw,
+                options: { data: { name: nm } }
             });
             if (error) throw error;
-
             if (data.user) {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .insert([{ id: data.user.id, name: name, email: email, created_at: new Date() }]);
-                if (profileError) throw profileError;
+                await supabase.from('profiles').insert([{ id: data.user.id, name: nm, email: em, created_at: new Date() }]);
             }
-            alert('Account created successfully! Welcome to De Champions Academy.');
-        } catch (error) {
-            console.error('Error signing up:', error.message);
-            alert('Sign up failed: ' + error.message);
+            authMsg("Account created successfully! Welcome.", 1);
+            setTimeout(hide, 1500);
+        } else {
+            const { data, error } = await supabase.auth.signInWithPassword({ email: em, password: pw });
+            if (error) throw error;
+            authMsg("Logged in successfully! Welcome back.", 1);
+            setTimeout(hide, 1500);
         }
-    });
+    } catch (error) {
+        authMsg(error.message, 0);
+    }
+}
+
+if($("si")) { $("si").onclick = function() { mode = "in"; authView(); }; }
+if($("msg")) {
+    $("msg").onclick = function(e) { 
+        e.preventDefault();
+        if (CONFIG.whatsapp) location.href = "https://wa.me/" + CONFIG.whatsapp;
+        else if (CONFIG.email) location.href = "mailto:" + CONFIG.email;
+        else show("<h3>Contact details coming soon</h3><p>Official contact details will be published here shortly.</p>");
+    };
+}
+if($("faqs")) {
+    $("faqs").innerHTML = FAQ.map(function(f) { 
+        var a = f[1] == "@refund" ? CONFIG.refund : f[1] == "@access" ? CONFIG.access : f[1]; 
+        return "<details><summary>" + f[0] + "</summary><p>" + a + "</p></details>"; 
+    }).join("");
 }
 
 render();
