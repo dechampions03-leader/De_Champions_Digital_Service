@@ -284,8 +284,8 @@ $("msg").onclick=function(e){e.preventDefault();
  else show("<h3>Contact details coming soon</h3><p>Official contact details will be published here shortly.</p>")};
 $("faqs").innerHTML=FAQ.map(function(f){var a=f[1]=="@refund"?CONFIG.refund:f[1]=="@access"?CONFIG.access:f[1];return "<details><summary>"+f[0]+"</summary><p>"+a+"</p></details>"}).join("");
 render();
-    const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
-    const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
+        const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0';
     const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
     const signUpForm = document.getElementById('signup-form');
@@ -303,9 +303,7 @@ render();
                     email: email,
                     password: password,
                     options: {
-                        data: {
-                            name: name
-                        }
+                        data: { name: name }
                     }
                 });
 
@@ -334,66 +332,4 @@ render();
             }
         });
     }
-    
-</script>// 
-</body>
-</html>
-// Supabase client initialization (replace with your project URL and Anon key if needed)
-const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY'; // Make sure your anon key is here
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// Supabase client initialization
-const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_SUPABASE_ANON_KEY';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-
-// Handle Sign Up Form Submission
-const signUpForm = document.getElementById('signup-form');
-
-if (signUpForm) {
-    signUpForm.addEventListener('submit', async function(e) {
-        e.preventDefault();
-
-        const name = document.getElementById('name').value;
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
-
-        try {
-            // 1. Sign up the user with Supabase Auth
-            const { data, error } = await supabase.auth.signUp({
-                email: email,
-                password: password,
-                options: {
-                    data: {
-                        name: name
-                    }
-                }
-            });
-
-            if (error) throw error;
-
-            // 2. Insert additional profile details into your 'profiles' table
-            if (data.user) {
-                const { error: profileError } = await supabase
-                    .from('profiles')
-                    .insert([
-                        { 
-                            id: data.user.id, 
-                            name: name, 
-                            email: email, 
-                            created_at: new Date() 
-                        }
-                    ]);
-
-                if (profileError) throw profileError;
-            }
-
-            alert('Account created successfully! Welcome to De Champions Academy.');
-
-        } catch (error) {
-            console.error('Error signing up:', error.message);
-            alert('Sign up failed: ' + error.message);
-        }
-    });
-}
-
+  
