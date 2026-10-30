@@ -1,345 +1,265 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>De Champions Digital Service (DCDS)</title>
-<meta name="description" content="Learn modern digital skills with De Champions Digital Service. Create. Learn. Innovate. Earn.">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#51219b"><meta name="description" content="Learn practical digital skills with De Champions Digital Service. Create, learn, innovate and earn.">
+<title>De Champions Digital Service | Create. Learn. Innovate. Earn.</title>
 <style>
-:root{--p:#6C2BD9;--d:#2B124C;--l:#F2EAFE;--bg:#fff;--card:#fff;--t:#241B2F;--mut:#5d5070;--g:#D4AF37;--bd:#e3d6f7;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#170d28;--card:#231238;--t:#f3ecff;--mut:#bfaedb;--l:#2b1748;--bd:#3d2763}}
-*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:70px}
-body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--t);line-height:1.6}
-h1,h2,h3{line-height:1.2;margin:0 0 .5em}a{color:inherit}
-.wrap{max-width:1100px;margin:auto;padding:0 20px}
-header{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--d);color:#fff}
-.nav{display:flex;align-items:center;justify-content:space-between;height:60px;gap:12px}
-.logo{font-weight:800;letter-spacing:.5px;text-decoration:none;display:flex;gap:8px;align-items:center}
-.logo b{background:var(--g);color:var(--d);border-radius:8px;padding:2px 8px}
-nav{display:flex;gap:18px;font-size:.92rem;overflow-x:auto}nav a{text-decoration:none;opacity:.9;white-space:nowrap}nav a:hover{opacity:1;color:var(--g)}
-.btn{display:inline-block;border:0;border-radius:999px;padding:12px 24px;font-weight:700;font-size:1rem;cursor:pointer;text-decoration:none;font-family:inherit}
-.gold{background:var(--g);color:var(--d)}.pur{background:var(--p);color:#fff}.ghost{background:transparent;color:#fff;border:2px solid rgba(255,255,255,.6)}
-.out{background:transparent;color:var(--p);border:2px solid var(--p)}
-@media(prefers-color-scheme:dark){.out{color:#d9c2ff;border-color:#a67cf0}}
-.hero{background:radial-gradient(circle at 80% 20%,#8b4df0 0,transparent 45%),linear-gradient(135deg,var(--d),#4a1d8c);color:#fff;padding:70px 0 80px}
-.hero .wrap{display:grid;gap:36px;grid-template-columns:1.2fr .8fr;align-items:center}
-.hero h1{font-size:clamp(2rem,5vw,3.2rem)}.hero h1 span{color:var(--g)}
-.hero p{font-size:1.1rem;opacity:.92;max-width:520px}.tag{letter-spacing:2px;font-weight:700;color:var(--g);font-size:.85rem}
-.cta{display:flex;gap:12px;flex-wrap:wrap;margin-top:22px}
-.art{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
-.art div{aspect-ratio:1;border-radius:20px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);display:grid;place-items:center;font-size:2.2rem}
-section{padding:64px 0}.alt{background:var(--l)}
-.sub{color:var(--mut);max-width:640px}.c{text-align:center}.c .sub{margin:0 auto 28px}
-.grid{display:grid;gap:18px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr))}
-.box{background:var(--card);border:1px solid var(--bd);border-radius:20px;padding:22px;box-shadow:0 6px 20px rgba(43,18,76,.07)}
-.mv{border-top:4px solid var(--g)}
-.tools{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0 22px}
-input,select{font:inherit;padding:12px 16px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--t);min-width:0}
-#q{flex:1;min-width:200px}
-.chips{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
-.chip{border:1px solid var(--p);background:transparent;color:var(--p);border-radius:999px;padding:7px 14px;cursor:pointer;font:inherit;font-size:.88rem}
-@media(prefers-color-scheme:dark){.chip{color:#d9c2ff;border-color:#a67cf0}}
-.chip.on{background:var(--p);color:#fff}
-.card{display:flex;flex-direction:column;gap:8px}
-.ico{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--p),var(--d));display:grid;place-items:center;font-size:1.6rem}
-.price{font-size:1.4rem;font-weight:800;color:var(--p)}
-@media(prefers-color-scheme:dark){.price{color:#d9c2ff}}
-.meta{font-size:.78rem;color:var(--mut)}.card p{margin:0;color:var(--mut);font-size:.93rem;flex:1}
-.row{display:flex;gap:8px}.row .btn{flex:1;padding:10px 8px;font-size:.9rem}
-.steps{counter-reset:s}.steps .box{position:relative;padding-top:40px}
-.steps .box:before{counter-increment:s;content:counter(s);position:absolute;top:-16px;left:20px;width:38px;height:38px;border-radius:50%;background:var(--g);color:var(--d);display:grid;place-items:center;font-weight:800}
-.bio{display:grid;gap:28px;grid-template-columns:240px 1fr;align-items:center}
-.avatar{aspect-ratio:1;border-radius:28px;background:linear-gradient(135deg,var(--p),var(--d));display:grid;place-items:center;font-size:4rem;color:var(--g);font-weight:800}
-.svc{background:linear-gradient(135deg,var(--d),#4a1d8c);color:#fff}.svc .box{background:rgba(255,255,255,.08);border-color:rgba(255,255,255,.2);box-shadow:none}
-details{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:14px 18px;margin-bottom:10px}summary{cursor:pointer;font-weight:700}
-details p{margin:.6em 0 0;color:var(--mut)}
-.final{background:linear-gradient(135deg,#4a1d8c,var(--d));color:#fff;text-align:center}
-footer{background:#160a28;color:#cdbbe8;padding:40px 0 90px;font-size:.9rem}footer .wrap{display:grid;gap:24px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
-footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;padding:3px 0}
-.modal{position:fixed;inset:0;background:rgba(20,8,36,.7);display:none;align-items:center;justify-content:center;padding:16px;z-index:50}
-.modal.on{display:flex}.sheet{background:var(--card);color:var(--t);border-radius:24px;max-width:480px;width:100%;padding:26px;max-height:90vh;overflow:auto}
-.note{background:var(--l);border-left:4px solid var(--g);padding:10px 14px;border-radius:8px;font-size:.88rem;margin:14px 0}
-.sum{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--bd)}
-@media(max-width:760px){.hero .wrap,.bio{grid-template-columns:1fr}.art{display:none}.bio .avatar{max-width:160px}nav{display:none}}
-.bottom{display:none}
-@media(max-width:760px){.bottom{display:flex;position:fixed;bottom:0;left:0;right:0;background:var(--d);justify-content:space-around;padding:8px 0 calc(8px + env(safe-area-inset-bottom,0px));z-index:30}.bottom a{color:#fff;text-decoration:none;font-size:.72rem;text-align:center}.bottom a span{display:block;font-size:1.2rem}}
-.stars{display:flex;gap:2px}.star{background:none;border:0;font-size:2rem;line-height:1;color:var(--bd);cursor:pointer;padding:2px;min-width:44px;min-height:44px}.star.on{color:var(--g)}
-.rv{display:grid;gap:14px;margin-top:18px}.rv .box strong{display:block}
-.avg{font-size:2.4rem;font-weight:800;color:var(--p)}
-@media(prefers-color-scheme:dark){.avg{color:#d9c2ff}}
-.fl{display:block;margin:12px 0 4px;font-weight:700;font-size:.9rem}
-.in{width:100%;min-height:46px}textarea.in{min-height:100px;resize:vertical;font:inherit;padding:12px 16px;border-radius:12px;border:1px solid var(--bd);background:var(--card);color:var(--t)}
-.err{color:#e5484d;font-size:.88rem;min-height:1.3em;margin:6px 0}
-.rvw{display:grid;gap:20px;grid-template-columns:1fr 1fr;align-items:start}
-@media(max-width:760px){.rvw{grid-template-columns:1fr}}
-@media(max-width:420px){.logo span{display:none}}
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap');
+:root{--purple:#6128b8;--purple-dark:#35105f;--purple-deep:#210b3b;--lavender:#f3edfc;--lavender-2:#e9def9;--gold:#d7b45a;--ink:#211832;--muted:#6e667b;--line:#e8e2ef;--white:#fff;--surface:#f7f6fa;--shadow:0 14px 38px rgba(42,18,73,.09);--radius:22px}
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:86px}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;color:var(--ink);background:var(--surface);line-height:1.6}button,input{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}.container{width:min(1160px,calc(100% - 40px));margin-inline:auto}
+.topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.94);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}.nav{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:20px}.brand{display:flex;align-items:center;gap:12px;font-weight:850;letter-spacing:-.03em}.brand-mark{width:44px;height:44px;display:grid;place-items:center;border-radius:14px;color:#fff;background:linear-gradient(145deg,#8c58e6,var(--purple-dark));box-shadow:0 8px 20px #6128b833;font-size:15px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.16em;font-weight:800}.nav-links{display:flex;align-items:center;gap:26px;color:#5d536c;font-size:14px;font-weight:650}.nav-actions{display:flex;align-items:center;gap:10px}.button{border:0;border-radius:12px;padding:12px 18px;font-weight:800;transition:.2s transform,.2s box-shadow;display:inline-flex;align-items:center;justify-content:center;gap:9px}.button:hover{transform:translateY(-2px);box-shadow:0 9px 22px #32105f22}.button-primary{background:linear-gradient(135deg,#7a42d0,var(--purple-dark));color:#fff}.button-light{background:#f0e8fb;color:var(--purple-dark)}.button-gold{background:linear-gradient(135deg,#f2d98f,#c59a39);color:#2b1940}.button-small{padding:10px 15px;font-size:13px}
+.hero{position:relative;overflow:hidden;color:#fff;background:radial-gradient(ellipse at 82% 18%,#8c56d4 0,transparent 34%),radial-gradient(ellipse at 5% 100%,#4c2088 0,transparent 40%),linear-gradient(120deg,#24103f,#4b1c83 58%,#311052);padding:88px 0 84px}.hero:after{content:"";position:absolute;width:430px;height:430px;border:1px solid #ffffff18;border-radius:50%;right:-120px;bottom:-270px;box-shadow:0 0 0 45px #ffffff08,0 0 0 90px #ffffff06}.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.2fr .8fr;align-items:center;gap:55px}.eyebrow{display:inline-flex;align-items:center;gap:8px;border:1px solid #ffffff35;background:#ffffff12;border-radius:99px;padding:7px 13px;font-size:11px;letter-spacing:.15em;font-weight:850;color:#f2e8ff}.hero h1{font-size:clamp(38px,5.5vw,66px);line-height:1.04;letter-spacing:-.055em;margin:22px 0}.hero h1 em{font-style:normal;color:#e6cb7b}.hero p{max-width:620px;color:#e7dff2;font-size:17px;margin:0 0 28px}.hero-buttons{display:flex;flex-wrap:wrap;gap:12px}.hero-panel{padding:28px;border:1px solid #ffffff2a;background:linear-gradient(145deg,#ffffff20,#ffffff0b);border-radius:26px;box-shadow:0 25px 60px #14072655;backdrop-filter:blur(12px)}.panel-label{font-size:11px;letter-spacing:.16em;font-weight:850;color:#e6cb7b}.hero-panel h2{font-size:27px;line-height:1.2;margin:10px 0 18px}.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.stat{background:#ffffff12;border:1px solid #ffffff1a;border-radius:16px;padding:16px}.stat strong{display:block;font-size:25px}.stat span{font-size:12px;color:#e1d5f0}
+.trust-strip{background:#fff;border-bottom:1px solid var(--line)}.trust-items{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:20px 0}.trust-item{text-align:center;font-size:13px;font-weight:750;color:#5d536c}.trust-item b{color:var(--purple);margin-right:6px}
+.section{padding:76px 0}.section-white{background:#fff}.section-heading{text-align:center;max-width:720px;margin:0 auto 34px}.kicker{color:var(--purple);font-size:11px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}.section-heading h2{font-size:clamp(30px,4vw,43px);letter-spacing:-.045em;line-height:1.13;margin:10px 0 12px}.section-heading p{color:var(--muted);margin:0}.catalog-tools{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:22px}.search{width:min(420px,100%);border:1px solid var(--line);border-radius:13px;padding:13px 16px;background:#fff;outline:none}.search:focus{border-color:#9b78d1;box-shadow:0 0 0 4px #6128b814}.catalog-count{font-size:13px;color:var(--muted);font-weight:700}.course-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:19px}.course-card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 5px 20px #29134108;display:flex;flex-direction:column;min-width:0;transition:.2s}.course-card:hover{transform:translateY(-4px);box-shadow:var(--shadow);border-color:#d7c4f0}.card-top{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:16px}.course-icon{width:48px;height:48px;border-radius:15px;display:grid;place-items:center;background:var(--lavender);font-size:23px}.category{font-size:10px;text-transform:uppercase;letter-spacing:.09em;font-weight:850;color:var(--purple);background:#f6f1fc;padding:7px 9px;border-radius:99px}.course-card h3{font-size:20px;line-height:1.25;letter-spacing:-.025em;margin:0 0 9px}.course-desc{font-size:13px;color:var(--muted);margin:0 0 16px;min-height:62px}.fee-row{display:flex;justify-content:space-between;align-items:center;padding:13px 0;border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-top:auto}.fee-row span{font-size:12px;color:var(--muted);font-weight:700}.fee-row strong{font-size:22px;color:var(--purple-dark);letter-spacing:-.04em}.outline{margin:14px 0 15px;border:1px solid #eee7f7;border-radius:13px;background:#fcfaff}.outline summary{list-style:none;display:flex;align-items:center;justify-content:space-between;padding:12px 13px;color:var(--purple-dark);font-size:13px;font-weight:850;cursor:pointer}.outline summary::-webkit-details-marker{display:none}.outline[open] summary{border-bottom:1px solid #eee7f7}.outline ol{padding:8px 18px 0 36px;margin:0}.outline li{padding:5px 0 5px 2px;font-size:12px;color:#554b62}.outline-note{font-size:11px;color:#847b8e;padding:0 13px 12px;margin:8px 0 0}.package-note{font-size:11px;color:#7b6330;background:#fff9e8;border-radius:9px;padding:9px;margin:0 0 12px}.enroll-button{width:100%;margin-top:2px}.empty-state{display:none;text-align:center;padding:35px;color:var(--muted)}
+.info-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}.info-card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:23px}.info-card .emoji{font-size:25px}.info-card h3{margin:10px 0 5px}.info-card p{margin:0;color:var(--muted);font-size:13px}.steps{display:grid;grid-template-columns:repeat(4,1fr);gap:15px}.step{background:#fff;border:1px solid var(--line);border-radius:17px;padding:20px}.step-num{width:35px;height:35px;border-radius:11px;background:var(--lavender);color:var(--purple);display:grid;place-items:center;font-weight:900}.step h3{font-size:16px;margin:13px 0 5px}.step p{font-size:13px;color:var(--muted);margin:0}.cta{background:linear-gradient(115deg,#2a1049,#57249a);color:#fff;text-align:center;padding:65px 0}.cta h2{font-size:clamp(28px,4vw,42px);margin:0 0 10px;letter-spacing:-.04em}.cta p{color:#e2d5f1;margin:0 auto 22px;max-width:650px}.footer{background:#1c0b31;color:#fff;padding:36px 0 90px}.footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px}.footer p{color:#c9b8dc;font-size:12px;margin:4px 0}.footer a{color:#e8d8fa;font-weight:700;font-size:13px}
+.modal-backdrop{position:fixed;inset:0;background:#140a22a8;z-index:80;display:none;align-items:center;justify-content:center;padding:18px}.modal-backdrop.open{display:flex}.modal{width:min(480px,100%);max-height:min(88vh,780px);overflow:auto;background:#fff;border-radius:23px;padding:25px;box-shadow:0 28px 80px #10051d66;position:relative}.modal-close{position:absolute;right:16px;top:14px;border:0;background:#f2edf8;border-radius:50%;width:34px;height:34px;font-size:19px;color:var(--purple-dark)}.modal h2{font-size:25px;letter-spacing:-.04em;margin:3px 36px 8px 0}.modal-sub{font-size:13px;color:var(--muted);margin:0 0 18px}.tabs{display:flex;gap:8px;background:#f4effa;padding:5px;border-radius:12px;margin-bottom:18px}.tab{flex:1;border:0;border-radius:9px;padding:10px;background:transparent;font-weight:800;color:#6d5c81}.tab.active{background:#fff;color:var(--purple);box-shadow:0 2px 8px #32105f12}.field{display:block;margin:12px 0}.field span{display:block;font-size:12px;font-weight:800;margin-bottom:6px}.field input{width:100%;padding:13px;border:1px solid var(--line);border-radius:11px;outline:none}.field input:focus{border-color:#9b78d1;box-shadow:0 0 0 3px #6128b814}.form-error{color:#b42318;font-size:12px;min-height:18px;margin:8px 0}.modal-note{font-size:11px;color:#80768c;background:#f8f5fc;border-radius:10px;padding:11px;margin-top:13px}.selected-course{background:#f7f2fd;border:1px solid #e8dcf7;border-radius:14px;padding:15px;margin:15px 0}.selected-course span{font-size:11px;color:var(--muted)}.selected-course strong{display:block;color:var(--purple-dark);font-size:18px}.selected-course .total{display:flex;justify-content:space-between;border-top:1px solid #e5d9f2;padding-top:10px;margin-top:10px}.signed-in{background:#effaf3;border:1px solid #ccebd7;color:#23643a;padding:12px;border-radius:11px;font-size:13px;margin:12px 0}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr .8fr;gap:25px}.course-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.nav-links{gap:14px}.steps{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:650px){.container{width:min(100% - 28px,1160px)}.nav{min-height:66px}.nav-links{display:none}.brand{font-size:14px}.brand-mark{width:39px;height:39px}.hero{padding:62px 0 56px}.hero-grid{grid-template-columns:1fr}.hero-panel{max-width:430px}.hero p{font-size:15px}.trust-items{grid-template-columns:repeat(2,1fr);gap:16px 8px}.trust-item{font-size:12px}.section{padding:58px 0}.catalog-tools{align-items:stretch;flex-direction:column}.course-grid{grid-template-columns:1fr}.course-desc{min-height:0}.info-grid{grid-template-columns:1fr}.steps{grid-template-columns:1fr 1fr}.footer-inner{align-items:flex-start;flex-direction:column}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+
+/* DCDS refined signature design */
+:root{--purple:#7628d8;--purple-dark:#451078;--purple-deep:#21083f;--lavender:#f0e4ff;--lavender-2:#e2ceff;--gold:#e4c16d;--ink:#241535;--muted:#70647e;--line:#e9def5;--surface:#f7f2fc;--shadow:0 18px 48px rgba(74,24,124,.12);--radius:24px}
+body{font-family:'DM Sans',sans-serif;background:radial-gradient(ellipse at 4% 16%,#f0e4ff 0,transparent 32%),radial-gradient(ellipse at 95% 46%,#f3eaff 0,transparent 28%),linear-gradient(180deg,#fbf9ff,#f4edfc 55%,#fbf9ff);color:#28183a}
+.topbar{background:rgba(255,251,255,.9);border-bottom:1px solid #e8d9f8;box-shadow:0 5px 25px #3d11600a}
+.brand{gap:13px;font-family:'DM Sans',sans-serif;letter-spacing:.015em;font-weight:800;color:#351052}.brand-mark{width:52px;height:52px;border-radius:17px;background:linear-gradient(145deg,#d7b5ff 0%,#963ff0 42%,#4b137f 100%);box-shadow:0 8px 24px #7628d855,inset 0 1px 0 #ffffff80;font-family:'Playfair Display',serif;font-size:17px;letter-spacing:-.06em;text-shadow:0 2px 8px #26064166}.brand small{font-size:9px;letter-spacing:.22em;color:#8751b9;margin-top:2px}
+.nav-links{font-size:13px;color:#5c466f}.nav-links a:hover{color:#8c35df}.button{border-radius:14px;font-family:'DM Sans',sans-serif}.button-primary{background:linear-gradient(120deg,#a34cf0,#7526ce 52%,#4c147e);box-shadow:0 8px 20px #7628d82b}.button-light{background:#f0e4ff;color:#53168d}.button-gold{background:linear-gradient(120deg,#f5dfa0,#d7ae51);box-shadow:0 8px 20px #d6b35c33}
+.hero{padding:105px 0 100px;background:radial-gradient(ellipse at 76% 12%,#a95cf2 0,transparent 30%),radial-gradient(ellipse at 12% 100%,#7227b9 0,transparent 36%),linear-gradient(118deg,#240b42 0%,#451078 47%,#7025b7 100%);isolation:isolate}.hero:before{content:"";position:absolute;inset:0;z-index:-1;opacity:.22;background-image:radial-gradient(#fff 0.7px,transparent .7px);background-size:22px 22px;mask-image:linear-gradient(90deg,black,transparent 85%)}.hero:after{width:520px;height:520px;right:-145px;bottom:-340px;border-color:#ffffff24;box-shadow:0 0 0 52px #ffffff0a,0 0 0 105px #ffffff07,0 0 0 160px #ffffff04}.hero-grid{grid-template-columns:1.12fr .88fr;gap:72px}.eyebrow{background:#ffffff13;border-color:#ffffff40;color:#f4e8ff;letter-spacing:.2em;font-size:10px;padding:9px 15px}.hero h1{font-family:'Playfair Display',serif;font-size:clamp(44px,5.8vw,72px);line-height:1.08;letter-spacing:-.045em;font-weight:700;margin:25px 0 19px;max-width:690px}.hero h1 em{display:inline-block;font-style:normal;background:linear-gradient(100deg,#f6e4a9 0%,#fff2c8 40%,#dcb5ff 100%);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}.hero p{font-size:16px;line-height:1.85;color:#eadcf9;max-width:570px;margin-bottom:31px}.hero-panel{padding:32px;background:linear-gradient(145deg,#ffffff25,#ffffff0c);border:1px solid #ffffff3b;border-radius:30px;box-shadow:0 28px 75px #17052666;backdrop-filter:blur(16px)}.panel-label{color:#f1d78e;letter-spacing:.19em;font-size:10px}.hero-panel h2{font-family:'Playfair Display',serif;font-size:30px;line-height:1.22;font-weight:700;margin:13px 0 22px}.stat{background:#ffffff13;border-color:#ffffff25;border-radius:17px;padding:17px}.stat strong{font-family:'Playfair Display',serif;color:#fff0c2;font-size:27px}.stat span{color:#eadcf8}.trust-strip{background:rgba(255,255,255,.76);border-color:#e9def5;backdrop-filter:blur(10px)}.trust-item{color:#5e4b70}.trust-item b{color:#8c36dc}
+.section{padding:88px 0}.section-white{background:linear-gradient(145deg,#fffaff 0%,#f5edff 48%,#fffaff 100%);position:relative}.section-heading{max-width:760px;margin-bottom:42px}.kicker{color:#8c36dc;letter-spacing:.22em;font-size:10px}.section-heading h2{font-family:'Playfair Display',serif;font-size:clamp(32px,4.3vw,48px);line-height:1.15;letter-spacing:-.025em;color:#351052;margin:13px 0 14px}.section-heading p{font-size:14px;line-height:1.8;color:#786a88;max-width:650px;margin-inline:auto}.catalog-tools{margin-bottom:26px}.search{border-color:#e5d5f5;background:#fffaff;padding:14px 17px;border-radius:15px;box-shadow:0 5px 18px #4d1b7808}.catalog-count{color:#806c94}.course-grid{gap:22px}.course-card{position:relative;overflow:hidden;border:1px solid #e8dcf5;border-radius:23px;padding:23px;background:linear-gradient(160deg,#fff 0%,#fbf7ff 100%);box-shadow:0 8px 26px #4c1b780c;transition:transform .25s,border-color .25s,box-shadow .25s}.course-card:before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,var(--card-a,#a45ae8),var(--card-b,#e1c4ff))}.course-card:nth-child(6n+1){--card-a:#6121ad;--card-b:#c59aff;background:linear-gradient(155deg,#fff 55%,#f3e9ff)}.course-card:nth-child(6n+2){--card-a:#8a35dc;--card-b:#e2baff;background:linear-gradient(155deg,#fff 55%,#f8edff)}.course-card:nth-child(6n+3){--card-a:#4c1688;--card-b:#a77be8;background:linear-gradient(155deg,#fff 55%,#eee6ff)}.course-card:nth-child(6n+4){--card-a:#a34be9;--card-b:#e5c9ff;background:linear-gradient(155deg,#fff 55%,#f8edff)}.course-card:nth-child(6n+5){--card-a:#7130c2;--card-b:#c7a0f5;background:linear-gradient(155deg,#fff 55%,#f1eaff)}.course-card:nth-child(6n){--card-a:#512080;--card-b:#d6b7ff;background:linear-gradient(155deg,#fff 55%,#f4eaff)}.course-card:hover{transform:translateY(-6px);box-shadow:0 20px 42px #4c1b7820;border-color:#c9a7ef}.card-top{margin-bottom:18px}.course-icon{width:51px;height:51px;border-radius:17px;background:linear-gradient(145deg,#f1e5ff,#e3ceff);box-shadow:inset 0 1px 0 #fff;font-size:24px}.category{background:#f1e5ff;color:#7027b9;font-size:9px;letter-spacing:.12em}.course-card h3{font-family:'Playfair Display',serif;font-size:21px;line-height:1.28;color:#32104f;letter-spacing:-.015em}.course-desc{font-size:13px;line-height:1.75;color:#756782;min-height:68px}.fee-row{border-color:#eadff5;padding:15px 0}.fee-row span{color:#776887}.fee-row strong{font-family:'Playfair Display',serif;font-size:25px;background:linear-gradient(90deg,#6d20b4,#a143e8);-webkit-background-clip:text;background-clip:text;color:transparent}.outline{border-color:#eadcf8;background:#fbf7ff;border-radius:15px}.outline summary{color:#5d218e;padding:14px;font-size:12px}.outline[open] summary{border-color:#eadcf8}.outline ol{padding-top:9px}.outline li{color:#594a68;line-height:1.55}.outline-note{color:#887b95;line-height:1.55}.package-note{background:#fff9e9;color:#806321;border:1px solid #f1e1b4;line-height:1.55}.enroll-button{margin-top:auto;padding:13px 16px}.info-card,.step{border-color:#e9def5;border-radius:21px;box-shadow:0 8px 25px #4c1b7809;background:linear-gradient(145deg,#fff,#faf5ff)}.info-card h3,.step h3{font-family:'Playfair Display',serif;color:#421366}.step-num{background:linear-gradient(135deg,#f0e2ff,#d9c0ff);color:#7127b7}.cta{background:radial-gradient(ellipse at 80% 0%,#8b42d1 0,transparent 35%),linear-gradient(115deg,#260b43,#54208b 60%,#6d25a9);padding:78px 0}.cta h2{font-family:'Playfair Display',serif;font-size:clamp(32px,4.5vw,49px);line-height:1.15}.cta p{line-height:1.8}.footer{background:linear-gradient(120deg,#1b082f,#32104f);border-top:1px solid #ffffff18}.footer strong{font-family:'Playfair Display',serif;letter-spacing:.04em}.modal{border:1px solid #e8dcf5;box-shadow:0 30px 90px #16052766}.modal h2{font-family:'Playfair Display',serif;color:#351052}.selected-course{background:linear-gradient(145deg,#f8f1ff,#eee0ff);border-color:#e3d0f6}.selected-course strong{color:#57208b}
+/* Founder profile */
+.founder-section{background:radial-gradient(ellipse at 8% 50%,#eadbff 0,transparent 36%),linear-gradient(120deg,#f9f5ff,#fff 52%,#f1e6ff);padding:88px 0}.founder-card{display:grid;grid-template-columns:.72fr 1.28fr;gap:34px;align-items:center;max-width:980px;margin:auto;padding:34px;border:1px solid #e3d2f5;border-radius:30px;background:linear-gradient(135deg,#fff,#f8f1ff);box-shadow:0 18px 55px #4b1b7612}.founder-monogram{min-height:270px;display:grid;place-items:center;border-radius:23px;background:radial-gradient(circle at 70% 20%,#b67af1,transparent 35%),linear-gradient(145deg,#260943,#5e1c94 60%,#8b3bd2);color:#fff;position:relative;overflow:hidden}.founder-monogram:after{content:"";position:absolute;width:220px;height:220px;border:1px solid #ffffff35;border-radius:50%;box-shadow:0 0 0 28px #ffffff0c,0 0 0 58px #ffffff08}.founder-monogram strong{font:800 62px 'Playfair Display',serif;letter-spacing:-.08em;z-index:1;text-shadow:0 5px 20px #18052f88}.founder-copy .kicker{display:block}.founder-copy h2{font:700 clamp(29px,4vw,42px)/1.12 'Playfair Display',serif;color:#351052;margin:11px 0 5px}.founder-role{color:#8a43c9;font-size:12px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;margin-bottom:17px}.founder-copy p{color:#6e607e;font-size:14px;line-height:1.9;margin:0 0 12px}.founder-motto{border-left:3px solid #a65ce5;padding:9px 0 9px 15px;color:#522078!important;font-weig.hero-panel{position:relative;padding:clamp(25px,3vw,34px);border:1px solid rgba(255,255,255,.32);border-radius:28px;background:linear-gradient(145deg,rgba(255,255,255,.2),rgba(255,255,255,.075) 56%,rgba(255,255,255,.045));box-shadow:0 30px 85px rgba(13,3,28,.35),inset 0 1px rgba(255,255,255,.26);backdrop-filter:blur(20px)}.panel-topline{display:flex;align-items:center;justify-content:space-between}.panel-label{color:#ffe6a0;font:800 9px/1.4 'DM Sans',sans-serif;letter-spacing:.22em}.panel-star{color:#f7d98e;font-size:24px}.hero-panel h2{max-width:360px;margin:15px 0 12px;color:#fff;font:700 clamp(25px,2.5vw,32px)/1.2 'Playfair Display',Georgia,serif;letter-spacing:-.025em}.panel-tagline{margin-bottom:22px;color:#ead5ff;font:800 9px/1.5 'DM Sans',sans-serif;letter-spacing:.13em}.panel-tagline i{padding:0 3px;color:#f2d487;font-style:normal}.stat-grid{gap:11px}.stat{padding:16px;border:1px solid rgba(255,255,255,.2);border-radius:16px;background:linear-gradient(145deg,rgba(255,255,255,.14),rgba(255,255,255,.055))}.stat strong{color:#fff0c3;font:700 22px/1.2 'Playfair Display',Georgia,serif;letter-spacing:-.025em}.stat span{display:block;margin-top:5px;color:#e9dcf5;font:500 10px/1.5 'DM Sans',sans-serif}.panel-foot{display:flex;align-items:center;gap:10px;margin-top:20px;padding-top:16px;border-top:1px solid rgba(255,255,255,.18);color:#e7d5f6;font:700 8px/1.5 'DM Sans',sans-serif;letter-spacing:.15em}.panel-foot-mark{display:grid;place-items:center;width:27px;height:27px;border-radius:9px;background:linear-gradient(145deg,#f6dfa0,#cda24d);color:#351052;font:800 15px 'Playfair Display',serif}
+@media(max-width:900px){.hero-grid{grid-template-columns:minmax(0,1fr) minmax(290px,.82fr);gap:30px}.hero h1{font-size:clamp(42px,6vw,60px)}}
+@media(max-width:650px){.hero{padding:68px 0 64px}.hero-grid{grid-template-columns:1fr;gap:34px}.hero-overline{margin-top:24px;font-size:9px}.hero h1{font-size:clamp(42px,11.5vw,58px);line-height:1.08;letter-spacing:-.06em;margin-bottom:19px}.hero-description{font-size:14px;line-height:1.8;margin-bottom:24px}.hero-assurance{font-size:9px;gap:7px;margin-top:20px}.hero-panel{max-width:none;padding:24px;border-radius:23px}.hero-panel h2{font-size:27px}.stat strong{font-size:21px}}
+
+
+/* Mobile navigation cleanup: keep the DCDS mark, brand name and login control neatly aligned. */
+@media(max-width:760px){
+  .topbar{overflow:visible}
+  .nav{min-height:76px;display:flex;flex-wrap:nowrap;align-items:center;justify-content:space-between;gap:12px;padding-block:10px}
+  .brand{display:flex;flex:1 1 auto;min-width:0;align-items:center;gap:10px;font-size:13px;line-height:1.2;letter-spacing:.005em;white-space:nowrap}
+  .brand-mark{flex:0 0 46px;width:46px;height:46px;border-radius:15px;font-size:15px;letter-spacing:-.06em}
+  .brand>span:last-child{display:block;min-width:0;white-space:nowrap;font-size:clamp(11px,2.2vw,13px);line-height:1.25;letter-spacing:.025em}
+  .brand small{margin-top:5px;font-size:9px;line-height:1.2;letter-spacing:.18em;white-space:nowrap}
+  .nav-links{display:none}
+  .nav-actions{display:flex;flex:0 0 auto;align-items:center;gap:0}
+  #accountBtn{display:inline-flex;flex:0 0 auto;width:auto;min-width:0;max-width:none;min-height:42px;padding:10px 13px;border-radius:13px;font-size:12px;line-height:1;white-space:nowrap;word-break:normal;overflow-wrap:normal}
+}
+@media(max-width:380px){
+  .container{width:calc(100% - 22px)}
+  .nav{gap:8px}
+  .brand{gap:8px;font-size:11px}
+  .brand-mark{flex-basis:41px;width:41px;height:41px;font-size:13px}
+  .brand>span:last-child{font-size:10px}
+  .brand small{font-size:8px;letter-spacing:.14em}
+  #accountBtn{padding:9px 10px;font-size:11px}
+}
+
+
+/* Refined premium trust strip, course title frames and DCDS services */
+.trust-strip{background:linear-gradient(135deg,#fffdf8 0%,#fff 48%,#fbf7ff 100%);border-top:1px solid #ead8a5;border-bottom:1px solid #ead8a5;padding:18px 0;}
+.trust-items{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding:0;}
+.trust-item{min-height:88px;display:flex;align-items:center;justify-content:center;gap:11px;text-align:left;padding:14px 12px;border:1px solid #d9bd70;border-radius:15px;background:linear-gradient(145deg,#fff 0%,#fffdf7 100%);box-shadow:inset 0 0 0 3px #f8f0d9,0 5px 15px #5b3b100c;color:#51415f;font-size:12px;line-height:1.45;font-weight:800;}
+.verified-check{flex:0 0 27px;width:27px;height:27px;display:grid;place-items:center;border-radius:50%;background:linear-gradient(145deg,#a64bea,#6421b4);color:#fff;font:900 16px/1 'DM Sans',sans-serif;box-shadow:0 3px 9px #6421b444,inset 0 1px 0 #ffffff70;border:2px solid #ead9ff;}
+.course-card h3{display:flex;align-items:center;gap:10px;padding:11px 12px;border:1px solid #d8b75e;border-radius:13px;background:linear-gradient(110deg,#fffdf6,#fff 68%);box-shadow:inset 0 0 0 2px #fbf4df,0 3px 10px #9b76200b;margin:0 0 12px;min-height:58px;}
+.course-card h3:before{content:'✓';flex:0 0 25px;width:25px;height:25px;display:grid;place-items:center;border-radius:8px;background:linear-gradient(145deg,#f7e7ac,#d6ad4d);color:#45245e;font:900 15px/1 'DM Sans',sans-serif;box-shadow:0 2px 6px #a47b2933;}
+.services-section{background:linear-gradient(145deg,#fffdf8 0%,#faf6ff 48%,#fff 100%);}
+.services-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:17px;}
+.service-card{position:relative;padding:22px 19px 20px;border:1px solid #e4d4af;border-radius:18px;background:linear-gradient(150deg,#fff 0%,#fffdf8 100%);box-shadow:0 8px 22px #3c1b6009;min-height:190px;transition:transform .2s,box-shadow .2s,border-color .2s;}
+.service-card:hover{transform:translateY(-4px);border-color:#cda94f;box-shadow:0 15px 30px #3c1b6014;}
+.service-icon{width:40px;height:40px;display:grid;place-items:center;border-radius:12px;background:linear-gradient(145deg,#f8e9b6,#d9b45b);color:#48245f;font-size:21px;font-weight:900;box-shadow:inset 0 1px 0 #fff;}
+.service-card h3{font:700 17px/1.3 'DM Sans',sans-serif;color:#381454;margin:14px 0 7px;}
+.service-card p{font-size:12px;line-height:1.7;color:#766984;margin:0;}
+.services-more{margin-top:25px;padding:25px 27px;border-radius:20px;background:radial-gradient(ellipse at 90% 10%,#8b43c4 0,transparent 38%),linear-gradient(115deg,#28103f,#542080 68%,#391354);color:#fff;display:flex;align-items:center;justify-content:space-between;gap:22px;box-shadow:0 15px 35px #32104f20;}
+.services-more-kicker{font-size:9px;letter-spacing:.2em;font-weight:900;color:#f1d991;}
+.services-more h3{font:700 25px/1.2 'Playfair Display',serif;margin:7px 0 5px;color:#fff;}
+.services-more p{font-size:13px;color:#e8d9f5;margin:0;}
+.services-disclaimer{font-size:10px;line-height:1.65;color:#897d92;margin:14px 2px 0;text-align:center;}
+@media(max-width:900px){.services-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:650px){.trust-strip{padding:14px 0;}.trust-items{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;}.trust-item{min-height:78px;padding:10px 9px;justify-content:flex-start;font-size:11px;gap:8px;border-radius:13px;}.verified-check{width:25px;height:25px;flex-basis:25px;font-size:14px;}.course-card h3{font-size:18px;line-height:1.3;padding:10px;min-height:54px;}.services-grid{grid-template-columns:1fr;gap:12px;}.service-card{min-height:0;padding:18px;}.services-more{padding:22px 19px;align-items:flex-start;flex-direction:column;}.services-more h3{font-size:23px;}.services-more .button{width:100%;}.services-disclaimer{text-align:left;}}
+
 </style>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body>
-<header><div class="wrap nav">
-<a class="logo" href="#home"><b>DCDS</b><span>De Champions</span></a>
-<nav><a href="#home">Home</a><a href="#courses">Courses</a><a href="#about">About Us</a><a href="#reviews">Reviews</a><a href="#services">Services</a><a href="#faq">Support</a></nav>
-<div style="display:flex;gap:8px"><button class="btn ghost" id="si" style="padding:8px 14px;font-size:.9rem">Sign in</button><a class="btn gold" href="#courses" style="padding:8px 18px;font-size:.9rem">Enroll</a></div>
+<header class="topbar"><div class="container nav">
+ <a class="brand" href="#home" aria-label="De Champions Digital Service home"><span class="brand-mark">DCDS</span><span>DE CHAMPIONS<small>DIGITAL SERVICE</small></span></a>
+ <nav class="nav-links" aria-label="Main navigation"><a href="#courses">Courses</a><a href="#services">Our Services</a><a href="#why">Why DCDS</a><a href="#founder">Founder</a><a href="#how">How it works</a></nav>
+ <div class="nav-actions"><button class="button button-light button-small" id="accountBtn" type="button">Student Login</button></div>
 </div></header>
-<main id="home">
-<div class="hero"><div class="wrap">
-<div>
-<div class="tag">CREATE • LEARN • INNOVATE • EARN.</div>
-<h1>TURN YOUR CREATIVITY INTO <span>DIGITAL SKILLS.</span></h1>
-<p>Learn modern digital skills, explore AI-powered creativity, and build the knowledge to create valuable digital projects.</p>
-<div class="cta"><a class="btn gold" href="#courses">Explore Courses</a><a class="btn ghost" href="#how">Start Learning</a></div>
-</div>
-<div class="art" aria-hidden="true"><div>🎬</div><div>🤖</div><div>🎨</div><div>💻</div><div>📱</div><div>🎓</div></div>
+<main>
+<section class="hero" id="home"><div class="hero-orbit hero-orbit-one" aria-hidden="true"></div><div class="hero-orbit hero-orbit-two" aria-hidden="true"></div><div class="container hero-grid"><div class="hero-copy">
+ <span class="eyebrow"><span class="eyebrow-spark">✦</span> DE CHAMPIONS DIGITAL SERVICE <span class="eyebrow-divider"></span> DCDS</span>
+ <div class="hero-overline">YOUR CREATIVE JOURNEY STARTS HERE</div>
+ <h1><span class="headline-main">Create boldly.</span><span class="headline-main">Learn brilliantly.</span><span class="headline-accent">Build your future.</span></h1>
+ <p class="hero-description">Turn your curiosity into practical digital skills. Explore creative tools, develop real capabilities and bring your ideas to life with DCDS.</p>
+ <div class="hero-buttons"><a class="button button-gold" href="#courses">Explore the Courses <span aria-hidden="true">→</span></a><button class="button button-light" id="heroLogin" type="button">Student Portal <span aria-hidden="true">↗</span></button></div>
+ <div class="hero-assurance"><span class="assurance-dot"></span> Learn at your pace <span class="assurance-separator">·</span> Create with purpose <span class="assurance-separator">·</span> Grow with confidence</div>
+ </div><aside class="hero-panel"><div class="panel-topline"><span class="panel-label">THE DCDS EXPERIENCE</span><span class="panel-star">✧</span></div><h2>Ideas become skills. Skills become possibilities.</h2><div class="panel-tagline">CREATE <i>•</i> LEARN <i>•</i> INNOVATE <i>•</i> EARN</div><div class="stat-grid"><div class="stat"><strong>12</strong><span>Creative skill paths</span></div><div class="stat"><strong>₦5k+</strong><span>Courses starting from</span></div><div class="stat"><strong>Step by step</strong><span>Structured outlines</span></div><div class="stat"><strong>Make it real</strong><span>Practical creativity</span></div></div><div class="panel-foot"><span class="panel-foot-mark">D</span><span>DESIGNED FOR THE NEXT GENERATION OF CREATORS</span></div></aside>
+</div></section>
+<div class="trust-strip"><div class="container trust-items">
+ <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Beginner-friendly<br>learning paths</span></div>
+ <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Transparent<br>course pricing</span></div>
+ <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Practical<br>digital skills</span></div>
+ <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Dedicated student<br>account access</span></div>
 </div></div>
-<section id="about"><div class="wrap">
-<h2>Welcome to De Champions Digital Service</h2>
-<p class="sub"><b>Your Creativity. Your Skills. Your Digital Future.</b></p>
-<p class="sub">DCDS is a digital learning and creative platform helping people develop practical digital skills and explore opportunities in the digital economy. Your background should not limit your potential. With the right knowledge, hands-on training and determination, creativity becomes a skill that opens doors.</p>
-<p class="sub">Whether you are a beginner, student, creator, business owner or professional, you do not need to know everything before you begin. You only need the willingness to learn and the courage to start.</p>
-<div class="grid" style="margin-top:24px">
-<div class="box mv"><h3>🎯 Our Mission</h3><p>To empower individuals with practical digital skills, creative knowledge, and the confidence to participate in the evolving digital world.</p></div>
-<div class="box mv"><h3>🔭 Our Vision</h3><p>A community of skilled, innovative, forward-thinking digital creators who use technology to solve problems, create value and pursue sustainable opportunities.</p></div>
-<div class="box mv"><h3>💡 Our Philosophy</h3><p>Learn a skill. Build your creativity. Solve real problems. Create opportunities.</p></div>
-</div></div></section>
-<section class="alt"><div class="wrap">
-<h2>The DCDS Learning Experience</h2>
-<p class="sub">We teach the way beginners actually learn: one practical skill at a time, in plain language, with real projects instead of theory overload.</p>
-<div class="grid" style="margin-top:20px">
-<div class="box"><h3>🌱 Start where you are</h3><p>Lessons assume no prior experience. You move from basics to confident, finished work at your own pace.</p></div>
-<div class="box"><h3>🛠️ Learn by making</h3><p>Every skill is tied to something you can build: a video, a design, a website or an app for your portfolio.</p></div>
-<div class="box"><h3>🤝 Grow with a community</h3><p>Learning is easier with people around you. DCDS is built to connect learners, creators and innovators.</p></div>
-<div class="box"><h3>💰 Skills that earn</h3><p>Our courses point toward real opportunities: freelancing, content, business growth and digital services.</p></div>
-</div></div></section>
-<section id="courses"><div class="wrap">
-<h2>Explore Our Courses</h2>
-<p class="sub">Choose the skill you want to learn. Prices are in Nigerian naira (₦).</p>
-<div class="tools"><input id="q" type="search" placeholder="🔍 Search courses…" aria-label="Search courses"></div>
-<div class="chips" id="chips"></div>
-<div class="grid" id="grid"></div>
-<p id="none" class="sub" style="display:none">No course matches your search. Try another word.</p>
-<div class="box c" style="margin-top:22px"><h3>✨ Explore More Skills</h3><p class="sub" style="margin:auto">More digital skills and training programs are coming soon. Stay with us.</p></div>
+<section class="section section-white" id="courses"><div class="container">
+ <div class="section-heading"><span class="kicker">THE DCDS COURSE CATALOGUE</span><h2>Choose the skill you want to master.</h2><p>Explore each course, review its learning outline and fee, then sign in or create your student account to begin the enrollment process.</p></div>
+ <div class="catalog-tools"><input class="search" id="courseSearch" type="search" placeholder="Search courses or skill areas…" aria-label="Search courses"><span class="catalog-count">12 courses · Fees shown in Nigerian naira</span></div>
+ <div class="course-grid" id="courseGrid">
+<article class="course-card" data-course-card data-search="video editing video &amp; animation turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">🎬</span><span class="category">Video &amp; Animation</span></div>
+      <h3>Video Editing</h3><p class="course-desc">Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦15,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Introduction to video editing and the editing workspace</li><li>Importing, organising and managing media</li><li>Cutting, trimming and arranging clips</li><li>Transitions, titles, captions and effects</li><li>Audio, voiceovers, music and colour correction</li><li>Exporting projects and creating a portfolio</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="0">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="ai video creativity ai &amp; digital creativity explore ai-powered video creation techniques and develop creative video content with modern ai tools.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">🤖</span><span class="category">AI &amp; Digital Creativity</span></div>
+      <h3>AI Video Creativity</h3><p class="course-desc">Explore AI-powered video creation techniques and develop creative video content with modern AI tools.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦10,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Introduction to AI video creativity and responsible use</li><li>Choosing suitable AI video tools and writing prompts</li><li>Generating scenes, visuals and short clips</li><li>Creating characters, voiceovers and sound</li><li>Editing, sequencing and polishing AI videos</li><li>Exporting and presenting a complete AI video project</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="1">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="graphic design graphic design create attractive graphics for branding, social media, advertising and digital communication.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">🎨</span><span class="category">Graphic Design</span></div>
+      <h3>Graphic Design</h3><p class="course-desc">Create attractive graphics for branding, social media, advertising and digital communication.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦10,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Design principles, colour, typography and composition</li><li>Getting started with graphic design tools</li><li>Creating social media posts and flyers</li><li>Working with images, shapes, icons and layouts</li><li>Brand identity, consistency and visual hierarchy</li><li>Exporting designs and building a portfolio</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="2">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="access to chatgpt prompts, claude, gemini, and grok ai &amp; digital creativity explore ai tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">✨</span><span class="category">AI &amp; Digital Creativity</span></div>
+      <h3>Access to ChatGPT Prompts, Claude, Gemini, and Grok</h3><p class="course-desc">Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦30,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Understanding ChatGPT, Claude, Gemini and Grok</li><li>Prompt structure, context and clear instructions</li><li>Prompts for writing, research and brainstorming</li><li>Prompts for images, content and productivity workflows</li><li>Evaluating, refining and fact-checking AI outputs</li><li>Building a reusable personal prompt library</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      <p class="package-note">Package inclusions (training, prompt resources, tool access) are confirmed by the administrator. Paid subscriptions are not promised unless stated.</p>
+      <button class="button button-primary enroll-button" type="button" data-enroll="3">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="ai image creativity ai &amp; digital creativity use ai creative tools to generate visual concepts, develop image ideas and produce compelling digital artwork.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">🖼️</span><span class="category">AI &amp; Digital Creativity</span></div>
+      <h3>AI Image Creativity</h3><p class="course-desc">Use AI creative tools to generate visual concepts, develop image ideas and produce compelling digital artwork.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦7,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Introduction to AI image generation</li><li>Writing effective image-generation prompts</li><li>Choosing styles, composition, lighting and camera details</li><li>Creating consistent subjects and visual variations</li><li>Refining, editing and improving generated images</li><li>Exporting and presenting AI image projects</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="4">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="whiteboard animation video &amp; animation learn the basics of animated whiteboard videos for education, storytelling, presentations and business communication.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">✏️</span><span class="category">Video &amp; Animation</span></div>
+      <h3>Whiteboard Animation</h3><p class="course-desc">Learn the basics of animated whiteboard videos for education, storytelling, presentations and business communication.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦5,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Introduction to whiteboard animation and storytelling</li><li>Planning a script and storyboard</li><li>Choosing characters, assets and drawing styles</li><li>Animating scenes, timing and transitions</li><li>Adding narration, music and sound effects</li><li>Exporting an educational or promotional animation</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="5">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="website designing website &amp; app development learn to design and develop websites for individuals, bus      <div class="fee-row"><span>Course fee</span><strong>₦12,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Nursery-rhyme concepts and age-appropriate storytelling</li><li>Writing simple lyrics and planning scenes</li><li>Creating child-friendly characters and visuals</li><li>Producing music, narration and sound effects</li><li>Editing and assembling animated rhyme videos</li><li>Exporting and preparing content for publication</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="8">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="advanced 3d cartoon animation video &amp; animation explore 3d cartoon animation for expressive characters, animated scenes and engaging visual stories.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">🧸</span><span class="category">Video &amp; Animation</span></div>
+      <h3>Advanced 3D Cartoon Animation</h3><p class="course-desc">Explore 3D cartoon animation for expressive characters, animated scenes and engaging visual stories.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦6,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Introduction to 3D animation concepts and workflow</li><li>Character design and basic 3D modelling</li><li>Materials, textures, lighting and scene setup</li><li>Rigging, posing and character movement</li><li>Animation, camera work and scene rendering</li><li>Editing and presenting a finished 3D cartoon</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="9">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="affiliate marketing digital marketing learn to select products, create promotional content, attract audiences and understand commission-based marketing.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">📈</span><span class="category">Digital Marketing</span></div>
+      <h3>Affiliate Marketing</h3><p class="course-desc">Learn to select products, create promotional content, attract audiences and understand commission-based marketing.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦40,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Affiliate marketing fundamentals and business models</li><li>Choosing a niche and researching suitable products</li><li>Understanding affiliate links and tracking</li><li>Creating helpful promotional content</li><li>Audience building and ethical promotion strategies</li><li>Measuring performance and improving conversions</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="10">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+<article class="course-card" data-course-card data-search="social media management digital marketing build skills in strategy, content planning, audience engagement, brand positioning, analytics and managing accounts professionally.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">📲</span><span class="category">Digital Marketing</span></div>
+      <h3>Social Media Management</h3><p class="course-desc">Build skills in strategy, content planning, audience engagement, brand positioning, analytics and managing accounts professionally.</p>
+      <div class="fee-row"><span>Course fee</span><strong>₦70,000</strong></div>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Role of a social media manager and brand goals</li><li>Platform selection and audience research</li><li>Content pillars, calendars and creative planning</li><li>Publishing, community management and engagement</li><li>Insights, analytics and performance reporting</li><li>Client communication and managing accounts professionally</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="11">Enroll in this course <span aria-hidden="true">→</span></button>
+    </article>
+ </div><div class="empty-state" id="emptyState">No courses match your search. Try another keyword.</div>
 </div></section>
-<section id="reviews"><div class="wrap">
-<h2>Student Reviews</h2>
-<p class="sub">Share what you learned and rate a course. Your recommendation helps the next student choose.</p>
-<div class="rvw" style="margin-top:22px">
-<div class="box"><div class="avg" id="avg">&ndash;</div><div class="meta" id="cnt">No reviews yet</div><div class="rv" id="rv"></div></div>
-<div class="box"><h3>Leave a Review</h3>
-<label class="fl" for="rc">Course</label><select class="in" id="rc"></select>
-<span class="fl">Your rating</span><div class="stars" id="stars" role="radiogroup" aria-label="Rating"></div>
-<label class="fl" for="rn">Your name</label><input class="in" id="rn" maxlength="40" autocomplete="name">
-<label class="fl" for="rt">Your recommendation</label><textarea class="in" id="rt" maxlength="500"></textarea>
-<div class="err" id="re" role="alert"></div>
-<button class="btn pur" onclick="postRev()">Post Review</button>
-<div class="note">Reviews posted here are a preview for now. They will be saved and shared once the database is connected.</div>
-</div></div></div></section>
-<section class="alt"><div class="wrap">
-<h2 class="c">Why Learn with DCDS?</h2>
-<div class="grid" style="margin-top:20px">
-<div class="box">✅ Beginner-friendly learning experience</div><div class="box">✅ Practical digital skills</div>
-<div class="box">✅ Modern creative tools and techniques</div><div class="box">✅ Organized learning materials</div>
-<div class="box">✅ Build a digital portfolio</div><div class="box">✅ A growing community of learners and creators</div>
-</div></div></section>
-<section id="how"><div class="wrap">
-<h2 class="c">How It Works</h2>
-<div class="grid steps" style="margin-top:30px">
-<div class="box"><h3>Explore</h3><p>Browse the available courses.</p></div>
-<div class="box"><h3>Select</h3><p>Pick the skill you want to learn.</p></div>
-<div class="box"><h3>Pay securely</h3><p>Complete your secure payment.</p></div>
-<div class="box"><h3>Learn</h3><p>Access your course and begin.</p></div>
-</div></div></section>
-<section class="alt" id="author"><div class="wrap bio">
-<div class="avatar" aria-label="Photo placeholder">JC</div>
-<div>
-<div class="tag" style="color:var(--p)">MEET THE FOUNDER</div>
-<h2>Jeremiah Chuks Godspower <span style="color:var(--p)">“De Champions”</span></h2>
-<p>Jeremiah Chuks Godspower, widely known as <b>De Champions</b>, is the founder of De Champions Academy, a platform that helps individuals, innovators, professionals and everyday people learn and acquire valuable digital skills.</p>
-<p>Because the academy offers digital skills and services, it operates as <b>De Champions Digital Service (DCDS)</b>.</p>
-<p>A God-fearing leader with a passion for building a Godly community, Jeremiah’s mission is simple: to raise people to become champions in the digital world, equipped with skills, character and purpose.</p>
-</div></div></section>
-<section class="svc" id="services"><div class="wrap c">
-<h2>Need a Digital Service?</h2>
-<p class="sub" style="color:#e6d8fb">Beyond training, DCDS offers professional services to help you and your brand stand out.</p>
-<div class="grid" style="margin:24px 0">
-<div class="box">🎨<h3>Graphic Design</h3></div><div class="box">🎬<h3>Video Editing</h3></div>
-<div class="box">💰<h3>Content Monetization</h3></div><div class="box">💬<h3>Social Media Engagement</h3></div>
-<div class="box">📣<h3>Page Promotion</h3></div>
-</div>
-<p>Need any of these services? Message us.</p>
-<a class="btn gold" href="#" id="msg">Message Us</a>
-</div></section>
-<section id="faq"><div class="wrap" style="max-width:760px">
-<h2 class="c">Frequently Asked Questions</h2>
-<div id="faqs"></div>
-</div></section>
-<section class="final"><div class="wrap">
-<h2>YOUR NEXT LEVEL STARTS WITH ONE SKILL.</h2>
-<p class="sub" style="margin:0 auto 20px;color:#e6d8fb">Take the first step toward expanding your creativity, developing valuable digital skills, and exploring new possibilities.</p>
-<a class="btn gold" href="#courses">EXPLORE COURSES NOW</a>
-</div></section>
+<section class="section services-section" id="services"><div class="container">
+ <div class="section-heading"><span class="kicker">BEYOND THE CLASSROOM</span><h2>Explore what we offer.</h2><p>Need a digital service for your brand, business or online presence? DCDS offers creative, promotional and business-support services to help you move forward.</p></div>
+ <div class="services-grid">
+  <article class="service-card"><span class="service-icon">◈</span><h3>Content Monetization Support</h3><p>Guidance on monetization readiness, platform requirements and creator growth opportunities.</p></article>
+  <article class="service-card"><span class="service-icon">▶</span><h3>YouTube Channel Growth</h3><p>Channel setup support, content presentation and audience-engagement strategy.</p></article>
+  <article class="service-card"><span class="service-icon">↗</span><h3>Page &amp; Profile Promotion</h3><p>Promotional campaigns designed to improve visibility and reach the right audience.</p></article>
+  <article class="service-card"><span class="service-icon">✧</span><h3>Professional Graphic Design</h3><p>Flyers, banners, social media creatives, brand materials and promotional designs.</p></article>
+  <article class="service-card"><span class="service-icon">✓</span><h3>Social Media Verification Guidance</h3><p>Assistance understanding verification requirements and preparing eligible applications.</p></article>
+  <article class="service-card"><span class="service-icon">◎</span><h3>Digital Advertising</h3><p>Ad campaign planning, setup assistance, audience targeting and performance review.</p></article>
+  <article class="service-card"><span class="service-icon">▤</span><h3>Tax ID Registration Assistance</h3><p>Guidance with the information and steps involved in relevant tax identification processes.</p></article>
+  <article class="service-card"><span class="service-icon">⌂</span><h3>CAC Registration Assistance</h3><p>Support understanding business registration steps and preparing the required details.</p></article>
+ </div>
+ <div class="services-more"><div><span class="services-more-kicker">HAVE SOMETHING ELSE IN MIND?</span><h3>And lots more digital solutions.</h3><p>Tell us what you need. We’ll help you explore the right service for your next move.</p></div><a class="button button-gold" href="https://wa.me/2348109146285?text=Hello%20DCDS%2C%20I%27m%20interested%20in%20your%20digital%20services." target="_blank" rel="noopener">Request a Service <span aria-hidden="true">→</span></a></div>
+ <p class="services-disclaimer">Platform monetization and verification decisions are made by the relevant platforms. DCDS provides guidance and support; approval, reach and results are not guaranteed. Registration services are subject to applicable official requirements.</p>
+ </div></section>
+<section class="section" id="why"><div class="container"><div class="section-heading"><span class="kicker">WHY LEARN WITH DCDS</span><h2>Learning built around creating.</h2><p>Develop useful skills through structured learning paths and practical creative work.</p></div><div class="info-grid">
+ <article class="info-card"><span class="emoji">🌱</span><h3>Start with the basics</h3><p>Course outlines are organised to help learners build understanding step by step.</p></article>
+ <article class="info-card"><span class="emoji">🛠️</span><h3>Learn by doing</h3><p>Explore practical projects that can help you demonstrate what you have learned.</p></article>
+ <article class="info-card"><span class="emoji">🚀</span><h3>Build your next step</h3><p>Develop creative and digital capabilities for personal projects, business and work opportunities.</p></article>
+ </div></div></section>
+<section class="founder-section" id="founder"><div class="container"><div class="section-heading"><span class="kicker">THE VISION BEHIND DCDS</span><h2>Meet the Founder</h2><p>A vision shaped by creativity, purpose and a commitment to continuous growth.</p></div><article class="founder-card"><div class="founder-monogram" aria-label="DCDS founder monogram"><strong>JC</strong></div><div class="founder-copy"><span class="kicker">FOUNDER &amp; CEO</span><h2>Jeremiah Chuks Godspower</h2><div class="founder-role">Also known as De Champions</div><p>Jeremiah Chuks Godspower is the founder of De Champions Digital Service (DCDS), a digital skills and creative learning brand built to help people discover their potential, develop practical abilities and explore opportunities in the digital world.</p><p>Driven by faith, vision and a determination not to give up on positive work that can make a meaningful difference in the future, he is passionate about learning, creativity, innovation and empowering others with useful digital skills.</p><p class="founder-motto">“Create with purpose. Learn with courage. Innovate for the future.”</p></div></article></div></section>
+<section class="section section-white" id="how"><div class="container"><div class="section-heading"><span class="kicker">SIMPLE ENROLLMENT JOURNEY</span><h2>Four steps to get started.</h2><p>Choose a course and use your DCDS student account to continue.</p></div><div class="steps">
+ <article class="step"><span class="step-num">01</span><h3>Explore</h3><p>Compare the course outlines and prices.</p></article><article class="step"><span class="step-num">02</span><h3>Choose</h3><p>Select the course that matches your learning goal.</p></article><article class="step"><span class="step-num">03</span><h3>Sign in</h3><p>Log in or create your DCDS student account.</p></article><article class="step"><span class="step-num">04</span><h3>Complete enrollment</h3><p>Follow the payment and access instructions when checkout is enabled.</p></article>
+ </div></div></section>
+<section class="cta"><div class="container"><h2>Your next chapter starts with one skill.</h2><p>Choose a course, explore its outline and take the first step toward building your digital skills.</p><a class="button button-gold" href="#courses">Browse all 12 courses →</a></div></section>
 </main>
-<footer><div class="wrap">
-<div><h4>DCDS</h4>CREATE • LEARN • INNOVATE • EARN.<br>Empowering creativity. Developing digital skills. Building possibilities.</div>
-<div><h4>Explore</h4><a href="#about">About Us</a><a href="#courses">Course Catalog</a><a href="#services">Contact and Support</a></div>
-<div><h4>Legal</h4><a href="#" data-p="Privacy Policy">Privacy Policy</a><a href="#" data-p="Terms and Conditions">Terms and Conditions</a><a href="#" data-p="Refund Policy">Refund Policy</a></div>
-<div>© 2026 De Champions Digital Service. All rights reserved.</div>
-</div></footer>
-<div class="bottom"><a href="#home"><span>🏠</span>Home</a><a href="#courses"><span>📚</span>Courses</a><a href="#how"><span>🎓</span>Learn</a><a href="#author"><span>👤</span>About</a><a href="#faq"><span>💬</span>Support</a></div>
-<div class="modal" id="m"><div class="sheet" id="sheet"></div></div>
+<footer class="footer"><div class="container footer-inner"><div><strong>DCDS · DE CHAMPIONS DIGITAL SERVICE</strong><p>CREATE • LEARN • INNOVATE • EARN.</p><p>Empowering creativity. Developing digital skills. Building possibilities.</p></div><a href="#home">Back to top ↑</a><p>© 2026 De Champions Digital Service.</p></div></footer>
+<div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><section class="modal"><button class="modal-close" id="modalClose" type="button" aria-label="Close">×</button><div id="modalContent"></div></section></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var CONFIG = { 
-    whatsapp: "2348109146285", 
-    email: "dechampions82@gmail.com", 
-    policies: {}, 
-    access: "To be confirmed by the administrator", 
-    refund: "To be confirmed by the administrator" 
-};var COURSES = [
-{t:"Video Editing",p:15000,c:"Video & Animation",i:"🎬",d:"Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion."},
-{t:"AI Video Creativity",p:10000,c:"AI & Digital Creativity",i:"🤖",d:"Explore AI-powered video creation techniques and develop creative video content with modern AI tools."},
-{t:"Graphic Design",p:10000,c:"Graphic Design",i:"🎨",d:"Create attractive graphics for branding, social media, advertising and digital communication."},
-{t:"Access to ChatGPT Prompts, Claude, Gemini, and Grok",p:30000,c:"AI & Digital Creativity",i:"✨",d:"Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity."},
-{t:"AI Image Creativity",p:7000,c:"AI & Digital Creativity",i:"🖼️",d:"Use AI creative tools to generate visual concepts, develop image ideas and produce compelling digital artwork."},
-{t:"Whiteboard Animation",p:5000,c:"Video & Animation",i:"✏️",d:"Learn the basics of animated whiteboard videos for education, storytelling, presentations and business communication."},
-{t:"Website Designing",p:20000,c:"Website & App Development",i:"💻",d:"Learn to design and develop websites for individuals, businesses, brands and online projects."},
-{t:"App Building",p:20000,c:"Website & App Development",i:"📱",d:"Plan, design and build functional applications using suitable app development tools and platforms."},
-{t:"Kids’ Nursery Rhymes",p:12000,c:"Video & Animation",i:"🎵",d:"Develop engaging children’s nursery-rhyme content using storytelling, music, animation and digital production tools."},
-{t:"Advanced 3D Cartoon Animation",p:6000,c:"Video & Animation",i:"🧸",d:"Explore 3D cartoon animation for expressive characters, animated scenes and engaging visual stories."},
-{t:"Affiliate Marketing",p:40000,c:"Digital Marketing",i:"📈",d:"Learn to select products, create promotional content, attract audiences and understand commission-based marketing."},
-{t:"Social Media Management",p:70000,c:"Digital Marketing",i:"📲",d:"Build skills in strategy, content planning, audience engagement, brand positioning, analytics and managing accounts professionally."}];
-var FAQ = [
-["Is DCDS suitable for beginners?", "Yes. Courses are designed so you can start with no prior experience."],
-["How do I enroll in a course?", "Open the course catalog, choose a course and tap Enroll Now."],
-["How do I make payment?", "Payment is made securely online at checkout in Nigerian naira (₦)."],
-["How do I access my purchased course?", "After your payment is verified, the course appears in your learning dashboard."],
-["Can I learn more than one skill?", "Yes. You can enroll in as many courses as you like."],
-["How can I contact support?", "Use the Message Us button in the Services section."],
-["Are course fees refundable?", "@refund"],
-["How long will I have access to a purchased course?", "@access"]];
-var cats = ["All"].concat(COURSES.map(function(c){return c.c}).filter(function(v,i,a){return a.indexOf(v)==i}));
-var cur = "All";
-var $ = function(i){ return document.getElementById(i); };
-var N = function(n){ return "₦" + n.toLocaleString("en-NG"); };
-function show(h) {
-    $("sheet").innerHTML = h + '<p style="text-align:center;margin:14px 0 0"><button class="btn out" onclick="hide()">Close</button></p>';
-    $("m").classList.add("on");
+// DCDS browser-safe Supabase configuration. Never put a service-role or secret key here.
+const SUPABASE_URL = "https://qxsenflgaweeadvggnyp.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+let supabaseClient = null;
+try { if (window.supabase?.createClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY); } catch (e) { console.error('DCDS account client could not initialise', e); }
+const courses = [{"title": "Video Editing", "price": 15000, "category": "Video & Animation", "description": "Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion."}, {"title": "AI Video Creativity", "price": 10000, "category": "AI & Digital Creativity", "description": "Explore AI-powered video creation techniques and develop creative video content with modern AI tools."}, {"title": "Graphic Design", "price": 10000, "category": "Graphic Design", "description": "Create attractive graphics for branding, social media, advertising and digital communication."}, {"title": "Access to ChatGPT Prompts, Claude, Gemini, and Grok", "price": 30000, "category": "AI & Digital Creativity", "description": "Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity."}, {"title": "AI Image Creativity", "price": 7000, "category": "AI & Digital Creativity", "description": "Use AI creative tools to generate visual concepts, develop image ideas and produce compelling digital artwork."}, {"title": "Whiteboard Animation", "price": 5000, "category": "Video & Animation", "description": "Learn the basics of animated whiteboard videos for education, storytelling, presentations and business communication."}, {"title": "Website Designing", "price": 20000, "category": "Website & App Development", "description": "Learn to design and develop websites for individuals, businesses, brands and online projects."}, {"title": "App Building", "price": 20000, "category": "Website & App Development", "description": "Plan, design and build functional applications using suitable app development tools and platforms."}, {"title": "Kids’ Nursery Rhymes", "price": 12000, "category": "Video & Animation", "description": "Develop engaging children’s nursery-rhyme content using storytelling, music, animation and digital production tools."}, {"title": "Advanced 3D Cartoon Animation", "price": 6000, "category": "Video & Animation", "description": "Explore 3D cartoon animation for expressive characters, animated scenes and engaging visual stories."}, {"title": "Affiliate Marketing", "price": 40000, "category": "Digital Marketing", "description": "Learn to select products, create promotional content, attract audiences and understand commission-based marketing."}, {"title": "Social Media Management", "price": 70000, "category": "Digital Marketing", "description": "Build skills in strategy, content planning, audience engagement, brand positioning, analytics and managing accounts professionally."}];
+const money = n => '₦' + Number(n).toLocaleString('en-NG');
+const $ = id => document.getElementById(id);
+let selectedCourseIndex = null;
+let authMode = 'login';
+function openModal(content){ $('modalContent').innerHTML=content; $('modalBackdrop').classList.add('open'); document.body.style.overflow='hidden'; }
+function closeModal(){ $('modalBackdrop').classList.remove('open'); document.body.style.overflow=''; selectedCourseIndex=null; }
+$('modalClose').addEventListener('click',closeModal);
+$('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+function authScreen(message=''){
+ const signup=authMode==='signup';
+ openModal(`<h2 id="modalTitle">${signup?'Create your DCDS account':'Welcome back, Champion'}</h2><p class="modal-sub">${signup?'Register to continue with your selected course.':'Log in to continue with your selected course.'}</p>
+ <div class="tabs"><button class="tab ${signup?'':'active'}" type="button" data-mode="login">Log in</button><button class="tab ${signup?'active':''}" type="button" data-mode="signup">Create account</button></div>
+ <form id="authForm">${signup?'<label class="field"><span>Full name</span><input id="studentName" name="name" autocomplete="name" maxlength="100" required></label>':''}
+ <label class="field"><span>Email address</span><input id="studentEmail" name="email" type="email" autocomplete="email" required></label>
+ <label class="field"><span>Password</span><input id="studentPassword" name="password" type="password" minlength="8" autocomplete="${signup?'new-password':'current-password'}" required></label>
+ <p class="form-error" id="authError" role="alert">${message}</p><button class="button button-primary" id="authSubmit" type="submit" style="width:100%">${signup?'Create student account':'Log in'}</button></form>
+ <p class="modal-note">Your account is managed by Supabase. If email confirmation is enabled, verify your email before logging in. The course catalogue and prices remain visible without signing in.</p>`);
+ document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{authMode=b.dataset.mode;authScreen()}));
+ $('authForm').addEventListener('submit',submitAuth);
 }
-function hide() { $("m").classList.remove("on"); }
-$("m").onclick = function(e) { if(e.target == this) hide(); };
-function render() {
-    var q = $("q").value.toLowerCase(), h = "", n = 0;
-    $("chips").innerHTML = cats.map(function(c){ return '<button class="chip' + (c == cur ? " on" : "") + '" data-c="' + c + '">' + c + '</button>'; }).join("");
-      COURSES.forEach(function(c, i) {
-        if((cur == "All" || c.c == cur) && (c.t + c.d + c.c).toLowerCase().indexOf(q) > -1) {
-            n++;
-            h += '<div class="box card"><div class="ico">' + c.i + '</div><div class="meta">' + c.c + ' • Level: Beginner-friendly</div><h3>' + c.t + '</h3><p>' + c.d + '</p><div class="price">' + N(c.p) + '</div><div class="row"><button class="btn out" data-v="' + i + '">View Course</button><button class="btn pur" data-e="' + i + '">Enroll Now</button></div></div>';
-        }
-    });
-    $("grid").innerHTML = h;
-    $("none").style.display = n ? "none" : "block";
+function setAuthError(msg){const el=$('authError');if(el)el.textContent=msg||'';}
+async function submitAuth(e){
+ e.preventDefault(); const btn=$('authSubmit'); const email=$('studentEmail').value.trim(); const password=$('studentPassword').value; const name=$('studentName')?.value.trim()||'';
+ if(!supabaseClient){setAuthError('The account service could not load. Please open this page with an internet connection and try again.');return;}
+ btn.disabled=true;btn.textContent='Please wait…';setAuthError('');
+ try{
+  if(authMode==='signup'){
+   if(!name)throw new Error('Please enter your full name.');
+   const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:name}}});if(error)throw error;
+   if(data.session){await afterAuthentication(data.user);}else{openModal(`<h2 id="modalTitle">Check your email</h2><p class="modal-sub">DCDS registration has been submitted for <b>${escapeHtml(email)}</b>. Open the confirmation link in your inbox, then return here and log in.</p><div class="modal-note">If you do not see the message, check your spam or promotions folder.</div><button class="button button-primary" style="width:100%;margin-top:15px" id="goLogin">Continue to login</button>`);$('goLogin').onclick=()=>{authMode='login';authScreen()};}
+  }else{const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;await afterAuthentication(data.user);}
+ }catch(err){setAuthError(err.message||'Unable to complete account request. Please try again.');if(btn){btn.disabled=false;btn.textContent=authMode==='signup'?'Create student account':'Log in';}}
 }
-document.addEventListener("click", function(e) {
-    var t = e.target;
-    if(t.dataset.c) { cur = t.dataset.c; render(); }
-    if(t.dataset.v != null) view(+t.dataset.v);
-    if(t.dataset.e != null) enroll(+t.dataset.e);
-    if(t.dataset.p) { e.preventDefault(); show("<h3>" + t.dataset.p + "</h3><p>" + (CONFIG.policies[t.dataset.p] || "This policy will be published by the administrator.") + "</p>"); }
-});
-
-if($("q")) { $("q").oninput = render; }
-function view(i) {
-    var c = COURSES[i];
-    show('<div class="ico">' + c.i + '</div><h3 style="margin-top:12px">' + c.t + '</h3><p>' + c.d + '</p><div class="price">' + N(c.p) + '</div>' + (c.n ? '<div class="note">' + c.n + '</div>' : '') + '<div class="note">Duration, lessons and learning outcomes will be added by the administrator.</div><button class="btn pur" style="width:100%" onclick="enroll(' + i + ')">Enroll Now</button>');
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+async function afterAuthentication(user){
+ $('accountBtn').textContent='My Account';
+ if(selectedCourseIndex!==null){showEnrollment(selectedCourseIndex,user);return;}
+ openModal(`<h2 id="modalTitle">Welcome to DCDS</h2><p class="modal-sub">You are signed in as <b>${escapeHtml(user.email||'DCDS student')}</b>.</p><div class="signed-in">Your student account is connected successfully.</div><button class="button button-primary" id="accountDone" style="width:100%">Continue browsing courses</button>`);$('accountDone').onclick=closeModal;
 }
-function enroll(i) {
-    var c = COURSES[i];
-    show('<h3>Order Summary</h3><div class="sum"><span>' + c.t + '</span><b>' + N(c.p) + '</b></div><div class="sum"><span>Total</span><b>' + N(c.p) + '</b></div><div class="note">Secure checkout via Flutterwave.</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout not yet active</h3><p>This is a preview of the enrollment flow. No payment was taken.</p>\')">Proceed to Checkout</button>');
-}
-var E = function(x){ return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); };
-var rate = 0, REV = [], mode = "in";
-function stars() {
-    $("stars").innerHTML = [1,2,3,4,5].map(function(n){ return '<button class="star' + (n <= rate ? ' on' : '') + '" data-s="' + n + '" role="radio" aria-checked="' + (n === rate) + '">★</button>'; }).join("");
-}
-if($("stars")) {
-    $("stars").onclick = function(e) { var b = e.target.closest("button"); if(!b) return; rate = +b.dataset.s; stars(); };
-}
-if($("rc")) {
-    $("rc").innerHTML = COURSES.map(function(c){ return '<option>' + E(c.t) + '</option>'; }).join("");
-}
-function revs() {
-    var n = REV.length;
-    if($("avg")) $("avg").textContent = n ? (REV.reduce(function(a,r){ return a + r.s; }, 0) / n).toFixed(1) + " ★" : "–";
-    if($("cnt")) $("cnt").textContent = n ? n + (n > 1 ? " reviews" : " review") : "No reviews yet";
-    if($("rv")) $("rv").innerHTML = n ? REV.map(function(r){ return '<div class="box"><strong>' + E(r.n) + '</strong><span style="color:var(--g)">' + "★".repeat(r.s) + '</span> <span class="meta">' + E(r.c) + '</span><p style="margin:.4em 0 0;color:var(--mut)">' + E(r.t) + '</p></div>'; }).join("") : '<p class="sub">Be the first to review a course.</p>';
-}
-stars();
-revs();
-// ===== SUPABASE & AUTH INTEGRATION =====
-const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0';
-const FLUTTERWAVE_PUB_KEY = 'FLWPUBK-9010cf11eda017748a85ee4d4de38794-X';
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-function authView() {
-    var up = mode == "up";
-    show('<h3>' + (up ? "Create your account" : "Welcome back") + '</h3>' +
-         '<div class="chips"><button class="chip' + (up ? " on" : "") + '" onclick="mode=\'up\';authView()">Sign up</button>' +
-         '<button class="chip' + (up ? "" : " on") + '" onclick="mode=\'in\';authView()">Log in</button></div>' +
-         (up ? '<label class="fl" for="an">Name</label><input class="in" id="an" autocomplete="name">' : '') +
-         '<label class="fl" for="ae">Email</label><input class="in" id="ae" type="email" autocomplete="email">' +
-         '<label class="fl" for="ap">Password</label><input class="in" id="ap" type="password" autocomplete="' + (up ? "new-password" : "current-password") + '">' +
-         '<div class="err" id="aerr" role="alert"></div>' +
-         '<button class="btn pur" style="width:100%" onclick="authGo()">' + (up ? "Create account" : "Log in") + '</button>');
-}
-function authMsg(t, ok) {
-    var e = document.getElementById("aerr");
-    if(e) { e.textContent = t; e.style.color = ok ? "var(--t)" : "#e5484d"; }
-}
-async function authGo() {
-    var em = document.getElementById("ae").value.trim();
-    var pw = document.getElementById("ap").value;
-    var nm = mode == "up" ? document.getElementById("an").value.trim() : "";
- if (mode == "up" && !nm) return authMsg("Please enter your name.");
-    if (!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em)) return authMsg("Please enter a valid email address.");
-    if (pw.length < 8) return authMsg("Password must be at least 8 characters.");
- try {
-        if (mode == "up") {
-            const { data, error } = await supabase.auth.signUp({
-                email: em,
-                password: pw,
-                options: { data: { name: nm } }
-            });
-            if (error) throw error;
-            if (data.user) {
-                await supabase.from('profiles').insert([{ id: data.user.id, name: nm, email: em, created_at: new Date() }]);
-            }
-            authMsg("Account created successfully! Welcome.", 1);
-            setTimeout(hide, 1500);
-        } else {
-            const { data, error } = await supabase.auth.signInWithPassword({ email: em, password: pw });
-            if (error) throw error;
-            authMsg("Logged in successfully! Welcome back.", 1);
-            setTimeout(hide, 1500);
-        }
-    } catch (error) {
-        authMsg(error.message, 0);
-    }
-}
-
-if($("si")) { $("si").onclick = function() { mode = "in"; authView(); }; }
-if($("msg")) {
-    $("msg").onclick = function(e) { 
-        e.preventDefault();
-        location.href = "https://wa.me/2348109146285?text=Hello%20DCDS,%20I%20need%20help%20with%20a%20digital%20service.";
-    };
-}
-if($("faqs")) {
-    $("faqs").innerHTML = FAQ.map(function(f) { 
-        var a = f[1] == "@refund" ? CONFIG.refund : f[1] == "@access" ? CONFIG.access : f[1]; 
-        return "<details><summary>" + f[0] + "</summary><p>" + a + "</p></details>"; 
-    }).join("");
-}
-
-render();
-</script>
-</body>
-</html>
+function showEnrollment(index,user){
+ const c=courses[index];
+ openModal(`<h2 id="modalTitle">Your selected course</h2><p class="modal-sub">You are signed in as <b>${escapeHtml(user.email||'DCDS student')}</b>.</p><div class="selected-course"><span>COURSE SELECTED</span><strong>${escapeHtml(c.title)}</strong><div class="total"><span>Course fee</span><b>${money(c.price)}</b></div></div><div class="modal-note">Your account has been recognised and the selected course is ready for the next step. Online paym
