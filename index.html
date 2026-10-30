@@ -200,10 +200,11 @@ footer h4{color:#fff;margin:0 0 8px}footer a{display:block;text-decoration:none;
 <div class="bottom"><a href="#home"><span>🏠</span>Home</a><a href="#courses"><span>📚</span>Courses</a><a href="#how"><span>🎓</span>Learn</a><a href="#author"><span>👤</span>About</a><a href="#faq"><span>💬</span>Support</a></div>
 
 <div class="modal" id="m"><div class="sheet" id="sheet"></div></div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 var CONFIG = { 
-    whatsapp: "+2348109146285", 
+    whatsapp: "2348109146285", 
     email: "dechampions82@gmail.com", 
     policies: {}, 
     access: "To be confirmed by the administrator", 
@@ -277,7 +278,7 @@ function view(i) {
 
 function enroll(i) {
     var c = COURSES[i];
-    show('<h3>Order Summary</h3><div class="sum"><span>' + c.t + '</span><b>' + N(c.p) + '</b></div><div class="sum"><span>Total</span><b>' + N(c.p) + '</b></div><div class="note">Secure checkout (Flutterwave) ready. Public Key: FLWPUBK-9010cf11eda017748a85ee4d4de38794-X</div><button class="btn pur" style="width:100%" onclick="show(\'<h3>Checkout not yet active</h3><p>This is a preview of the enrollment flow. No payment was taken.</p>\')">Proceed to Checkout</button>');
+    show('<h3>Order Summary</h3><div class="sum"><span>' + c.t + '</span><b>' + N(c.p) + '</b></div><div class="sum"><span>Total</span><b>' + N(c.p) + '</b></div><div class="note">Secure checkout via Flutterwave.</div><button class="btn pur" style="width:100%" onclick="payWithFlutterwave(\'' + c.t + '\', ' + c.p + ')">Proceed to Checkout</button>');
 }
 
 var E = function(x){ return String(x).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/"/g,"&quot;"); };
@@ -302,7 +303,7 @@ function revs() {
 
 stars();
 revs();
-  <script>
+
 // ===== SUPABASE & AUTH INTEGRATION =====
 const SUPABASE_URL = 'https://qxsenflgaweedvgngnyp.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InF4c2VuZmxnYXdlZWFkdmdnbnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMzMDI1NzgsImV4cCI6MjEwODg3ODU3OH0.UMSyBTNK_ss77TwuAtk2-Zv1QedHbjPKUKXDXjKGUr0';
@@ -363,9 +364,7 @@ if($("si")) { $("si").onclick = function() { mode = "in"; authView(); }; }
 if($("msg")) {
     $("msg").onclick = function(e) { 
         e.preventDefault();
-        if (CONFIG.whatsapp) location.href = "https://wa.me/" + CONFIG.whatsapp;
-        else if (CONFIG.email) location.href = "mailto:" + CONFIG.email;
-        else show("<h3>Contact details coming soon</h3><p>Official contact details will be published here shortly.</p>");
+        location.href = "https://wa.me/2348109146285?text=Hello%20DCDS,%20I%20need%20help%20with%20a%20digital%20service.";
     };
 }
 if($("faqs")) {
