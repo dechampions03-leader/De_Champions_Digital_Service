@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>DCDS | Student Learning Portal</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #10091c;
+    color: #fff;
+    min-height: 100vh;
+}
+
+header {
+    background: linear-gradient(120deg, #210b3d, #451080);
+    padding: 25px 7%;
+    border-bottom: 1px solid #6335a0;
+}
+
+.logo {
+    color: #d7b5ff;
+    font-size: 23px;
+    font-weight: 900;
+    letter-spacing: 2px;
+}
+
+.tagline {
+    color: #d8c8eb;
+    font-size: 11px;
+    margin-top: 7px;
+    letter-spacing: 2px;
+}
+
+main {
+    max-width: 1100px;
+    margin: auto;
+    padding: 35px 20px;
+}
+
+.welcome {
+    margin-bottom: 30px;
+}
+
+.welcome h1 {
+    color: #d9b8ff;
+    font-size: clamp(25px, 5vw, 38px);
+    margin-bottom: 12px;
+}
+
+.welcome p {
+    color: #c7b9d7;
+    line-height: 1.7;
+}
+
+.course-card {
+    background: linear-gradient(145deg, #26143c, #170d25);
+    border: 1px solid #6335a0;
+    border-radius: 18px;
+    padding: 25px;
+    margin-bottom: 35px;
+}
+
+.course-card h2 {
+    color: #e3c9ff;
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.section-title {
+    color: #d9b8ff;
+    font-size: 23px;
+    margin: 35px 0 20px;
+}
+
+.lesson {
+    background: #21132f;
+    border: 1px solid #41265e;
+    padding: 20px;
+    border-radius: 14px;
+    margin-bottom: 20px;
+}
+
+.lesson h3 {
+    color: #e5ccff;
+    margin-bottom: 10px;
+}
+
+.lesson p {
+    color: #c4b5d5;
+    line-height: 1.6;
+    margin-bottom: 15px;
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    padding-bottom: 56.25%;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #08050d;
+}
+
+.video-container iframe {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border: none;
+    top: 0;
+    left: 0;
+}
+
+.material {
+    background: #21132f;
+    border: 1px solid #41265e;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+}
+
+.material h3 {
+    color: #e5ccff;
+    font-size: 16px;
+}
+
+.material a {
+    background: #8738d1;
+    color: white;
+    text-decoration: none;
+    padding: 11px 17px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: bold;
+}
+
+.notice {
+    background: #281536;
+    border: 1px solid #70419b;
+    padding: 25px;
+    border-radius: 12px;
+    text-align: center;
+    line-height: 1.7;
+}
+
+.hidden {
+    display: none;
+}
+
+footer {
+    text-align: center;
+    padding: 30px 15px;
+    color: #a99ab9;
+    font-size: 12px;
+}
+
+footer span {
+    color: #d4a8ff;
+}
+
+@media(max-width:600px) {
+    .material {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="logo">DCDS</div>
+    <div class="tagline">
+        CREATE • LEARN • INNOVATE • EARN
+    </div>
+</header>
+
+<main>
+
+    <section class="welcome">
+        <h1>Welcome to Your Learning Portal</h1>
+        <p>
+            Your journey to digital excellence starts here.
+            Learn, practice and develop your skills with DCDS.
+        </p>
+    </section>
+
+    <div id="message" class="notice">
+        Checking your course access...
+    </div>
+
+    <section id="learningContent" class="hidden">
+
+        <div class="course-card">
+            <h2 id="courseTitle">Your Course</h2>
+            <p>
+                Welcome to your dedicated learning environment.
+                Follow your lessons and access your resources below.
+            </p>
+        </div>
+
+        <h2 class="section-title">📚 Course Lessons</h2>
+        <div id="lessons"></div>
+
+        <h2 class="section-title">📁 Learning Materials</h2>
+        <div id="materials"></div>
+
+    </section>
+
+</main>
+
+<footer>
+    © 2026 <span>De Champions Digital Service</span>.
+    All Rights Reserved.
+</footer>
+
+<script>
+const SUPABASE_URL =
+"https://qxsenflgaweeadvggnyp.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+
+const db = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+const message = document.getElementById("message");
+const learningContent = document.getElementById("learningContent");
+
+function showMessage(text) {
+    message.textContent = text;
+    message.classList.remove("hidden");
+    learningContent.classList.add("hidden");
+}
+
+function getYouTubeEmbed(url) {
+    try {
+        const parsed = new URL(url);
+        let videoId = "";
+
+        if (parsed.hostname.includes("youtu.be")) {
+            videoId = parsed.pathname.slice(1);
+        } else if (
+            parsed.hostname.includes("youtube.com") ||
+            parsed.hostname.includes("youtube-nocookie.com")
+        ) {
+            videoId = parsed.searchParams.get("v") || "";
+
+            if (!videoId && parsed.pathname.startsWith("/embed/")) {
+                videoId = parsed.pathname.split("/")[2];
+            }
+
+            if (!videoId && parsed.pathname.startsWith("/shorts/")) {
+                videoId = parsed.pathname.split("/")[2];
+            }
+        }
+
+        if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+            return null;
+        }
+
+        return "https://www.youtube-nocookie.com/embed/" + videoId;
+
+    } catch {
+        return null;
+    }
+}
+
+async function loadCourse() {
+
+    try {
+
+        const courseSlug =
+            new URLSearchParams(window.location.search).get("course");
+
+        if (!courseSlug) {
+            showMessage("No course was selected. Please return to the DCDS website.");
+            return;
+        }
+
+        const { data: sessionData, error: sessionError } =
+            await db.auth.getSession();
+
+        if (sessionError || !sessionData.session) {
+            showMessage("Please log in to access your learning portal.");
+            return;
+        }
+
+        const user = sessionData.session.user;
+
+        const { data: course, error: courseError } =
+            await db
+                .from("courses")
+                .select("id, title, slug")
+                .eq("slug", courseSlug)
+                .maybeSingle();
+
+        if (courseError || !course) {
+            showMessage("We could not find this course.");
+            return;
+        }
+
+        const { data: enrollment, error: enrollmentError } =
+            await db
+                .from("enrollments")
+                .select("id")
+                .eq("course_id", course.id)
+                .eq("user_id", user.id)
+                .maybeSingle();
+
+        if (enrollmentError || !enrollment) {
+            showMessage("You are not enrolled in this course. Please purchase it to access the lessons.");
+            return;
+        }
+
+        document.getElementById("courseTitle").textContent =
+            course.title;
+
+        const { data: lessons, error: lessonError } =
+            await db
+                .from("course_lessons")
+                .select("id, lesson_title, lesson_description, youtube_url, lesson_number")
+                .eq("course_id", course.id)
+                .order("lesson_number", { ascending: true });
+
+        if (lessonError) {
+            throw lessonError;
+        }
+
+        const lessonContainer = document.getElementById("lessons");
+
+        lessonContainer.innerHTML = "";
+
+        if (!lessons || lessons.length === 0) {
+            lessonContainer.innerHTML =
+                '<div class="notice">Course lessons will be available soon.</div>';
+        } else {
+
+            lessons.forEach(lesson => {
+
+                const embedUrl = getYouTubeEmbed(lesson.youtube_url);
+
+                const item = document.createElement("div");
+                item.className = "lesson";
+
+                const heading = document.createElement("h3");
+                heading.textContent =
+                    "Lesson " + lesson.lesson_number +
+                    " — " + lesson.lesson_title;
+
+                item.appendChild(heading);
+
+                if (lesson.lesson_description) {
+                    const description = document.createElement("p");
+                    description.textContent = lesson.lesson_description;
+                    item.appendChild(description);
+                }
+
+                if (embedUrl) {
+                    const video = document.createElement("div");
+                    video.className = "video-container";
+
+                    const iframe = document.createElement("iframe");
+                    iframe.src = embedUrl;
+                    iframe.title = lesson.lesson_title;
+                    iframe.allow =
+                        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+                    iframe.allowFullscreen = true;
+
+                    video.appendChild(iframe);
+                    item.appendChild(video);
+                } else {
+                    const warning = document.createElement("p");
+                    warning.textContent =
+                        "This lesson's video link is not valid yet.";
+                    item.appendChild(warning);
+                }
+
+                lessonContainer.appendChild(item);
+
+            });
+        }
+
+        const { data: materials, error: materialError } =
+            await db
+                .from("course_materials")
+                .select("id, material_title, material_type, google_drive_url")
+                .eq("course_id", course.id)
+                .order("created_at", { ascending: true });
+
+        if (materialError) {
+            throw materialError;
+        }
+
+        const materialContainer =
+            document.getElementById("materials");
+
+        materialContainer.innerHTML = "";
+
+        if (!materials || materials.length === 0) {
+            materialContainer.innerHTML =
+                '<div class="notice">Learning materials will be available soon.</div>';
+        } else {
+
+            materials.forEach(material => {
+
+                const item = document.createElement("div");
+                item.className = "material";
+
+                const title = document.createElement("h3");
+                title.textContent =
+                    material.material_title +
+                    " (" + material.material_type + ")";
+
+                const link = document.createElement("a");
+                link.href = material.google_drive_url;
+                link.target = "_blank";
+                link.rel = "noopener noreferrer";
+                link.textContent = "Access Material";
+
+                item.appendChild(title);
+                item.appendChild(link);
+
+                materialContainer.appendChild(item);
+
+            });
+        }
+
+        message.classList.add("hidden");
+        learningContent.classList.remove("hidden");
+
+    } catch (error) {
+
+        console.error("DCDS learning portal error:", error);
+
+        showMessage(
+            "We could not load your course right now. Please refresh and try again."
+        );
+    }
+}
+
+loadCourse();
+</script>
+
+</body>
+</html>
