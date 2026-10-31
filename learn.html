@@ -6,9 +6,24 @@
 
 <title>DCDS | Student Learning Portal</title>
 
+<meta name="theme-color" content="#10091c">
+<meta name="description" content="De Champions Digital Service Student Learning Portal.">
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
 <style>
+:root {
+    --background: #10091c;
+    --surface: #1d102c;
+    --surface-light: #28163d;
+    --purple: #8738d1;
+    --purple-light: #d9b8ff;
+    --gold: #e8c477;
+    --text: #ffffff;
+    --muted: #c7b9d7;
+    --border: #563477;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -17,22 +32,24 @@
 
 body {
     font-family: Arial, sans-serif;
-    background: #10091c;
-    color: #fff;
+    background:
+        radial-gradient(circle at top right, #35145b 0%, transparent 35%),
+        var(--background);
+    color: var(--text);
     min-height: 100vh;
 }
 
 header {
     background: linear-gradient(120deg, #210b3d, #451080);
-    padding: 25px 7%;
-    border-bottom: 1px solid #6335a0;
+    padding: 24px 7%;
+    border-bottom: 1px solid var(--border);
 }
 
 .logo {
-    color: #d7b5ff;
-    font-size: 23px;
+    color: var(--purple-light);
+    font-size: 27px;
     font-weight: 900;
-    letter-spacing: 2px;
+    letter-spacing: 3px;
 }
 
 .tagline {
@@ -53,62 +70,72 @@ main {
 }
 
 .welcome h1 {
-    color: #d9b8ff;
-    font-size: clamp(25px, 5vw, 38px);
+    color: var(--purple-light);
+    font-size: clamp(26px, 5vw, 40px);
     margin-bottom: 12px;
 }
 
 .welcome p {
-    color: #c7b9d7;
-    line-height: 1.7;
+    color: var(--muted);
+    line-height: 1.8;
 }
 
 .course-card {
-    background: linear-gradient(145deg, #26143c, #170d25);
-    border: 1px solid #6335a0;
-    border-radius: 18px;
-    padding: 25px;
+    background: linear-gradient(145deg, #30164b, #170d25);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 28px;
     margin-bottom: 35px;
+    box-shadow: 0 12px 35px rgba(0,0,0,.2);
 }
 
 .course-card h2 {
-    color: #e3c9ff;
-    font-size: 24px;
-    margin-bottom: 10px;
+    color: var(--purple-light);
+    font-size: 25px;
+    margin-bottom: 12px;
+}
+
+.course-card p {
+    color: var(--muted);
+    line-height: 1.8;
 }
 
 .section-title {
-    color: #d9b8ff;
+    color: var(--purple-light);
     font-size: 23px;
     margin: 35px 0 20px;
 }
 
-.lesson {
-    background: #21132f;
-    border: 1px solid #41265e;
-    padding: 20px;
-    border-radius: 14px;
+.lesson,
+.material {
+    background: linear-gradient(145deg, #28163d, #1b1029);
+    border: 1px solid #493064;
+    padding: 22px;
+    border-radius: 16px;
     margin-bottom: 20px;
 }
 
-.lesson h3 {
+.lesson h3,
+.material h3 {
     color: #e5ccff;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
+    line-height: 1.5;
 }
 
 .lesson p {
-    color: #c4b5d5;
-    line-height: 1.6;
+    color: var(--muted);
+    line-height: 1.7;
     margin-bottom: 15px;
 }
 
 .video-container {
     position: relative;
     width: 100%;
-    padding-bottom: 56.25%;
-    border-radius: 12px;
+    aspect-ratio: 16 / 9;
+    border-radius: 13px;
     overflow: hidden;
     background: #08050d;
+    margin-top: 15px;
 }
 
 .video-container iframe {
@@ -116,16 +143,10 @@ main {
     width: 100%;
     height: 100%;
     border: none;
-    top: 0;
-    left: 0;
+    inset: 0;
 }
 
 .material {
-    background: #21132f;
-    border: 1px solid #41265e;
-    padding: 20px;
-    border-radius: 12px;
-    margin-bottom: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -133,48 +154,80 @@ main {
 }
 
 .material h3 {
-    color: #e5ccff;
     font-size: 16px;
+    margin-bottom: 0;
+    overflow-wrap: anywhere;
 }
 
-.material a {
-    background: #8738d1;
+.button {
+    display: inline-block;
+    background: linear-gradient(120deg, #8738d1, #a44bea);
     color: white;
     text-decoration: none;
-    padding: 11px 17px;
-    border-radius: 8px;
+    padding: 12px 18px;
+    border-radius: 9px;
     font-size: 13px;
     font-weight: bold;
+    text-align: center;
+    transition: .2s;
+    border: none;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 18px rgba(135,56,209,.35);
 }
 
 .notice {
     background: #281536;
     border: 1px solid #70419b;
     padding: 25px;
-    border-radius: 12px;
+    border-radius: 14px;
     text-align: center;
-    line-height: 1.7;
+    line-height: 1.8;
+    color: var(--muted);
 }
 
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 footer {
     text-align: center;
-    padding: 30px 15px;
+    padding: 35px 15px;
     color: #a99ab9;
     font-size: 12px;
+    line-height: 1.8;
 }
 
 footer span {
-    color: #d4a8ff;
+    color: var(--purple-light);
 }
 
 @media(max-width:600px) {
+    header {
+        padding: 22px 6%;
+    }
+
+    main {
+        padding: 25px 15px;
+    }
+
+    .course-card {
+        padding: 21px;
+    }
+
     .material {
-        align-items: flex-start;
         flex-direction: column;
+        align-items: stretch;
+    }
+
+    .material .button {
+        width: 100%;
+    }
+
+    .lesson {
+        padding: 17px;
     }
 }
 </style>
@@ -209,11 +262,12 @@ footer span {
             <h2 id="courseTitle">Your Course</h2>
             <p>
                 Welcome to your dedicated learning environment.
-                Follow your lessons and access your resources below.
+                Follow your lessons, watch your videos and access
+                your learning resources below.
             </p>
         </div>
 
-        <h2 class="section-title">📚 Course Lessons</h2>
+        <h2 class="section-title">🎬 Course Lessons</h2>
         <div id="lessons"></div>
 
         <h2 class="section-title">📁 Learning Materials</h2>
@@ -224,11 +278,18 @@ footer span {
 </main>
 
 <footer>
-    © 2026 <span>De Champions Digital Service</span>.
+    © 2026 <span>De Champions Digital Service</span>.<br>
+    CREATE • LEARN • INNOVATE • EARN.<br>
     All Rights Reserved.
 </footer>
 
 <script>
+"use strict";
+
+/* =================================
+   SUPABASE CONFIGURATION
+================================= */
+
 const SUPABASE_URL =
 "https://qxsenflgaweeadvggnyp.supabase.co";
 
@@ -240,214 +301,446 @@ const db = window.supabase.createClient(
     SUPABASE_PUBLISHABLE_KEY
 );
 
+/* =================================
+   PAGE ELEMENTS
+================================= */
+
 const message = document.getElementById("message");
-const learningContent = document.getElementById("learningContent");
+
+const learningContent =
+document.getElementById("learningContent");
+
+const lessonContainer =
+document.getElementById("lessons");
+
+const materialContainer =
+document.getElementById("materials");
+
+/* =================================
+   MESSAGE HANDLER
+================================= */
 
 function showMessage(text) {
+
     message.textContent = text;
+
     message.classList.remove("hidden");
+
     learningContent.classList.add("hidden");
 }
 
-function getYouTubeEmbed(url) {
+/* =================================
+   SAFE URL VALIDATION
+================================= */
+
+function getSafeUrl(value) {
+
+    if (!value || typeof value !== "string") {
+        return null;
+    }
+
     try {
-        const parsed = new URL(url);
-        let videoId = "";
 
-        if (parsed.hostname.includes("youtu.be")) {
-            videoId = parsed.pathname.slice(1);
-        } else if (
-            parsed.hostname.includes("youtube.com") ||
-            parsed.hostname.includes("youtube-nocookie.com")
-        ) {
-            videoId = parsed.searchParams.get("v") || "";
+        const url = new URL(value.trim());
 
-            if (!videoId && parsed.pathname.startsWith("/embed/")) {
-                videoId = parsed.pathname.split("/")[2];
-            }
-
-            if (!videoId && parsed.pathname.startsWith("/shorts/")) {
-                videoId = parsed.pathname.split("/")[2];
-            }
-        }
-
-        if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+        if (url.protocol !== "https:") {
             return null;
         }
 
-        return "https://www.youtube-nocookie.com/embed/" + videoId;
+        const allowedHosts = [
+            "youtube.com",
+            "www.youtube.com",
+            "m.youtube.com",
+            "youtu.be",
+            "www.youtu.be",
+            "youtube-nocookie.com",
+            "www.youtube-nocookie.com",
+            "drive.google.com",
+            "docs.google.com"
+        ];
+
+        if (!allowedHosts.includes(url.hostname.toLowerCase())) {
+            return null;
+        }
+
+        return url;
 
     } catch {
         return null;
     }
 }
 
+/* =================================
+   YOUTUBE VIDEO SUPPORT
+================================= */
+
+function getYouTubeEmbed(value) {
+
+    const url = getSafeUrl(value);
+
+    if (!url) return null;
+
+    let videoId = "";
+
+    if (url.hostname === "youtu.be") {
+
+        videoId = url.pathname.split("/")[1] || "";
+
+    } else if (
+        url.hostname.includes("youtube.com") ||
+        url.hostname.includes("youtube-nocookie.com")
+    ) {
+
+        videoId = url.searchParams.get("v") || "";
+
+        if (!videoId && url.pathname.startsWith("/embed/")) {
+            videoId = url.pathname.split("/")[2] || "";
+        }
+
+        if (!videoId && url.pathname.startsWith("/shorts/")) {
+            videoId = url.pathname.split("/")[2] || "";
+        }
+    }
+
+    if (!/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+        return null;
+    }
+
+    return "https://www.youtube-nocookie.com/embed/" + videoId;
+}
+
+/* =================================
+   GOOGLE DRIVE VIDEO SUPPORT
+================================= */
+
+function getGoogleDriveEmbed(value) {
+
+    const url = getSafeUrl(value);
+
+    if (!url) return null;
+
+    if (
+        url.hostname !== "drive.google.com" &&
+        url.hostname !== "docs.google.com"
+    ) {
+        return null;
+    }
+
+    const match = url.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+
+    if (!match) return null;
+
+    const fileId = match[1];
+
+    return "https://drive.google.com/file/d/" +
+        encodeURIComponent(fileId) + "/preview";
+}
+
+/* =================================
+   VIDEO PLAYER
+================================= */
+
+function createVideoPlayer(embedUrl, title) {
+
+    const container = document.createElement("div");
+
+    container.className = "video-container";
+
+    const iframe = document.createElement("iframe");
+
+    iframe.src = embedUrl;
+
+    iframe.title = title || "Course video";
+
+    iframe.loading = "lazy";
+
+    iframe.referrerPolicy = "strict-origin-when-cross-origin";
+
+    iframe.allow =
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
+
+    iframe.allowFullscreen = true;
+
+    container.appendChild(iframe);
+
+    return container;
+}
+
+/* =================================
+   LESSON DISPLAY
+================================= */
+
+function displayLessons(lessons) {
+
+    lessonContainer.innerHTML = "";
+
+    if (!lessons || lessons.length === 0) {
+
+        lessonContainer.innerHTML =
+            '<div class="notice">Course lessons will be available soon. Stay tuned!</div>';
+
+        return;
+    }
+
+    lessons.forEach(lesson => {
+
+        const item = document.createElement("div");
+
+        item.className = "lesson";
+
+        const heading = document.createElement("h3");
+
+        heading.textContent =
+            "Lesson " + lesson.lesson_number +
+            " — " + lesson.lesson_title;
+
+        item.appendChild(heading);
+
+        if (lesson.lesson_description) {
+
+            const description = document.createElement("p");
+
+            description.textContent =
+                lesson.lesson_description;
+
+            item.appendChild(description);
+        }
+
+        const youtubeEmbed =
+            getYouTubeEmbed(lesson.youtube_url);
+
+        const driveEmbed =
+            getGoogleDriveEmbed(lesson.youtube_url);
+
+        const embedUrl = youtubeEmbed || driveEmbed;
+
+        if (embedUrl) {
+
+            item.appendChild(
+                createVideoPlayer(embedUrl, lesson.lesson_title)
+            );
+
+        } else {
+
+            const warning = document.createElement("p");
+
+            warning.textContent =
+                "The lesson video is not available yet. Please check back soon.";
+
+            item.appendChild(warning);
+        }
+
+        lessonContainer.appendChild(item);
+
+    });
+}
+
+/* =================================
+   MATERIAL DISPLAY
+================================= */
+
+function displayMaterials(materials) {
+
+    materialContainer.innerHTML = "";
+
+    if (!materials || materials.length === 0) {
+
+        materialContainer.innerHTML =
+            '<div class="notice">Learning materials will be available soon.</div>';
+
+        return;
+    }
+
+    materials.forEach(material => {
+
+        const safeUrl = getSafeUrl(material.google_drive_url);
+
+        if (!safeUrl) {
+            return;
+        }
+
+        const item = document.createElement("div");
+
+        item.className = "material";
+
+        const title = document.createElement("h3");
+
+        const type = String(material.material_type || "Resource")
+            .toLowerCase();
+
+        const isFolder = type === "folder";
+
+        title.textContent = isFolder
+            ? "📁 " + material.material_title
+            : "📄 " + material.material_title;
+
+        const link = document.createElement("a");
+
+        link.href = safeUrl.href;
+
+        link.target = "_blank";
+
+        link.rel = "noopener noreferrer";
+
+        link.className = "button";
+
+        link.textContent = isFolder
+            ? "Open Resource Library"
+            : "Access Material";
+
+        item.appendChild(title);
+
+        item.appendChild(link);
+
+        materialContainer.appendChild(item);
+
+    });
+
+    if (!materialContainer.children.length) {
+
+        materialContainer.innerHTML =
+            '<div class="notice">Learning materials will be available soon.</div>';
+    }
+}
+
+/* =================================
+   MAIN COURSE LOADER
+================================= */
+
 async function loadCourse() {
 
     try {
 
-        const courseSlug =
-            new URLSearchParams(window.location.search).get("course");
+        showMessage("Checking your course access...");
 
-        if (!courseSlug) {
-            showMessage("No course was selected. Please return to the DCDS website.");
+        const courseSlug =
+            new URLSearchParams(window.location.search)
+                .get("course");
+
+        if (
+            !courseSlug ||
+            !/^[a-zA-Z0-9_-]+$/.test(courseSlug)
+        ) {
+
+            showMessage(
+                "No valid course was selected. Please return to the DCDS website."
+            );
+
             return;
         }
 
-        const { data: sessionData, error: sessionError } =
-            await db.auth.getSession();
+        /* CHECK LOGIN */
+
+        const {
+            data: sessionData,
+            error: sessionError
+        } = await db.auth.getSession();
 
         if (sessionError || !sessionData.session) {
-            showMessage("Please log in to access your learning portal.");
+
+            showMessage(
+                "Please log in to your DCDS account to access your learning portal."
+            );
+
             return;
         }
 
         const user = sessionData.session.user;
 
-        const { data: course, error: courseError } =
-            await db
-                .from("courses")
-                .select("id, title, slug")
-                .eq("slug", courseSlug)
-                .maybeSingle();
+        /* GET COURSE */
+
+        const {
+            data: course,
+            error: courseError
+        } = await db
+            .from("courses")
+            .select("id, title, slug")
+            .eq("slug", courseSlug)
+            .maybeSingle();
 
         if (courseError || !course) {
+
             showMessage("We could not find this course.");
+
             return;
         }
 
-        const { data: enrollment, error: enrollmentError } =
-            await db
-                .from("enrollments")
-                .select("id")
-                .eq("course_id", course.id)
-                .eq("user_id", user.id)
-                .maybeSingle();
+        /* CHECK ENROLLMENT */
+
+        const {
+            data: enrollment,
+            error: enrollmentError
+        } = await db
+            .from("enrollments")
+            .select("id")
+            .eq("course_id", course.id)
+            .eq("user_id", user.id)
+            .maybeSingle();
 
         if (enrollmentError || !enrollment) {
-            showMessage("You are not enrolled in this course. Please purchase it to access the lessons.");
+
+            showMessage(
+                "You are not enrolled in this course. Please purchase it to access the lessons."
+            );
+
             return;
         }
+
+        /* SHOW COURSE TITLE */
 
         document.getElementById("courseTitle").textContent =
             course.title;
 
-        const { data: lessons, error: lessonError } =
-            await db
-                .from("course_lessons")
-                .select("id, lesson_title, lesson_description, youtube_url, lesson_number")
-                .eq("course_id", course.id)
-                .order("lesson_number", { ascending: true });
+        /* LOAD LESSONS */
+
+        const {
+            data: lessons,
+            error: lessonError
+        } = await db
+            .from("course_lessons")
+            .select(
+                "id, lesson_title, lesson_description, youtube_url, lesson_number"
+            )
+            .eq("course_id", course.id)
+            .order("lesson_number", { ascending: true });
 
         if (lessonError) {
             throw lessonError;
         }
 
-        const lessonContainer = document.getElementById("lessons");
+        displayLessons(lessons);
 
-        lessonContainer.innerHTML = "";
+        /* LOAD MATERIALS */
 
-        if (!lessons || lessons.length === 0) {
-            lessonContainer.innerHTML =
-                '<div class="notice">Course lessons will be available soon.</div>';
-        } else {
-
-            lessons.forEach(lesson => {
-
-                const embedUrl = getYouTubeEmbed(lesson.youtube_url);
-
-                const item = document.createElement("div");
-                item.className = "lesson";
-
-                const heading = document.createElement("h3");
-                heading.textContent =
-                    "Lesson " + lesson.lesson_number +
-                    " — " + lesson.lesson_title;
-
-                item.appendChild(heading);
-
-                if (lesson.lesson_description) {
-                    const description = document.createElement("p");
-                    description.textContent = lesson.lesson_description;
-                    item.appendChild(description);
-                }
-
-                if (embedUrl) {
-                    const video = document.createElement("div");
-                    video.className = "video-container";
-
-                    const iframe = document.createElement("iframe");
-                    iframe.src = embedUrl;
-                    iframe.title = lesson.lesson_title;
-                    iframe.allow =
-                        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share";
-                    iframe.allowFullscreen = true;
-
-                    video.appendChild(iframe);
-                    item.appendChild(video);
-                } else {
-                    const warning = document.createElement("p");
-                    warning.textContent =
-                        "This lesson's video link is not valid yet.";
-                    item.appendChild(warning);
-                }
-
-                lessonContainer.appendChild(item);
-
-            });
-        }
-
-        const { data: materials, error: materialError } =
-            await db
-                .from("course_materials")
-                .select("id, material_title, material_type, google_drive_url")
-                .eq("course_id", course.id)
-                .order("created_at", { ascending: true });
+        const {
+            data: materials,
+            error: materialError
+        } = await db
+            .from("course_materials")
+            .select(
+                "id, material_title, material_type, google_drive_url"
+            )
+            .eq("course_id", course.id)
+            .order("created_at", { ascending: true });
 
         if (materialError) {
             throw materialError;
         }
 
-        const materialContainer =
-            document.getElementById("materials");
+        displayMaterials(materials);
 
-        materialContainer.innerHTML = "";
-
-        if (!materials || materials.length === 0) {
-            materialContainer.innerHTML =
-                '<div class="notice">Learning materials will be available soon.</div>';
-        } else {
-
-            materials.forEach(material => {
-
-                const item = document.createElement("div");
-                item.className = "material";
-
-                const title = document.createElement("h3");
-                title.textContent =
-                    material.material_title +
-                    " (" + material.material_type + ")";
-
-                const link = document.createElement("a");
-                link.href = material.google_drive_url;
-                link.target = "_blank";
-                link.rel = "noopener noreferrer";
-                link.textContent = "Access Material";
-
-                item.appendChild(title);
-                item.appendChild(link);
-
-                materialContainer.appendChild(item);
-
-            });
-        }
+        /* DISPLAY LEARNING PORTAL */
 
         message.classList.add("hidden");
+
         learningContent.classList.remove("hidden");
 
     } catch (error) {
 
-        console.error("DCDS learning portal error:", error);
+        console.error(
+            "DCDS learning portal error:",
+            error
+        );
 
         showMessage(
             "We could not load your course right now. Please refresh and try again."
@@ -455,7 +748,12 @@ async function loadCourse() {
     }
 }
 
+/* =================================
+   START PORTAL
+================================= */
+
 loadCourse();
+
 </script>
 
 </body>
