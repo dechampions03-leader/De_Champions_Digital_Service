@@ -15,10 +15,8 @@
 :root {
     --background: #10091c;
     --surface: #1d102c;
-    --surface-light: #28163d;
     --purple: #8738d1;
     --purple-light: #d9b8ff;
-    --gold: #e8c477;
     --text: #ffffff;
     --muted: #c7b9d7;
     --border: #563477;
@@ -146,6 +144,45 @@ main {
     inset: 0;
 }
 
+.video-container:fullscreen {
+    width: 100%;
+    height: 100%;
+    aspect-ratio: auto;
+    background: #000;
+    border-radius: 0;
+    margin: 0;
+}
+
+.video-container:fullscreen iframe {
+    width: 100%;
+    height: 100%;
+}
+
+.button {
+    display: inline-block;
+    background: linear-gradient(120deg, #8738d1, #a44bea);
+    color: white;
+    text-decoration: none;
+    padding: 13px 18px;
+    border-radius: 9px;
+    font-size: 14px;
+    font-weight: bold;
+    text-align: center;
+    transition: .2s;
+    border: none;
+    cursor: pointer;
+}
+
+.button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 18px rgba(135,56,209,.35);
+}
+
+.fullscreen-button {
+    width: 100%;
+    margin-top: 12px;
+}
+
 .material {
     display: flex;
     justify-content: space-between;
@@ -159,25 +196,6 @@ main {
     overflow-wrap: anywhere;
 }
 
-.button {
-    display: inline-block;
-    background: linear-gradient(120deg, #8738d1, #a44bea);
-    color: white;
-    text-decoration: none;
-    padding: 12px 18px;
-    border-radius: 9px;
-    font-size: 13px;
-    font-weight: bold;
-    text-align: center;
-    transition: .2s;
-    border: none;
-}
-
-.button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 18px rgba(135,56,209,.35);
-}
-
 .notice {
     background: #281536;
     border: 1px solid #70419b;
@@ -186,6 +204,7 @@ main {
     text-align: center;
     line-height: 1.8;
     color: var(--muted);
+    overflow-wrap: anywhere;
 }
 
 .hidden {
@@ -252,8 +271,8 @@ footer span {
         </p>
     </section>
 
-    <div id="message" class="notice">
-        Checking your course access...
+    <div id="message" class="notice" role="status" aria-live="polite">
+        Connecting to your learning portal...
     </div>
 
     <section id="learningContent" class="hidden">
@@ -306,27 +325,37 @@ const db = window.supabase.createClient(
 ================================= */
 
 const message = document.getElementById("message");
-
-const learningContent =
-document.getElementById("learningContent");
-
-const lessonContainer =
-document.getElementById("lessons");
-
-const materialContainer =
-document.getElementById("materials");
+const learningContent = document.getElementById("learningContent");
+const lessonContainer = document.getElementById("lessons");
+const materialContainer = document.getElementById("materials");
 
 /* =================================
    MESSAGE HANDLER
 ================================= */
 
 function showMessage(text) {
-
     message.textContent = text;
-
     message.classList.remove("hidden");
-
     learningContent.classList.add("hidden");
+}
+
+/* =================================
+   REQUEST TIMEOUT
+================================= */
+
+function withTimeout(promise, milliseconds = 15000) {
+    let timer;
+
+    const timeout = new Promise((_, reject) => {
+        timer = setTimeout(() => {
+            reject(new Error(
+                "The server took too long to respond. Check your internet connection and refresh."
+            ));
+        }, milliseconds);
+    });
+
+    return Promise.race([promise, timeout])
+        .finally(() => clearTimeout(timer));
 }
 
 /* =================================
@@ -340,7 +369,6 @@ function getSafeUrl(value) {
     }
 
     try {
-
         const url = new URL(value.trim());
 
         if (url.protocol !== "https:") {
@@ -426,7 +454,9 @@ function getGoogleDriveEmbed(value) {
         return null;
     }
 
-    const match = url.pathname.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);
+    const match = url.pathname.match(
+        /\/file\/d\/([a-zA-Z0-9_-]+)/
+    );
 
     if (!match) return null;
 
@@ -449,16 +479,14 @@ function createVideoPlayer(embedUrl, title) {
     const iframe = document.createElement("iframe");
 
     iframe.src = embedUrl;
-
     iframe.title = title || "Course video";
-
     iframe.loading = "lazy";
-
     iframe.referrerPolicy = "strict-origin-when-cross-origin";
 
     iframe.allow =
-    "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
+        "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen";
 
+    iframe.setAttribute("allowfullscreen", "");
     iframe.allowFullscreen = true;
 
     container.appendChild(iframe);
@@ -467,19 +495,122 @@ function createVideoPlayer(embedUrl, title) {
 }
 
 /* =================================
+   FULLSCREEN FUNCTION
+================================= */
+
+async function openFullscreen(element, fallbackUrl) {
+
+    try {
+
+        if (element.requestFullscreen) {
+            await element.requestFullscreen();
+
+        } else if (element.webkitRequestFullscreen) {
+            element.webkitRequestFullscreen();
+
+        } else {
+            window.open(fallbackUrl, "_blank");
+        }
+
+    } catch (error) {
+
+        console.error("Fullscreen error:", error);
+
+        alert(
+            "Fullscreen is not supported by this browser. Opening the video separately."
+        );
+
+        window.open(fallbackUrl, "_blank");
+    }
+}
+
+/* =================================
    LESSON DISPLAY
 ================================= */
 
 function displayLessons(lessons) {
+
     lessonContainer.innerHTML = "";
 
     if (!lessons || lessons.length === 0) {
+
         lessonContainer.innerHTML =
             '<div class="notice">Course lessons will be available soon. Stay tuned!</div>';
+
         return;
     }
 
-    
+    lessons.forEach(lesson => {
+
+        const item = document.createElement("div");
+        item.className = "lesson";
+
+        const heading = document.createElement("h3");
+
+        heading.textContent =
+            "Lesson " + lesson.lesson_number +
+            " — " + lesson.lesson_title;
+
+        item.appendChild(heading);
+
+        if (lesson.lesson_description) {
+
+            const description = document.createElement("p");
+
+            description.textContent = lesson.lesson_description;
+
+            item.appendChild(description);
+        }
+
+        const youtubeEmbed =
+            getYouTubeEmbed(lesson.youtube_url);
+
+        const driveEmbed =
+            getGoogleDriveEmbed(lesson.youtube_url);
+
+        const embedUrl = youtubeEmbed || driveEmbed;
+
+        if (embedUrl) {
+
+            const player = createVideoPlayer(
+                embedUrl,
+                lesson.lesson_title
+            );
+
+            item.appendChild(player);
+
+            const fullscreenButton =
+                document.createElement("button");
+
+            fullscreenButton.type = "button";
+            fullscreenButton.className =
+                "button fullscreen-button";
+
+            fullscreenButton.textContent =
+                "⛶ Watch Fullscreen";
+
+            fullscreenButton.addEventListener("click", () => {
+
+                openFullscreen(player, embedUrl);
+
+            });
+
+            item.appendChild(fullscreenButton);
+
+        } else {
+
+            const warning = document.createElement("p");
+
+            warning.textContent =
+                "The lesson video is not available yet. Please check back soon.";
+
+            item.appendChild(warning);
+        }
+
+        lessonContainer.appendChild(item);
+
+    });
+}
 
 /* =================================
    MATERIAL DISPLAY
@@ -501,9 +632,7 @@ function displayMaterials(materials) {
 
         const safeUrl = getSafeUrl(material.google_drive_url);
 
-        if (!safeUrl) {
-            return;
-        }
+        if (!safeUrl) return;
 
         const item = document.createElement("div");
 
@@ -511,8 +640,9 @@ function displayMaterials(materials) {
 
         const title = document.createElement("h3");
 
-        const type = String(material.material_type || "Resource")
-            .toLowerCase();
+        const type = String(
+            material.material_type || "Resource"
+        ).toLowerCase();
 
         const isFolder = type === "folder";
 
@@ -523,11 +653,8 @@ function displayMaterials(materials) {
         const link = document.createElement("a");
 
         link.href = safeUrl.href;
-
         link.target = "_blank";
-
         link.rel = "noopener noreferrer";
-
         link.className = "button";
 
         link.textContent = isFolder
@@ -535,7 +662,6 @@ function displayMaterials(materials) {
             : "Access Material";
 
         item.appendChild(title);
-
         item.appendChild(link);
 
         materialContainer.appendChild(item);
@@ -557,7 +683,7 @@ async function loadCourse() {
 
     try {
 
-        showMessage("Checking your course access...");
+        showMessage("Connecting to your learning portal...");
 
         const courseSlug =
             new URLSearchParams(window.location.search)
@@ -577,15 +703,21 @@ async function loadCourse() {
 
         /* CHECK LOGIN */
 
+        showMessage("Checking your student login...");
+
         const {
             data: sessionData,
             error: sessionError
-        } = await db.auth.getSession();
+        } = await withTimeout(db.auth.getSession());
 
-        if (sessionError || !sessionData.session) {
+        if (sessionError) {
+            throw sessionError;
+        }
+
+        if (!sessionData.session) {
 
             showMessage(
-                "Please log in to your DCDS account to access your learning portal."
+                "Please log in to your DCDS account using this browser, then reopen your learning portal."
             );
 
             return;
@@ -595,16 +727,22 @@ async function loadCourse() {
 
         /* GET COURSE */
 
+        showMessage("Finding your course...");
+
         const {
             data: course,
             error: courseError
-        } = await db
-            .from("courses")
-            .select("id, title, slug")
-            .eq("slug", courseSlug)
-            .maybeSingle();
+        } = await withTimeout(
+            db
+                .from("courses")
+                .select("id, title, slug")
+                .eq("slug", courseSlug)
+                .maybeSingle()
+        );
 
-        if (courseError || !course) {
+        if (courseError) throw courseError;
+
+        if (!course) {
 
             showMessage("We could not find this course.");
 
@@ -613,17 +751,23 @@ async function loadCourse() {
 
         /* CHECK ENROLLMENT */
 
+        showMessage("Verifying your course enrollment...");
+
         const {
             data: enrollment,
             error: enrollmentError
-        } = await db
-            .from("enrollments")
-            .select("id")
-            .eq("course_id", course.id)
-            .eq("user_id", user.id)
-            .maybeSingle();
+        } = await withTimeout(
+            db
+                .from("enrollments")
+                .select("id")
+                .eq("course_id", course.id)
+                .eq("user_id", user.id)
+                .maybeSingle()
+        );
 
-        if (enrollmentError || !enrollment) {
+        if (enrollmentError) throw enrollmentError;
+
+        if (!enrollment) {
 
             showMessage(
                 "You are not enrolled in this course. Please purchase it to access the lessons."
@@ -639,39 +783,43 @@ async function loadCourse() {
 
         /* LOAD LESSONS */
 
+        showMessage("Loading your course lessons...");
+
         const {
             data: lessons,
             error: lessonError
-        } = await db
-            .from("course_lessons")
-            .select(
-                "id, lesson_title, lesson_description, youtube_url, lesson_number"
-            )
-            .eq("course_id", course.id)
-            .order("lesson_number", { ascending: true });
+        } = await withTimeout(
+            db
+                .from("course_lessons")
+                .select(
+                    "id, lesson_title, lesson_description, youtube_url, lesson_number"
+                )
+                .eq("course_id", course.id)
+                .order("lesson_number", { ascending: true })
+        );
 
-        if (lessonError) {
-            throw lessonError;
-        }
+        if (lessonError) throw lessonError;
 
         displayLessons(lessons);
 
         /* LOAD MATERIALS */
 
+        showMessage("Loading your learning materials...");
+
         const {
             data: materials,
             error: materialError
-        } = await db
-            .from("course_materials")
-            .select(
-                "id, material_title, material_type, google_drive_url"
-            )
-            .eq("course_id", course.id)
-            .order("created_at", { ascending: true });
+        } = await withTimeout(
+            db
+                .from("course_materials")
+                .select(
+                    "id, material_title, material_type, google_drive_url"
+                )
+                .eq("course_id", course.id)
+                .order("created_at", { ascending: true })
+        );
 
-        if (materialError) {
-            throw materialError;
-        }
+        if (materialError) throw materialError;
 
         displayMaterials(materials);
 
@@ -689,7 +837,8 @@ async function loadCourse() {
         );
 
         showMessage(
-            "We could not load your course right now. Please refresh and try again."
+            "Portal error: " +
+            (error.message || "Something went wrong. Please refresh and try again.")
         );
     }
 }
