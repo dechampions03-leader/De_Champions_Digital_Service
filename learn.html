@@ -471,16 +471,91 @@ function createVideoPlayer(embedUrl, title) {
 ================================= */
 
 function displayLessons(lessons) {
-
     lessonContainer.innerHTML = "";
 
     if (!lessons || lessons.length === 0) {
-
         lessonContainer.innerHTML =
             '<div class="notice">Course lessons will be available soon. Stay tuned!</div>';
-
         return;
     }
+
+    lessons.forEach(lesson => {
+        const item = document.createElement("div");
+        item.className = "lesson";
+
+        const heading = document.createElement("h3");
+        heading.textContent =
+            "Lesson " + lesson.lesson_number +
+            " — " + lesson.lesson_title;
+        item.appendChild(heading);
+
+        if (lesson.lesson_description) {
+            const description = document.createElement("p");
+            description.textContent = lesson.lesson_description;
+            item.appendChild(description);
+        }
+
+        const youtubeEmbed = getYouTubeEmbed(lesson.youtube_url);
+        const driveEmbed = getGoogleDriveEmbed(lesson.youtube_url);
+        const embedUrl = youtubeEmbed || driveEmbed;
+
+        if (embedUrl) {
+            const player = createVideoPlayer(
+                embedUrl,
+                lesson.lesson_title
+            );
+
+            item.appendChild(player);
+
+            const fullscreenButton = document.createElement("button");
+            fullscreenButton.type = "button";
+            fullscreenButton.textContent = "⛶ Watch Fullscreen";
+            fullscreenButton.className = "fullscreen-button";
+
+            fullscreenButton.style.cssText = `
+                display: block;
+                width: 100%;
+                margin-top: 12px;
+                padding: 14px;
+                border: none;
+                border-radius: 10px;
+                background: linear-gradient(135deg, #8b5cf6, #5b21b6);
+                color: white;
+                font-size: 15px;
+                font-weight: bold;
+                cursor: pointer;
+            `;
+
+            fullscreenButton.addEventListener("click", async () => {
+                const iframe = player.querySelector("iframe");
+
+                if (!iframe) return;
+
+                try {
+                    if (iframe.requestFullscreen) {
+                        await iframe.requestFullscreen();
+                    } else if (iframe.webkitRequestFullscreen) {
+                        iframe.webkitRequestFullscreen();
+                    } else {
+                        window.open(embedUrl, "_blank");
+                    }
+                } catch (error) {
+                    window.open(embedUrl, "_blank");
+                }
+            });
+
+            item.appendChild(fullscreenButton);
+
+        } else {
+            const warning = document.createElement("p");
+            warning.textContent =
+                "The lesson video is not available yet. Please check back soon.";
+            item.appendChild(warning);
+        }
+
+        lessonContainer.appendChild(item);
+    });
+}
 
     lessons.forEach(lesson => {
 
