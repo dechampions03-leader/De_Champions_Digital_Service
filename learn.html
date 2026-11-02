@@ -248,6 +248,45 @@ main {
     line-height: 1.8;
     margin: 8px 0 25px;
 }
+    /* LESSON PROGRESS & CERTIFICATE */
+.progress-panel {
+    background: linear-gradient(135deg, rgba(135,56,209,.18), rgba(212,175,55,.08));
+    border: 1px solid rgba(212,175,55,.55);
+    border-radius: 18px;
+    padding: 22px;
+    margin: 0 0 28px;
+}
+.progress-top {
+    display:flex; justify-content:space-between; align-items:center;
+    gap:12px; flex-wrap:wrap; margin-bottom:13px;
+}
+.progress-top h2 { color:var(--purple-light); font-size:20px; }
+.progress-percent { color:var(--gold-soft); font-size:24px; font-weight:900; }
+.progress-track {
+    width:100%; height:13px; background:#090510;
+    border:1px solid #563477; border-radius:99px; overflow:hidden;
+}
+.progress-fill {
+    width:0%; height:100%; border-radius:99px;
+    background:linear-gradient(90deg,#8738d1,#d4af37);
+    transition:width .35s ease;
+}
+.progress-caption { color:var(--muted); font-size:13px; margin-top:10px; line-height:1.6; }
+.lesson-actions { margin-top:17px; display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.complete-button { background:linear-gradient(120deg,#92702a,#d4af37); color:#180f20; }
+.complete-button:disabled { opacity:.65; cursor:not-allowed; transform:none; }
+.lesson-status { color:var(--gold-soft); font-size:13px; font-weight:700; }
+.certificate-panel {
+    background:linear-gradient(145deg,#302047,#171020);
+    border:1px solid var(--gold); border-radius:18px;
+    padding:23px; margin:25px 0; text-align:center;
+}
+.certificate-panel h2 { color:var(--gold-soft); margin-bottom:10px; }
+.certificate-panel p { color:var(--muted); line-height:1.7; margin-bottom:15px; }
+@media(max-width:600px) {
+    .progress-panel,.certificate-panel { padding:18px; }
+    .lesson-actions .button { width:100%; }
+}
 
 .notice {
     background: #281536;
@@ -338,6 +377,26 @@ footer span {
             </p>
         </div>
 
+        <section class="progress-panel" aria-labelledby="progressHeading">
+            <div class="progress-top">
+                <h2 id="progressHeading">🏆 Your Learning Progress</h2>
+                <span class="progress-percent" id="progressPercent">0%</span>
+            </div>
+            <div class="progress-track" role="progressbar" aria-label="Course completion"
+                 aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="progressBar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
+            <p class="progress-caption" id="progressCaption">Loading your completed lessons...</p>
+        </section>
+
+        <section id="certificatePanel" class="certificate-panel hidden" aria-live="polite">
+            <h2>🎓 Congratulations, Champion!</h2>
+            <p id="certificateMessage">You have completed this course.</p>
+            <button type="button" class="button" id="downloadCertificateButton">
+                Download Your Certificate
+            </button>
+        </section>
+
         <h2 class="section-title">🎬 Course Lessons</h2>
         <div id="lessons"></div>
 
@@ -367,8 +426,7 @@ footer span {
                 <article class="monetization-card"><div class="skill-number">LESSON 05</div><h3>Set Your Price</h3><p>Consider the time, complexity, tools, revisions and value of the work. Research what your target market can afford. Avoid promising results you cannot control or pricing without defining the scope.</p></article>
                 <article class="monetization-card"><div class="skill-number">LESSON 06</div><h3>Deliver and Get Repeat Work</h3><p>Confirm the brief, agree on deadlines, provide progress updates, deliver files neatly and ask for feedback. With permission, turn successful work into a testimonial or case study.</p></article>
             </div>
-
-            <h2 class="section-title">🔎 MODULE 2 — How to Find Clients</h2>
+                        <h2 class="section-title">🔎 MODULE 2 — How to Find Clients</h2>
             <div class="monetization-grid">
                 <article class="monetization-card"><div class="skill-number">LESSON 07</div><h3>Start With Your Existing Network</h3><p>Tell friends, family, community groups and business owners what service you offer. Share examples of your work and ask for introductions—not just favors.</p></article>
                 <article class="monetization-card"><div class="skill-number">LESSON 08</div><h3>Find Businesses That Need Help</h3><p>Search for businesses with outdated designs, inconsistent posts, weak videos or no clear website. Make a thoughtful, specific suggestion rather than sending mass messages.</p></article>
@@ -401,9 +459,8 @@ footer span {
                 <article class="monetization-card"><div class="skill-number">GROWTH LESSON 06</div><h3>Build a Recognizable Brand</h3><p>Use consistent visuals, a clear service promise, professional communication and proof of work. Make it easy for a potential customer to understand what you do and how to hire you.</p></article>
                 <article class="monetization-card"><div class="skill-number">GROWTH LESSON 07</div><h3>Manage Money and Business Records</h3><p>Track income, expenses, subscriptions, client payments and project costs. Agree on payment milestones in writing and keep business funds and personal spending organized.</p></article>
                 <article class="monetization-card"><div class="skill-number">GROWTH LESSON 08</div><h3>Grow With Systems and Collaboration</h3><p>Document your process, use tools responsibly, collaborate with trusted specialists when needed and only delegate work you can supervise and quality-check.</p></article>
-            </div>
-
-            <h2 class="section-title">🛡️ MODULE 5 — Client Communication, Payments & Professional Safety</h2>
+                                                                                                                                              </div>
+                                                                                                                                                          <h2 class="section-title">🛡️ MODULE 5 — Client Communication, Payments & Professional Safety</h2>
             <div class="monetization-grid">
                 <article class="monetization-card"><div class="skill-number">PROFESSIONAL GUIDE 01</div><h3>Ask the Right Questions Before Starting</h3><p>Confirm the client's goal, audience, size or format, references, deadline, budget, deliverables and revision expectations. Summarize the agreement in writing.</p></article>
                 <article class="monetization-card"><div class="skill-number">PROFESSIONAL GUIDE 02</div><h3>Use Clear Agreements and Deposits</h3><p>For suitable projects, agree on scope, milestones, payment schedule, cancellation terms and ownership or usage rights before work begins. Use a secure, traceable payment method.</p></article>
@@ -461,7 +518,191 @@ const learningContent = document.getElementById("learningContent");
 const lessonContainer = document.getElementById("lessons");
 const materialContainer = document.getElementById("materials");
 
-/* =================================
+let currentUser = null;
+let currentCourse = null;
+let currentLessons = [];
+let completedLessonIds = new Set();
+let currentCertificate = null;
+        const progressPercent = document.getElementById("progressPercent");
+const progressFill = document.getElementById("progressFill");
+const progressBar = document.getElementById("progressBar");
+const progressCaption = document.getElementById("progressCaption");
+const certificatePanel = document.getElementById("certificatePanel");
+const certificateMessage = document.getElementById("certificateMessage");
+const downloadCertificateButton = document.getElementById("downloadCertificateButton");
+
+function updateProgress(total, completed) {
+    const percent = total > 0 ? Math.round((completed / total) * 100) : 0;
+    progressPercent.textContent = percent + "%";
+    progressFill.style.width = percent + "%";
+    progressBar.setAttribute("aria-valuenow", String(percent));
+    progressCaption.textContent = total
+        ? `${completed} of ${total} lessons completed. ${total - completed} remaining.`
+        : "No lessons have been published for this course yet.";
+}
+
+async function loadLessonProgress() {
+    const { data, error } = await withTimeout(
+        db.from("lesson_progress")
+          .select("lesson_id")
+          .eq("user_id", currentUser.id)
+          .eq("course_id", currentCourse.id)
+    );
+    if (error) throw error;
+    completedLessonIds = new Set((data || []).map(row => row.lesson_id));
+}
+
+async function markLessonComplete(lesson, button, status) {
+    if (!currentUser || !currentCourse) return;
+    button.disabled = true;
+    button.textContent = "Saving...";
+    status.textContent = "";
+
+    try {
+        const { error } = await withTimeout(
+            db.from("lesson_progress").insert({
+                user_id: currentUser.id,
+                course_id: currentCourse.id,
+                lesson_id: lesson.id
+            })
+        );
+
+        // A duplicate means the lesson was already recorded; treat it as complete.
+        if (error && error.code !== "23505") throw error;
+
+        completedLessonIds.add(lesson.id);
+        button.textContent = "✓ Lesson Completed";
+        status.textContent = "Your progress has been saved.";
+        updateProgress(currentLessons.length, completedLessonIds.size);
+
+        if (currentLessons.length > 0 &&
+            completedLessonIds.size >= currentLessons.length) {
+            await issueAndShowCertificate();
+        }
+    } catch (error) {
+        console.error("Lesson progress save error:", error);
+        button.disabled = false;
+        button.textContent = "Mark Lesson as Complete";
+        status.textContent = error.message || "Could not save progress. Please try again.";
+    }
+}
+
+async function issueAndShowCertificate() {
+    if (!currentCourse || !currentUser || !currentLessons.length ||
+        completedLessonIds.size < currentLessons.length) return;
+
+    certificateMessage.textContent =
+        "All lessons are complete. Preparing your course certificate...";
+    certificatePanel.classList.remove("hidden");
+
+    try {
+        // The database function checks enrollment and completion before issuing.
+        const { error: issueError } = await withTimeout(
+            db.rpc("issue_course_certificate", { p_course_id: currentCourse.id })
+        );
+        if (issueError) throw issueError;
+
+        const { data: certificate, error: certificateError } = await withTimeout(
+            db.from("certificates")
+              .select("certificate_number, status, issued_at, verified_at")
+              .eq("user_id", currentUser.id)
+              .eq("course_id", currentCourse.id)
+              .maybeSingle()
+        );
+        if (certificateError) throw certificateError;
+        if (!certificate) throw new Error("Your completion was recorded, but the certificate is not available yet. Please refresh shortly or contact DCDS support.");
+
+        currentCertificate = certificate;
+
+        if (certificate.status === "revoked") {
+            certificateMessage.textContent =
+                "This certificate is currently marked as revoked. Please contact DCDS support.";
+            downloadCertificateButton.classList.add("hidden");
+            return;
+        }
+
+        const verifiedText = certificate.status === "admin_verified"
+            ? " Your certificate has also been verified by the DCDS administrator."
+            : " Your certificate has been issued automatically and is awaiting any optional administrator verification.";
+
+        certificateMessage.textContent =
+            "You have completed " + currentCourse.title +
+            ". Certificate number: " + certificate.certificate_number + "." + verifiedText;
+        downloadCertificateButton.classList.remove("hidden");
+    } catch (error) {
+        console.error("Certificate issuance error:", error);
+        certificateMessage.textContent =
+            "You have completed every lesson! Your progress is saved, but the certificate could not be loaded right now. Please refresh this page or contact DCDS support. " +
+            (error.message || "");
+        downloadCertificateButton.classList.add("hidden");
+    }
+}
+
+function escapeCertificateText(value) {
+    return String(value || "").replace(/[&<>"']/g, char => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;",
+        '"': "&quot;", "'": "&#39;"
+    }[char]));
+}
+
+function downloadCertificate() {
+    if (!currentCertificate || !currentCourse || !currentUser) return;
+
+    const metadata = currentUser.user_metadata || {};
+    const studentName = metadata.full_name || metadata.name ||
+        metadata.display_name || currentUser.email || "DCDS Student";
+    const issueDate = currentCertificate.issued_at
+        ? new Date(currentCertificate.issued_at).toLocaleDateString("en-US", {
+            year: "numeric", month: "long", day: "numeric"
+          })
+        : new Date().toLocaleDateString("en-US", {
+            year: "numeric", month: "long", day: "numeric"
+          });
+
+    const printWindow = window.open("", "_blank");
+    if (!printWindow) {
+        alert("Please allow pop-ups for this site so you can print or save your certificate.");
+        return;
+    }
+
+    printWindow.document.open();
+    printWindow.document.write(`<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>DCDS Certificate - ${escapeCertificateText(currentCertificate.certificate_number)}</title>
+<style>
+*{box-sizing:border-box}body{margin:0;padding:30px;background:#f4f0f8;color:#241332;font-family:Georgia,serif}
+.certificate{max-width:1000px;min-height:690px;margin:0 auto;background:#fffdf8;border:12px double #6c2bd9;outline:2px solid #d4af37;outline-offset:-22px;padding:65px 55px;text-align:center;position:relative}
+.brand{font:900 18px Arial,sans-serif;letter-spacing:5px;color:#6c2bd9}
+.tag{font:11px Arial,sans-serif;letter-spacing:3px;color:#876d38;margin-top:8px}
+h1{font-size:46px;color:#3a1857;margin:55px 0 12px}
+.subtitle{font:15px Arial,sans-serif;letter-spacing:3px;text-transform:uppercase;color:#8b6b2d}
+.award{font-size:18px;margin-top:35px;color:#51445b}
+.name{font-size:38px;font-weight:bold;color:#32144d;border-bottom:1px solid #d4af37;display:inline-block;padding:10px 35px;margin:15px 0}
+.course{font-size:27px;color:#6c2bd9;font-weight:bold;margin:15px 0}
+.detail{font:13px Arial,sans-serif;color:#65596d;line-height:1.8;margin-top:28px}
+.signature{margin:55px auto 0;width:260px;border-top:1px solid #9c8caa;padding-top:10px;font:12px Arial,sans-serif;color:#4a3c54}
+.number{font:11px Arial,sans-serif;color:#806a39;margin-top:28px}
+@media print{body{padding:0;background:#fff}.certificate{max-width:none;min-height:100vh;border-width:12px;break-inside:avoid}@page{size:landscape;margin:10mm}}
+</style></head><body>
+<main class="certificate">
+<div class="brand">DCDS</div><div class="tag">CREATE • LEARN • INNOVATE • EARN</div>
+<h1>Certificate of Completion</h1>
+<div class="subtitle">Proudly presented to</div>
+<div class="name">${escapeCertificateText(studentName)}</div>
+<div class="award">In recognition of successfully completing the learning requirements for</div>
+<div class="course">${escapeCertificateText(currentCourse.title)}</div>
+<div class="detail">Awarded on ${escapeCertificateText(issueDate)}<br>
+De Champions Digital Service</div>
+<div class="signature">De Champions Digital Service</div>
+<div class="number">Certificate No: ${escapeCertificateText(currentCertificate.certificate_number)}</div>
+</main><script>window.onload=()=>setTimeout(()=>window.print(),400);<\/script>
+</body></html>`);
+    printWindow.document.close();
+}
+
+downloadCertificateButton.addEventListener("click", downloadCertificate);
+        /* =================================
    MESSAGE HANDLER
 ================================= */
 
@@ -655,93 +896,86 @@ async function openFullscreen(element, fallbackUrl) {
         window.open(fallbackUrl, "_blank");
     }
 }
-
-/* =================================
+        /* =================================
    LESSON DISPLAY
 ================================= */
 
 function displayLessons(lessons) {
-
     lessonContainer.innerHTML = "";
 
     if (!lessons || lessons.length === 0) {
-
         lessonContainer.innerHTML =
             '<div class="notice">Course lessons will be available soon. Stay tuned!</div>';
-
+        updateProgress(0, 0);
         return;
     }
 
     lessons.forEach(lesson => {
-
         const item = document.createElement("div");
         item.className = "lesson";
 
         const heading = document.createElement("h3");
-
         heading.textContent =
-            "Lesson " + lesson.lesson_number +
-            " — " + lesson.lesson_title;
-
+            "Lesson " + lesson.lesson_number + " — " + lesson.lesson_title;
         item.appendChild(heading);
 
         if (lesson.lesson_description) {
-
             const description = document.createElement("p");
-
             description.textContent = lesson.lesson_description;
-
             item.appendChild(description);
         }
 
-        const youtubeEmbed =
-            getYouTubeEmbed(lesson.youtube_url);
-
-        const driveEmbed =
-            getGoogleDriveEmbed(lesson.youtube_url);
-
+        const youtubeEmbed = getYouTubeEmbed(lesson.youtube_url);
+        const driveEmbed = getGoogleDriveEmbed(lesson.youtube_url);
         const embedUrl = youtubeEmbed || driveEmbed;
 
         if (embedUrl) {
-
-            const player = createVideoPlayer(
-                embedUrl,
-                lesson.lesson_title
-            );
-
+            const player = createVideoPlayer(embedUrl, lesson.lesson_title);
             item.appendChild(player);
 
-            const fullscreenButton =
-                document.createElement("button");
-
+            const fullscreenButton = document.createElement("button");
             fullscreenButton.type = "button";
-            fullscreenButton.className =
-                "button fullscreen-button";
-
-            fullscreenButton.textContent =
-                "⛶ Watch Fullscreen";
-
+            fullscreenButton.className = "button fullscreen-button";
+            fullscreenButton.textContent = "⛶ Watch Fullscreen";
             fullscreenButton.addEventListener("click", () => {
-
                 openFullscreen(player, embedUrl);
-
             });
-
             item.appendChild(fullscreenButton);
-
         } else {
-
             const warning = document.createElement("p");
-
             warning.textContent =
                 "The lesson video is not available yet. Please check back soon.";
-
             item.appendChild(warning);
         }
 
-        lessonContainer.appendChild(item);
+        const actions = document.createElement("div");
+        actions.className = "lesson-actions";
 
+        const completeButton = document.createElement("button");
+        completeButton.type = "button";
+        completeButton.className = "button complete-button";
+        completeButton.dataset.lessonId = lesson.id;
+
+        const status = document.createElement("span");
+        status.className = "lesson-status";
+        status.id = "lesson-status-" + lesson.id;
+
+        if (completedLessonIds.has(lesson.id)) {
+            completeButton.textContent = "✓ Lesson Completed";
+            completeButton.disabled = true;
+            status.textContent = "Saved to your learning progress";
+        } else {
+            completeButton.textContent = "Mark Lesson as Complete";
+            completeButton.addEventListener("click", () => markLessonComplete(lesson, completeButton, status));
+        }
+
+        actions.appendChild(completeButton);
+        actions.appendChild(status);
+        item.appendChild(actions);
+        lessonContainer.appendChild(item);
     });
+
+    updateProgress(lessons.length, completedLessonIds.size);
 }
 
 /* =================================
@@ -806,7 +1040,7 @@ function displayMaterials(materials) {
             '<div class="notice">Learning materials will be available soon.</div>';
     }
 }
-       /* =================================
+               /* =================================
    MAIN COURSE LOADER
 ================================= */
 
@@ -854,6 +1088,7 @@ async function loadCourse() {
         }
 
         const user = sessionData.session.user;
+        currentUser = user;
 
         // A Supabase session is not enough until the student's email is verified.
         if (!user.email_confirmed_at) {
@@ -881,11 +1116,10 @@ async function loadCourse() {
         if (courseError) throw courseError;
 
         if (!course) {
-
             showMessage("We could not find this course.");
-
             return;
         }
+        currentCourse = course;
 
         /* CHECK ENROLLMENT */
 
@@ -938,7 +1172,16 @@ async function loadCourse() {
 
         if (lessonError) throw lessonError;
 
+        currentLessons = lessons || [];
+        await loadLessonProgress();
         displayLessons(lessons);
+
+        // Recover certificate issuance if all lessons were completed before
+        // the student revisited this page.
+        if (currentLessons.length > 0 &&
+            completedLessonIds.size >= currentLessons.length) {
+            await issueAndShowCertificate();
+        }
 
         /* LOAD MATERIALS */
 
