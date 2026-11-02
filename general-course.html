@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#35105f">
+
+<title>DCDS General Course | Learning Channels</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --purple: #6128b8;
+  --deep: #210b3b;
+  --dark: #35105f;
+  --gold: #d7b45a;
+  --ink: #211832;
+  --muted: #71647f;
+  --lav: #f3edfc;
+  --line: #e8def3;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(145deg, #f8f5fc, #eee6f8);
+  color: var(--ink);
+  font-family: 'DM Sans', sans-serif;
+  min-height: 100vh;
+}
+
+.wrap {
+  width: min(1060px, calc(100% - 32px));
+  margin: auto;
+  padding: 28px 0 64px;
+}
+
+.top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-weight: 900;
+  color: var(--dark);
+  letter-spacing: .04em;
+}
+
+.back {
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 15px;
+  border-radius: 999px;
+  border: 1px solid #d9c8eb;
+  color: var(--dark);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 800;
+  background: #fff;
+}
+
+.hero {
+  position: relative;
+  overflow: hidden;
+  padding: clamp(25px, 5vw, 48px);
+  border-radius: 28px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 90% 10%, #9a62c7 0, transparent 34%),
+    linear-gradient(130deg, #210b3b, #512080 60%, #7132a8);
+  box-shadow: 0 22px 55px #32104f25;
+}
+
+.eyebrow {
+  color: #f6df9e;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  font: 800 clamp(32px, 5vw, 52px)/1.1 'Playfair Display', serif;
+  margin: 13px 0;
+}
+
+.hero p {
+  max-width: 720px;
+  color: #eee4f8;
+  line-height: 1.8;
+  margin: 0;
+}
+
+.status {
+  margin: 22px 0 0;
+  padding: 14px 16px;
+  border-radius: 14px;
+  background: #fff;
+  color: var(--dark);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.section-head {
+  margin: 34px 0 18px;
+}
+
+.section-head span {
+  font-size: 11px;
+  letter-spacing: .15em;
+  color: var(--purple);
+  font-weight: 900;
+}
+
+.section-head h2 {
+  font: 800 clamp(25px, 4vw, 34px) 'Playfair Display', serif;
+  margin: 8px 0;
+  color: var(--deep);
+}
+
+.section-head p {
+  color: var(--muted);
+  line-height: 1.7;
+  margin: 0;
+}
+
+.channels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 22px;
+  box-shadow: 0 8px 24px #2913410a;
+  display: flex;
+  flex-direction: column;
+  min-height: 190px;
+}
+
+.card .num {
+  width: 42px;
+  height: 42px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+  background: var(--lav);
+  color: var(--purple);
+  font-weight: 900;
+}
+
+.card h3 {
+  margin: 17px 0 7px;
+  color: var(--deep);
+  font-size: 19px;
+}
+
+.card p {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.join {
+  margin-top: auto;
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 46px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(110deg, #6128b8, #8738d1);
+  color: #fff;
+  text-decoration: none;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: .04em;
+  cursor: pointer;
+}
+
+.join[aria-disabled=true] {
+  opacity: .55;
+  pointer-events: none;
+}
+
+.note {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border-radius: 15px;
+  background: #fff8e8;
+  border: 1px solid #f0dfb5;
+  color: #624b18;
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+.hidden {
+  display: none !important;
+}
+
+@media(max-width:650px) {
+  .channels {
+    grid-template-columns: 1fr;
+  }
+
+  .top {
+    align-items: flex-start;
+  }
+
+  .wrap {
+    width: min(100% - 24px, 1060px);
+    padding-top: 18px;
+  }
+
+  .hero {
+    border-radius: 22px;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<main class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      DCDS · DE CHAMPIONS DIGITAL SERVICE
+    </div>
+
+    <a class="back" href="index.html#courses">
+      ← Back to Courses
+    </a>
+  </div>
+
+  <section class="hero">
+    <span class="eyebrow">Premium Learning Package</span>
+
+    <h1>DCDS General Course</h1>
+
+    <p>
+      Welcome to your General Course learning area.
+      Explore your four dedicated learning channels,
+      develop practical skills, and keep building your
+      digital future—one lesson at a time.
+    </p>
+  </section>
+
+  <div class="status" id="status" role="status" aria-live="polite">
+    Checking your student account and General Course enrollment…
+  </div>
+
+  <section id="learningArea" class="hidden">
+
+    <div class="section-head">
+      <span>EXPLORE MORE LEARNING OPPORTUNITIES</span>
+
+      <h2>Your Four Learning Channels</h2>
+
+      <p>
+        Select a channel below to continue learning.
+        Each channel opens in Telegram.
+      </p>
+    </div>
+
+    <div class="channels" id="channels">
+
+      <article class="card">
+        <div class="num">01</div>
+        <h3>Learning Channel 1</h3>
+        <p>
+          Access lessons, learning resources, and
+          practical guidance in your first dedicated channel.
+        </p>
+        <a class="join" data-channel="0" href="#">
+          JOIN LEARNING CHANNEL →
+        </a>
+      </article>
+
+      <article class="card">
+        <div class="num">02</div>
+        <h3>Learning Channel 2</h3>
+        <p>
+          Continue exploring new topics, ideas, and
+          learning opportunities in this channel.
+        </p>
+        <a class="join" data-channel="1" href="#">
+          JOIN LEARNING CHANNEL →
+        </a>
+      </article>
+
+      <article class="card">
+        <div class="num">03</div>
+        <h3>Learning Channel 3</h3>
+        <p>
+          Build your confidence through additional
+          lessons, shared resources, and practice.
+        </p>
+        <a class="join" data-channel="2" href="#">
+          JOIN LEARNING CHANNEL →
+        </a>
+      </article>
+
+      <article class="card">
+        <div class="num">04</div>
+        <h3>Learning Channel 4</h3>
+        <p>
+          Discover more learning materials and keep
+          growing your digital skills.
+        </p>
+        <a class="join" data-channel="3" href="#">
+          JOIN LEARNING CHANNEL →
+        </a>
+      </article>
+
+    </div>
+
+    <div class="note">
+      Your General Course access is linked to your
+      verified DCDS student account. Keep your
+      Telegram account ready before joining the channels.
+    </div>
+
+  </section>
+
+</main>
+
+<script>
+const SUPABASE_URL =
+  'https://qxsenflgaweeadvggnyp.supabase.co';
+
+// Public Supabase publishable key
+const SUPABASE_ANON_KEY =
+  'sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
+
+const GENERAL_COURSE_ID =
+  'a1030000-0000-4000-8000-000000000001';
+
+const statusEl = document.getElementById('status');
+
+function fail(message, showLogin = false) {
+
+  statusEl.textContent = message;
+
+  if (showLogin) {
+
+    const a = document.createElement('a');
+
+    a.href = 'index.html#courses';
+
+    a.textContent = ' Return to DCDS and log in';
+
+    a.style.color = '#6128b8';
+
+    a.style.fontWeight = '800';
+
+    statusEl.appendChild(a);
+  }
+}
+
+(async () => {
+
+  try {
+
+    if (
+      !window.supabase ||
+      !SUPABASE_ANON_KEY ||
+      SUPABASE_ANON_KEY.startsWith('REPLACE_')
+    ) {
+      throw new Error(
+        'DCDS Supabase public key needs to be copied from the existing website configuration before publishing this page.'
+      );
+    }
+
+    const client = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_ANON_KEY
+    );
+
+    const {
+      data: { session },
+      error: sessionError
+    } = await client.auth.getSession();
+
+    if (sessionError) throw sessionError;
+
+    if (
+      !session ||
+      !session.user?.email_confirmed_at
+    ) {
+
+      fail(
+        'Please log in with your verified DCDS student account to continue.',
+        true
+      );
+
+      return;
+    }
+
+    statusEl.textContent =
+      'Verifying your General Course enrollment…';
+
+    const { data, error } =
+      await client.functions.invoke(
+        'get-general-course-channels'
+      );
+
+    if (error) throw error;
+
+    if (
+      !data?.success ||
+      !Array.isArray(data.channels) ||
+      data.channels.length !== 4
+    ) {
+
+      throw new Error(
+        data?.error ||
+        'Your General Course access could not be verified.'
+      );
+    }
+
+    document.querySelectorAll('[data-channel]').forEach(a => {
+
+      const item = data.channels[
+        Number(a.dataset.channel)
+      ];
+
+      if (item?.url) {
+
+        a.href = item.url;
+
+        a.target = '_blank';
+
+        a.rel = 'noopener noreferrer';
+
+        a.setAttribute('aria-disabled', 'false');
+
+      } else {
+
+        a.setAttribute('aria-disabled', 'true');
+
+        a.textContent = 'CHANNEL UNAVAILABLE';
+      }
+
+    });
+
+    document
+      .getElementById('learningArea')
+      .classList.remove('hidden');
+
+    statusEl.textContent =
+      '✓ Your General Course enrollment is verified. Welcome to your learning area!';
+
+  } catch (e) {
+
+    console.error(
+      'DCDS General Course access check:',
+      e
+    );
+
+    fail(
+      e.message ||
+      'We could not verify your access. Please try again or contact DCDS support.'
+    );
+
+  }
+
+})();
+</script>
+
+</body>
+                </html>
