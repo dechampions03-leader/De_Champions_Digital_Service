@@ -1,0 +1,2651 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <meta name="theme-color" content="#160B27">
+
+    <meta name="description"
+          content="DCDS Administrator Notification Center">
+
+    <title>DCDS Admin Notification Center</title>
+
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+</head>
+
+<body>
+
+    <!-- MAIN APPLICATION CONTAINER -->
+
+    <div id="adminApp">
+
+        <!-- HEADER -->
+
+        <header id="adminHeader">
+
+            <div class="brand-section">
+
+                <h1>
+                    DE CHAMPIONS
+                    <span>DIGITAL SERVICE</span>
+                </h1>
+
+                <p>ADMIN NOTIFICATION CENTER</p>
+
+            </div>
+
+            <button
+                id="logoutButton"
+                type="button"
+                onclick="logoutAdmin()">
+
+                LOGOUT
+
+            </button>
+
+        </header>
+
+
+        <!-- ADMIN WELCOME SECTION -->
+
+        <section id="welcomeSection">
+
+            <h2>
+                Welcome, Administrator 👑
+            </h2>
+
+            <p>
+                Manage announcements, communicate important
+                updates, and keep DCDS students informed.
+            </p>
+
+        </section>
+
+
+        <!-- DASHBOARD STATISTICS -->
+
+        <section id="statisticsSection">
+
+            <div class="stat-card">
+
+                <p>Total Announcements</p>
+
+                <h3 id="totalAnnouncements">0</h3>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <p>Total Recipients</p>
+
+                <h3 id="totalRecipients">0</h3>
+
+            </div>
+
+
+            <div class="stat-card">
+
+                <p>Notification Center</p>
+
+                <h3>ACTIVE</h3>
+
+            </div>
+
+        </section>
+
+
+        <!-- CREATE ANNOUNCEMENT SECTION -->
+
+        <main id="mainContent">
+
+            <section id="createAnnouncementSection">
+
+                <div class="section-heading">
+
+                    <h2>📢 Create Announcement</h2>
+
+                    <p>
+                        Send important information to your students.
+                    </p>
+
+                </div>
+
+
+                <form id="announcementForm">
+
+                    <!-- TITLE -->
+
+                    <div class="form-group">
+
+                        <label for="announcementTitle">
+                            Announcement Title
+                        </label>
+
+                        <input
+                            type="text"
+                            id="announcementTitle"
+                            placeholder="Enter announcement title"
+                            maxlength="150"
+                            required>
+
+                    </div>
+
+
+                    <!-- MESSAGE -->
+
+                    <div class="form-group">
+
+                        <label for="announcementMessage">
+                            Announcement Message
+                        </label>
+
+                        <textarea
+                            id="announcementMessage"
+                            placeholder="Write your announcement here..."
+                            required></textarea>
+
+                    </div>
+
+
+                    <!-- CATEGORY -->
+
+                    <div class="form-group">
+
+                        <label for="announcementCategory">
+                            Announcement Category
+                        </label>
+
+                        <select
+                            id="announcementCategory"
+                            required>
+
+                            <option value="general">
+                                General Update
+                            </option>
+
+                            <option value="important">
+                                Important Notice
+                            </option>
+
+                            <option value="course">
+                                Course Update
+                            </option>
+
+                            <option value="promotion">
+                                Promotion
+                            </option>
+
+                            <option value="event">
+                                Event Announcement
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- AUDIENCE SELECTION -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Select Announcement Audience
+                        </label>
+
+                        <div id="audienceOptions">
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="audience"
+                                    value="all"
+                                    checked>
+
+                                All Students
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="audience"
+                                    value="enrolled">
+
+                                Enrolled Students
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="audience"
+                                    value="general_course">
+
+                                General Course Students
+                            </label>
+
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="audience"
+                                    value="specific_course">
+
+                                Specific Course Students
+                            </label>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- COURSE SELECTION -->
+
+                    <div
+                        class="form-group"
+                        id="courseSelection"
+                        hidden>
+
+                        <label for="courseSelect">
+                            Select Course
+                        </label>
+
+                        <select id="courseSelect">
+
+                            <option value="">
+                                Loading courses...
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <!-- PUBLISH BUTTON -->
+
+                    <button
+                        type="submit"
+                        id="publishButton">
+
+                        PUBLISH ANNOUNCEMENT
+
+                    </button>
+
+
+                    <!-- STATUS MESSAGE -->
+
+                    <div
+                        id="statusMessage"
+                        role="status"
+                        aria-live="polite">
+
+                    </div>
+
+                </form>
+
+            </section>
+
+
+            <!-- ANNOUNCEMENT HISTORY -->
+
+            <section id="historySection">
+
+                <div class="section-heading">
+
+                    <h2>📋 Announcement History</h2>
+
+                    <p>
+                        View previously published announcements.
+                    </p>
+
+                </div>
+
+
+                <div id="announcementHistory">
+
+                    <p>
+                        Announcement history will appear here.
+                    </p>
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+        <!-- FOOTER -->
+
+        <footer id="adminFooter">
+
+            <p>
+                © 2026 De Champions Digital Service.
+            </p>
+
+            <p>
+                CREATE • LEARN • INNOVATE • EARN.
+            </p>
+
+        </footer>
+
+    </div>
+ <!-- =====================================
+     BLOCK 2: PREMIUM CSS DESIGN PART 1
+====================================== -->
+
+<style>
+
+/* =====================================
+   DCDS BRAND COLOR SYSTEM
+====================================== */
+
+:root {
+
+    --primary-purple: #6C2BD9;
+
+    --deep-purple: #2B124C;
+
+    --dark-background: #160B27;
+
+    --darker-background: #0D0717;
+
+    --luxury-gold: #D4AF37;
+
+    --bright-gold: #F5D77A;
+
+    --pure-white: #FFFFFF;
+
+    --soft-white: #F3EDF9;
+
+    --muted-text: #B8A9CC;
+
+    --success-green: #25C47A;
+
+    --danger-red: #F05252;
+
+    --card-background: rgba(255,255,255,0.055);
+
+    --border-color: rgba(212,175,55,0.25);
+
+}
+
+
+/* =====================================
+   GLOBAL RESET
+====================================== */
+
+* {
+
+    margin: 0;
+
+    padding: 0;
+
+    box-sizing: border-box;
+
+}
+
+
+/* =====================================
+   MAIN BODY DESIGN
+====================================== */
+
+body {
+
+    font-family: 'Segoe UI', Arial, sans-serif;
+
+    background:
+        radial-gradient(
+            circle at top left,
+            rgba(108,43,217,0.20),
+            transparent 35%
+        ),
+        linear-gradient(
+            135deg,
+            var(--darker-background),
+            var(--deep-purple),
+            var(--dark-background)
+        );
+
+    color: var(--pure-white);
+
+    min-height: 100vh;
+
+    padding: 25px 18px;
+
+    line-height: 1.6;
+
+}
+
+
+/* =====================================
+   MAIN APPLICATION CONTAINER
+====================================== */
+
+#adminApp {
+
+    width: 100%;
+
+    max-width: 1150px;
+
+    margin: 0 auto;
+
+}
+
+
+/* =====================================
+   HEADER DESIGN
+====================================== */
+
+#adminHeader {
+
+    display: flex;
+
+    justify-content: space-between;
+
+    align-items: center;
+
+    flex-wrap: wrap;
+
+    gap: 20px;
+
+    padding: 25px 28px;
+
+    margin-bottom: 35px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 20px;
+
+    background: linear-gradient(
+        135deg,
+        rgba(255,255,255,0.09),
+        rgba(255,255,255,0.025)
+    );
+
+    box-shadow:
+        0 12px 35px rgba(0,0,0,0.25),
+        inset 0 1px 0 rgba(255,255,255,0.05);
+
+    backdrop-filter: blur(15px);
+
+}
+
+
+/* =====================================
+   BRAND NAME
+====================================== */
+
+.brand-section h1 {
+
+    font-size: 25px;
+
+    font-weight: 900;
+
+    letter-spacing: 1.5px;
+
+    color: var(--bright-gold);
+
+    line-height: 1.3;
+
+}
+
+
+.brand-section h1 span {
+
+    display: block;
+
+    color: var(--pure-white);
+
+    font-size: 17px;
+
+    letter-spacing: 3px;
+
+    margin-top: 3px;
+
+}
+
+
+.brand-section p {
+
+    color: var(--muted-text);
+
+    font-size: 11px;
+
+    letter-spacing: 3px;
+
+    margin-top: 10px;
+
+    font-weight: 700;
+
+}
+
+
+/* =====================================
+   LOGOUT BUTTON
+====================================== */
+
+#logoutButton {
+
+    background: linear-gradient(
+        135deg,
+        #D94A4A,
+        #A91E35
+    );
+
+    color: white;
+
+    border: none;
+
+    padding: 12px 23px;
+
+    border-radius: 10px;
+
+    font-weight: 800;
+
+    letter-spacing: 1px;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+
+}
+
+
+#logoutButton:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 7px 20px rgba(217,74,74,0.3);
+
+}
+
+
+/* =====================================
+   WELCOME SECTION
+====================================== */
+
+#welcomeSection {
+
+    margin-bottom: 30px;
+
+    padding: 15px 5px;
+
+}
+
+
+#welcomeSection h2 {
+
+    font-size: 29px;
+
+    font-weight: 800;
+
+    color: var(--bright-gold);
+
+    margin-bottom: 8px;
+
+}
+
+
+#welcomeSection p {
+
+    max-width: 750px;
+
+    color: var(--muted-text);
+
+    font-size: 15px;
+
+    line-height: 1.8;
+
+}   
+  /* =====================================
+   DASHBOARD STATISTICS
+====================================== */
+
+#statisticsSection {
+
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(200px, 1fr)
+    );
+
+    gap: 18px;
+
+    margin-bottom: 35px;
+
+}
+
+
+.stat-card {
+
+    position: relative;
+
+    overflow: hidden;
+
+    padding: 25px;
+
+    border-radius: 17px;
+
+    background: linear-gradient(
+        145deg,
+        rgba(255,255,255,0.09),
+        rgba(255,255,255,0.025)
+    );
+
+    border: 1px solid var(--border-color);
+
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+
+    transition: 0.3s ease;
+
+}
+
+
+.stat-card:hover {
+
+    transform: translateY(-5px);
+
+    border-color: var(--luxury-gold);
+
+}
+
+
+.stat-card p {
+
+    color: var(--muted-text);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    margin-bottom: 12px;
+
+}
+
+
+.stat-card h3 {
+
+    color: var(--bright-gold);
+
+    font-size: 28px;
+
+    font-weight: 900;
+
+    letter-spacing: 1px;
+
+}
+
+
+/* =====================================
+   MAIN CONTENT PANELS
+====================================== */
+
+#createAnnouncementSection,
+#historySection {
+
+    padding: 30px;
+
+    margin-bottom: 28px;
+
+    border-radius: 20px;
+
+    background: linear-gradient(
+        145deg,
+        rgba(255,255,255,0.075),
+        rgba(255,255,255,0.025)
+    );
+
+    border: 1px solid var(--border-color);
+
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+
+}
+
+
+/* =====================================
+   SECTION HEADINGS
+====================================== */
+
+.section-heading {
+
+    margin-bottom: 27px;
+
+    padding-bottom: 17px;
+
+    border-bottom: 1px solid var(--border-color);
+
+}
+
+
+.section-heading h2 {
+
+    color: var(--bright-gold);
+
+    font-size: 22px;
+
+    font-weight: 800;
+
+    margin-bottom: 7px;
+
+}
+
+
+.section-heading p {
+
+    color: var(--muted-text);
+
+    font-size: 13px;
+
+}
+
+
+/* =====================================
+   FORM GROUPS
+====================================== */
+
+.form-group {
+
+    margin-bottom: 23px;
+
+}
+
+
+.form-group > label {
+
+    display: block;
+
+    color: var(--soft-white);
+
+    font-size: 14px;
+
+    font-weight: 700;
+
+    margin-bottom: 10px;
+
+}
+
+
+/* =====================================
+   INPUT FIELDS
+====================================== */
+
+input[type="text"],
+textarea,
+select {
+
+    display: block;
+
+    width: 100%;
+
+    padding: 15px 16px;
+
+    border: 1px solid rgba(212,175,55,0.28);
+
+    border-radius: 11px;
+
+    background: rgba(13,7,23,0.75);
+
+    color: var(--pure-white);
+
+    font-family: inherit;
+
+    font-size: 14px;
+
+    outline: none;
+
+    transition: 0.3s ease;
+
+}
+
+
+input[type="text"]::placeholder,
+textarea::placeholder {
+
+    color: #9888AB;
+
+}
+
+
+input[type="text"]:focus,
+textarea:focus,
+select:focus {
+
+    border-color: var(--bright-gold);
+
+    box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
+
+}
+
+
+textarea {
+
+    min-height: 155px;
+
+    resize: vertical;
+
+    line-height: 1.7;
+
+}
+
+
+select {
+
+    cursor: pointer;
+
+}
+
+
+select option {
+
+    background: var(--deep-purple);
+
+    color: white;
+
+}
+
+
+/* =====================================
+   AUDIENCE SELECTION CARDS
+====================================== */
+
+#audienceOptions {
+
+    display: grid;
+
+    grid-template-columns: repeat(
+        auto-fit,
+        minmax(210px, 1fr)
+    );
+
+    gap: 13px;
+
+}
+
+
+#audienceOptions label {
+
+    display: flex;
+
+    align-items: center;
+
+    gap: 11px;
+
+    padding: 17px;
+
+    min-height: 58px;
+
+    border: 1px solid var(--border-color);
+
+    border-radius: 12px;
+
+    background: rgba(255,255,255,0.035);
+
+    color: var(--soft-white);
+
+    font-size: 13px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+
+}
+
+
+#audienceOptions label:hover {
+
+    background: rgba(108,43,217,0.2);
+
+    border-color: var(--bright-gold);
+
+}
+
+
+#audienceOptions input[type="radio"] {
+
+    width: 17px;
+
+    height: 17px;
+
+    accent-color: var(--luxury-gold);
+
+    cursor: pointer;
+
+}
+
+
+/* =====================================
+   COURSE SELECTION AREA
+====================================== */
+
+#courseSelection {
+
+    padding: 18px;
+
+    border-radius: 12px;
+
+    background: rgba(108,43,217,0.12);
+
+    border: 1px solid var(--border-color);
+
+    margin-top: 15px;
+
+}
+
+
+#courseSelection[hidden] {
+
+    display: none;
+
+}
+
+
+/* =====================================
+   PUBLISH ANNOUNCEMENT BUTTON
+====================================== */
+
+#publishButton {
+
+    display: block;
+
+    width: 100%;
+
+    padding: 17px;
+
+    border: none;
+
+    border-radius: 12px;
+
+    background: linear-gradient(
+        110deg,
+        #B88A16,
+        #F5D77A,
+        #D4AF37
+    );
+
+    color: #241438;
+
+    font-size: 14px;
+
+    font-weight: 900;
+
+    letter-spacing: 1.3px;
+
+    cursor: pointer;
+
+    transition: 0.3s ease;
+
+    box-shadow: 0 7px 20px rgba(212,175,55,0.15);
+
+}
+
+
+#publishButton:hover {
+
+    transform: translateY(-3px);
+
+    box-shadow: 0 10px 25px rgba(212,175,55,0.3);
+
+}
+
+
+#publishButton:disabled {
+
+    opacity: 0.6;
+
+    cursor: not-allowed;
+
+    transform: none;
+
+}
+
+
+/* =====================================
+   STATUS MESSAGE
+====================================== */
+
+#statusMessage {
+
+    display: none;
+
+    padding: 14px 16px;
+
+    margin-top: 17px;
+
+    border-radius: 10px;
+
+    font-size: 13px;
+
+    line-height: 1.6;
+
+}
+
+
+#statusMessage.success {
+
+    display: block;
+
+    color: #83F0B6;
+
+    background: rgba(37,196,122,0.12);
+
+    border: 1px solid rgba(37,196,122,0.25);
+
+}
+
+
+#statusMessage.error {
+
+    display: block;
+
+    color: #FF9A9D;
+
+    background: rgba(240,82,82,0.12);
+
+    border: 1px solid rgba(240,82,82,0.25);
+
+}
+
+
+/* =====================================
+   ANNOUNCEMENT HISTORY CARDS
+====================================== */
+
+#announcementHistory {
+
+    display: flex;
+
+    flex-direction: column;
+
+    gap: 15px;
+
+}
+
+
+.announcement-card {
+
+    padding: 20px;
+
+    border-radius: 13px;
+
+    background: rgba(255,255,255,0.035);
+
+    border: 1px solid rgba(212,175,55,0.2);
+
+}
+
+
+.announcement-card h3 {
+
+    color: var(--bright-gold);
+
+    font-size: 17px;
+
+    margin-bottom: 9px;
+
+}
+
+
+.announcement-card p {
+
+    color: var(--soft-white);
+
+    font-size: 14px;
+
+    line-height: 1.8;
+
+    white-space: pre-wrap;
+
+}
+
+
+.announcement-card small {
+
+    display: block;
+
+    color: var(--muted-text);
+
+    font-size: 12px;
+
+    margin-top: 13px;
+
+}
+
+
+/* =====================================
+   FOOTER
+====================================== */
+
+#adminFooter {
+
+    text-align: center;
+
+    padding: 25px 10px;
+
+    color: var(--muted-text);
+
+    font-size: 12px;
+
+    line-height: 2;
+
+    border-top: 1px solid var(--border-color);
+
+}
+
+
+#adminFooter p:last-child {
+
+    color: var(--bright-gold);
+
+    font-weight: 800;
+
+    letter-spacing: 2px;
+
+}
+  /* =====================================
+   BLOCK 4: RESPONSIVE DESIGN
+====================================== */
+
+
+/* =====================================
+   TABLET RESPONSIVENESS
+====================================== */
+
+@media screen and (max-width: 900px) {
+
+    #adminApp {
+        max-width: 100%;
+    }
+
+    #adminHeader {
+        padding: 22px;
+    }
+
+    #welcomeSection h2 {
+        font-size: 25px;
+    }
+
+    #createAnnouncementSection,
+    #historySection {
+        padding: 24px;
+    }
+
+}
+
+
+/* =====================================
+   MOBILE RESPONSIVENESS
+====================================== */
+
+@media screen and (max-width: 600px) {
+
+    body {
+        padding: 13px 10px;
+    }
+
+    #adminHeader {
+        padding: 18px;
+        border-radius: 15px;
+        margin-bottom: 25px;
+    }
+
+    .brand-section h1 {
+        font-size: 21px;
+    }
+
+    .brand-section h1 span {
+        font-size: 14px;
+        letter-spacing: 2px;
+    }
+
+    .brand-section p {
+        font-size: 9px;
+        letter-spacing: 2px;
+    }
+
+    #logoutButton {
+        padding: 10px 17px;
+        font-size: 12px;
+    }
+
+    #welcomeSection {
+        padding: 10px 3px;
+        margin-bottom: 22px;
+    }
+
+    #welcomeSection h2 {
+        font-size: 22px;
+    }
+
+    #welcomeSection p {
+        font-size: 13px;
+    }
+
+    #statisticsSection {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 23px;
+    }
+
+    .stat-card {
+        padding: 17px 13px;
+        border-radius: 13px;
+    }
+
+    .stat-card p {
+        font-size: 11px;
+    }
+
+    .stat-card h3 {
+        font-size: 21px;
+    }
+
+    #createAnnouncementSection,
+    #historySection {
+        padding: 18px 15px;
+        border-radius: 15px;
+        margin-bottom: 20px;
+    }
+
+    .section-heading h2 {
+        font-size: 19px;
+    }
+
+    .section-heading p {
+        font-size: 12px;
+    }
+
+    input[type="text"],
+    textarea,
+    select {
+        padding: 13px;
+        font-size: 13px;
+    }
+
+    textarea {
+        min-height: 130px;
+    }
+
+    #audienceOptions {
+        grid-template-columns: 1fr;
+        gap: 9px;
+    }
+
+    #audienceOptions label {
+        padding: 14px;
+        font-size: 12px;
+    }
+
+    #publishButton {
+        padding: 15px 10px;
+        font-size: 12px;
+    }
+
+    .announcement-card {
+        padding: 16px;
+    }
+
+    .announcement-card h3 {
+        font-size: 15px;
+    }
+
+    .announcement-card p {
+        font-size: 13px;
+    }
+
+    #adminFooter {
+        font-size: 11px;
+        padding: 20px 5px;
+    }
+
+}
+
+
+/* =====================================
+   EXTRA SMALL PHONE SCREENS
+====================================== */
+
+@media screen and (max-width: 360px) {
+
+    #statisticsSection {
+        grid-template-columns: 1fr;
+    }
+
+    .brand-section h1 {
+        font-size: 19px;
+    }
+
+    #welcomeSection h2 {
+        font-size: 20px;
+    }
+
+}
+
+
+/* =====================================
+   SMOOTH PAGE APPEARANCE
+====================================== */
+
+html {
+    scroll-behavior: smooth;
+}
+
+
+/* =====================================
+   CUSTOM SCROLLBAR
+====================================== */
+
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--darker-background);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-purple);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--luxury-gold);
+}
+
+
+/* =====================================
+   BUTTON FOCUS ACCESSIBILITY
+====================================== */
+
+button:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 2px solid var(--bright-gold);
+    outline-offset: 3px;
+}
+
+
+/* =====================================
+   ANIMATION FINISHING TOUCH
+====================================== */
+
+.stat-card,
+.announcement-card,
+#createAnnouncementSection,
+#historySection {
+    animation: fadeInUp 0.6s ease both;
+}
+
+@keyframes fadeInUp {
+
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+}
+
+
+/* =====================================
+   END OF CSS DESIGN
+====================================== */
+
+</style>
+<!-- =====================================
+     BLOCK 5: SUPABASE CONNECTION
+====================================== -->
+
+<script>
+
+/* =====================================
+   1. SUPABASE PROJECT CONFIGURATION
+====================================== */
+
+const SUPABASE_URL =
+    "https://qxsenflgaweeadvggnyp.supabase.co";
+
+const SUPABASE_PUBLISHABLE_KEY =
+    "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+
+
+/* =====================================
+   2. INITIALIZE SUPABASE CLIENT
+====================================== */
+
+const db = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_PUBLISHABLE_KEY
+);
+
+
+/* =====================================
+   3. GENERAL COURSE IDENTIFIER
+====================================== */
+
+const GENERAL_COURSE_ID =
+    "a1030000-0000-4000-8000-000000000001";
+
+
+/* =====================================
+   4. ADMIN CENTER VARIABLES
+====================================== */
+
+let currentAdmin = null;
+
+let availableCourses = [];
+
+let totalPublishedAnnouncements = 0;
+
+let totalAnnouncementRecipients = 0;
+
+
+/* =====================================
+   5. DATABASE CONNECTION CHECK
+====================================== */
+
+async function checkDatabaseConnection() {
+
+    try {
+
+        const { error } = await db
+            .from("courses")
+            .select("id")
+            .limit(1);
+
+        if (error) {
+
+            console.error(
+                "DCDS database connection error:",
+                error
+            );
+
+            return false;
+
+        }
+
+        console.log(
+            "DCDS Supabase connection successful."
+        );
+
+        return true;
+
+    } catch (error) {
+
+        console.error(
+            "Unexpected database error:",
+            error
+        );
+
+        return false;
+
+    }
+
+}
+
+
+/* =====================================
+   6. DISPLAY STATUS MESSAGES
+====================================== */
+
+function showMessage(message, type = "success") {
+
+    const statusBox = document.getElementById(
+        "statusMessage"
+    );
+
+    statusBox.textContent = message;
+
+    statusBox.className =
+        "status-message " + type;
+
+    statusBox.style.display = "block";
+
+}
+
+
+/* =====================================
+   7. HIDE STATUS MESSAGE
+====================================== */
+
+function hideMessage() {
+
+    const statusBox = document.getElementById(
+        "statusMessage"
+    );
+
+    statusBox.textContent = "";
+
+    statusBox.className = "";
+
+    statusBox.style.display = "none";
+
+}
+
+
+/* =====================================
+   8. CHECK CURRENT LOGIN SESSION
+====================================== */
+
+async function getCurrentSession() {
+
+    try {
+
+        const {
+            data: { session },
+            error
+        } = await db.auth.getSession();
+
+        if (error) {
+
+            throw error;
+
+        }
+
+        return session;
+
+    } catch (error) {
+
+        console.error(
+            "Session retrieval error:",
+            error
+        );
+
+        return null;
+
+    }
+
+}
+
+
+/* =====================================
+   9. CHECK ADMIN DATABASE FUNCTION
+====================================== */
+
+/*
+   The is_dcds_admin() function must be
+   created in Supabase before this check
+   can successfully verify administrators.
+*/
+
+async function verifyAdminRole() {
+
+    try {
+
+        const { data, error } = await db.rpc(
+            "is_dcds_admin"
+        );
+
+        if (error) {
+
+            console.error(
+                "Administrator verification error:",
+                error
+            );
+
+            return false;
+
+        }
+
+        return data === true;
+
+    } catch (error) {
+
+        console.error(
+            "Admin verification failed:",
+            error
+        );
+
+        return false;
+
+    }
+
+}
+
+
+/* =====================================
+   10. SUPABASE CONFIGURATION COMPLETE
+====================================== */
+
+console.log(
+    "DCDS Admin Notification Center configuration loaded."
+);
+
+                     </script>
+                     <!-- =====================================
+     BLOCK 6: ADMIN AUTHENTICATION
+====================================== -->
+
+<script>
+
+/* =====================================
+   1. ADMINISTRATOR AUTHENTICATION
+====================================== */
+
+async function initializeAdminCenter() {
+
+    try {
+
+        console.log("Checking administrator session...");
+
+        const {
+            data: { session },
+            error
+        } = await db.auth.getSession();
+
+        if (error) {
+            throw error;
+        }
+
+        /* Redirect users who are not logged in */
+
+        if (!session) {
+
+            window.location.href =
+                "index.html?login=required&next=admin-notifications.html";
+
+            return;
+        }
+
+        currentAdmin = session.user;
+
+        console.log(
+            "Logged-in account:",
+            currentAdmin.email
+        );
+
+
+        /* =================================
+           2. VERIFY ADMINISTRATOR PRIVILEGES
+        ================================= */
+
+        const isAdmin = await verifyAdminRole();
+
+        if (!isAdmin) {
+
+            alert(
+                "ACCESS DENIED!\n\n" +
+                "Your account is not authorized to access the DCDS Admin Center."
+            );
+
+            await db.auth.signOut();
+
+            window.location.href = "index.html";
+
+            return;
+        }
+
+
+        /* =================================
+           3. ADMIN ACCESS CONFIRMED
+        ================================= */
+
+        console.log(
+            "DCDS administrator successfully verified."
+        );
+
+
+        /* =================================
+           4. LOAD ADMIN DASHBOARD DATA
+        ================================= */
+
+        await loadCourses();
+
+        await loadHistory();
+
+        console.log(
+            "DCDS Admin Notification Center is ready."
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Administrator initialization failed:",
+            error
+        );
+
+        alert(
+            "Unable to verify administrator access. " +
+            "Please refresh the page or try again."
+        );
+
+    }
+
+}
+
+
+/* =====================================
+   5. SECURE ADMIN LOGOUT
+====================================== */
+
+async function logoutAdmin() {
+
+    const confirmation = confirm(
+        "Are you sure you want to log out of the DCDS Admin Center?"
+    );
+
+    if (!confirmation) {
+        return;
+    }
+
+    try {
+
+        const { error } = await db.auth.signOut();
+
+        if (error) {
+            throw error;
+        }
+
+        currentAdmin = null;
+
+        window.location.href = "index.html";
+
+    } catch (error) {
+
+        console.error(
+            "Logout error:",
+            error
+        );
+
+        alert(
+            "Unable to log out. Please try again."
+        );
+
+    }
+
+}
+
+
+/* =====================================
+   6. MONITOR AUTHENTICATION CHANGES
+====================================== */
+
+db.auth.onAuthStateChange((event, session) => {
+
+    if (event === "SIGNED_OUT" || !session) {
+
+        window.location.href =
+            "index.html?login=required&next=admin-notifications.html";
+
+    }
+
+});
+
+
+/* =====================================
+   7. AUTHENTICATION BLOCK COMPLETE
+====================================== */
+
+console.log(
+    "DCDS administrator authentication module loaded."
+);
+
+</script>
+<!-- =====================================
+     BLOCK 7: AUDIENCE SELECTION
+     AND COURSE LOADING
+====================================== -->
+
+<script>
+
+/* =====================================
+   1. GET AUDIENCE ELEMENTS
+====================================== */
+
+const audienceRadios = document.querySelectorAll(
+    'input[name="audience"]'
+);
+
+const courseSelection = document.getElementById(
+    "courseSelection"
+);
+
+const courseSelect = document.getElementById(
+    "courseSelect"
+);
+
+
+/* =====================================
+   2. UPDATE AUDIENCE DISPLAY
+====================================== */
+
+function updateAudienceSelection() {
+
+    const selectedAudience = document.querySelector(
+        'input[name="audience"]:checked'
+    );
+
+    if (!selectedAudience) {
+        return;
+    }
+
+    const audience = selectedAudience.value;
+
+    if (audience === "specific_course") {
+
+        courseSelection.hidden = false;
+
+    } else {
+
+        courseSelection.hidden = true;
+
+        courseSelect.value = "";
+
+    }
+
+}
+
+
+/* =====================================
+   3. LISTEN FOR AUDIENCE CHANGES
+====================================== */
+
+audienceRadios.forEach(radio => {
+
+    radio.addEventListener(
+        "change",
+        updateAudienceSelection
+    );
+
+});
+
+
+/* =====================================
+   4. LOAD COURSES FROM SUPABASE
+====================================== */
+
+async function loadCourses() {
+
+    try {
+
+        courseSelect.innerHTML =
+            '<option value="">Loading courses...</option>';
+
+        const { data, error } = await db
+
+            .from("courses")
+
+            .select("id, title")
+
+            .order("title", {
+                ascending: true
+            });
+
+        if (error) {
+            throw error;
+        }
+
+        if (!data || data.length === 0) {
+
+            availableCourses = [];
+
+            courseSelect.innerHTML =
+                '<option value="">No courses available</option>';
+
+            return;
+
+        }
+
+
+        /* =================================
+           5. EXCLUDE GENERAL COURSE
+        ================================= */
+
+        availableCourses = data.filter(course => {
+
+            return course.id !== GENERAL_COURSE_ID;
+
+        });
+
+
+        /* =================================
+           6. POPULATE COURSE DROPDOWN
+        ================================= */
+
+        courseSelect.innerHTML =
+            '<option value="">Choose a course</option>';
+
+        availableCourses.forEach(course => {
+
+            const option = document.createElement("option");
+
+            option.value = course.id;
+
+            option.textContent = course.title;
+
+            courseSelect.appendChild(option);
+
+        });
+
+
+        if (availableCourses.length === 0) {
+
+            courseSelect.innerHTML =
+                '<option value="">No individual courses available</option>';
+
+        }
+
+        console.log(
+            "Courses successfully loaded:",
+            availableCourses.length
+        );
+
+    } catch (error) {
+
+        console.error(
+            "Unable to load DCDS courses:",
+            error
+        );
+
+        courseSelect.innerHTML =
+            '<option value="">Unable to load courses</option>';
+
+    }
+
+}
+
+
+/* =====================================
+   7. GET SELECTED AUDIENCE
+====================================== */
+
+function getSelectedAudience() {
+
+    const selected = document.querySelector(
+        'input[name="audience"]:checked'
+    );
+
+    return selected ? selected.value : null;
+
+}
+
+
+/* =====================================
+   8. VALIDATE AUDIENCE
+====================================== */
+
+function validateAudienceSelection() {
+
+    const audience = getSelectedAudience();
+
+    if (!audience) {
+
+        showMessage(
+            "Please select an announcement audience.",
+            "error"
+        );
+
+        return false;
+
+    }
+
+
+    if (audience === "specific_course") {
+
+        if (!courseSelect.value) {
+
+            showMessage(
+                "Please select a course before publishing.",
+                "error"
+            );
+
+            return false;
+
+        }
+
+    }
+
+    return true;
+
+}
+
+
+/* =====================================
+   9. GET SELECTED COURSE ID
+====================================== */
+
+function getSelectedCourseId() {
+
+    const audience = getSelectedAudience();
+
+    if (audience === "general_course") {
+
+        return GENERAL_COURSE_ID;
+
+    }
+
+    if (audience === "specific_course") {
+
+        return courseSelect.value || null;
+
+    }
+
+    return null;
+
+}
+
+
+/* =====================================
+   10. INITIALIZE AUDIENCE DISPLAY
+====================================== */
+
+updateAudienceSelection();
+
+
+/* =====================================
+   BLOCK 7 COMPLETE
+====================================== */
+
+console.log(
+    "DCDS audience selection module loaded."
+);
+
+          </script>
+          <!-- =====================================
+     BLOCK 8: ANNOUNCEMENT PUBLISHING
+====================================== -->
+
+<script>
+
+/* =====================================
+   1. GET ANNOUNCEMENT FORM
+====================================== */
+
+const announcementForm = document.getElementById(
+    "announcementForm"
+);
+
+const publishButton = document.getElementById(
+    "publishButton"
+);
+
+
+/* =====================================
+   2. PUBLISH ANNOUNCEMENT
+====================================== */
+
+async function publishAnnouncement(event) {
+
+    event.preventDefault();
+
+    hideMessage();
+
+    /* Check administrator session */
+
+    const session = await getCurrentSession();
+
+    if (!session) {
+
+        showMessage(
+            "Your session has expired. Please log in again.",
+            "error"
+        );
+
+        window.location.href = "index.html";
+
+        return;
+    }
+
+
+    /* Verify administrator privileges again */
+
+    const isAdmin = await verifyAdminRole();
+
+    if (!isAdmin) {
+
+        showMessage(
+            "Access denied. You are not authorized to publish announcements.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* Validate audience */
+
+    if (!validateAudienceSelection()) {
+        return;
+    }
+
+
+    /* Get form information */
+
+    const title = document.getElementById(
+        "announcementTitle"
+    ).value.trim();
+
+    const message = document.getElementById(
+        "announcementMessage"
+    ).value.trim();
+
+    const category = document.getElementById(
+        "announcementCategory"
+    ).value;
+
+    const audience = getSelectedAudience();
+
+    const courseId = getSelectedCourseId();
+
+
+    /* Validate announcement content */
+
+    if (!title || !message) {
+
+        showMessage(
+            "Please enter both an announcement title and message.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (title.length > 150) {
+
+        showMessage(
+            "The announcement title cannot exceed 150 characters.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    /* Confirm publication */
+
+    const confirmation = confirm(
+        "Are you sure you want to publish this announcement?\n\n" +
+        "Title: " + title + "\n" +
+        "Audience: " + audience.replaceAll("_", " ")
+    );
+
+    if (!confirmation) {
+        return;
+    }
+
+
+    /* Disable button while publishing */
+
+    publishButton.disabled = true;
+
+    publishButton.textContent = "PUBLISHING...";
+
+
+    try {
+
+        /* =================================
+           3. CALL SECURE SUPABASE FUNCTION
+        ================================= */
+
+        const { data, error } = await db.rpc(
+            "publish_dcds_announcement",
+            {
+                p_title: title,
+
+                p_message: message,
+
+                p_category: category,
+
+                p_audience: audience,
+
+                p_course_id: courseId
+            }
+        );
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        /* =================================
+           4. CHECK PUBLISHING RESULT
+        ================================= */
+
+        if (!data || data.success !== true) {
+
+            throw new Error(
+                data?.message ||
+                "The announcement could not be published."
+            );
+
+        }
+
+
+        /* =================================
+           5. SUCCESS MESSAGE
+        ================================= */
+
+        const recipientCount = Number(
+            data.recipients || 0
+        );
+
+        showMessage(
+            "🎉 Announcement published successfully! " +
+            recipientCount +
+            " student(s) were selected to receive it.",
+            "success"
+        );
+
+
+        /* =================================
+           6. CLEAR FORM
+        ================================= */
+
+        announcementForm.reset();
+
+        updateAudienceSelection();
+
+
+        /* =================================
+           7. REFRESH ANNOUNCEMENT HISTORY
+        ================================= */
+
+        await loadHistory();
+
+        console.log(
+            "DCDS announcement published:",
+            data
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Announcement publishing error:",
+            error
+        );
+
+        showMessage(
+            "Publishing failed: " + error.message,
+            "error"
+        );
+
+
+    } finally {
+
+        publishButton.disabled = false;
+
+        publishButton.textContent =
+            "PUBLISH ANNOUNCEMENT";
+
+    }
+
+}
+
+
+/* =====================================
+   8. CONNECT FORM TO PUBLISHING SYSTEM
+====================================== */
+
+announcementForm.addEventListener(
+    "submit",
+    publishAnnouncement
+);
+
+
+/* =====================================
+   9. MODULE INITIALIZATION
+====================================== */
+
+console.log(
+    "DCDS announcement publishing module loaded."
+);
+
+      </script>
+      <!-- =====================================
+     BLOCK 9: ANNOUNCEMENT HISTORY
+     AND RECIPIENT STATISTICS
+====================================== -->
+
+<script>
+
+/* =====================================
+   1. GET HISTORY CONTAINER
+====================================== */
+
+const historyContainer = document.getElementById(
+    "announcementHistory"
+);
+
+
+/* =====================================
+   2. FORMAT ANNOUNCEMENT DATE
+====================================== */
+
+function formatAnnouncementDate(dateValue) {
+
+    if (!dateValue) {
+        return "Date unavailable";
+    }
+
+    const date = new Date(dateValue);
+
+    if (Number.isNaN(date.getTime())) {
+        return "Date unavailable";
+    }
+
+    return date.toLocaleString("en-NG", {
+        dateStyle: "medium",
+        timeStyle: "short"
+    });
+
+}
+
+
+/* =====================================
+   3. FORMAT AUDIENCE NAME
+====================================== */
+
+function formatAudienceName(audience) {
+
+    const names = {
+
+        all: "All Students",
+
+        enrolled: "Enrolled Students",
+
+        general_course: "General Course Students",
+
+        specific_course: "Specific Course Students"
+
+    };
+
+    return names[audience] || audience || "Unknown Audience";
+
+}
+
+
+/* =====================================
+   4. LOAD ANNOUNCEMENT HISTORY
+====================================== */
+
+async function loadHistory() {
+
+    try {
+
+        historyContainer.innerHTML =
+            '<p class="loading">Loading announcement history...</p>';
+
+
+        /* Retrieve announcements */
+
+        const { data: announcements, error } = await db
+
+            .from("notifications")
+
+            .select(
+                "id, title, message, category, audience, course_id, created_at"
+            )
+
+            .order("created_at", {
+                ascending: false
+            })
+
+            .limit(50);
+
+
+        if (error) {
+            throw error;
+        }
+
+
+        /* Handle empty history */
+
+        if (!announcements || announcements.length === 0) {
+
+            historyContainer.innerHTML = `
+                <div class="announcement-card">
+                    <h3>No Announcements Yet</h3>
+                    <p>
+                        Published announcements will appear here.
+                    </p>
+                </div>
+            `;
+
+            document.getElementById(
+                "totalAnnouncements"
+            ).textContent = "0";
+
+            document.getElementById(
+                "totalRecipients"
+            ).textContent = "0";
+
+            return;
+
+        }
+
+
+        /* =================================
+           5. GET RECIPIENT COUNTS
+        ================================= */
+
+        const announcementIds = announcements.map(
+            item => item.id
+        );
+
+        const { data: recipients, error: recipientError } =
+            await db
+
+                .from("notification_recipients")
+
+                .select("notification_id")
+
+                .in("notification_id", announcementIds);
+
+
+        if (recipientError) {
+            throw recipientError;
+        }
+
+
+        /* =================================
+           6. CALCULATE RECIPIENT STATISTICS
+        ================================= */
+
+        const recipientCounts = {};
+
+        (recipients || []).forEach(recipient => {
+
+            const id = recipient.notification_id;
+
+            recipientCounts[id] =
+                (recipientCounts[id] || 0) + 1;
+
+        });
+
+
+        const totalRecipients = (recipients || []).length;
+
+
+        /* =================================
+           7. UPDATE DASHBOARD STATISTICS
+        ================================= */
+
+        document.getElementById(
+            "totalAnnouncements"
+        ).textContent = announcements.length;
+
+        document.getElementById(
+            "totalRecipients"
+        ).textContent = totalRecipients;
+
+
+        /* =================================
+           8. DISPLAY ANNOUNCEMENT CARDS
+        ================================= */
+
+        historyContainer.innerHTML = "";
+
+
+        announcements.forEach(announcement => {
+
+            const card = document.createElement("article");
+
+            card.className = "announcement-card";
+
+
+            const title = document.createElement("h3");
+
+            title.textContent = announcement.title;
+
+
+            const message = document.createElement("p");
+
+            message.textContent = announcement.message;
+
+
+            const audience = document.createElement("small");
+
+            audience.textContent =
+                "Audience: " +
+                formatAudienceName(announcement.audience);
+
+
+            const category = document.createElement("small");
+
+            category.textContent =
+                "Category: " +
+                (announcement.category || "General");
+
+
+            const recipientCount = document.createElement("small");
+
+            recipientCount.textContent =
+                "Recipients: " +
+                (recipientCounts[announcement.id] || 0);
+
+
+            const date = document.createElement("small");
+
+            date.textContent =
+                "Published: " +
+                formatAnnouncementDate(announcement.created_at);
+
+
+            card.appendChild(title);
+
+            card.appendChild(message);
+
+            card.appendChild(audience);
+
+            card.appendChild(category);
+
+            card.appendChild(recipientCount);
+
+            card.appendChild(date);
+
+
+            historyContainer.appendChild(card);
+
+        });
+
+
+        console.log(
+            "DCDS announcement history loaded successfully."
+        );
+
+
+    } catch (error) {
+
+        console.error(
+            "Announcement history error:",
+            error
+        );
+
+        historyContainer.innerHTML = `
+            <div class="announcement-card">
+                <h3>Unable to Load History</h3>
+                <p>
+                    ${escapeHTML(error.message)}
+                </p>
+            </div>
+        `;
+
+    }
+
+}
+
+
+/* =====================================
+   9. SAFE HTML ERROR DISPLAY
+====================================== */
+
+function escapeHTML(value) {
+
+    return String(value).replace(
+        /[&<>"']/g,
+        character => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#039;"
+        })[character]
+    );
+
+}
+
+
+/* =====================================
+   10. REFRESH HISTORY BUTTON SUPPORT
+====================================== */
+
+async function refreshAnnouncementHistory() {
+
+    await loadHistory();
+
+}
+
+
+/* =====================================
+   BLOCK 9 COMPLETE
+====================================== */
+
+console.log(
+    "DCDS announcement history module loaded."
+);
+
+          </script>
+          <script>
+/* =====================================
+   DCDS ADMIN CENTER — FINAL INITIALIZATION
+===================================== */
+
+document.addEventListener("DOMContentLoaded", async () => {
+    try {
+        console.log("DCDS Admin Notification Center starting...");
+
+        await initializeAdminCenter();
+
+        console.log("DCDS Admin Notification Center initialized.");
+
+    } catch (error) {
+        console.error("Admin initialization error:", error);
+
+        showMessage(
+            "The Admin Center could not load. Please refresh and try again.",
+            "error"
+        );
+    }
+});
+</script>
+
+</body>
+</html>
