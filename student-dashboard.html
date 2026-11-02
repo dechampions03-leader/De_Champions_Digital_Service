@@ -1,0 +1,735 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#35105f">
+
+<title>DCDS | Student Dashboard</title>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+
+<style>
+:root {
+  --purple: #7628d8;
+  --deep: #21083f;
+  --dark: #451078;
+  --gold: #e4c16d;
+  --ink: #28183a;
+  --muted: #756783;
+  --line: #eadff5;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: linear-gradient(145deg, #fbf9ff, #f1e8fb);
+  font-family: 'DM Sans', sans-serif;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+.wrap {
+  width: min(1100px, calc(100% - 30px));
+  margin: auto;
+  padding: 24px 0 60px;
+}
+
+header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.brand {
+  font-weight: 900;
+  color: var(--dark);
+  letter-spacing: .04em;
+  font-size: 14px;
+}
+
+header a,
+.btn {
+  border: 0;
+  border-radius: 12px;
+  padding: 11px 15px;
+  font-weight: 800;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+header a {
+  background: white;
+  border: 1px solid var(--line);
+  color: var(--dark);
+  font-size: 13px;
+}
+
+.hero {
+  border-radius: 26px;
+  padding: clamp(24px, 5vw, 44px);
+  color: #fff;
+  background:
+    radial-gradient(circle at 90% 10%, #9958d1, transparent 32%),
+    linear-gradient(125deg, #21083f, #451078 58%, #7025b7);
+  box-shadow: 0 20px 50px #35105f22;
+}
+
+.kicker {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .2em;
+  color: #f3d98e;
+}
+
+h1 {
+  font: 800 clamp(30px, 5vw, 48px)/1.12 'Playfair Display', serif;
+  margin: 12px 0;
+}
+
+.hero p {
+  color: #eadcf8;
+  line-height: 1.75;
+  margin: 0;
+  max-width: 700px;
+}
+
+.identity {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.pill {
+  border: 1px solid #ffffff35;
+  background: #ffffff13;
+  border-radius: 99px;
+  padding: 8px 12px;
+  font-size: 12px;
+  color: #fff;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin: 20px 0;
+}
+
+.stat,
+.panel,
+.course {
+  background: #fff;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px #32105f0a;
+}
+
+.stat {
+  padding: 18px;
+}
+
+.stat strong {
+  display: block;
+  font: 800 28px 'Playfair Display', serif;
+  color: var(--dark);
+}
+
+.stat span {
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.section-title {
+  margin: 32px 0 15px;
+}
+
+.section-title span {
+  font-size: 10px;
+  letter-spacing: .18em;
+  color: var(--purple);
+  font-weight: 900;
+}
+
+.section-title h2 {
+  font: 800 29px 'Playfair Display', serif;
+  color: var(--deep);
+  margin: 6px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 15px;
+}
+
+.course {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 190px;
+}
+
+.course-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.badge {
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .08em;
+  background: #f1e5ff;
+  color: #6924ad;
+  padding: 7px 10px;
+  border-radius: 99px;
+}
+
+.course h3 {
+  font: 700 21px 'Playfair Display', serif;
+  color: var(--deep);
+  margin: 16px 0 6px;
+}
+
+.course p {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.65;
+  margin: 0 0 18px;
+}
+
+.course .btn {
+  margin-top: auto;
+  background: linear-gradient(110deg, #8d3bdb, #54168e);
+  color: white;
+}
+
+.course.general {
+  background: linear-gradient(145deg, #fff, #fff9e9);
+  border-color: #eddfb9;
+}
+
+.course.general .badge {
+  background: #fff1c9;
+  color: #76551a;
+}
+
+.course.general .btn {
+  background: linear-gradient(110deg, #d8b65d, #b88727);
+  color: #28183a;
+}
+
+.panel {
+  padding: 20px;
+  margin-top: 18px;
+}
+
+.panel h3 {
+  font: 700 20px 'Playfair Display', serif;
+  margin: 0 0 8px;
+  color: var(--deep);
+}
+
+.panel p {
+  font-size: 13px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0;
+}
+
+.status {
+  padding: 15px 17px;
+  border-radius: 13px;
+  background: #fff;
+  border: 1px solid var(--line);
+  color: var(--dark);
+  font-size: 13px;
+  font-weight: 700;
+  margin-top: 18px;
+}
+
+.btn.primary {
+  background: linear-gradient(110deg, #8d3bdb, #54168e);
+  color: #fff;
+}
+
+.btn.light {
+  background: #f1e5ff;
+  color: var(--dark);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.hidden {
+  display: none !important;
+}
+
+footer {
+  text-align: center;
+  color: #877a94;
+  font-size: 11px;
+  padding: 30px 0 0;
+}
+
+@media(max-width:650px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .stats {
+    gap: 9px;
+  }
+
+  .stat {
+    padding: 13px;
+  }
+
+  .stat strong {
+    font-size: 23px;
+  }
+
+  .hero {
+    border-radius: 21px;
+  }
+
+  header {
+    align-items: flex-start;
+  }
+}
+</style>
+</head>
+
+<body>
+
+<main class="wrap">
+
+<header>
+  <div class="brand">
+    DCDS · STUDENT PORTAL
+  </div>
+
+  <a href="index.html#courses">
+    ← Browse Courses
+  </a>
+</header>
+
+<section class="hero">
+
+  <span class="kicker">
+    YOUR LEARNING SPACE
+  </span>
+
+  <h1>
+    Welcome back, <span id="studentName">Champion</span>!
+  </h1>
+
+  <p>
+    Your digital learning journey continues here.
+    View your enrolled courses and open the learning
+    areas connected to your DCDS student account.
+  </p>
+
+  <div class="identity">
+
+    <span class="pill" id="studentEmail">
+      Checking account…
+    </span>
+
+    <span class="pill">
+      CREATE • LEARN • INNOVATE • EARN
+    </span>
+
+  </div>
+
+</section>
+
+<div class="status" id="status" role="status" aria-live="polite">
+  Checking your student account and course enrollments…
+</div>
+
+<section id="dashboard" class="hidden">
+
+  <div class="stats">
+
+    <div class="stat">
+      <strong id="courseCount">0</strong>
+      <span>Enrolled Courses</span>
+    </div>
+
+    <div class="stat">
+      <strong id="generalStatus">No</strong>
+      <span>General Course Access</span>
+    </div>
+
+    <div class="stat">
+      <strong>Active</strong>
+      <span>Student Account</span>
+    </div>
+
+  </div>
+
+  <div class="section-title">
+
+    <span>YOUR DCDS LEARNING LIBRARY</span>
+
+    <h2>My Enrolled Courses</h2>
+
+  </div>
+
+  <div class="grid" id="courseGrid"></div>
+
+  <div class="panel">
+
+    <h3>Need Another Learning Opportunity?</h3>
+
+    <p>
+      Explore the DCDS course catalog to discover more
+      practical digital skills and creative learning
+      opportunities.
+    </p>
+
+    <div class="actions">
+
+      <a class="btn primary" href="index.html#courses">
+        Explore All Courses →
+      </a>
+
+      <button class="btn light" id="refreshBtn" type="button">
+        Refresh Enrollment Status
+      </button>
+
+      <button class="btn light" id="logoutBtn" type="button">
+        Log Out
+      </button>
+
+    </div>
+
+  </div>
+
+</section>
+
+<footer>
+  De Champions Digital Service
+  <br>
+  CREATE • LEARN • INNOVATE • EARN.
+</footer>
+
+</main>
+
+<script>
+
+const SUPABASE_URL =
+  'https://qxsenflgaweeadvggnyp.supabase.co';
+
+const SUPABASE_ANON_KEY =
+  'sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
+
+const GENERAL_COURSE_ID =
+  'a1030000-0000-4000-8000-000000000001';
+
+const statusEl =
+  document.getElementById('status');
+
+const escapeHtml = value =>
+  String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&':'&amp;',
+    '<':'&lt;',
+    '>':'&gt;',
+    '"':'&quot;',
+    "'":'&#39;'
+  }[ch]));
+
+const client = window.supabase.createClient(
+  SUPABASE_URL,
+  SUPABASE_ANON_KEY
+);
+
+function showError(message, loginLink = true) {
+
+  statusEl.textContent = message;
+
+  if (loginLink) {
+
+    const link = document.createElement('a');
+
+    link.href = 'index.html#courses';
+
+    link.textContent = ' Return to DCDS to log in';
+
+    link.style.cssText =
+      'color:#7628d8;font-weight:900;margin-left:5px';
+
+    statusEl.appendChild(link);
+  }
+}
+
+async function loadDashboard() {
+
+  statusEl.textContent =
+    'Checking your student account and course enrollments…';
+
+  document
+    .getElementById('dashboard')
+    .classList.add('hidden');
+
+  const {
+    data: { session },
+    error: sessionError
+  } = await client.auth.getSession();
+
+  if (sessionError) throw sessionError;
+
+  if (!session || !session.user) {
+
+    showError(
+      'Please log in with your DCDS student account to view your dashboard.'
+    );
+
+    return;
+  }
+
+  if (!session.user.email_confirmed_at) {
+
+    showError(
+      'Please verify your email address before accessing your student dashboard.'
+    );
+
+    return;
+  }
+
+  const user = session.user;
+
+  const fullName =
+    user.user_metadata?.full_name ||
+    user.user_metadata?.name ||
+    'Champion';
+
+  document.getElementById('studentName').textContent =
+    fullName.split(' ')[0];
+
+  document.getElementById('studentEmail').textContent =
+    user.email || 'Verified DCDS student';
+
+  const {
+    data: enrollments,
+    error: enrollmentError
+  } = await client
+    .from('enrollments')
+    .select('course_id')
+    .eq('user_id', user.id);
+
+  if (enrollmentError) throw enrollmentError;
+
+  const ids = [
+    ...new Set(
+      (enrollments || []).map(row => String(row.course_id))
+    )
+  ];
+
+  const hasGeneral =
+    ids.includes(GENERAL_COURSE_ID);
+
+  document.getElementById('courseCount').textContent =
+    ids.length;
+
+  document.getElementById('generalStatus').textContent =
+    hasGeneral ? 'Yes' : 'No';
+
+  const grid =
+    document.getElementById('courseGrid');
+
+  grid.innerHTML = '';
+
+  if (hasGeneral) {
+
+    const card = document.createElement('article');
+
+    card.className = 'course general';
+
+    card.innerHTML = `
+      <div class="course-top">
+        <span class="badge">PREMIUM ACCESS</span>
+        <span aria-hidden="true">✦</span>
+      </div>
+
+      <h3>DCDS General Course</h3>
+
+      <p>
+        Your General Course enrollment is active.
+        Open your protected learning area to access
+        the four Telegram learning channels.
+      </p>
+
+      <a class="btn" href="general-course.html">
+        Open General Course →
+      </a>
+    `;
+
+    grid.appendChild(card);
+  }
+
+  const individualIds =
+    ids.filter(id => id !== GENERAL_COURSE_ID);
+
+  if (individualIds.length) {
+
+    const {
+      data: courses,
+      error: coursesError
+    } = await client
+      .from('courses')
+      .select('id,title,slug,price')
+      .in('id', individualIds);
+
+    if (coursesError) throw coursesError;
+
+    for (const course of (courses || [])) {
+
+      const slug = String(course.slug || '');
+
+      const safeTitle =
+        escapeHtml(course.title || 'DCDS Course');
+
+      const card =
+        document.createElement('article');
+
+      card.className = 'course';
+
+      const destination =
+        'learn.html?course=' +
+        encodeURIComponent(slug);
+
+      card.innerHTML = `
+        <div class="course-top">
+          <span class="badge">ENROLLED</span>
+          <span aria-hidden="true">✓</span>
+        </div>
+
+        <h3>${safeTitle}</h3>
+
+        <p>
+          Your enrollment is recognized.
+          Continue to the learning page for this course.
+        </p>
+
+        <a class="btn" href="${destination}">
+          Continue Learning →
+        </a>
+      `;
+
+      grid.appendChild(card);
+    }
+  }
+
+  if (!ids.length) {
+
+    grid.innerHTML = `
+      <article class="course">
+
+        <div class="course-top">
+          <span class="badge">GET STARTED</span>
+        </div>
+
+        <h3>Your Learning Journey Starts Here</h3>
+
+        <p>
+          You don't have any course enrollments linked
+          to this account yet. Browse the DCDS catalog
+          and choose a course to begin.
+        </p>
+
+        <a class="btn" href="index.html#courses">
+          Explore Courses →
+        </a>
+
+      </article>
+    `;
+  }
+
+  statusEl.textContent =
+    'Your student account and enrollment records have been checked successfully.';
+
+  document
+    .getElementById('dashboard')
+    .classList.remove('hidden');
+}
+
+document
+  .getElementById('refreshBtn')
+  .addEventListener('click', async () => {
+
+    try {
+      await loadDashboard();
+    } catch (error) {
+
+      console.error(error);
+
+      showError(
+        error.message ||
+        'Could not refresh your dashboard.',
+        false
+      );
+    }
+  });
+
+document
+  .getElementById('logoutBtn')
+  .addEventListener('click', async () => {
+
+    const { error } =
+      await client.auth.signOut();
+
+    if (error) {
+      showError(error.message, false);
+      return;
+    }
+
+    window.location.href = 'index.html';
+  });
+
+client.auth.onAuthStateChange((event, session) => {
+
+  if (event === 'SIGNED_OUT') {
+    window.location.href = 'index.html';
+  }
+
+});
+
+loadDashboard().catch(error => {
+
+  console.error('DCDS dashboard error:', error);
+
+  showError(
+    error.message ||
+    'We could not load your dashboard. Please try again.',
+    false
+  );
+
+});
+
+</script>
+
+</body>
+  </html>
