@@ -20,6 +20,8 @@
     --text: #ffffff;
     --muted: #c7b9d7;
     --border: #563477;
+    --gold: #d4af37;
+    --gold-soft: #f4df9b;
 }
 
 * {
@@ -196,6 +198,57 @@ main {
     overflow-wrap: anywhere;
 }
 
+.monetization-intro {
+    color: var(--muted);
+    line-height: 1.8;
+    margin: -5px 0 20px;
+}
+
+.monetization-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 16px;
+    margin-bottom: 28px;
+}
+
+.monetization-card {
+    background: linear-gradient(145deg, #32184c, #1b1029);
+    border: 1px solid #69458a;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,.16);
+}
+
+.monetization-card .skill-number {
+    color: var(--gold-soft);
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    margin-bottom: 9px;
+}
+
+.monetization-card h3 {
+    color: #f0dcff;
+    font-size: 17px;
+    margin-bottom: 9px;
+}
+
+.monetization-card p {
+    color: var(--muted);
+    font-size: 13px;
+    line-height: 1.7;
+}
+
+.monetization-note {
+    border: 1px solid rgba(212,175,55,.55);
+    background: linear-gradient(120deg, rgba(212,175,55,.12), rgba(135,56,209,.12));
+    border-radius: 14px;
+    padding: 18px;
+    color: #eadfc6;
+    line-height: 1.8;
+    margin: 8px 0 25px;
+}
+
 .notice {
     background: #281536;
     border: 1px solid #70419b;
@@ -251,7 +304,6 @@ footer span {
 }
 </style>
 </head>
-
 <body>
 
 <header>
@@ -292,6 +344,87 @@ footer span {
         <h2 class="section-title">📁 Learning Materials</h2>
         <div id="materials"></div>
 
+        <section id="skillsMonetization" aria-labelledby="monetizationHeading">
+            <h2 class="section-title" id="monetizationHeading">💼 Skills Monetization & Growth Academy</h2>
+            <p class="monetization-intro">
+                This is the practical business side of your digital journey. Learn how to turn a skill
+                you already have into a service people can pay for, find potential clients, set up your
+                professional accounts, price your work and grow from beginner to a trusted service provider.
+            </p>
+
+            <div class="monetization-note">
+                <strong style="color:var(--gold-soft);">The goal:</strong>
+                Don't just learn how to use a tool. Learn how to solve a real problem for someone,
+                present the value clearly, deliver professionally and build a sustainable business.
+            </div>
+
+            <h2 class="section-title">📘 MODULE 1 — How to Monetize Your Skill</h2>
+            <div class="monetization-grid">
+                <article class="monetization-card"><div class="skill-number">LESSON 01</div><h3>Understand What You Can Sell</h3><p>List the problems your skill can solve. Turn each ability into a clear service, such as designing a flyer, editing a promo video, building a landing page or managing a business page.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 02</div><h3>Choose a Target Customer</h3><p>Decide who needs your service: small businesses, churches, schools, creators, coaches, event planners, online vendors or professionals. Start with one audience so your message is focused.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 03</div><h3>Package Your Service</h3><p>Create simple packages with a clear deliverable, turnaround time, number of revisions and price. Example: Starter, Standard and Premium. State exactly what each package includes.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 04</div><h3>Build Samples Before You Get Clients</h3><p>Create 3–5 sample projects that show your best work. Use fictional brands or clearly label concept work. Show the problem, your solution and the final result.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 05</div><h3>Set Your Price</h3><p>Consider the time, complexity, tools, revisions and value of the work. Research what your target market can afford. Avoid promising results you cannot control or pricing without defining the scope.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 06</div><h3>Deliver and Get Repeat Work</h3><p>Confirm the brief, agree on deadlines, provide progress updates, deliver files neatly and ask for feedback. With permission, turn successful work into a testimonial or case study.</p></article>
+            </div>
+
+            <h2 class="section-title">🔎 MODULE 2 — How to Find Clients</h2>
+            <div class="monetization-grid">
+                <article class="monetization-card"><div class="skill-number">LESSON 07</div><h3>Start With Your Existing Network</h3><p>Tell friends, family, community groups and business owners what service you offer. Share examples of your work and ask for introductions—not just favors.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 08</div><h3>Find Businesses That Need Help</h3><p>Search for businesses with outdated designs, inconsistent posts, weak videos or no clear website. Make a thoughtful, specific suggestion rather than sending mass messages.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 09</div><h3>Use Social Media to Attract Clients</h3><p>Post useful tips, before-and-after examples, short demonstrations, client results you have permission to share and a clear description of how people can contact you.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 10</div><h3>Approach a Potential Client Professionally</h3><p>Personalize your message, mention one relevant observation, explain how you can help and invite them to discuss it. Respect people who decline and avoid spam.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 11</div><h3>Use Freelance Marketplaces</h3><p>Explore suitable platforms, read their current rules and fees, complete your profile honestly, publish focused service offers and apply only to projects that match your ability.</p></article>
+                <article class="monetization-card"><div class="skill-number">LESSON 12</div><h3>Turn One Client Into Referrals</h3><p>After a successful delivery, ask whether the client knows someone who may need similar help. Make referrals easy by providing a short description and portfolio link.</p></article>
+            </div>
+
+            <h2 class="section-title">🧭 MODULE 3 — Create Your Professional Accounts</h2>
+            <p class="monetization-intro">Use these account setup checklists as a starting tutorial. Platform menus, identity checks, availability, fees and requirements can change, so always follow the latest instructions shown by each official platform.</p>
+            <div class="monetization-grid">
+                <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 01</div><h3>Set Up LinkedIn</h3><p>Create an account with your real professional details. Add a clear photo, a headline describing your service, an About section, skills, sample projects and contact details. Connect with relevant business owners and share helpful work-related posts.</p></article>
+                <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 02</div><h3>Set Up Instagram for Business</h3><p>Create or convert to a professional account where available. Choose the relevant category, write a concise bio, add a contact method, create Highlights for services and reviews, and publish a consistent portfolio grid or Reels.</p></article>
+                <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 03</div><h3>Set Up a Facebook Page</h3><p>Create a Page for your service or brand, add a recognizable profile image and cover, complete the About and contact sections, add a call-to-action button and publish examples of your work. Keep Page access secure.</p></article>
+                <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 04</div><h3>Set Up a Fiverr Seller Profile</h3><p>Check whether seller registration is available to you. Register through the official site, complete accurate profile details, describe one focused service, add original portfolio samples and create a clear offer with deliverables and requirements.</p></article>
+                <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 05</div><h3>Set Up an Upwork Profile</h3><p>Review eligibility and current payment options for your location. Build a truthful profile around a specific service, add relevant work samples, explain your process and submit tailored proposals only to suitable projects.</p></article>
+                <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 06</div><h3>Build a Behance Portfolio</h3><p>Create a profile and publish well-presented projects. For each project, show the brief, your role, process and final work. Do not upload client work without permission or claim another person's work as yours.</p></article>
+                <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 07</div><h3>Set Up YouTube or TikTok</h3><p>Choose a clear creator or business identity, complete your profile, publish original demonstrations and educational content, and add a safe contact route. Check each platform's current age, monetization and regional eligibility rules.</p></article>
+                <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 08</div><h3>Create a Digital Product Store</h3><p>Choose a supported storefront, review its country availability, charges and payout methods, then prepare your product files, preview images, accurate description, price, delivery settings and refund terms before publishing.</p></article>
+            </div>
+
+            <h2 class="section-title">🚀 MODULE 4 — How to Upscale Your Skill and Business</h2>
+            <div class="monetization-grid">
+                <article class="monetization-card"><div class="skill-number">GROWTH LESSON 01</div><h3>Move From Beginner to Specialist</h3><p>Choose a niche, practice deliberately, study strong examples and complete progressively harder projects. Track what you can now do that you could not do before.</p></article>
+                <article class="monetization-card"><div class="skill-number">GROWTH LESSON 02</div><h3>Build a Strong Portfolio</h3><p>Organize your best work by service. Add short case studies explaining the client's goal, your approach and the deliverable. Keep it current and easy to view on a phone.</p></article>
+                <article class="monetization-card"><div class="skill-number">GROWTH LESSON 03</div><h3>Increase Your Value and Pricing</h3><p>Raise prices when your quality, experience, demand and delivery process justify it. Explain the added value, update your packages and give existing clients clear notice where appropriate.</p></article>
+                <article class="monetization-card"><div class="skill-number">GROWTH LESSON 04</div><h3>Create a Repeatable Workflow</h3><p>Use a client brief, checklist, project folder structure, delivery checklist and follow-up process. Templates save time while keeping the quality of each project consistent.</p></article>
+                <article class="monetization-card"><div class="skill-number">GROWTH LESSON 05</div><h3>Combine Skills Strategically</h3><p>Offer complementary services when you can deliver them well—for example, design plus social media content, or video editing plus short-form content planning.</p></article>
+                <article class="monetization-card"><div class="skill-number">GROWTH LESSON 06</div><h3>Build a Recognizable Brand</h3><p>Use consistent visuals, a clear service promise, professional communication and proof of work. Make it easy for a potential customer to understand what you do and how to hire you.</p></article>
+                <article class="monetization-card"><div class="skill-number">GROWTH LESSON 07</div><h3>Manage Money and Business Records</h3><p>Track income, expenses, subscriptions, client payments and project costs. Agree on payment milestones in writing and keep business funds and personal spending organized.</p></article>
+                <article class="monetization-card"><div class="skill-number">GROWTH LESSON 08</div><h3>Grow With Systems and Collaboration</h3><p>Document your process, use tools responsibly, collaborate with trusted specialists when needed and only delegate work you can supervise and quality-check.</p></article>
+            </div>
+
+            <h2 class="section-title">🛡️ MODULE 5 — Client Communication, Payments & Professional Safety</h2>
+            <div class="monetization-grid">
+                <article class="monetization-card"><div class="skill-number">PROFESSIONAL GUIDE 01</div><h3>Ask the Right Questions Before Starting</h3><p>Confirm the client's goal, audience, size or format, references, deadline, budget, deliverables and revision expectations. Summarize the agreement in writing.</p></article>
+                <article class="monetization-card"><div class="skill-number">PROFESSIONAL GUIDE 02</div><h3>Use Clear Agreements and Deposits</h3><p>For suitable projects, agree on scope, milestones, payment schedule, cancellation terms and ownership or usage rights before work begins. Use a secure, traceable payment method.</p></article>
+                <article class="monetization-card"><div class="skill-number">PROFESSIONAL GUIDE 03</div><h3>Recognize Scams</h3><p>Be cautious of overpayment stories, requests to pay a fee to receive a job, suspicious links, fake payment screenshots and requests for passwords or one-time codes. Verify funds in your own account.</p></article>
+                <article class="monetization-card"><div class="skill-number">PROFESSIONAL GUIDE 04</div><h3>Handle Feedback and Revisions</h3><p>Listen carefully, clarify vague feedback and compare requested changes with the agreed scope. Stay respectful and document any extra work or deadline changes.</p></article>
+            </div>
+
+            <h2 class="section-title">✉️ Ready-to-Use Client Message</h2>
+            <div class="course-card">
+                <h2>Professional Introduction Template</h2>
+                <p style="margin-bottom:14px;">Hello [Name], I came across your business and I appreciate what you're building. I provide [your service], helping [type of customer] with [specific result or problem]. I noticed [one genuine observation] and have an idea that may help. Here are a few examples of my work: [portfolio link]. Would you be open to a brief conversation about what you need?</p>
+                <p>Personalize every message. Do not send repeated unsolicited messages or promise guaranteed sales, followers or income.</p>
+            </div>
+
+            <div class="monetization-note">
+                <strong style="color:var(--gold-soft);">Your DCDS growth roadmap:</strong>
+                Choose one service → practice → create 3–5 samples → publish a portfolio → set up professional accounts → identify suitable prospects → make personalized offers → agree on scope and payment → deliver excellent work → request feedback → improve and scale.
+                <br><br>These lessons are educational. They do not guarantee clients, platform approval or income. Check each platform's official terms, eligibility, fees and payout availability before creating an account or relying on it for business.
+            </div>
+        </section>
+
     </section>
 
 </main>
@@ -301,7 +434,6 @@ footer span {
     CREATE • LEARN • INNOVATE • EARN.<br>
     All Rights Reserved.
 </footer>
-
 <script>
 "use strict";
 
