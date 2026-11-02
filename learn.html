@@ -433,8 +433,8 @@ footer span {
     © 2026 <span>De Champions Digital Service</span>.<br>
     CREATE • LEARN • INNOVATE • EARN.<br>
     All Rights Reserved.
-</footer>
-<script>
+    </footer>
+    <script>
 "use strict";
 
 /* =================================
@@ -806,8 +806,7 @@ function displayMaterials(materials) {
             '<div class="notice">Learning materials will be available soon.</div>';
     }
 }
-
-/* =================================
+       /* =================================
    MAIN COURSE LOADER
 ================================= */
 
@@ -847,15 +846,22 @@ async function loadCourse() {
         }
 
         if (!sessionData.session) {
-
-            showMessage(
-                "Please log in to your DCDS account using this browser, then reopen your learning portal."
-            );
-
+            // Preserve the requested course and send the student to the real login screen.
+            const returnTo = window.location.pathname + window.location.search;
+            const loginUrl = "DCDS_index.html?login=required&next=" + encodeURIComponent(returnTo);
+            window.location.replace(loginUrl);
             return;
         }
 
         const user = sessionData.session.user;
+
+        // A Supabase session is not enough until the student's email is verified.
+        if (!user.email_confirmed_at) {
+            const returnTo = window.location.pathname + window.location.search;
+            const verifyUrl = "DCDS_index.html?verify=required&next=" + encodeURIComponent(returnTo);
+            window.location.replace(verifyUrl);
+            return;
+        }
 
         /* GET COURSE */
 
@@ -974,6 +980,29 @@ async function loadCourse() {
         );
     }
 }
+
+/* =================================
+   SESSION LIFECYCLE GUARD
+================================= */
+
+// Supabase persists the authenticated session in this browser. Existing verified
+// students therefore continue without being asked to log in on every visit.
+// If the session expires or the student signs out, hide lessons immediately.
+db.auth.onAuthStateChange((event, session) => {
+    if (event === "SIGNED_OUT") {
+        learningContent.classList.add("hidden");
+        const returnTo = window.location.pathname + window.location.search;
+        window.location.replace(
+            "DCDS_index.html?login=required&next=" + encodeURIComponent(returnTo)
+        );
+    } else if (session.user && !session.user.email_confirmed_at) {
+        learningContent.classList.add("hidden");
+        const returnTo = window.location.pathname + window.location.search;
+        window.location.replace(
+            "DCDS_index.html?verify=required&next=" + encodeURIComponent(returnTo)
+        );
+    }
+});
 
 /* =================================
    START PORTAL
