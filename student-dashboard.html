@@ -64,10 +64,40 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
 </head>
 <body>
 <main class="wrap">
-<header>
+<header class="dashboard-header">
   <div class="brand">DCDS · STUDENT PORTAL</div>
-  <a href="index.html#courses">← Browse courses</a>
+
+  <div class="header-actions">
+
+    <button id="notificationBell"
+            class="notification-bell"
+            type="button"
+            aria-label="Open notifications">
+      🔔
+      <span id="unreadCount" class="unread-count hidden">0</span>
+    </button>
+
+    <a href="index.html#courses">← Browse courses</a>
+
+  </div>
 </header>
+
+<section id="notificationPanel" class="notification-panel hidden">
+
+  <div class="notification-heading">
+    <div>
+      <span>STAY UPDATED</span>
+      <h2>Your Notifications</h2>
+    </div>
+
+    <button id="closeNotifications" type="button">✕</button>
+  </div>
+
+  <div id="notificationList" aria-live="polite">
+    <p>Loading notifications...</p>
+  </div>
+
+</section>
 
 <section class="hero">
   <span class="kicker">YOUR LEARNING SPACE</span>
