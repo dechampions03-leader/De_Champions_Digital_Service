@@ -248,7 +248,7 @@ main {
     line-height: 1.8;
     margin: 8px 0 25px;
 }
-    /* LESSON PROGRESS & CERTIFICATE */
+        /* LESSON PROGRESS & CERTIFICATE */
 .progress-panel {
     background: linear-gradient(135deg, rgba(135,56,209,.18), rgba(212,175,55,.08));
     border: 1px solid rgba(212,175,55,.55);
@@ -426,7 +426,7 @@ footer span {
                 <article class="monetization-card"><div class="skill-number">LESSON 05</div><h3>Set Your Price</h3><p>Consider the time, complexity, tools, revisions and value of the work. Research what your target market can afford. Avoid promising results you cannot control or pricing without defining the scope.</p></article>
                 <article class="monetization-card"><div class="skill-number">LESSON 06</div><h3>Deliver and Get Repeat Work</h3><p>Confirm the brief, agree on deadlines, provide progress updates, deliver files neatly and ask for feedback. With permission, turn successful work into a testimonial or case study.</p></article>
             </div>
-                        <h2 class="section-title">🔎 MODULE 2 — How to Find Clients</h2>
+                                 <h2 class="section-title">🔎 MODULE 2 — How to Find Clients</h2>
             <div class="monetization-grid">
                 <article class="monetization-card"><div class="skill-number">LESSON 07</div><h3>Start With Your Existing Network</h3><p>Tell friends, family, community groups and business owners what service you offer. Share examples of your work and ask for introductions—not just favors.</p></article>
                 <article class="monetization-card"><div class="skill-number">LESSON 08</div><h3>Find Businesses That Need Help</h3><p>Search for businesses with outdated designs, inconsistent posts, weak videos or no clear website. Make a thoughtful, specific suggestion rather than sending mass messages.</p></article>
@@ -448,8 +448,7 @@ footer span {
                 <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 07</div><h3>Set Up YouTube or TikTok</h3><p>Choose a clear creator or business identity, complete your profile, publish original demonstrations and educational content, and add a safe contact route. Check each platform's current age, monetization and regional eligibility rules.</p></article>
                 <article class="monetization-card"><div class="skill-number">ACCOUNT GUIDE 08</div><h3>Create a Digital Product Store</h3><p>Choose a supported storefront, review its country availability, charges and payout methods, then prepare your product files, preview images, accurate description, price, delivery settings and refund terms before publishing.</p></article>
             </div>
-
-            <h2 class="section-title">🚀 MODULE 4 — How to Upscale Your Skill and Business</h2>
+                     <h2 class="section-title">🚀 MODULE 4 — How to Upscale Your Skill and Business</h2>
             <div class="monetization-grid">
                 <article class="monetization-card"><div class="skill-number">GROWTH LESSON 01</div><h3>Move From Beginner to Specialist</h3><p>Choose a niche, practice deliberately, study strong examples and complete progressively harder projects. Track what you can now do that you could not do before.</p></article>
                 <article class="monetization-card"><div class="skill-number">GROWTH LESSON 02</div><h3>Build a Strong Portfolio</h3><p>Organize your best work by service. Add short case studies explaining the client's goal, your approach and the deliverable. Keep it current and easy to view on a phone.</p></article>
@@ -490,8 +489,8 @@ footer span {
     © 2026 <span>De Champions Digital Service</span>.<br>
     CREATE • LEARN • INNOVATE • EARN.<br>
     All Rights Reserved.
-    </footer>
-    <script>
+</footer>
+     <script>
 "use strict";
 
 /* =================================
@@ -506,7 +505,8 @@ const SUPABASE_PUBLISHABLE_KEY =
 
 const db = window.supabase.createClient(
     SUPABASE_URL,
-    SUPABASE_PUBLISHABLE_KEY
+    SUPABASE_PUBLISHABLE_KEY,
+    { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }
 );
 
 /* =================================
@@ -586,8 +586,7 @@ async function markLessonComplete(lesson, button, status) {
         status.textContent = error.message || "Could not save progress. Please try again.";
     }
 }
-
-async function issueAndShowCertificate() {
+     async function issueAndShowCertificate() {
     if (!currentCourse || !currentUser || !currentLessons.length ||
         completedLessonIds.size < currentLessons.length) return;
 
@@ -702,7 +701,7 @@ De Champions Digital Service</div>
 }
 
 downloadCertificateButton.addEventListener("click", downloadCertificate);
-        /* =================================
+            /* =================================
    MESSAGE HANDLER
 ================================= */
 
@@ -895,8 +894,8 @@ async function openFullscreen(element, fallbackUrl) {
 
         window.open(fallbackUrl, "_blank");
     }
-}
-        /* =================================
+        }
+            /* =================================
    LESSON DISPLAY
 ================================= */
 
@@ -1039,8 +1038,8 @@ function displayMaterials(materials) {
         materialContainer.innerHTML =
             '<div class="notice">Learning materials will be available soon.</div>';
     }
-}
-               /* =================================
+    }
+                    /* =================================
    MAIN COURSE LOADER
 ================================= */
 
@@ -1082,7 +1081,7 @@ async function loadCourse() {
         if (!sessionData.session) {
             // Preserve the requested course and send the student to the real login screen.
             const returnTo = window.location.pathname + window.location.search;
-            const loginUrl = "DCDS_index.html?login=required&next=" + encodeURIComponent(returnTo);
+            const loginUrl = "index.html?login=required&next=" + encodeURIComponent(returnTo);
             window.location.replace(loginUrl);
             return;
         }
@@ -1093,7 +1092,7 @@ async function loadCourse() {
         // A Supabase session is not enough until the student's email is verified.
         if (!user.email_confirmed_at) {
             const returnTo = window.location.pathname + window.location.search;
-            const verifyUrl = "DCDS_index.html?verify=required&next=" + encodeURIComponent(returnTo);
+            const verifyUrl = "index.html?verify=required&next=" + encodeURIComponent(returnTo);
             window.location.replace(verifyUrl);
             return;
         }
@@ -1236,13 +1235,13 @@ db.auth.onAuthStateChange((event, session) => {
         learningContent.classList.add("hidden");
         const returnTo = window.location.pathname + window.location.search;
         window.location.replace(
-            "DCDS_index.html?login=required&next=" + encodeURIComponent(returnTo)
+            "index.html?login=required&next=" + encodeURIComponent(returnTo)
         );
-    } else if (session.user && !session.user.email_confirmed_at) {
+    } else if (session?.user && !session.user.email_confirmed_at) {
         learningContent.classList.add("hidden");
         const returnTo = window.location.pathname + window.location.search;
         window.location.replace(
-            "DCDS_index.html?verify=required&next=" + encodeURIComponent(returnTo)
+            "index.html?verify=required&next=" + encodeURIComponent(returnTo)
         );
     }
 });
