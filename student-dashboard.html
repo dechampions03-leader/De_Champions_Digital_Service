@@ -297,7 +297,203 @@ const GENERAL_COURSE_ID = 'a1030000-0000-4000-8000-000000000001';
 const statusEl = document.getElementById('status');
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+// DCDS STUDENT NOTIFICATION SYSTEM
 
+const notificationPanel =
+  document.getElementById('notificationPanel');
+
+const notificationList =
+  document.getElementById('notificationList');
+
+const unreadCount =
+  document.getElementById('unreadCount');
+
+document.getElementById('notificationBell')
+  .addEventListener('click', () => {
+
+    notificationPanel.classList.toggle('hidden');
+
+  });
+
+document.getElementById('closeNotifications')
+  .addEventListener('click', () => {
+
+    notificationPanel.classList.add('hidden');
+
+  });
+
+
+function formatNotificationDate(value) {
+
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return 'Date unavailable';
+  }
+
+  return date.toLocaleString('en-NG', {
+    dateStyle: 'medium',
+    timeStyle: 'short'
+  });
+
+}
+
+
+async function loadNotifications(user) {
+
+  notificationList.innerHTML =
+    '<p class="notification-empty">Loading announcements...</p>';
+
+  try {
+
+    const { data: recipients, error } = await client
+      .from('notification_recipients')
+      .select('id, notification_id, is_read, created_at')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const rows = recipients || [];
+
+    const unread = rows.filter(row => !row.is_read).length;
+
+    unreadCount.textContent = unread;
+
+    unreadCount.classList.toggle('hidden', unread === 0);
+
+    if (!rows.length) {
+
+      notificationList.innerHTML = `
+        <div class="notification-empty">
+          🎉 You're all caught up!<br>
+          There are no announcements for you yet.
+        </div>
+      `;
+
+      return;
+
+    }
+
+    const notificationIds = [
+      ...new Set(rows.map(row => row.notification_id))
+    ];
+
+    const { data: announcements, error: announcementError } =
+      await client
+        .from('notifications')
+        .select('id, title, message, category, created_at')
+        .in('id', notificationIds);
+
+    if (announcementError) throw announcementError;
+
+    const announcementMap = Object.fromEntries(
+      (announcements || []).map(item => [item.id, item])
+    );
+
+    notificationList.innerHTML = '';
+
+    rows.forEach(recipient => {
+
+      const announcement =
+        announcementMap[recipient.notification_id];
+
+      if (!announcement) return;
+
+      const card = document.createElement('article');
+
+      card.className =
+        'notification-item' +
+        (recipient.is_read ? '' : ' unread');
+
+      const title = document.createElement('h3');
+      title.textContent = announcement.title;
+
+      const message = document.createElement('p');
+      message.textContent = announcement.message;
+
+      const category = document.createElement('small');
+      category.textContent =
+        'Category: ' + (announcement.category || 'General');
+
+      const date = document.createElement('small');
+      date.textContent =
+        formatNotificationDate(announcement.created_at);
+
+      card.append(title, message, category, date);
+
+      if (!recipient.is_read) {
+
+        const button = document.createElement('button');
+
+        button.type = 'button';
+        button.className = 'mark-read-btn';
+        button.textContent = 'Mark as Read';
+
+        button.addEventListener('click', async () => {
+
+          button.disabled = true;
+          button.textContent = 'Updating...';
+
+          const { error: updateError } = await client
+            .from('notification_recipients')
+            .update({ is_read: true })
+            .eq('id', recipient.id)
+            .eq('user_id', user.id);
+
+          if (updateError) {
+
+            console.error(updateError);
+            button.disabled = false;
+            button.textContent = 'Try Again';
+
+            return;
+
+          }
+
+          await loadNotifications(user);
+
+        });
+
+        card.appendChild(button);
+
+      } else {
+
+        const readLabel = document.createElement('small');
+        readLabel.textContent = '✓ Read';
+
+        card.appendChild(readLabel);
+
+      }
+
+      notificationList.appendChild(card);
+
+    });
+
+    if (!notificationList.children.length) {
+
+      notificationList.innerHTML = `
+        <div class="notification-empty">
+          No announcements are available.
+        </div>
+      `;
+
+    }
+
+  } catch (error) {
+
+    console.error('Notification loading error:', error);
+
+    notificationList.innerHTML = `
+      <div class="notification-empty">
+        We couldn't load your notifications.
+        Please try again later.
+      </div>
+    `;
+
+  }
+
+}
 function showError(message, loginLink=true) {
   statusEl.textContent = message;
   if (loginLink) {
