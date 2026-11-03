@@ -1405,7 +1405,20 @@ select:focus-visible {
 /* =====================================
    END OF CSS DESIGN
 ====================================== */
+/* ADMIN ACCESS VISIBILITY */
 
+[hidden] {
+    display: none !important;
+}
+
+#adminApp {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#adminApp.admin-authorized {
+    opacity: 1;
+}
 </style>
 <!-- =====================================
      BLOCK 5: SUPABASE CONNECTION
