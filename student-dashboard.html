@@ -59,7 +59,7 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
 .certificate-card .btn{margin-top:auto;background:linear-gradient(110deg,#d8b65d,#b88727);color:#28183a}
 .empty-certificates{padding:22px;background:#fff;border:1px dashed #d9c8e8;border-radius:16px;color:var(--muted);font-size:13px;line-height:1.7}
 @media(max-width:650px){.certificate-grid{grid-template-columns:1fr}}
-/* DCDS STUDENT NOTIFICATION CENTER */
+  /* DCDS STUDENT NOTIFICATION CENTER */
 
 .dashboard-header .header-actions {
   display: flex;
@@ -203,9 +203,12 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
     font-size: 11px;
   }
 }
+
+/* Keep private dashboard content hidden until Supabase confirms a verified student session. */
+body.auth-pending main{visibility:hidden}
 </style>
 </head>
-<body>
+<body class="auth-pending">
 <main class="wrap">
 <header class="dashboard-header">
   <div class="brand">DCDS · STUDENT PORTAL</div>
@@ -243,8 +246,7 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
   <div id="notificationList" aria-live="polite">
     <p>Loading notifications...</p>
   </div>
-  </section>
-
+</section>
 <section class="hero">
   <span class="kicker">YOUR LEARNING SPACE</span>
   <h1>Welcome back, <span id="studentName">Champion</span>!</h1>
@@ -299,7 +301,7 @@ const SUPABASE_ANON_KEY = 'sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
 const GENERAL_COURSE_ID = 'a1030000-0000-4000-8000-000000000001';
 const statusEl = document.getElementById('status');
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
 
 async function showAdminNotificationLink() {
   const link = document.getElementById('adminNotificationLink');
@@ -356,8 +358,6 @@ document.getElementById('markAllRead').addEventListener('click', async () => {
 
   await loadNotifications(session.user);
 });
-
-
 function formatNotificationDate(value) {
 
   const date = new Date(value);
@@ -456,8 +456,7 @@ async function loadNotifications(user) {
         formatNotificationDate(announcement.created_at);
 
       card.append(title, message, category, date);
-
-      if (!recipient.is_read) {
+           if (!recipient.is_read) {
 
         const button = document.createElement('button');
 
@@ -544,8 +543,7 @@ function formatCertificateDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'Date unavailable';
   return date.toLocaleDateString('en-NG', {year:'numeric', month:'long', day:'numeric'});
-}
-
+  }
 function openCertificate(certificate, studentName, courseTitle) {
   if (certificate.status === 'revoked') return;
   const safeName = escapeHtml(studentName || 'DCDS Student');
@@ -564,7 +562,6 @@ function openCertificate(certificate, studentName, courseTitle) {
   </style></head><body><button class="print" onclick="window.print()">Print / Save as PDF</button><main class="certificate"><div class="brand">DCDS</div><div class="tag">DE CHAMPIONS DIGITAL SERVICE</div><div class="rule"></div><div class="eyebrow">CERTIFICATE OF COMPLETION</div><h1 class="title">Certificate of Achievement</h1><div class="intro">This certificate is proudly presented to</div><div class="name">${safeName}</div><div class="body">for successfully completing the learning requirements for</div><div class="course">${safeCourse}</div><div class="body">and demonstrating commitment to learning, creativity, and digital excellence.</div><div class="rule"></div><div class="seal">DCDS<br>ACHIEVEMENT</div>${verified?'<div class="verified">ADMIN VERIFIED CERTIFICATE</div>':''}<div class="footer"><div><strong>Certificate No.</strong><br>${safeNumber}<br><br><strong>Date Issued</strong><br>${safeDate}</div><div style="text-align:right"><strong>DE CHAMPIONS DIGITAL SERVICE</strong><br>CREATE • LEARN • INNOVATE • EARN.<br><br>Official digital certificate</div></div></main></body></html>`);
   printWindow.document.close();
 }
-
 async function loadCertificates(user) {
   const container = document.getElementById('certificateGrid');
   container.innerHTML = '<div class="empty-certificates">Loading your certificates…</div>';
@@ -631,15 +628,23 @@ async function loadDashboard() {
   const {data:{session}, error:sessionError} = await client.auth.getSession();
   if (sessionError) throw sessionError;
   if (!session || !session.user) {
-    showError('Please log in with your DCDS student account to view your dashboard.');
+    const next = encodeURIComponent('student-dashboard.html');
+    window.location.replace('index.html?login=required&next=' + next);
     return;
   }
   if (!session.user.email_confirmed_at) {
-    showError('Please verify your email address before accessing your student dashboard.');
+    const next = encodeURIComponent('student-dashboard.html');
+    window.location.replace('index.html?verify=required&next=' + next);
     return;
   }
 
-  const user = session.user;
+  // Confirm the current identity with Supabase before revealing private dashboard data.
+  const {data:{user}, error:userError} = await client.auth.getUser();
+  if (userError || !user || !user.email_confirmed_at) {
+    window.location.replace('index.html?login=required&next=' + encodeURIComponent('student-dashboard.html'));
+    return;
+  }
+  document.body.classList.remove('auth-pending');
   await loadNotifications(user);
   await showAdminNotificationLink();
   const fullName = user.user_metadata?.full_name || user.user_metadata?.name || 'Champion';
@@ -660,8 +665,7 @@ async function loadDashboard() {
 
   const grid = document.getElementById('courseGrid');
   grid.innerHTML = '';
-
-  if (hasGeneral) {
+    if (hasGeneral) {
     const card = document.createElement('article');
     card.className = 'course general';
     card.innerHTML = `
@@ -725,8 +729,9 @@ client.auth.onAuthStateChange((event, session) => {
 });
 loadDashboard().catch(error => {
   console.error('DCDS dashboard error:', error);
+  document.body.classList.remove('auth-pending');
   showError(error.message || 'We could not load your dashboard. Please try again.', false);
 });
 </script>
 </body>
-</html> 
+</html>
