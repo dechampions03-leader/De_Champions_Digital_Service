@@ -59,7 +59,150 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
 .certificate-card .btn{margin-top:auto;background:linear-gradient(110deg,#d8b65d,#b88727);color:#28183a}
 .empty-certificates{padding:22px;background:#fff;border:1px dashed #d9c8e8;border-radius:16px;color:var(--muted);font-size:13px;line-height:1.7}
 @media(max-width:650px){.certificate-grid{grid-template-columns:1fr}}
+/* DCDS STUDENT NOTIFICATION CENTER */
 
+.dashboard-header .header-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.notification-bell {
+  position: relative;
+  width: 45px;
+  height: 45px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+  font-size: 21px;
+  cursor: pointer;
+  box-shadow: 0 5px 15px #32105f12;
+}
+
+.unread-count {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  min-width: 20px;
+  height: 20px;
+  padding: 2px 5px;
+  border-radius: 50px;
+  background: #e52d45;
+  color: white;
+  font: 800 11px Arial;
+  display: grid;
+  place-items: center;
+}
+
+.notification-panel {
+  margin: 0 0 20px;
+  padding: 20px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  background: white;
+  box-shadow: 0 12px 30px #32105f12;
+}
+
+.notification-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 15px;
+}
+
+.notification-heading span {
+  color: var(--purple);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: .16em;
+}
+
+.notification-heading h2 {
+  color: var(--deep);
+  font: 800 23px 'Playfair Display', serif;
+  margin: 5px 0 0;
+}
+
+#closeNotifications {
+  border: 0;
+  background: #f1e5ff;
+  color: var(--deep);
+  border-radius: 10px;
+  width: 35px;
+  height: 35px;
+  font-size: 17px;
+  cursor: pointer;
+}
+
+.notification-item {
+  padding: 15px;
+  margin-bottom: 10px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fff;
+}
+
+.notification-item.unread {
+  background: #faf5ff;
+  border-left: 4px solid var(--purple);
+}
+
+.notification-item h3 {
+  margin: 0 0 7px;
+  color: var(--deep);
+  font-size: 15px;
+}
+
+.notification-item p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+
+.notification-item small {
+  display: block;
+  margin-top: 9px;
+  color: #8a7b98;
+  font-size: 11px;
+}
+
+.mark-read-btn {
+  margin-top: 10px;
+  border: 0;
+  border-radius: 9px;
+  padding: 8px 12px;
+  background: #f1e5ff;
+  color: var(--deep);
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.notification-empty {
+  padding: 20px;
+  text-align: center;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.7;
+}
+
+@media(max-width:650px) {
+  .dashboard-header {
+    align-items: center;
+  }
+
+  .dashboard-header .header-actions {
+    gap: 7px;
+  }
+
+  .dashboard-header .header-actions a {
+    padding: 9px;
+    font-size: 11px;
+  }
+}
 </style>
 </head>
 <body>
