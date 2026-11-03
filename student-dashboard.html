@@ -606,6 +606,7 @@ async function loadDashboard() {
   }
 
   const user = session.user;
+  await loadNotifications(user);
   const fullName = user.user_metadata?.full_name || user.user_metadata?.name || 'Champion';
   document.getElementById('studentName').textContent = fullName.split(' ')[0];
   document.getElementById('studentEmail').textContent = user.email || 'Verified DCDS student';
