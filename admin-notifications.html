@@ -1650,96 +1650,6 @@ console.log(
    1. ADMINISTRATOR AUTHENTICATION
 ====================================== */
 
-async function initializeAdminCenter() {
-
-    try {
-
-        console.log("Checking administrator session...");
-
-        const {
-            data: { session },
-            error
-        } = await db.auth.getSession();
-
-        if (error) {
-            throw error;
-        }
-
-        /* Redirect users who are not logged in */
-
-        if (!session) {
-
-            window.location.href =
-                "index.html?login=required&next=admin-notifications.html";
-
-            return;
-        }
-
-        currentAdmin = session.user;
-
-        console.log(
-            "Logged-in account:",
-            currentAdmin.email
-        );
-
-
-        /* =================================
-           2. VERIFY ADMINISTRATOR PRIVILEGES
-        ================================= */
-
-        const isAdmin = await verifyAdminRole();
-
-        if (!isAdmin) {
-
-            alert(
-                "ACCESS DENIED!\n\n" +
-                "Your account is not authorized to access the DCDS Admin Center."
-            );
-
-            await db.auth.signOut();
-
-            window.location.href = "index.html";
-
-            return;
-        }
-
-
-        /* =================================
-           3. ADMIN ACCESS CONFIRMED
-        ================================= */
-
-        console.log(
-            "DCDS administrator successfully verified."
-        );
-
-
-        /* =================================
-           4. LOAD ADMIN DASHBOARD DATA
-        ================================= */
-
-        await loadCourses();
-
-        await loadHistory();
-
-        console.log(
-            "DCDS Admin Notification Center is ready."
-        );
-
-    } catch (error) {
-
-        console.error(
-            "Administrator initialization failed:",
-            error
-        );
-
-        alert(
-            "Unable to verify administrator access. " +
-            "Please refresh the page or try again."
-        );
-
-    }
-
-}
 
 
 /* =====================================
@@ -1783,7 +1693,63 @@ async function logoutAdmin() {
 
 }
 
+async function initializeAdminCenter() {
+    const adminApp = document.getElementById("adminApp");
 
+    // Hide the dashboard until access is verified
+    adminApp.hidden = true;
+    adminApp.classList.remove("admin-authorized");
+
+    try {
+        const session = await getCurrentSession();
+
+        // Redirect visitors who are not logged in
+        if (!session) {
+            window.location.replace(
+                "index.html?login=required&next=admin-notifications.html"
+            );
+            return;
+        }
+
+        currentAdmin = session.user;
+
+        // Verify administrator privileges
+        const isAdmin = await verifyAdminRole();
+
+        if (!isAdmin) {
+            alert(
+                "ACCESS DENIED! Your account is not authorized to access the DCDS Admin Center."
+            );
+
+            await db.auth.signOut();
+
+            window.location.replace("index.html");
+            return;
+        }
+
+        // Load administrator dashboard information
+        await loadCourses();
+        await loadHistory();
+
+        // Reveal dashboard only after successful verification
+        adminApp.hidden = false;
+
+        requestAnimationFrame(() => {
+            adminApp.classList.add("admin-authorized");
+        });
+
+        console.log("DCDS Admin Center successfully authorized.");
+
+    } catch (error) {
+        console.error("Admin initialization error:", error);
+
+        alert(
+            "Unable to verify administrator access. Please try again."
+        );
+
+        window.location.replace("index.html");
+    }
+}
 /* =====================================
    6. MONITOR AUTHENTICATION CHANGES
 ====================================== */
