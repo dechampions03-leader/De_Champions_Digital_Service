@@ -59,7 +59,7 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
 .certificate-card .btn{margin-top:auto;background:linear-gradient(110deg,#d8b65d,#b88727);color:#28183a}
 .empty-certificates{padding:22px;background:#fff;border:1px dashed #d9c8e8;border-radius:16px;color:var(--muted);font-size:13px;line-height:1.7}
 @media(max-width:650px){.certificate-grid{grid-template-columns:1fr}}
-    /* DCDS STUDENT NOTIFICATION CENTER */
+      /* DCDS STUDENT NOTIFICATION CENTER */
 
 .dashboard-header .header-actions {
   display: flex;
@@ -203,13 +203,13 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
     font-size: 11px;
   }
 }
-  
+    
 
 /* DCDS ANNOUNCEMENT TICKER — separate display using existing student-targeted announcements */
 .announcement-ticker{display:flex;align-items:center;gap:12px;overflow:hidden;margin:0 0 20px;min-height:54px;padding:0 14px;border:1px solid #e4c16d;border-radius:15px;background:linear-gradient(105deg,#21083f,#4b1678 68%,#6d2aa5);box-shadow:0 9px 24px #32105f18;color:#fff}
 .announcement-ticker .ticker-label{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:99px;background:#e4c16d;color:#28183a;font-size:10px;font-weight:900;letter-spacing:.08em}
 .ticker-viewport{min-width:0;flex:1;overflow:hidden}
-.ticker-trigger{display:block;width:max-content;max-width:none;padding:0;border:0;background:transparent;color:#fff;cursor:pointer;font:700 13px 'DM Sans',sans-serif;white-space:nowrap;animation:dcdsTickerScroll 24s linear infinite}
+.ticker-trigger{display:block;width:max-content;max-width:none;padding:0;border:0;background:transparent;color:#fff;cursor:pointer;font:700 13px 'DM Sans',sans-serif;white-space:nowrap;animation:dcdsTickerScroll 55s linear infinite}
 .announcement-ticker:hover .ticker-trigger,.announcement-ticker:focus-within .ticker-trigger{animation-play-state:paused}
 .ticker-trigger:focus-visible{outline:2px solid #e4c16d;outline-offset:4px}
 @keyframes dcdsTickerScroll{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
@@ -390,7 +390,7 @@ document.getElementById('markAllRead').addEventListener('click', async () => {
 
   await loadNotifications(session.user);
 });
-  function formatNotificationDate(value) {
+    function formatNotificationDate(value) {
 
   const date = new Date(value);
 
@@ -450,7 +450,7 @@ function renderAnnouncementTicker(rows, announcementMap) {
 async function loadNotifications(user) {
 
   notificationList.innerHTML =
-    '<p class="notification-empty">Loading announcements...</p>';
+    '<p class="notification-empty">Loading notifications...</p>';
 
   try {
 
@@ -464,18 +464,14 @@ async function loadNotifications(user) {
 
     const rows = recipients || [];
 
-    const unread = rows.filter(row => !row.is_read).length;
-
-    unreadCount.textContent = unread;
-
-    unreadCount.classList.toggle('hidden', unread === 0);
-
     if (!rows.length) {
       renderAnnouncementTicker([], {});
+      unreadCount.textContent = '0';
+      unreadCount.classList.add('hidden');
       notificationList.innerHTML = `
         <div class="notification-empty">
           🎉 You're all caught up!<br>
-          There are no announcements for you yet.
+          You have no notifications right now. New announcements appear in the DCDS update banner.
         </div>
       `;
       return;
@@ -496,47 +492,62 @@ async function loadNotifications(user) {
     const announcementMap = Object.fromEntries(
       (announcements || []).map(item => [item.id, item])
     );
+      
+    // These are the five categories created by the separate Admin Announcement form.
+    // They belong in the scrolling announcement ticker, not in the notification center.
+    const announcementCategories = new Set([
+      'general', 'important', 'course', 'promotion', 'event'
+    ]);
 
-    renderAnnouncementTicker(rows, announcementMap);
+    const isAnnouncement = recipient => {
+      const item = announcementMap[recipient.notification_id];
+      return !!item && announcementCategories.has(
+        String(item.category || '').trim().toLowerCase()
+      );
+    };
+
+    const announcementRows = rows.filter(isAnnouncement);
+    const notificationRows = rows.filter(row => !isAnnouncement(row));
+
+    // Announcement ticker is independent from the notification list and read state.
+    renderAnnouncementTicker(announcementRows, announcementMap);
+
+    // Only genuine notification records contribute to the bell's unread count.
+    const unread = notificationRows.filter(row => !row.is_read).length;
+    unreadCount.textContent = unread;
+    unreadCount.classList.toggle('hidden', unread === 0);
+
     notificationList.innerHTML = '';
-        rows.forEach(recipient => {
 
-      const announcement =
-        announcementMap[recipient.notification_id];
+    notificationRows.forEach(recipient => {
 
-      if (!announcement) return;
+      const notification = announcementMap[recipient.notification_id];
+      if (!notification) return;
 
       const card = document.createElement('article');
-
-      card.className =
-        'notification-item' +
-        (recipient.is_read ? '' : ' unread');
+      card.className = 'notification-item' + (recipient.is_read ? '' : ' unread');
 
       const title = document.createElement('h3');
-      title.textContent = announcement.title;
+      title.textContent = notification.title;
 
       const message = document.createElement('p');
-      message.textContent = announcement.message;
+      message.textContent = notification.message;
 
       const category = document.createElement('small');
-      category.textContent =
-        'Category: ' + (announcement.category || 'General');
+      category.textContent = 'Category: ' + (notification.category || 'General');
 
       const date = document.createElement('small');
-      date.textContent =
-        formatNotificationDate(announcement.created_at);
+      date.textContent = formatNotificationDate(notification.created_at);
 
       card.append(title, message, category, date);
-           if (!recipient.is_read) {
 
+      if (!recipient.is_read) {
         const button = document.createElement('button');
-
         button.type = 'button';
         button.className = 'mark-read-btn';
         button.textContent = 'Mark as Read';
 
         button.addEventListener('click', async () => {
-
           button.disabled = true;
           button.textContent = 'Updating...';
 
@@ -547,41 +558,32 @@ async function loadNotifications(user) {
             .eq('user_id', user.id);
 
           if (updateError) {
-
             console.error(updateError);
             button.disabled = false;
             button.textContent = 'Try Again';
-
             return;
-
           }
 
           await loadNotifications(user);
-                 });
+        });
 
         card.appendChild(button);
-
       } else {
-
         const readLabel = document.createElement('small');
         readLabel.textContent = '✓ Read';
-
         card.appendChild(readLabel);
-
       }
 
       notificationList.appendChild(card);
-
     });
 
     if (!notificationList.children.length) {
-
       notificationList.innerHTML = `
         <div class="notification-empty">
-          No announcements are available.
+          🔔 No notifications right now.<br>
+          DCDS announcements are shown separately in the scrolling update banner above.
         </div>
       `;
-
     }
 
   } catch (error) {
@@ -598,6 +600,7 @@ async function loadNotifications(user) {
   }
 
 }
+
 function showError(message, loginLink=true) {
   statusEl.textContent = message;
   if (loginLink) {
@@ -615,7 +618,7 @@ function formatCertificateDate(value) {
   if (Number.isNaN(date.getTime())) return 'Date unavailable';
   return date.toLocaleDateString('en-NG', {year:'numeric', month:'long', day:'numeric'});
 }
-  function openCertificate(certificate, studentName, courseTitle) {
+    function openCertificate(certificate, studentName, courseTitle) {
   if (certificate.status === 'revoked') return;
   const safeName = escapeHtml(studentName || 'DCDS Student');
   const safeCourse = escapeHtml(courseTitle || 'DCDS Course');
@@ -736,7 +739,7 @@ async function loadDashboard() {
 
   const grid = document.getElementById('courseGrid');
   grid.innerHTML = '';
-      if (hasGeneral) {
+        if (hasGeneral) {
     const card = document.createElement('article');
     card.className = 'course general';
     card.innerHTML = `
