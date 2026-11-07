@@ -59,7 +59,7 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
 .certificate-card .btn{margin-top:auto;background:linear-gradient(110deg,#d8b65d,#b88727);color:#28183a}
 .empty-certificates{padding:22px;background:#fff;border:1px dashed #d9c8e8;border-radius:16px;color:var(--muted);font-size:13px;line-height:1.7}
 @media(max-width:650px){.certificate-grid{grid-template-columns:1fr}}
-  /* DCDS STUDENT NOTIFICATION CENTER */
+    /* DCDS STUDENT NOTIFICATION CENTER */
 
 .dashboard-header .header-actions {
   display: flex;
@@ -203,6 +203,25 @@ footer{text-align:center;color:#877a94;font-size:11px;padding:30px 0 0}
     font-size: 11px;
   }
 }
+  
+
+/* DCDS ANNOUNCEMENT TICKER — separate display using existing student-targeted announcements */
+.announcement-ticker{display:flex;align-items:center;gap:12px;overflow:hidden;margin:0 0 20px;min-height:54px;padding:0 14px;border:1px solid #e4c16d;border-radius:15px;background:linear-gradient(105deg,#21083f,#4b1678 68%,#6d2aa5);box-shadow:0 9px 24px #32105f18;color:#fff}
+.announcement-ticker .ticker-label{flex:0 0 auto;display:inline-flex;align-items:center;gap:6px;padding:7px 10px;border-radius:99px;background:#e4c16d;color:#28183a;font-size:10px;font-weight:900;letter-spacing:.08em}
+.ticker-viewport{min-width:0;flex:1;overflow:hidden}
+.ticker-trigger{display:block;width:max-content;max-width:none;padding:0;border:0;background:transparent;color:#fff;cursor:pointer;font:700 13px 'DM Sans',sans-serif;white-space:nowrap;animation:dcdsTickerScroll 24s linear infinite}
+.announcement-ticker:hover .ticker-trigger,.announcement-ticker:focus-within .ticker-trigger{animation-play-state:paused}
+.ticker-trigger:focus-visible{outline:2px solid #e4c16d;outline-offset:4px}
+@keyframes dcdsTickerScroll{from{transform:translateX(100%)}to{transform:translateX(-100%)}}
+.announcement-modal{position:fixed;inset:0;z-index:1000;display:grid;place-items:center;padding:20px;background:#160727b8}
+.announcement-modal.hidden{display:none!important}
+.announcement-modal-card{width:min(560px,100%);max-height:min(80vh,700px);overflow:auto;padding:24px;border:1px solid #ead9a8;border-radius:20px;background:#fff;box-shadow:0 24px 70px #16072755}
+.announcement-modal-card .kicker{color:var(--purple)}
+.announcement-modal-card h2{margin:8px 0 12px;color:var(--deep);font:800 25px 'Playfair Display',serif}
+.announcement-modal-card p{color:var(--muted);font-size:14px;line-height:1.8;white-space:pre-wrap;overflow-wrap:anywhere}
+.announcement-modal-meta{color:#8a7b98;font-size:11px}
+.announcement-modal-actions{display:flex;justify-content:flex-end;margin-top:18px}
+@media(prefers-reduced-motion:reduce){.ticker-trigger{animation:none;white-space:normal;width:auto}}
 
 /* Keep private dashboard content hidden until Supabase confirms a verified student session. */
 body.auth-pending main{visibility:hidden}
@@ -246,6 +265,19 @@ body.auth-pending main{visibility:hidden}
   <div id="notificationList" aria-live="polite">
     <p>Loading notifications...</p>
   </div>
+</section>
+<section id="announcementTicker" class="announcement-ticker hidden" aria-label="DCDS announcements">
+  <span class="ticker-label">📢 DCDS UPDATE</span>
+  <div class="ticker-viewport"><button id="tickerAnnouncementButton" class="ticker-trigger" type="button"></button></div>
+</section>
+<section id="announcementModal" class="announcement-modal hidden" role="dialog" aria-modal="true" aria-labelledby="announcementModalTitle">
+  <article class="announcement-modal-card">
+    <span class="kicker">DE CHAMPIONS DIGITAL SERVICE</span>
+    <h2 id="announcementModalTitle"></h2>
+    <div id="announcementModalMeta" class="announcement-modal-meta"></div>
+    <p id="announcementModalMessage"></p>
+    <div class="announcement-modal-actions"><button id="closeAnnouncementModal" class="btn primary" type="button">Close announcement</button></div>
+  </article>
 </section>
 <section class="hero">
   <span class="kicker">YOUR LEARNING SPACE</span>
@@ -358,7 +390,7 @@ document.getElementById('markAllRead').addEventListener('click', async () => {
 
   await loadNotifications(session.user);
 });
-function formatNotificationDate(value) {
+  function formatNotificationDate(value) {
 
   const date = new Date(value);
 
@@ -373,6 +405,47 @@ function formatNotificationDate(value) {
 
 }
 
+
+
+let tickerAnnouncements = [];
+const tickerSection = document.getElementById('announcementTicker');
+const tickerButton = document.getElementById('tickerAnnouncementButton');
+const announcementModal = document.getElementById('announcementModal');
+
+function openTickerAnnouncement(announcement) {
+  if (!announcement) return;
+  document.getElementById('announcementModalTitle').textContent = announcement.title || 'DCDS Announcement';
+  document.getElementById('announcementModalMessage').textContent = announcement.message || '';
+  document.getElementById('announcementModalMeta').textContent =
+    (announcement.category || 'General') + ' • ' + formatNotificationDate(announcement.created_at);
+  announcementModal.classList.remove('hidden');
+  document.getElementById('closeAnnouncementModal').focus();
+}
+function closeTickerAnnouncement() {
+  announcementModal.classList.add('hidden');
+  tickerButton.focus();
+}
+tickerButton.addEventListener('click', () => openTickerAnnouncement(tickerAnnouncements[0]));
+document.getElementById('closeAnnouncementModal').addEventListener('click', closeTickerAnnouncement);
+announcementModal.addEventListener('click', event => {
+  if (event.target === announcementModal) closeTickerAnnouncement();
+});
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape' && !announcementModal.classList.contains('hidden')) closeTickerAnnouncement();
+});
+function renderAnnouncementTicker(rows, announcementMap) {
+  tickerAnnouncements = rows.map(row => announcementMap[row.notification_id]).filter(Boolean);
+  if (!tickerAnnouncements.length) {
+    tickerSection.classList.add('hidden');
+    tickerButton.textContent = '';
+    return;
+  }
+  const latest = tickerAnnouncements[0];
+  tickerButton.textContent = (latest.title || 'New DCDS announcement') +
+    (latest.message ? ' — ' + latest.message : '');
+  tickerButton.setAttribute('aria-label', 'Open announcement: ' + (latest.title || 'DCDS announcement'));
+  tickerSection.classList.remove('hidden');
+}
 
 async function loadNotifications(user) {
 
@@ -398,16 +471,14 @@ async function loadNotifications(user) {
     unreadCount.classList.toggle('hidden', unread === 0);
 
     if (!rows.length) {
-
+      renderAnnouncementTicker([], {});
       notificationList.innerHTML = `
         <div class="notification-empty">
           🎉 You're all caught up!<br>
           There are no announcements for you yet.
         </div>
       `;
-
       return;
-
     }
 
     const notificationIds = [
@@ -426,9 +497,9 @@ async function loadNotifications(user) {
       (announcements || []).map(item => [item.id, item])
     );
 
+    renderAnnouncementTicker(rows, announcementMap);
     notificationList.innerHTML = '';
-
-    rows.forEach(recipient => {
+        rows.forEach(recipient => {
 
       const announcement =
         announcementMap[recipient.notification_id];
@@ -543,8 +614,8 @@ function formatCertificateDate(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return 'Date unavailable';
   return date.toLocaleDateString('en-NG', {year:'numeric', month:'long', day:'numeric'});
-  }
-function openCertificate(certificate, studentName, courseTitle) {
+}
+  function openCertificate(certificate, studentName, courseTitle) {
   if (certificate.status === 'revoked') return;
   const safeName = escapeHtml(studentName || 'DCDS Student');
   const safeCourse = escapeHtml(courseTitle || 'DCDS Course');
@@ -665,7 +736,7 @@ async function loadDashboard() {
 
   const grid = document.getElementById('courseGrid');
   grid.innerHTML = '';
-    if (hasGeneral) {
+      if (hasGeneral) {
     const card = document.createElement('article');
     card.className = 'course general';
     card.innerHTML = `
