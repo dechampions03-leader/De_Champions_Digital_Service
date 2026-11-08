@@ -165,7 +165,7 @@
 .dcds-ticker-label{position:relative;z-index:2;flex:0 0 auto;display:flex;align-items:center;gap:7px;padding:0 15px;min-height:43px;background:linear-gradient(110deg,#f6dfa0,#d4ad58);color:#35164f;font:900 9px/1 'DM Sans',sans-serif;letter-spacing:.13em;white-space:nowrap}
 .dcds-ticker-label i{width:7px;height:7px;border-radius:50%;background:#5b2488;box-shadow:0 0 0 3px #5b248820}
 .dcds-ticker-viewport{flex:1;min-width:0;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 2%,#000 98%,transparent)}
-.dcds-ticker-track{display:flex;width:max-content;align-items:center;animation:dcdsTickerScroll 34s linear infinite;will-change:transform}
+.dcds-ticker-track{display:flex;width:max-content;align-items:center;animation:dcdsTickerScroll 200s linear infinite;will-change:transform}
 .dcds-ticker-group{display:flex;align-items:center;flex:0 0 auto;gap:34px;padding:0 18px;white-space:nowrap}
 .dcds-ticker-entry{display:inline-flex;align-items:center;gap:9px;color:#fff;font:600 12px/1.4 'DM Sans',sans-serif}
 .dcds-ticker-entry strong{color:#ffe6a1;font-weight:900}
@@ -368,7 +368,7 @@
  </div></div></section>
 <section class="cta"><div class="container"><h2>Your next chapter starts with one skill.</h2><p>Choose a course, explore its outline and take the first step toward building your digital skills.</p><a class="button button-gold" href="#courses">Browse all 12 courses →</a></div></section>
 
-<section class="section reviews-section" id="studentReviews">
+ <section class="section reviews-section" id="studentReviews">
  <div class="container">
   <div class="section-heading"><span class="kicker" style="color:#e8cb7a">THE CHAMPIONS' EXPERIENCE</span><h2>Student Reviews &amp; Ratings</h2><p>Real learning experiences from DCDS students. Reviews are checked by our team before appearing publicly.</p></div>
   <div class="review-layout">   <div class="review-panel"><h3>What our students say</h3><div id="reviewList" class="review-list"><div class="review-empty">Loading approved student reviews…</div></div></div>
@@ -564,7 +564,7 @@ function showEmailOtpScreen(email,message='Enter the six-digit code sent to your
  <div class="dcds-otp-actions"><span id="otpCountdown">Resend available in 60s</span><button class="dcds-text-button" id="resendOtpBtn" type="button" disabled>Resend code</button></div>
  <p class="modal-note">If the code does not arrive, check your spam or promotions folder. Verification codes require email OTP to be enabled in your Supabase project.</p>`);
  $('otpCode').focus();$('otpVerifyForm').addEventListener('submit',verifyEmailOtp);$('resendOtpBtn').addEventListener('click',resendEmailOtp);startOtpCountdown(60);
-}
+  }
   async function verifyEmailOtp(e){
  e.preventDefault();const btn=$('verifyOtpBtn'),err=$('otpError'),token=$('otpCode').value.trim();
  if(!/^\d{6}$/.test(token)){err.textContent='Enter the complete six-digit code.';return;}
