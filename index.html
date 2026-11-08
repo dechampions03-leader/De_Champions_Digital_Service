@@ -126,8 +126,8 @@
 .notification-item{display:flex;gap:12px;padding:15px 17px;border-bottom:1px solid #f0eaf6}
 .notification-icon{width:35px;height:35px;flex:0 0 35px;display:grid;place-items:center;border-radius:11px;background:#f2e8ff;font-size:17px}
 .notification-item strong{font:800 12px 'DM Sans',sans-serif;color:#45206d}.notification-item p{margin:5px 0;color:#6e627a;font-size:11px;line-height:1.55}.notification-item small{color:#9868bd;font-size:9px;font-weight:800;letter-spacing:.04em}
-.notification-foot{text-align:center;padding:12px;color:#78549a;background:#fbf8ff;font:800 9px 'DM Sans',sans-serif;letter-spacing:.13em}.notification-foot b{color:#c29b45}.mobile-menu-trigger{display:none}
-.mobile-nav-panel{position:absolute;top:calc(100% + 1px);left:0;right:0;z-index:70;padding:12px 18px 18px;background:#fff;border-bottom:1px solid #e8def1;box-shadow:0 18px 35px #24103920}
+.notification-foot{text-align:center;padding:12px;color:#78549a;background:#fbf8ff;font:800 9px 'DM Sans',sans-serif;letter-spacing:.13em}.notification-foot b{color:#c29b45}
+.mobile-menu-trigger{display:none}.mobile-nav-panel{position:absolute;top:calc(100% + 1px);left:0;right:0;z-index:70;padding:12px 18px 18px;background:#fff;border-bottom:1px solid #e8def1;box-shadow:0 18px 35px #24103920}
 .mobile-nav-panel>a{display:flex;justify-content:space-between;align-items:center;padding:13px 5px;border-bottom:1px solid #f0eaf6;color:#4c286e;font-size:13px;font-weight:800}
 .mobile-nav-panel>a span{color:#a27ac4}
 .mobile-coming{display:flex;align-items:center;gap:11px;margin-top:12px;padding:11px 12px;border:1px solid #eadcf6;border-radius:13px;background:linear-gradient(110deg,#fbf7ff,#fffdf7)}
@@ -152,31 +152,31 @@
 .dcds-header-brand{display:flex;align-items:center;gap:10px;min-width:0}
 .dcds-header-mark{width:46px;height:46px;flex:0 0 46px;object-fit:contain;border-radius:12px;box-shadow:0 6px 18px rgba(65,25,112,.16)}.dcds-header-wordmark{display:block;width:clamp(135px,18vw,205px);max-height:54px;object-fit:contain;object-position:left center}
 @media(max-width:480px){.dcds-header-brand{gap:7px}.dcds-header-mark{width:38px;height:38px;flex-basis:38px}.dcds-header-wordmark{width:clamp(112px,34vw,155px);max-height:42px}}
+</style>
 
-/* DCDS PUBLIC ANNOUNCEMENT TICKER */
-.dcds-public-ticker{display:none;position:relative;z-index:20;overflow:hidden;background:linear-gradient(105deg,#35105f,#6424a5 52%,#3c1269);color:#fff;border-bottom:1px solid #d7b45a;box-shadow:0 5px 18px #210b3b20}
-.dcds-public-ticker.is-visible{display:block}
-.dcds-ticker-inner{width:min(1160px,calc(100% - 28px));margin:auto;min-height:48px;display:flex;align-items:center;gap:14px}
-.dcds-ticker-label{flex:0 0 auto;color:#f4d98e;font-size:10px;font-weight:900;letter-spacing:.16em;white-space:nowrap}
-.dcds-ticker-window{min-width:0;overflow:hidden;flex:1}
-.dcds-ticker-track{display:flex;width:max-content;align-items:center;gap:56px;animation:dcdsTickerScroll 42s linear infinite}
-.dcds-ticker-window:hover .dcds-ticker-track,.dcds-ticker-window:focus-within .dcds-ticker-track{animation-play-state:paused}
-.dcds-ticker-link{display:inline-flex;align-items:center;gap:12px;color:#fff;font-size:13px;font-weight:750;white-space:nowrap;background:none;border:0;padding:12px 0;text-align:left}
-.dcds-ticker-link:after{content:'↗';color:#f4d98e;font-size:15px}
-.dcds-ticker-dot{color:#f0d17b}
-@keyframes dcdsTickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-.dcds-announcement-backdrop{position:fixed;inset:0;z-index:120;background:#160825b8;display:none;align-items:center;justify-content:center;padding:18px}
-.dcds-announcement-backdrop.open{display:flex}
-.dcds-announcement-dialog{position:relative;width:min(620px,100%);max-height:88vh;overflow:auto;background:linear-gradient(145deg,#fff,#fbf7ff);border:1px solid #e4d2f5;border-radius:22px;padding:28px;box-shadow:0 28px 90px #10051d70}
-.dcds-announcement-close{position:absolute;right:15px;top:14px;width:36px;height:36px;border:0;border-radius:50%;background:#f0e5fb;color:#451078;font-size:22px}
-.dcds-announcement-kicker{font-size:10px;font-weight:900;letter-spacing:.18em;color:#7b35c2;text-transform:uppercase;margin:0 42px 8px 0}
-.dcds-announcement-dialog h2{font-family:'Playfair Display',serif;color:#351052;font-size:clamp(24px,4vw,32px);line-height:1.2;margin:0 40px 8px 0}
-.dcds-announcement-date{font-size:11px;color:#887b96;margin-bottom:18px}
-.dcds-announcement-image{display:block;width:100%;max-height:300px;object-fit:cover;border-radius:14px;margin:0 0 18px}
-.dcds-announcement-message{color:#51445f;font-size:14px;line-height:1.85;white-space:pre-wrap;overflow-wrap:anywhere}
-@media(max-width:600px){.dcds-ticker-inner{gap:9px}.dcds-ticker-label{font-size:9px;letter-spacing:.1em}.dcds-ticker-link{font-size:12px}.dcds-ticker-track{animation-duration:48s}.dcds-announcement-dialog{padding:23px 19px}}
-@media(prefers-reduced-motion:reduce){.dcds-ticker-track{animation:none;transform:none}.dcds-ticker-window{overflow-x:auto}}
-
+<style id="dcds-public-announcement-styles">
+/* DCDS PUBLIC ANNOUNCEMENT CENTRE — additive upgrade; existing site styles untouched */
+.dcds-public-ticker{display:none;position:relative;z-index:5;overflow:hidden;background:linear-gradient(100deg,#260d43,#54218b 55%,#351052);color:#fff;border-bottom:1px solid rgba(215,180,90,.55);min-height:45px}
+.dcds-public-ticker.is-visible{display:flex;align-items:center}
+.dcds-public-ticker-label{position:relative;z-index:2;flex:0 0 auto;padding:0 14px 0 18px;min-height:45px;display:flex;align-items:center;gap:7px;background:#d7b45a;color:#28133d;font-size:10px;font-weight:900;letter-spacing:.12em;box-shadow:5px 0 14px #1a082b35}
+.dcds-public-ticker-viewport{overflow:hidden;flex:1;min-width:0}
+.dcds-public-ticker-track{display:flex;width:max-content;align-items:center;animation:dcdsAnnouncementScroll 42s linear infinite}
+.dcds-public-ticker:hover .dcds-public-ticker-track,.dcds-public-ticker:focus-within .dcds-public-ticker-track{animation-play-state:paused}
+.dcds-public-ticker-item{display:inline-flex;align-items:center;gap:12px;white-space:nowrap;border:0;background:transparent;color:#fff;padding:11px 25px;font-size:13px;font-weight:750;cursor:pointer}
+.dcds-public-ticker-item:focus-visible{outline:2px solid #f1d78b;outline-offset:-3px}
+.dcds-public-ticker-item b{color:#f0d27b}.dcds-public-ticker-item .ticker-dot{color:#d7b45a}
+.dcds-announcement-backdrop{display:none;position:fixed;inset:0;z-index:120;background:rgba(20,8,35,.72);backdrop-filter:blur(5px);align-items:center;justify-content:center;padding:18px}
+.dcds-announcement-backdrop.is-open{display:flex}
+.dcds-announcement-dialog{position:relative;width:min(560px,100%);max-height:min(88vh,800px);overflow:auto;background:#fff;border:1px solid #eadff5;border-radius:22px;padding:25px;box-shadow:0 28px 90px #10051d70}
+.dcds-announcement-close{position:absolute;right:14px;top:14px;width:36px;height:36px;border:0;border-radius:50%;background:#f1eafa;color:#35105f;font-size:23px;line-height:1}
+.dcds-announcement-kicker{display:inline-block;margin:0 42px 10px 0;color:#6b35aa;font-size:10px;font-weight:900;letter-spacing:.15em;text-transform:uppercase}
+.dcds-announcement-dialog h2{margin:0 42px 12px 0;color:#2c1645;font-size:clamp(22px,5vw,30px);line-height:1.2;letter-spacing:-.035em}
+.dcds-announcement-message{color:#5e5668;font-size:14px;line-height:1.75;white-space:pre-wrap;overflow-wrap:anywhere}
+.dcds-announcement-image{display:none;width:100%;max-height:280px;object-fit:cover;border-radius:14px;margin:15px 0}
+.dcds-announcement-date{display:block;margin-top:18px;padding-top:13px;border-top:1px solid #eee7f4;color:#887e94;font-size:11px}
+@keyframes dcdsAnnouncementScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+@media(max-width:520px){.dcds-public-ticker-label{padding-inline:11px;font-size:9px}.dcds-public-ticker-item{font-size:12px;padding-inline:18px}.dcds-announcement-dialog{padding:22px 19px}}
+@media(prefers-reduced-motion:reduce){.dcds-public-ticker-track{animation:none}}
 </style>
 </head>
 <body>
@@ -202,8 +202,20 @@
   <div class="mobile-coming"><span>📱</span><div><strong>DCDS Mobile App</strong><small>Coming Soon</small></div></div>
  </nav>
 </div></header>
-<div class="dcds-public-ticker" id="dcdsPublicTicker" aria-label="Public announcements">
- <div class="dcds-ticker-inner"><span class="dcds-ticker-label">✦ DCDS UPDATE</span><div class="dcds-ticker-window" id="dcdsTickerWindow"><div class="dcds-ticker-track" id="dcdsTickerTrack"></div></div></div>
+<!-- DCDS PUBLIC ANNOUNCEMENT CENTRE: separate from existing student notification bell -->
+<section class="dcds-public-ticker" id="dcdsPublicTicker" aria-label="Public announcements">
+ <div class="dcds-public-ticker-label"><span aria-hidden="true">✦</span> DCDS UPDATES</div>
+ <div class="dcds-public-ticker-viewport"><div class="dcds-public-ticker-track" id="dcdsPublicTickerTrack"></div></div>
+</section>
+<div class="dcds-announcement-backdrop" id="dcdsAnnouncementBackdrop" aria-hidden="true">
+ <section class="dcds-announcement-dialog" role="dialog" aria-modal="true" aria-labelledby="dcdsAnnouncementTitle">
+  <button class="dcds-announcement-close" id="dcdsAnnouncementClose" type="button" aria-label="Close announcement">&times;</button>
+  <span class="dcds-announcement-kicker">De Champions Digital Service</span>
+  <h2 id="dcdsAnnouncementTitle"></h2>
+  <img class="dcds-announcement-image" id="dcdsAnnouncementImage" alt="Announcement image">
+  <div class="dcds-announcement-message" id="dcdsAnnouncementMessage"></div>
+  <time class="dcds-announcement-date" id="dcdsAnnouncementDate"></time>
+ </section>
 </div>
 
 <main>
@@ -219,9 +231,9 @@
 <div class="trust-strip"><div class="container trust-items">
  <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Beginner-friendly<br>learning paths</span></div> <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Transparent<br>course pricing</span></div>
  <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Practical<br>digital skills</span></div>
- <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Dedicated student<br>account access</span></div>
-</div></div>
-<section class="section section-white" id="courses"><div class="container"> <div class="section-heading"><span class="kicker">THE DCDS COURSE CATALOGUE</span><h2>Choose the skill you want to master.</h2><p>Explore each course, review its learning outline and fee, then sign in or create your student account to begin the enrollment process.</p></div>
+ <div class="trust-item"><span class="verified-check" aria-hidden="true">✓</span><span>Dedicated student<br>account access</span></div></div></div>
+<section class="section section-white" id="courses"><div class="container">
+ <div class="section-heading"><span class="kicker">THE DCDS COURSE CATALOGUE</span><h2>Choose the skill you want to master.</h2><p>Explore each course, review its learning outline and fee, then sign in or create your student account to begin the enrollment process.</p></div>
  <article class="general-course-offer" aria-labelledby="generalCourseTitle">
   <div class="general-offer-top">
    <span class="general-offer-badge">✦ Premium learning package</span>
@@ -269,9 +281,9 @@
       
       <button class="button button-primary enroll-button" type="button" data-enroll="2">Enroll in this course <span aria-hidden="true">→</span></button>
 </article>
-<article class="course-card" data-course-card data-search="access to chatgpt prompts, claude, gemini, and grok ai &amp; digital creativity explore ai tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity.">      <div class="card-top"><span class="course-icon" aria-hidden="true">✨</span><span class="category">AI &amp; Digital Creativity</span></div>
-      <h3>Access to ChatGPT Prompts, Claude, Gemini, and Grok</h3><p class="course-desc">Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity.</p>
-      <div class="fee-row"><span>Course fee</span><strong>₦30,000</strong></div>
+<article class="course-card" data-course-card data-search="access to chatgpt prompts, claude, gemini, and grok ai &amp; digital creativity explore ai tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity.">
+      <div class="card-top"><span class="course-icon" aria-hidden="true">✨</span><span class="category">AI &amp; Digital Creativity</span></div>
+      <h3>Access to ChatGPT Prompts, Claude, Gemini, and Grok</h3><p class="course-desc">Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity.</p>      <div class="fee-row"><span>Course fee</span><strong>₦30,000</strong></div>
       <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Understanding ChatGPT, Claude, Gemini and Grok</li><li>Prompt structure, context and clear instructions</li><li>Prompts for writing, research and brainstorming</li><li>Prompts for images, content and productivity workflows</li><li>Evaluating, refining and fact-checking AI outputs</li><li>Building a reusable personal prompt library</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
       <p class="package-note">Package inclusions (training, prompt resources, tool access) are confirmed by the administrator. Paid subscriptions are not promised unless stated.</p>
       <button class="button button-primary enroll-button" type="button" data-enroll="3">Enroll in this course <span aria-hidden="true">→</span></button>
@@ -303,13 +315,14 @@
       <div class="card-top"><span class="course-icon" aria-hidden="true">📱</span><span class="category">Website &amp; App Development</span></div>
       <h3>App Building</h3><p class="course-desc">Plan, design and build functional applications using suitable app development tools and platforms.</p>
       <div class="fee-row"><span>Course fee</span><strong>₦20,000</strong></div>
-      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>App ideas, audience and feature planning</li><li>Exploring no-code and low-code app builders</li><li>Designing screens, navigation and user journeys</li><li>Adding forms, content and app functionality</li><li>Testing usability and fixing common issues</li><li>Preparing and publishing an app project</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>      <button class="button button-primary enroll-button" type="button" data-enroll="7">Enroll in this course <span aria-hidden="true">→</span></button>
+      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>App ideas, audience and feature planning</li><li>Exploring no-code and low-code app builders</li><li>Designing screens, navigation and user journeys</li><li>Adding forms, content and app functionality</li><li>Testing usability and fixing common issues</li><li>Preparing and publishing an app project</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      
+      <button class="button button-primary enroll-button" type="button" data-enroll="7">Enroll in this course <span aria-hidden="true">→</span></button>
 </article>
 <article class="course-card" data-course-card data-search="kids’ nursery rhymes video &amp; animation develop engaging children’s nursery-rhyme content using storytelling, music, animation and digital production tools.">
       <div class="card-top"><span class="course-icon" aria-hidden="true">🎵</span><span class="category">Video &amp; Animation</span></div>
       <h3>Kids’ Nursery Rhymes</h3><p class="course-desc">Develop engaging children’s nursery-rhyme content using storytelling, music, animation and digital production tools.</p>
-      <div class="fee-row"><span>Course fee</span><strong>₦12,000</strong></div>
-      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Nursery-rhyme concepts and age-appropriate storytelling</li><li>Writing simple lyrics and planning scenes</li><li>Creating child-friendly characters and visuals</li><li>Producing music, narration and sound effects</li><li>Editing and assembling animated rhyme videos</li><li>Exporting and preparing content for publication</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
+      <div class="fee-row"><span>Course fee</span><strong>₦12,000</strong></div>      <details class="outline"><summary>View course outline <span aria-hidden="true">＋</span></summary><ol><li>Nursery-rhyme concepts and age-appropriate storytelling</li><li>Writing simple lyrics and planning scenes</li><li>Creating child-friendly characters and visuals</li><li>Producing music, narration and sound effects</li><li>Editing and assembling animated rhyme videos</li><li>Exporting and preparing content for publication</li></ol><p class="outline-note">This is a proposed learning outline. Final lesson materials and delivery schedule will be confirmed by DCDS.</p></details>
       
       <button class="button button-primary enroll-button" type="button" data-enroll="8">Enroll in this course <span aria-hidden="true">→</span></button>
     </article>
@@ -342,12 +355,12 @@
  <div class="section-heading"><span class="kicker">BEYOND THE CLASSROOM</span><h2>Explore what we offer.</h2><p>Need a digital service for your brand, business or online presence? DCDS offers creative, promotional and business-support services to help you move forward.</p></div>
  <div class="services-grid">
   <article class="service-card"><span class="service-icon">◈</span><h3>Content Monetization Support</h3><p>Guidance on monetization readiness, platform requirements and creator growth opportunities.</p></article>
-  <article class="service-card"><span class="service-icon">▶</span><h3>YouTube Channel Growth</h3><p>Channel setup support, content presentation and audience-engagement strategy.</p></article>  <article class="service-card"><span class="service-icon">↗</span><h3>Page &amp; Profile Promotion</h3><p>Promotional campaigns designed to improve visibility and reach the right audience.</p></article>
+  <article class="service-card"><span class="service-icon">▶</span><h3>YouTube Channel Growth</h3><p>Channel setup support, content presentation and audience-engagement strategy.</p></article>
+  <article class="service-card"><span class="service-icon">↗</span><h3>Page &amp; Profile Promotion</h3><p>Promotional campaigns designed to improve visibility and reach the right audience.</p></article>
   <article class="service-card"><span class="service-icon">✧</span><h3>Professional Graphic Design</h3><p>Flyers, banners, social media creatives, brand materials and promotional designs.</p></article>  <article class="service-card"><span class="service-icon">✓</span><h3>Social Media Verification Guidance</h3><p>Assistance understanding verification requirements and preparing eligible applications.</p></article>
   <article class="service-card"><span class="service-icon">◎</span><h3>Digital Advertising</h3><p>Ad campaign planning, setup assistance, audience targeting and performance review.</p></article>
   <article class="service-card"><span class="service-icon">▤</span><h3>Tax ID Registration Assistance</h3><p>Guidance with the information and steps involved in relevant tax identification processes.</p></article>
-  <article class="service-card"><span class="service-icon">⌂</span><h3>CAC Registration Assistance</h3><p>Support understanding business registration steps and preparing the required details.</p></article>
- </div>
+  <article class="service-card"><span class="service-icon">⌂</span><h3>CAC Registration Assistance</h3><p>Support understanding business registration steps and preparing the required details.</p></article> </div>
  <div class="services-more"><div><span class="services-more-kicker">HAVE SOMETHING ELSE IN MIND?</span><h3>And lots more digital solutions.</h3><p>Tell us what you need. We’ll help you explore the right service for your next move.</p></div><a class="button button-gold" href="https://wa.me/2348109146285?text=Hello%20DCDS%2C%20I%27m%20interested%20in%20your%20digital%20services." target="_blank" rel="noopener">Request a Service <span aria-hidden="true">→</span></a></div>
  <p class="services-disclaimer">Platform monetization and verification decisions are made by the relevant platforms. DCDS provides guidance and support; approval, reach and results are not guaranteed. Registration services are subject to applicable official requirements.</p>
  </div></section>
@@ -368,7 +381,8 @@
   <div class="review-layout">   <div class="review-panel"><h3>What our students say</h3><div id="reviewList" class="review-list"><div class="review-empty">Loading approved student reviews…</div></div></div>
    <div class="review-panel"><h3>Share your learning experience</h3><form id="reviewForm" class="review-form">
     <label>Your display name<input id="reviewName" maxlength="60" required placeholder="How should we display your name?"></label>
-    <label>Course you took<select id="reviewCourse" required><option value="">Choose your course</option><option>Video Editing</option><option>AI Video Creativity</option><option>Graphic Design</option><option>AI Tools &amp; Prompts</option><option>AI Image Creativity</option><option>Whiteboard Animation</option><option>Website Designing</option><option>App Building</option><option>Kids Nursery Rhymes</option><option>Advanced 3D Cartoon Animation</option><option>Affiliate Marketing</option><option>Social Media Management</option><option>DCDS General Course</option></select></label>    <label>Your rating<select id="reviewRating" required><option value="">Select a star rating</option><option value="5">★★★★★ — Excellent</option><option value="4">★★★★☆ — Very good</option><option value="3">★★★☆☆ — Good</option><option value="2">★★☆☆☆ — Fair</option><option value="1">★☆☆☆☆ — Needs improvement</option></select></label>
+    <label>Course you took<select id="reviewCourse" required><option value="">Choose your course</option><option>Video Editing</option><option>AI Video Creativity</option><option>Graphic Design</option><option>AI Tools &amp; Prompts</option><option>AI Image Creativity</option><option>Whiteboard Animation</option><option>Website Designing</option><option>App Building</option><option>Kids Nursery Rhymes</option><option>Advanced 3D Cartoon Animation</option><option>Affiliate Marketing</option><option>Social Media Management</option><option>DCDS General Course</option></select></label>
+    <label>Your rating<select id="reviewRating" required><option value="">Select a star rating</option><option value="5">★★★★★ — Excellent</option><option value="4">★★★★☆ — Very good</option><option value="3">★★★☆☆ — Good</option><option value="2">★★☆☆☆ — Fair</option><option value="1">★☆☆☆☆ — Needs improvement</option></select></label>
     <label>Your review<textarea id="reviewText" maxlength="1200" required placeholder="Share what you learned and how the course helped you…"></textarea></label>
     <button class="button button-gold" type="submit" id="submitReview">Submit review for approval</button><p class="review-status" id="reviewStatus" role="status">Only approved reviews will appear publicly.</p>
    </form></div>
@@ -384,8 +398,7 @@
   <a href="https://wa.me/2348109146285" target="_blank" rel="noopener noreferrer">WhatsApp Support</a>
   <a href="https://www.instagram.com/dechampionsacademy?obrf=MTRrNW45bGs1Y2w0MQ==" target="_blank" rel="noopener noreferrer">Follow on Instagram</a>
   <a href="https://www.facebook.com/share/14vZJnY53bf/" target="_blank" rel="noopener noreferrer">Follow on Facebook</a>
-  <a href="https://youtube.com/@dechampionsacademy?si=ySPq7PRnwMq2USCu" target="_blank" rel="noopener noreferrer">Subscribe on YouTube</a>
-  <a href="mailto:dechampions82@gmail.com">Email Us</a>
+  <a href="https://youtube.com/@dechampionsacademy?si=ySPq7PRnwMq2USCu" target="_blank" rel="noopener noreferrer">Subscribe on YouTube</a>  <a href="mailto:dechampions82@gmail.com">Email Us</a>
  </nav></div>
  <a href="#home">Back to top ↑</a><p>© 2026 De Champions Digital Service.</p>
  </div></footer>
@@ -397,72 +410,11 @@
 .dcds-text-button{border:0;background:none;color:#6128b8;font-weight:850;padding:8px 0}.dcds-text-button:disabled{color:#a49aaa;cursor:not-allowed}
 </style>
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><section class="modal"><button class="modal-close" id="modalClose" type="button" aria-label="Close">×</button><div id="modalContent"></div></section></div>
-
-<div class="dcds-announcement-backdrop" id="dcdsAnnouncementBackdrop" role="dialog" aria-modal="true" aria-labelledby="dcdsAnnouncementTitle">
- <article class="dcds-announcement-dialog"><button type="button" class="dcds-announcement-close" id="dcdsAnnouncementClose" aria-label="Close announcement">×</button><p class="dcds-announcement-kicker">De Champions Digital Service</p><h2 id="dcdsAnnouncementTitle"></h2><div class="dcds-announcement-date" id="dcdsAnnouncementDate"></div><img class="dcds-announcement-image" id="dcdsAnnouncementImage" alt="Announcement image" hidden><div class="dcds-announcement-message" id="dcdsAnnouncementMessage"></div></article>
-</div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-
 // DCDS browser-safe Supabase configuration. Never put a service-role or secret key here.
 const SUPABASE_URL = "https://qxsenflgaweeadvggnyp.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
-
-// Public DCDS announcements: intentionally separate from private student notifications.
-(function initDCDSPublicAnnouncements(){
- const ticker=document.getElementById('dcdsPublicTicker');
- const track=document.getElementById('dcdsTickerTrack');
- const backdrop=document.getElementById('dcdsAnnouncementBackdrop');
- const closeBtn=document.getElementById('dcdsAnnouncementClose');
- const titleEl=document.getElementById('dcdsAnnouncementTitle');
- const dateEl=document.getElementById('dcdsAnnouncementDate');
- const messageEl=document.getElementById('dcdsAnnouncementMessage');
- const imageEl=document.getElementById('dcdsAnnouncementImage');
- if(!ticker||!track||!backdrop)return;
- let announcements=[];
- const escapeText=value=>String(value??'');
- function openAnnouncement(item){
-  titleEl.textContent=escapeText(item.title);
-  messageEl.textContent=escapeText(item.message);
-  const date=item.published_at||item.starts_at||item.created_at;
-  dateEl.textContent=date&&!Number.isNaN(new Date(date).getTime())?'Published '+new Date(date).toLocaleDateString('en-NG',{year:'numeric',month:'long',day:'numeric'}):'';
-  const url=typeof item.image_url==='string'?item.image_url.trim():'';
-  if(url&&/^https:\/\//i.test(url)){imageEl.src=url;imageEl.hidden=false;}else{imageEl.removeAttribute('src');imageEl.hidden=true;}
-  backdrop.classList.add('open');document.body.style.overflow='hidden';closeBtn.focus();
- }
- function closeAnnouncement(){backdrop.classList.remove('open');document.body.style.overflow='';}
- closeBtn.addEventListener('click',closeAnnouncement);
- backdrop.addEventListener('click',event=>{if(event.target===backdrop)closeAnnouncement();});
- document.addEventListener('keydown',event=>{if(event.key==='Escape'&&backdrop.classList.contains('open'))closeAnnouncement();});
- function buildTicker(items){
-  announcements=items;track.replaceChildren();
-  if(!items.length){ticker.classList.remove('is-visible');return;}
-  const makeLink=(item,index)=>{
-   const button=document.createElement('button');button.type='button';button.className='dcds-ticker-link';
-   button.append(document.createTextNode(escapeText(item.title||'DCDS Announcement')));
-   button.addEventListener('click',()=>openAnnouncement(item));return button;
-  };
-  const first=document.createDocumentFragment();
-  items.forEach((item,index)=>{if(index){const dot=document.createElement('span');dot.className='dcds-ticker-dot';dot.textContent='✦';first.append(dot);}first.append(makeLink(item,index));});
-  track.append(first);
-  // Duplicate the sequence for a seamless continuous loop when motion is enabled.
-  items.forEach((item,index)=>{const dot=document.createElement('span');dot.className='dcds-ticker-dot';dot.textContent='✦';track.append(dot,makeLink(item,index));});  ticker.classList.add('is-visible');
- }
- async function loadPublicAnnouncements(){
-  if(!window.supabase?.createClient)return;
-  try{
-   const publicClient=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false}});
-   const {data,error}=await publicClient.functions.invoke('get-public-announcements',{method:'GET'});
-   if(error)throw error;
-   const rows=Array.isArray(data?.announcements)?data.announcements:[];
-   const now=Date.now();
-   const active=rows.filter(item=>item&&item.status==='published'&&(!item.starts_at||new Date(item.starts_at).getTime()<=now)&&(!item.expires_at||new Date(item.expires_at).getTime()>now));
-   buildTicker(active);
-  }catch(error){console.warn('DCDS public announcements are temporarily unavailable:',error);ticker.classList.remove('is-visible');}
- }
- loadPublicAnnouncements();
-})();
 let supabaseClient = null;
 try { if (window.supabase?.createClient) supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } }); } catch (e) { console.error('DCDS account client could not initialise', e); }
 
@@ -570,8 +522,7 @@ async function verifyEmailOtp(e){
  try{
   const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingVerificationEmail,token,type:'signup'});if(error)throw error;  stopOtpCountdown();if(!data.user?.email_confirmed_at && !data.session?.user?.email_confirmed_at)throw new Error('Supabase did not confirm the email. Please check your email OTP settings and try again.');
   await afterAuthentication(data.user||data.session.user);
- }catch(error){err.textContent=error.message||'That code could not be verified. Request a new code and try again.';btn.disabled=false;btn.textContent='Verify email';}
-}
+ }catch(error){err.textContent=error.message||'That code could not be verified. Request a new code and try again.';btn.disabled=false;btn.textContent='Verify email';}}
 async function resendEmailOtp(){
  const btn=$('resendOtpBtn'),err=$('otpError');btn.disabled=true;if(err)err.textContent='';
  try{const {error}=await supabaseClient.auth.resend({type:'signup',email:pendingVerificationEmail});if(error)throw error;if(err)err.textContent='A new verification code has been requested.';startOtpCountdown(60);}
@@ -581,7 +532,8 @@ async function requestPasswordReset(){
  const email=$('studentEmail')?.value.trim();
  if(!email){setAuthError('Enter your email address first, then choose Forgot password.');$('studentEmail')?.focus();return;}
  const button=$('forgotPasswordBtn');if(button){button.disabled=true;button.textContent='Sending…';}
- try{  const redirectTo=window.location.origin+window.location.pathname+'?password-recovery=1';
+ try{
+  const redirectTo=window.location.origin+window.location.pathname+'?password-recovery=1';
   const {error}=await supabaseClient.auth.resetPasswordForEmail(email,{redirectTo});
   if(error)throw error;
   setAuthError('Password reset instructions have been sent. Check your inbox and spam folder.');
@@ -665,8 +617,7 @@ function showEnrollment(index,user){
  <div class="total"><span>Course fee</span><b>${money(c.price)}</b></div></div>
  <div class="modal-note">Your course fee will be confirmed by DCDS's secure database. You will be redirected to Flutterwave to complete payment. Course access is granted only after payment verification.</div>
  <p class="form-error" id="paymentError" role="alert"></p>
- <button class="button button-primary" style="width:100%;margin-top:15px" id="payNowBtn">Pay securely with Flutterwave</button>
- <button class="button button-light" style="width:100%;margin-top:9px" id="enrollCancel">Cancel</button>`);
+ <button class="button button-primary" style="width:100%;margin-top:15px" id="payNowBtn">Pay securely with Flutterwave</button> <button class="button button-light" style="width:100%;margin-top:9px" id="enrollCancel">Cancel</button>`);
  $('payNowBtn').onclick=()=>startCoursePayment(index);
  $('enrollCancel').onclick=()=>{selectedCourseIndex=null;closeModal()};
 }
@@ -694,7 +645,8 @@ async function startCoursePayment(index){
   window.location.assign(data.payment_link);
  }catch(error){
   console.error('DCDS payment start error:',error);
-  if(err)err.textContent=error.message||'We could not start payment. Please try again.';  btn.disabled=false;btn.textContent='Try payment again';
+  if(err)err.textContent=error.message||'We could not start payment. Please try again.';
+  btn.disabled=false;btn.textContent='Try payment again';
  }
 }
 
@@ -768,8 +720,7 @@ if(generalBuyButton)generalBuyButton.addEventListener('click',async()=>{
    }else showGeneralEnrollment(session.user);
   }
   else if(session){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before purchasing the General Course.');}else{authMode='login';authScreen('Log in or create your student account to purchase the General Course.');}
- }catch(error){authMode='login';authScreen(error.message||'We could not check your account. Please try again.');}
-});
+ }catch(error){authMode='login';authScreen(error.message||'We could not check your account. Please try again.');}});
             async function handleFlutterwaveReturn(){
  const params=new URLSearchParams(window.location.search);
  const txRef=params.get('tx_ref');
@@ -802,7 +753,8 @@ if(generalBuyButton)generalBuyButton.addEventListener('click',async()=>{
   if(!data?.success)throw new Error(data?.error||'Flutterwave has not confirmed this payment.');
   await refreshStudentEnrollmentState();
   const recognized=hasGeneralBundle||studentEnrollmentIds.size>0;
-  openModal(`<h2 id="modalTitle">Payment confirmed!</h2><p class="modal-sub">Flutterwave verification succeeded.</p><div class="signed-in">${recognized?'Your verified enrollment is now visible in your DCDS account.':'Your payment is verified. Enrollment records are still syncing; please refresh your account shortly.'}</div><p class="modal-note">Keep your payment receipt for your records. Transaction reference: <b>${escapeHtml(txRef)}</b>.</p><button class="button button-primary" id="paymentReturnClose" style="width:100%">Continue</button>`);  $('paymentReturnClose').onclick=closeModal;
+  openModal(`<h2 id="modalTitle">Payment confirmed!</h2><p class="modal-sub">Flutterwave verification succeeded.</p><div class="signed-in">${recognized?'Your verified enrollment is now visible in your DCDS account.':'Your payment is verified. Enrollment records are still syncing; please refresh your account shortly.'}</div><p class="modal-note">Keep your payment receipt for your records. Transaction reference: <b>${escapeHtml(txRef)}</b>.</p><button class="button button-primary" id="paymentReturnClose" style="width:100%">Continue</button>`);
+  $('paymentReturnClose').onclick=closeModal;
  }catch(error){
   console.error('DCDS payment verification error:',error);
   openModal(`<h2 id="modalTitle">We couldn't confirm the payment yet</h2><p class="modal-sub">${escapeHtml(error.message||'Please contact DCDS support before making another payment.')}</p><div class="modal-note">Do not pay again immediately. Your Flutterwave transaction may still be processing. Keep your transaction reference: <b>${escapeHtml(txRef)}</b>.</div><button class="button button-primary" id="paymentReturnClose" style="width:100%">Close</button>`);
@@ -849,8 +801,7 @@ if(supabaseClient){
  try{
   const {data:{session},error}=await supabaseClient.auth.getSession();if(error)throw error;  if(session?.user?.email_confirmed_at){const destination=authNextPath||'student-dashboard.html';window.location.replace(destination);return;}
   if(session?.user&&!session.user.email_confirmed_at){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before entering the student portal.');return;}
-  authMode='login';authScreen(wantsVerify?'Please verify your email before accessing this page.':'Log in or create your DCDS student account to continue.');
- }catch(error){authMode='login';authScreen(error.message||'We could not check your login. Please try again.');}
+  authMode='login';authScreen(wantsVerify?'Please verify your email before accessing this page.':'Log in or create your DCDS student account to continue.'); }catch(error){authMode='login';authScreen(error.message||'We could not check your login. Please try again.');}
 })();
 
 if(supabaseClient && (new URLSearchParams(window.location.search).has('tx_ref') || new URLSearchParams(window.location.search).has('payment'))){
@@ -886,5 +837,60 @@ if(reviewForm)reviewForm.addEventListener('submit',async(e)=>{
 loadStudentReviews();
 
 $('courseSearch').addEventListener('input',()=>{const q=$('courseSearch').value.trim().toLowerCase();let visible=0;document.querySelectorAll('[data-course-card]').forEach(card=>{const show=card.dataset.search.includes(q);card.hidden=!show;if(show)visible++;});$('emptyState').style.display=visible?'none':'block';});
+</script>
+
+<script id="dcds-public-announcement-loader">
+/* Public read-only announcement display. Does not modify auth, payments, reviews or student notifications. */
+(function(){
+ 'use strict';
+ const SUPABASE_URL='https://qxsenflgaweeadvggnyp.supabase.co';
+ const SUPABASE_ANON_KEY='sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
+ const ticker=document.getElementById('dcdsPublicTicker');
+ const track=document.getElementById('dcdsPublicTickerTrack');
+ const backdrop=document.getElementById('dcdsAnnouncementBackdrop');
+ if(!ticker||!track||!backdrop)return;
+ let announcements=[];
+ function closeAnnouncement(){backdrop.classList.remove('is-open');backdrop.setAttribute('aria-hidden','true');document.body.style.overflow='';}
+ function openAnnouncement(item){
+  document.getElementById('dcdsAnnouncementTitle').textContent=item.title||'DCDS Announcement';
+  document.getElementById('dcdsAnnouncementMessage').textContent=item.message||'';
+  const image=document.getElementById('dcdsAnnouncementImage');
+  if(typeof item.image_url==='string'&&/^https:\/\//i.test(item.image_url)){image.src=item.image_url;image.style.display='block';}else{image.removeAttribute('src');image.style.display='none';}
+  const dateValue=item.created_at||item.starts_at;
+  const date=document.getElementById('dcdsAnnouncementDate');
+  date.textContent=dateValue?'Published '+new Date(dateValue).toLocaleDateString('en-NG',{day:'numeric',month:'long',year:'numeric'}):'De Champions Digital Service';
+  backdrop.classList.add('is-open');backdrop.setAttribute('aria-hidden','false');document.body.style.overflow='hidden';
+  document.getElementById('dcdsAnnouncementClose').focus();
+ }
+ function makeItem(item){
+  const button=document.createElement('button');button.type='button';button.className='dcds-public-ticker-item';
+  const dot=document.createElement('span');dot.className='ticker-dot';dot.textContent='✦';
+  const title=document.createElement('b');title.textContent=item.title||'DCDS Announcement';
+  const message=document.createElement('span');message.textContent=(item.message||'').replace(/\s+/g,' ').trim();
+  button.append(dot,title,message);button.addEventListener('click',()=>openAnnouncement(item));return button;
+ }
+ async function loadAnnouncements(){
+  try{
+   const response=await fetch(SUPABASE_URL+'/functions/v1/get-public-announcements',{method:'GET',headers:{'apikey':SUPABASE_ANON_KEY,'Authorization':'Bearer '+SUPABASE_ANON_KEY,'Accept':'application/json'}});
+   if(!response.ok)throw new Error('Announcement service unavailable: '+response.status);
+   const data=await response.json();
+   const now=Date.now();
+   announcements=(Array.isArray(data)?data:(data&&Array.isArray(data.announcements)?data.announcements:[])).filter(item=>{
+    if(!item||item.status!=='published')return false;
+    const start=item.starts_at?new Date(item.starts_at).getTime():0;
+    const end=item.expires_at?new Date(item.expires_at).getTime():Infinity;
+    return (!Number.isFinite(start)||start<=now)&&(!Number.isFinite(end)||end>now);
+   });
+   if(!announcements.length)return;
+   announcements.forEach(item=>track.appendChild(makeItem(item)));
+   announcements.forEach(item=>track.appendChild(makeItem(item)));
+   ticker.classList.add('is-visible');
+  }catch(error){console.warn('DCDS public announcements could not be loaded:',error);}
+ }
+ document.getElementById('dcdsAnnouncementClose').addEventListener('click',closeAnnouncement);
+ backdrop.addEventListener('click',event=>{if(event.target===backdrop)closeAnnouncement();});
+ document.addEventListener('keydown',event=>{if(event.key==='Escape'&&backdrop.classList.contains('is-open'))closeAnnouncement();});
+ loadAnnouncements();
+})();
 </script>
 </body></html>
