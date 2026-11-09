@@ -609,7 +609,20 @@ function openCertificate(certificate, studentName, courseTitle) {
   printWindow.document.open();
   printWindow.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DCDS Certificate - ${safeNumber}</title><style>
     *{box-sizing:border-box}body{margin:0;background:#f3edf8;font-family:Georgia,'Times New Roman',serif;color:#241039;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:25px}.certificate{width:min(1100px,100%);min-height:690px;background:#fffdf8;border:12px double #8b65b0;outline:2px solid #d4af37;outline-offset:-25px;padding:65px 55px;text-align:center;position:relative}.brand{font:900 17px Arial,sans-serif;letter-spacing:5px;color:#64269a}.tag{font:700 10px Arial,sans-serif;letter-spacing:3px;color:#98722a;margin-top:9px}.rule{width:110px;height:3px;background:#d4af37;margin:28px auto}.eyebrow{font:700 13px Arial,sans-serif;letter-spacing:4px;color:#7a5c91;margin-top:35px}.title{font-size:clamp(34px,6vw,58px);color:#35105f;margin:18px 0}.intro{font:16px Arial,sans-serif;color:#665875}.name{font-size:clamp(30px,5vw,48px);font-weight:bold;color:#8a5a13;margin:20px 0 12px;border-bottom:1px solid #d4af37;display:inline-block;padding:0 25px 12px}.course{font-size:25px;color:#35105f;font-weight:bold;margin:16px 0}.body{font:15px/1.8 Arial,sans-serif;color:#62566e;max-width:720px;margin:15px auto}.footer{display:flex;justify-content:space-between;gap:20px;margin-top:65px;text-align:left;font:12px Arial,sans-serif;color:#5f536b}.seal{font:700 11px Arial,sans-serif;color:#77551b;border:2px solid #d4af37;border-radius:50%;width:95px;height:95px;display:flex;align-items:center;justify-content:center;margin:auto;letter-spacing:1px}.verified{font:700 10px Arial,sans-serif;color:#267044;margin-top:10px;letter-spacing:1px}.print{position:fixed;top:15px;right:15px;border:0;border-radius:9px;padding:12px 16px;background:#64269a;color:#fff;font-weight:bold;cursor:pointer}@media print{body{background:#fff;padding:0}.certificate{width:100%;min-height:95vh;break-inside:avoid}.print{display:none}}@page{size:A4 landscape;margin:10mm}
-   </style></head><body><button class="print" onclick="window.print()">Print / Save as PDF</button><main class="certificate"><div class="brand">DCDS</div><div class="tag">DE CHAMPIONS DIGITAL SERVICE</div><div class="rule"></div><div class="eyebrow">CERTIFICATE OF COMPLETION</div><h1 class="title">Certificate of Achievement</h1><div class="intro">This certificate is proudly presented to</div><div class="name">${safeName}</div><div class="body">for successfully completing the learning requirements for</div><div class="course">${safeCourse}</div><div class="body">and demonstrating commitment to learning, creativity, and digital excellence.</div><div class="rule"></div><div class="seal">DCDS<br>ACHIEVEMENT</div>${verified?'<div class="verified">ADMIN VERIFIED CERTIFICATE</div>':''}<div class="footer"><div><strong>Certificate No.</strong><br>${safeNumber}<br><br><strong>Date Issued</strong><br>${safeDate}</div><div style="text-align:right"><strong>DE CHAMPIONS DIGITAL SERVICE</strong><br>CREATE • LEARN • INNOVATE • EARN.<br><br>Official digital certificate</div></div></main></body></html>`);
+   </style><style id="dcds-scroll-motion">
+/* DCDS scroll motion: additive effects only; existing layout and colours remain untouched. */
+.dcds-motion-ready [data-dcds-reveal]{opacity:0;transition:opacity .72s ease,transform .82s cubic-bezier(.2,.75,.25,1),filter .82s ease;will-change:opacity,transform}
+.dcds-motion-ready [data-dcds-reveal="rise"]{transform:translate3d(0,38px,0)}
+.dcds-motion-ready [data-dcds-reveal="pop"]{transform:scale(.91);filter:blur(3px)}
+.dcds-motion-ready [data-dcds-reveal="left"]{transform:translate3d(-46px,0,0)}
+.dcds-motion-ready [data-dcds-reveal="right"]{transform:translate3d(46px,0,0)}
+.dcds-motion-ready [data-dcds-reveal="zoom"]{transform:scale(.94) translateY(18px)}
+.dcds-motion-ready [data-dcds-reveal].dcds-visible{opacity:1;transform:none;filter:none}
+.dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:dcdsChildPop .58s both;animation-delay:var(--dcds-delay,0ms)}
+@keyframes dcdsChildPop{from{opacity:.25;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.dcds-motion-ready [data-dcds-reveal]{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}.dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:none!important}}
+</style>
+</head><body><button class="print" onclick="window.print()">Print / Save as PDF</button><main class="certificate"><div class="brand">DCDS</div><div class="tag">DE CHAMPIONS DIGITAL SERVICE</div><div class="rule"></div><div class="eyebrow">CERTIFICATE OF COMPLETION</div><h1 class="title">Certificate of Achievement</h1><div class="intro">This certificate is proudly presented to</div><div class="name">${safeName}</div><div class="body">for successfully completing the learning requirements for</div><div class="course">${safeCourse}</div><div class="body">and demonstrating commitment to learning, creativity, and digital excellence.</div><div class="rule"></div><div class="seal">DCDS<br>ACHIEVEMENT</div>${verified?'<div class="verified">ADMIN VERIFIED CERTIFICATE</div>':''}<div class="footer"><div><strong>Certificate No.</strong><br>${safeNumber}<br><br><strong>Date Issued</strong><br>${safeDate}</div><div style="text-align:right"><strong>DE CHAMPIONS DIGITAL SERVICE</strong><br>CREATE • LEARN • INNOVATE • EARN.<br><br>Official digital certificate</div></div></main></body></html>`);
   printWindow.document.close();
 }async function loadCertificates(user) {
   const container = document.getElementById('certificateGrid');
@@ -1059,6 +1072,58 @@ loadDashboard().catch(error => {
   document.body.classList.remove('auth-pending');
   showError(error.message || 'We could not load your dashboard. Please try again.', false);
 });
+</script>
+<script id="dcds-scroll-motion-script">
+(()=> {
+  if(window.__dcdsScrollMotionInstalled) return;
+  window.__dcdsScrollMotionInstalled=true;
+  const init=()=>{
+    const reduced=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const selectors=[
+      ".hero",".section-heading",".course-grid",".course-card",".service-card",
+      ".general-course-offer",".info-card",".founder-section",".founder-card",
+      ".reviews-section",".review-panel",".review-list",".review-item",
+      ".dashboard-header",".section-title",".panel",".stat-card",".record-list",
+      ".record-row",".certificate-grid",".certificate",".course",
+      ".feature-message",".profile-form",".announcement-card",
+      "#reviewModerationSection",".review-moderation-card",
+      ".support-ticket-card",".detail-panel",".footer","footer"
+    ];
+    const found=new Set();
+    selectors.forEach(selector=>document.querySelectorAll(selector).forEach(el=>{
+      if(el.closest("[data-dcds-motion-ignore]")) return;
+      found.add(el);
+    }));
+    const targets=[...found];
+    const styles=["rise","pop","left","right","zoom"];
+    targets.forEach((el,index)=>{
+      if(el.hasAttribute("data-dcds-reveal")) return;
+      el.setAttribute("data-dcds-reveal",styles[index%styles.length]);
+      const children=[...el.children].filter(child=>child.matches(".course-card,.service-card,.info-card,.record-row,.certificate,.review-item,.stat-card,.announcement-card"));
+      children.forEach((child,i)=>{
+        child.setAttribute("data-dcds-child","");
+        child.style.setProperty("--dcds-delay",Math.min(i*85,510)+"ms");
+      });
+    });
+    if(reduced){targets.forEach(el=>el.classList.add("dcds-visible"));return;}
+    document.documentElement.classList.add("dcds-motion-ready");
+    if(!("IntersectionObserver" in window)){
+      targets.forEach(el=>el.classList.add("dcds-visible"));
+      return;
+    }
+    const observer=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add("dcds-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },{threshold:.12,rootMargin:"0px 0px -45px 0px"});
+    targets.forEach(el=>observer.observe(el));
+  };
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init,{once:true});
+  else init();
+})();
 </script>
 </body>
 </html>
