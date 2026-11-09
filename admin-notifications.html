@@ -85,8 +85,8 @@
             <div class="stat-card">
 
                 <p>Total Recipients</p>
-                
-                <h3 id="totalRecipients">0</h3>
+
+                                <h3 id="totalRecipients">0</h3>
 
             </div>
 
@@ -159,7 +159,7 @@
 
                                         <div class="form-group">
 
-                        <label for="announcementCategory">
+                                                                    <label for="announcementCategory">
                             Announcement Category
                         </label>
 
@@ -214,7 +214,7 @@
 
 
                                                         <label>
-                                <input
+                                                                                            <input
                                     type="radio"
                                     name="audience"
                                     value="enrolled">
@@ -263,8 +263,8 @@
                                     name="deliveryChannel"
                                     value="notification"
                                     checked>
-                                    
-                                🔔 Notification Only — appears in the student notification bell.
+
+                                                                🔔 Notification Only — appears in the student notification bell.
                             </label>
 
                             <label>
@@ -312,7 +312,7 @@
                         <label for="announcementStartsAt">Start date and time (optional)</label>
                         <input type="datetime-local" id="announcementStartsAt">
                         <label for="announcementEndsAt" style="margin-top:12px">End date and time (optional)</label>
-                        <input type="datetime-local" id="announcementEndsAt">
+                         <input type="datetime-local" id="announcementEndsAt">
                         <p class="delivery-help">Leave both empty to publish immediately with no automatic end. A future start schedules the announcement; an end time automatically hides it.</p>
                     </div>
 
@@ -350,7 +350,7 @@
                     <h2>📋 Announcement History</h2>
 
                     <p>
-                        View previously published announcements.
+                        View homepage ticker announcements, including scheduled, inactive and expired items.
                     </p>
 
                 </div>
@@ -360,6 +360,31 @@
 
                     <p>
                         Announcement history will appear here.
+                    </p>
+
+                </div>
+
+            </section>
+
+            <!-- NOTIFICATION HISTORY -->
+
+            <section id="notificationHistorySection">
+
+                <div class="section-heading">
+
+                    <h2>🔔 Notification History</h2>
+
+                    <p>
+                        View notifications sent to students through the dashboard notification bell.
+                    </p>
+
+                </div>
+
+
+                                <div id="notificationHistory">
+
+                    <p>
+                        Notification history will appear here.
                     </p>
 
                 </div>
@@ -460,7 +485,7 @@ body {
             var(--deep-purple),
             var(--dark-background)
         );
-
+    
     color: var(--pure-white);
 
     min-height: 100vh;
@@ -597,7 +622,7 @@ body {
 
     font-weight: 800;
 
-    letter-spacing: 1px;
+        letter-spacing: 1px;
 
     cursor: pointer;
 
@@ -737,10 +762,11 @@ body {
 ====================================== */
 
 #createAnnouncementSection,
-#historySection {
+#historySection,
+#notificationHistorySection {
 
     padding: 30px;
-
+    
     margin-bottom: 28px;
 
     border-radius: 20px;
@@ -884,7 +910,7 @@ textarea {
 }
 
 
-select {
+  select {
 
     cursor: pointer;
 
@@ -1024,7 +1050,7 @@ select option {
 
     border: none;
 
-    border-radius: 12px;
+            border-radius: 12px;
 
     background: linear-gradient(
         110deg,
@@ -1121,7 +1147,8 @@ select option {
    ANNOUNCEMENT HISTORY CARDS
 ====================================== */
 
-#announcementHistory {
+#announcementHistory,
+#notificationHistory {
 
     display: flex;
 
@@ -1172,7 +1199,7 @@ select option {
 .announcement-card small {
 
     display: block;
-
+    
     color: var(--muted-text);
 
     font-size: 12px;
@@ -1236,7 +1263,8 @@ select option {
     }
 
     #createAnnouncementSection,
-    #historySection {
+    #historySection,
+    #notificationHistorySection {
         padding: 24px;
     }
 
@@ -1286,7 +1314,7 @@ select option {
     #welcomeSection h2 {
         font-size: 22px;
     }
-
+    
     #welcomeSection p {
         font-size: 13px;
     }
@@ -1401,7 +1429,7 @@ html {
 }
 
 
-/* =====================================
+    /* =====================================
    CUSTOM SCROLLBAR
 ====================================== */
 
@@ -1497,7 +1525,7 @@ const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
 
 
-    /* =====================================
+      /* =====================================
    2. INITIALIZE SUPABASE CLIENT
 ====================================== */
 
@@ -1595,7 +1623,7 @@ function showMessage(message, type = "success") {
     /* =====================================
    7. HIDE STATUS MESSAGE
 ====================================== */
-
+    
 function hideMessage() {
 
     const statusBox = document.getElementById(
@@ -1706,7 +1734,7 @@ console.log(
     
 <script>
 
-/* =====================================
+    /* =====================================
    1. ADMINISTRATOR AUTHENTICATION
 ====================================== */
 
@@ -1790,7 +1818,7 @@ async function initializeAdminCenter() {
         // Load administrator dashboard information
         await loadCourses();
                 await loadHistory();
-
+    
         // Reveal dashboard only after successful verification
         adminApp.hidden = false;
 
@@ -1872,7 +1900,7 @@ function updateAudienceSelection() {
     if (!selectedAudience) {
         return;
     }
-
+    
     const audience = selectedAudience.value;
 
     if (audience === "specific_course") {
@@ -1964,7 +1992,7 @@ async function loadCourses() {
             const option = document.createElement("option");
 
                                              option.value = course.id;
-
+     
             option.textContent = course.title;
 
             courseSelect.appendChild(option);
@@ -2063,7 +2091,7 @@ function validateAudienceSelection() {
         }
 
     }
-
+    
     return true;
 
 }
@@ -2115,123 +2143,79 @@ console.log(
 ====================================== -->
 
 <script>
+const announcementForm = document.getElementById("announcementForm");
+const publishButton = document.getElementById("publishButton");
 
-/* =====================================
-   1. GET ANNOUNCEMENT FORM
-====================================== */
+function getScheduleValues() {
+    const startsValue = document.getElementById("announcementStartsAt").value;
+    const endsValue = document.getElementById("announcementEndsAt").value;
+    const startsAt = startsValue ? new Date(startsValue) : new Date();
+    const endsAt = endsValue ? new Date(endsValue) : null;
 
-const announcementForm = document.getElementById(
-    "announcementForm"
-);
-
-const publishButton = document.getElementById(
-    "publishButton"
-);
-
-
-/* =====================================
-   2. PUBLISH ANNOUNCEMENT
-====================================== */
+    if (Number.isNaN(startsAt.getTime()) || (endsAt && Number.isNaN(endsAt.getTime()))) {
+        throw new Error("Please enter valid start and end dates.");
+    }
+    if (endsAt && endsAt <= startsAt) {
+        throw new Error("The end time must be later than the start time.");
+    }
+    return {
+        starts_at: startsAt.toISOString(),
+        expires_at: endsAt ? endsAt.toISOString() : null
+    };
+}
 
 async function publishAnnouncement(event) {
-
     event.preventDefault();
-
-    hideMessage();
-
-    /* Check administrator session */
+        hideMessage();
 
     const session = await getCurrentSession();
-
     if (!session) {
-
-        showMessage(
-            "Your session has expired. Please log in again.",
-            "error"
-        );
-
+        showMessage("Your session has expired. Please log in again.", "error");
         window.location.href = "index.html";
-
         return;
     }
 
-
-    /* Verify administrator privileges again */
-
-    const isAdmin = await verifyAdminRole();
-
-        if (!isAdmin) {
-
-        showMessage(
-            "Access denied. You are not authorized to publish announcements.",
-            "error"
-        );
-
+    if (!(await verifyAdminRole())) {
+        showMessage("Access denied. You are not authorized to publish announcements.", "error");
         return;
     }
+    if (!validateAudienceSelection()) return;
 
-
-    /* Validate audience */
-
-    if (!validateAudienceSelection()) {
-        return;
-    }
-
-
-    /* Get form information */
-
-    const title = document.getElementById(
-        "announcementTitle"
-    ).value.trim();
-
-    const message = document.getElementById(
-        "announcementMessage"
-    ).value.trim();
-
-    const category = document.getElementById(
-        "announcementCategory"
-    ).value;
-
+    const title = document.getElementById("announcementTitle").value.trim();
+    const message = document.getElementById("announcementMessage").value.trim();
+    const category = document.getElementById("announcementCategory").value;
     const audience = getSelectedAudience();
-
     const courseId = getSelectedCourseId();
-
-        const deliveryChannel = getSelectedDeliveryChannel();
-
-    if (!deliveryChannel || !["notification", "ticker"].includes(deliveryChannel)) {
-        showMessage(
-            "Please choose Notification Only or Ticker Only.",
-            "error"
-        );
-        return;
-    }
-
-
-    /* Validate announcement content */
+    const deliveryChannel = getSelectedDeliveryChannel();
 
     if (!title || !message) {
-
-        showMessage(
-            "Please enter both an announcement title and message.",
-            "error"
-        );
-
+        showMessage("Please enter both an announcement title and message.", "error");
         return;
     }
-
-
     if (title.length > 150) {
-
-        showMessage(
-            "The announcement title cannot exceed 150 characters.",
-            "error"
-        );
-
+        showMessage("The announcement title cannot exceed 150 characters.", "error");
+        return;
+    }
+    if (!["notification", "ticker"].includes(deliveryChannel)) {
+        showMessage("Please choose Notification Only or Ticker Only.", "error");
         return;
     }
 
+    let schedule;
+    try {
+        schedule = getScheduleValues();
+    } catch (error) {
+        showMessage(error.message, "error");
+        return;
+    }
 
-    /* Confirm publication */
+    // The notification table has no scheduling columns. Scheduling is supported for ticker announcements.
+    if (deliveryChannel === "notification" &&
+        (document.getElementById("announcementStartsAt").value ||
+         document.getElementById("announcementEndsAt").value)) {
+        showMessage("Start and end scheduling apply to ticker announcements. Clear those date fields to send a notification now.", "error");
+                return;
+    }
 
     const confirmation = confirm(
         "Are you sure you want to publish this announcement?\n\n" +
@@ -2239,525 +2223,305 @@ async function publishAnnouncement(event) {
         "Audience: " + audience.replaceAll("_", " ") + "\n" +
         "Delivery: " + (deliveryChannel === "ticker" ? "Ticker Only" : "Notification Only")
     );
-
-    if (!confirmation) {
-        return;
-    }
-
-
-    /* Disable button while publishing */
+    if (!confirmation) return;
 
     publishButton.disabled = true;
-
-        publishButton.textContent = "PUBLISHING...";
-
+    publishButton.textContent = "PUBLISHING...";
 
     try {
+        if (deliveryChannel === "ticker") {
+            // Ticker announcements are stored separately and never create bell recipients.
+            const { error } = await db.from("public_announcements").insert({
+                title,
+                message,
+                status: "published",
+                starts_at: schedule.starts_at,
+                expires_at: schedule.expires_at,
+                created_by: session.user.id,
+                updated_by: session.user.id
+            });
+            if (error) throw error;
 
-        /* =================================
-           3. CALL SECURE SUPABASE FUNCTION
-        ================================= */
-
-        const { data, error } = await db.rpc(
-            "publish_dcds_announcement",
-            {
+            showMessage("🎉 Ticker announcement published successfully. It will appear on the homepage according to its schedule.", "success");
+        } else {
+            // Bell notifications use the existing secure RPC and recipient creation logic.
+            const { data, error } = await db.rpc("publish_dcds_announcement", {
                 p_title: title,
-
                 p_message: message,
-
                 p_category: category,
-
                 p_audience: audience,
-
                 p_course_id: courseId,
-
-                p_delivery_channel: deliveryChannel
+                p_delivery_channel: "notification"
+            });
+            if (error) throw error;
+            if (!data || data.success !== true) {
+                throw new Error(data?.message || "The notification could not be published.");
             }
-        );
-        
 
-        if (error) {
-            throw error;
+                    const recipientCount = Number(data.recipients || 0);
+            showMessage("🎉 Notification published successfully! " + recipientCount + " student(s) were selected to receive it.", "success");
         }
-
-
-        /* =================================
-           4. CHECK PUBLISHING RESULT
-        ================================= */
-
-        if (!data || data.success !== true) {
-
-            throw new Error(
-                data?.message ||
-                "The announcement could not be published."
-            );
-
-        }
-
-
-        /* Save activation and schedule settings for this channel */
-        const startsValue = document.getElementById("announcementStartsAt").value;
-        const endsValue = document.getElementById("announcementEndsAt").value;
-        const startsAt = startsValue ? new Date(startsValue).toISOString() : new Date().toISOString();
-        const endsAt = endsValue ? new Date(endsValue).toISOString() : null;
-        if (endsAt && new Date(endsAt) <= new Date(startsAt)) {
-            throw new Error("The end time must be later than the start time.");
-        }
-        const { error: scheduleError } = await db.rpc("manage_dcds_announcement", {
-            p_announcement_id: data.notification_id || data.id,
-            p_action: "schedule",
-            p_payload: { starts_at: startsAt, ends_at: endsAt, is_active: true }
-        });
-        if (scheduleError) throw scheduleError;
-
-            /* =================================
-           5. SUCCESS MESSAGE
-        ================================= */
-
-        const recipientCount = Number(
-            data.recipients || 0
-        );
-
-        showMessage(
-            "🎉 " +
-            (deliveryChannel === "ticker"
-                ? "Ticker announcement published successfully."
-                : "Notification published successfully! " + recipientCount + " student(s) were selected to receive it."),
-            "success"
-        );
-
-
-        /* =================================
-           6. CLEAR FORM
-        ================================= */
 
         announcementForm.reset();
-
         updateAudienceSelection();
-
-
-        /* =================================
-           7. REFRESH ANNOUNCEMENT HISTORY
-        ================================= */
-
         await loadHistory();
-
-        console.log(
-            "DCDS announcement published:",
-            data
-        );
-
-
     } catch (error) {
-
-        console.error(
-            "Announcement publishing error:",
-            error
-        );
-
-        showMessage(
-            "Publishing failed: " + error.message,
-            "error"
-        );
-
-
+        console.error("Announcement publishing error:", error);
+        showMessage("Publishing failed: " + error.message, "error");
     } finally {
-
         publishButton.disabled = false;
-
-         publishButton.textContent =
-            "PUBLISH ANNOUNCEMENT";
-
+        publishButton.textContent = "PUBLISH ANNOUNCEMENT";
     }
-
 }
 
-
-/* =====================================
-   8. CONNECT FORM TO PUBLISHING SYSTEM
-====================================== */
-
-announcementForm.addEventListener(
-    "submit",
-    publishAnnouncement
-);
-
-
-/* =====================================
-   9. MODULE INITIALIZATION
-====================================== */
-
-console.log(
-    "DCDS announcement publishing module loaded."
-);
-
-      </script>
-      <!-- =====================================
-     BLOCK 9: ANNOUNCEMENT HISTORY
-     AND RECIPIENT STATISTICS
+announcementForm.addEventListener("submit", publishAnnouncement);
+console.log("DCDS announcement publishing module loaded.");
+</script>
+<!-- =====================================
+     BLOCK 9: SEPARATE ANNOUNCEMENT AND NOTIFICATION HISTORY
 ====================================== -->
-    
+
 <script>
-
-/* =====================================
-   1. GET HISTORY CONTAINER
-====================================== */
-
-const historyContainer = document.getElementById(
-    "announcementHistory"
-);
-
-
-/* =====================================
-   2. FORMAT ANNOUNCEMENT DATE
-====================================== */
+const historyContainer = document.getElementById("announcementHistory");
+const notificationHistoryContainer = document.getElementById("notificationHistory");
 
 function formatAnnouncementDate(dateValue) {
-
-    if (!dateValue) {
-        return "Date unavailable";
-    }
-
+    if (!dateValue) return "Date unavailable";
     const date = new Date(dateValue);
-
-    if (Number.isNaN(date.getTime())) {
-        return "Date unavailable";
-    }
-
-    return date.toLocaleString("en-NG", {
-        dateStyle: "medium",
-        timeStyle: "short"
-    });
-
+    if (Number.isNaN(date.getTime())) return "Date unavailable";
+    return date.toLocaleString("en-NG", { dateStyle: "medium", timeStyle: "short" });
 }
-
-
-/* =====================================
-   3. FORMAT AUDIENCE NAME
-====================================== */
 
 function formatAudienceName(audience) {
-
     const names = {
-
         all: "All Students",
-
         enrolled: "Enrolled Students",
-
         general_course: "General Course Students",
-
         specific_course: "Specific Course Students"
-
     };
-    
     return names[audience] || audience || "Unknown Audience";
-
 }
 
+function addHistoryText(parent, tag, value) {
+    const element = document.createElement(tag);
+    element.textContent = value;
+    parent.appendChild(element);
+    return element;
+}
 
-/* =====================================
-   4. LOAD ANNOUNCEMENT HISTORY
-====================================== */
+    function makeHistoryCard(titleText, messageText) {
+    const card = document.createElement("article");
+    card.className = "announcement-card";
+    addHistoryText(card, "h3", titleText || "Untitled");
+    addHistoryText(card, "p", messageText || "");
+    return card;
+}
 
-async function loadHistory() {
+function getTickerState(announcement) {
+    const now = new Date();
+    const starts = announcement.starts_at ? new Date(announcement.starts_at) : null;
+    const ends = announcement.expires_at ? new Date(announcement.expires_at) : null;
 
-    try {
+    if (announcement.status !== "published") return "Inactive / Draft";
+    if (starts && starts > now) return "Scheduled";
+    if (ends && ends <= now) return "Expired";
+    return "Published";
+}
 
-        historyContainer.innerHTML =
-            '<p class="loading">Loading announcement history...</p>';
+async function updateTickerAnnouncement(id, values) {
+    const { error } = await db
+        .from("public_announcements")
+        .update({ ...values, updated_by: currentAdmin.id, updated_at: new Date().toISOString() })
+        .eq("id", id);
+    if (error) throw error;
+    await loadHistory();
+}
 
+async function renderTickerActions(card, announcement) {
+    const actions = document.createElement("div");
+    actions.className = "announcement-admin-actions";
+    actions.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-top:14px";
 
-        /* Retrieve announcements */
-
-        const { data: announcements, error } = await db
-
-            .from("notifications")
-
-            .select(
-                "id, title, message, category, audience, course_id, delivery_channel, created_at, is_active, starts_at, ends_at"
-            )
-
-            .order("created_at", {
-                ascending: false
-            })
-
-            .limit(50);
-
-
-        if (error) {
-            throw error;
-        }
-
-
-         /* Handle empty history */
-
-        if (!announcements || announcements.length === 0) {
-
-            historyContainer.innerHTML = `
-                <div class="announcement-card">
-                    <h3>No Announcements Yet</h3>
-                    <p>
-                        Published announcements will appear here.
-                    </p>
-                </div>
-            `;
-
-            document.getElementById(
-                "totalAnnouncements"
-            ).textContent = "0";
-
-            document.getElementById(
-                "totalRecipients"
-            ).textContent = "0";
-
-            return;
-
-        }
-
-
-        /* =================================
-           5. GET RECIPIENT COUNTS
-        ================================= */
-
-        const announcementIds = announcements.map(
-            item => item.id
-        );
-
-            const { data: recipients, error: recipientError } =
-            await db
-
-                .from("notification_recipients")
-
-                .select("notification_id")
-
-                .in("notification_id", announcementIds);
-
-
-        if (recipientError) {
-            throw recipientError;
-        }
-
-
-        /* =================================
-           6. CALCULATE RECIPIENT STATISTICS
-        ================================= */
-
-        const recipientCounts = {};
-
-        (recipients || []).forEach(recipient => {
-
-            const id = recipient.notification_id;
-
-            recipientCounts[id] =
-                (recipientCounts[id] || 0) + 1;
-
+    const addButton = (label, handler) => {
+        const button = document.createElement("button");
+        button.type = "button";
+        button.textContent = label;
+        button.addEventListener("click", async () => {
+            button.disabled = true;
+            try {
+                await handler();
+            } catch (error) {
+                console.error("Ticker announcement action failed:", error);
+                alert("Action failed: " + error.message);
+            } finally {
+                button.disabled = false;
+            }
         });
-
-
-        const totalRecipients = (recipients || []).length;
-
-
-        /* =================================
-           7. UPDATE DASHBOARD STATISTICS
-        ================================= */
-
-        document.getElementById(
-            "totalAnnouncements"
-        ).textContent = announcements.length;
-
-            document.getElementById(
-            "totalRecipients"
-        ).textContent = totalRecipients;
-
-
-        /* =================================
-           8. DISPLAY ANNOUNCEMENT CARDS
-        ================================= */
-
-        historyContainer.innerHTML = "";
-
-
-        announcements.forEach(announcement => {
-
-            const card = document.createElement("article");
-
-            card.className = "announcement-card";
-
-
-            const title = document.createElement("h3");
-
-            title.textContent = announcement.title;
-
-
-            const message = document.createElement("p");
-
-            message.textContent = announcement.message;
-            
-
-            const audience = document.createElement("small");
-
-            audience.textContent =
-                "Audience: " +
-                formatAudienceName(announcement.audience);
-
-
-            const category = document.createElement("small");
-
-            category.textContent =
-                "Category: " +
-                (announcement.category || "General");
-
-
-            const delivery = document.createElement("small");
-
-            const deliveryChannel = announcement.delivery_channel || "notification";
-
-            delivery.textContent =
-                "Delivery: " +
-                (deliveryChannel === "ticker" ? "Ticker Only" : "Notification Only");
-
-
-            const recipientCount = document.createElement("small");
-
-            recipientCount.textContent =
-                "Recipients: " +
-                (recipientCounts[announcement.id] || 0);
-
-
-            const date = document.createElement("small");
-
-            date.textContent =
-                "Published: " +
-                formatAnnouncementDate(announcement.created_at);
-
-
-            card.appendChild(title);
-
-            card.appendChild(message);
-
-            card.appendChild(audience);
-            
-            card.appendChild(category);
-
-            card.appendChild(delivery);
-
-            const now = new Date();
-            const starts = announcement.starts_at ? new Date(announcement.starts_at) : null;
-            const ends = announcement.ends_at ? new Date(announcement.ends_at) : null;
-            const visibleNow = announcement.is_active !== false && (!starts || starts <= now) && (!ends || ends > now);
-            const state = document.createElement("small");
-            state.textContent = !announcement.is_active ? "Status: Deactivated" : (starts && starts > now ? "Status: Scheduled" : (ends && ends <= now ? "Status: Ended" : "Status: Active"));
-            card.appendChild(state);
-            if (starts) { const startLabel=document.createElement("small"); startLabel.textContent="Starts: "+formatAnnouncementDate(announcement.starts_at); card.appendChild(startLabel); }
-            if (ends) { const endLabel=document.createElement("small"); endLabel.textContent="Ends: "+formatAnnouncementDate(announcement.ends_at); card.appendChild(endLabel); }
-
-            const actions = document.createElement("div");
-            actions.className = "announcement-admin-actions";
-            actions.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-top:14px";
-            const makeAction = (label, action, payload={}) => {
-                const button=document.createElement("button"); button.type="button"; button.textContent=label;
-                button.addEventListener("click", async () => {
-                    if (action === "delete" && !confirm("Delete this announcement and its recipient records? This cannot be undone.")) return;
-                    if (action === "edit") {
-                        const newTitle=prompt("Edit announcement title:", announcement.title); if (newTitle===null) return;
-                                                const newMessage=prompt("Edit announcement message:", announcement.message); if (newMessage===null) return;
-                        if (!newTitle.trim() || !newMessage.trim()) { alert("Title and message cannot be empty."); return; }
-                        payload={title:newTitle.trim(), message:newMessage.trim()};
-                    }
-                    if (action === "schedule") {
-                        const startInput=prompt("Start date/time (ISO format, e.g. 2026-11-10T09:00:00+01:00). Leave blank to start now:", announcement.starts_at || ""); if (startInput===null) return;
-                        const endInput=prompt("End date/time (ISO format). Leave blank for no end:", announcement.ends_at || ""); if (endInput===null) return;
-                        payload={starts_at:startInput.trim() ? new Date(startInput).toISOString() : new Date().toISOString(), ends_at:endInput.trim() ? new Date(endInput).toISOString() : null};
-                    }
-                    const {error: actionError}=await db.rpc("manage_dcds_announcement", {p_announcement_id:announcement.id,p_action:action,p_payload:payload});
-                    if(actionError){alert("Action failed: "+actionError.message);return;}
-                    await loadHistory();
-                });
                 actions.appendChild(button);
-            };
-            makeAction("Edit", "edit");
-            makeAction(announcement.is_active === false ? "Activate" : "Deactivate", "toggle", {is_active:announcement.is_active === false});
-            makeAction("Reschedule", "schedule");
-            makeAction("Delete", "delete");
-            card.appendChild(actions);
+    };
 
-            card.appendChild(recipientCount);
-
-            card.appendChild(date);
-
-
-            historyContainer.appendChild(card);
-
+    addButton("Edit", async () => {
+        const newTitle = prompt("Edit announcement title:", announcement.title || "");
+        if (newTitle === null) return;
+        const newMessage = prompt("Edit announcement message:", announcement.message || "");
+        if (newMessage === null) return;
+        if (!newTitle.trim() || !newMessage.trim()) {
+            alert("Title and message cannot be empty.");
+            return;
+        }
+        await updateTickerAnnouncement(announcement.id, {
+            title: newTitle.trim(),
+            message: newMessage.trim()
         });
+    });
 
+    addButton(announcement.status === "published" ? "Deactivate" : "Activate", async () => {
+        const nextStatus = announcement.status === "published" ? "draft" : "published";
+        await updateTickerAnnouncement(announcement.id, { status: nextStatus });
+    });
 
-            console.log(
-            "DCDS announcement history loaded successfully."
+    addButton("Reschedule", async () => {
+        const startInput = prompt(
+            "Start date/time (ISO format). Leave blank to start now:",
+            announcement.starts_at || ""
         );
-
-
-    } catch (error) {
-
-        console.error(
-            "Announcement history error:",
-            error
+        if (startInput === null) return;
+        const endInput = prompt(
+            "Expiry date/time (ISO format). Leave blank for no expiry:",
+            announcement.expires_at || ""
         );
+        if (endInput === null) return;
 
-            historyContainer.innerHTML = `
-            <div class="announcement-card">
-                <h3>Unable to Load History</h3>
-                <p>
-                    ${escapeHTML(error.message)}
-                </p>
-            </div>
-        `;
+        const startsAt = startInput.trim() ? new Date(startInput.trim()) : new Date();
+        const expiresAt = endInput.trim() ? new Date(endInput.trim()) : null;
+        if (Number.isNaN(startsAt.getTime()) || (expiresAt && Number.isNaN(expiresAt.getTime()))) {
+            alert("Please enter valid date/time values.");
+            return;
+        }
+        if (expiresAt && expiresAt <= startsAt) {
+            alert("The expiry time must be later than the start time.");
+                        return;
+        }
+        await updateTickerAnnouncement(announcement.id, {
+            starts_at: startsAt.toISOString(),
+            expires_at: expiresAt ? expiresAt.toISOString() : null
+        });
+    });
 
+    card.appendChild(actions);
+}
+
+async function loadTickerHistory() {
+    historyContainer.innerHTML = '<p>Loading announcement history...</p>';
+
+    const { data: announcements, error } = await db
+        .from("public_announcements")
+        .select("id, title, message, status, starts_at, expires_at, created_at, updated_at")
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+    if (error) throw error;
+
+    if (!announcements || announcements.length === 0) {
+        historyContainer.innerHTML = '<div class="announcement-card"><h3>No Ticker Announcements Yet</h3><p>Homepage ticker announcements will appear here.</p></div>';
+        return 0;
     }
 
+    historyContainer.innerHTML = "";
+    announcements.forEach(announcement => {
+        const card = makeHistoryCard(announcement.title, announcement.message);
+        addHistoryText(card, "small", "Status: " + getTickerState(announcement));
+        addHistoryText(card, "small", "Created: " + formatAnnouncementDate(announcement.created_at));
+        addHistoryText(card, "small", "Starts: " + formatAnnouncementDate(announcement.starts_at));
+        addHistoryText(card, "small", "Expires: " + (announcement.expires_at ? formatAnnouncementDate(announcement.expires_at) : "No expiry"));
+        renderTickerActions(card, announcement);
+        historyContainer.appendChild(card);
+    });
+    return announcements.length;
 }
 
+async function loadNotificationHistory() {
+    notificationHistoryContainer.innerHTML = '<p>Loading notification history...</p>';
 
-/* =====================================
-   9. SAFE HTML ERROR DISPLAY
-====================================== */
+        // NULL delivery_channel rows are legacy bell notifications and remain in this history.
+    const { data: notifications, error } = await db
+        .from("notifications")
+        .select("id, title, message, category, created_at, audience, course_id, delivery_channel")
+        .or("delivery_channel.eq.notification,delivery_channel.is.null")
+        .order("created_at", { ascending: false })
+        .limit(100);
+
+    if (error) throw error;
+
+    if (!notifications || notifications.length === 0) {
+        notificationHistoryContainer.innerHTML = '<div class="announcement-card"><h3>No Notifications Yet</h3><p>Student notification-bell messages will appear here.</p></div>';
+        return { count: 0, recipients: 0 };
+    }
+
+    const ids = notifications.map(item => item.id);
+    const { data: recipients, error: recipientError } = await db
+        .from("notification_recipients")
+        .select("notification_id")
+        .in("notification_id", ids);
+
+    if (recipientError) throw recipientError;
+
+    const counts = {};
+    (recipients || []).forEach(row => {
+        counts[row.notification_id] = (counts[row.notification_id] || 0) + 1;
+    });
+
+    notificationHistoryContainer.innerHTML = "";
+    notifications.forEach(notification => {
+        const card = makeHistoryCard(notification.title, notification.message);
+        addHistoryText(card, "small", "Audience: " + formatAudienceName(notification.audience));
+        addHistoryText(card, "small", "Category: " + (notification.category || "General"));
+        addHistoryText(card, "small", "Recipients: " + (counts[notification.id] || 0));
+        addHistoryText(card, "small", "Published: " + formatAnnouncementDate(notification.created_at));
+        notificationHistoryContainer.appendChild(card);
+    });
+
+    return { count: notifications.length, recipients: (recipients || []).length };
+}
+
+    async function loadHistory() {
+    try {
+        const [tickerCount, notificationStats] = await Promise.all([
+            loadTickerHistory(),
+            loadNotificationHistory()
+        ]);
+
+        document.getElementById("totalAnnouncements").textContent =
+            tickerCount + notificationStats.count;
+        document.getElementById("totalRecipients").textContent =
+            notificationStats.recipients;
+
+        console.log("DCDS announcement and notification histories loaded.");
+    } catch (error) {
+        console.error("History loading error:", error);
+        const message = "Unable to load history: " + error.message;
+        historyContainer.innerHTML = '<div class="announcement-card"><h3>Unable to Load Announcement History</h3><p>' + escapeHTML(message) + '</p></div>';
+        notificationHistoryContainer.innerHTML = '<div class="announcement-card"><h3>Unable to Load Notification History</h3><p>' + escapeHTML(message) + '</p></div>';
+    }
+}
 
 function escapeHTML(value) {
-
-    return String(value).replace(
-        /[&<>"']/g,
-        character => ({
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#039;"
-        })[character]
-    );
-
+    return String(value).replace(/[&<>"']/g, character => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#039;"
+    })[character]);
 }
-
-
-/* =====================================
-   10. REFRESH HISTORY BUTTON SUPPORT
-====================================== */
 
 async function refreshAnnouncementHistory() {
-
     await loadHistory();
-
 }
 
-
-/* =====================================
-   BLOCK 9 COMPLETE
-====================================== */
-
-console.log(
-    "DCDS announcement history module loaded."
-);
-
-          </script>
-          <script>
+console.log("DCDS separate history module loaded.");
+</script>
+<script>
 /* =====================================
    DCDS ADMIN CENTER — FINAL INITIALIZATION
 ===================================== */
