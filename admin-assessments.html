@@ -241,17 +241,22 @@ padding:15px
 </section>
 </div>
 </main><script>
-const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co","sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP");
-const $=id=>document.getElementById(id), status=$("status");
-let user=null, courses=[];
-function msg(id,text) {
+const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co",
+"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP");
+const $=id=>document.getElementById(id),
+status=$("status");
+let user=null,
+courses=[];
+function msg(id,
+text) {
 $(id).textContent=text
 }
 async function init() {
 const {
 data: {
 user:u
-},error
+},
+error
 }
 =await db.auth.getUser();
 if(error||!u) {
@@ -262,7 +267,8 @@ user=u;
 const {
 data:admin
 }
-=await db.from("dcds_admins").select("user_id").eq("user_id",u.id).maybeSingle();
+=await db.from("dcds_admins").select("user_id").eq("user_id",
+u.id).maybeSingle();
 if(!admin) {
 status.textContent="Access denied. This page is restricted to DCDS administrators.";
 return
@@ -272,7 +278,8 @@ $("app").classList.remove("hidden");
 const c=await db.from("courses").select("id,title").order("title");
 if(c.error)throw c.error;
 courses=c.data||[];
-["quizCourse","assignmentCourse"].forEach(id=>$(id).innerHTML=courses.map(x=>'<option value="'+x.id+'">'+esc(x.title)+'</option>').join(""));
+["quizCourse",
+"assignmentCourse"].forEach(id=>$(id).innerHTML=courses.map(x=>'<option value="'+x.id+'">'+esc(x.title)+'</option>').join(""));
 await refresh();
 }
 function esc(s) {
@@ -282,7 +289,16 @@ return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;
 ",'"':"&quot;
 ","'":"&#39;
 "}[c]))}
-async function refresh(){const [q,a]=await Promise.all([db.from("quizzes").select("id,title,status,course_id,pass_mark,max_attempts").order("created_at",{ascending:false}),db.from("assignments").select("id,title,status,course_id,due_at").order("created_at",{ascending:false})]);
+async function refresh(){const [q,a]=await Promise.all([db.from("quizzes").select("id,
+title,
+status,
+course_id,
+pass_mark,
+max_attempts").order("created_at",{ascending:false}),db.from("assignments").select("id,
+title,
+status,
+course_id,
+due_at").order("created_at",{ascending:false})]);
 if(q.error)throw q.error;
 if(a.error)throw a.error;
 $("questionQuiz").innerHTML=(q.data||[]).filter(x=>x.status==="draft").map(x=>'<option value="'+x.id+'">'+esc(x.title)+'</option>').join("");
@@ -320,7 +336,14 @@ if (b.dataset.a){const r=await db.from("assignments").update({status:b.dataset.s
 if(r.error)alert(r.error.message);
 await refresh()}
 if (b.dataset.submissions){const id=b.dataset.submissions,box=$("subs-"+id);
-const r=await db.from("assignment_submissions").select("id,user_id,submission_text,submission_url,submitted_at,status,score,feedback").eq("assignment_id",id).order("submitted_at",{ascending:false});
+const r=await db.from("assignment_submissions").select("id,
+user_id,
+submission_text,
+submission_url,
+submitted_at,
+status,
+score,
+feedback").eq("assignment_id",id).order("submitted_at",{ascending:false});
 if(r.error){box.textContent=r.error.message;
 return}box.innerHTML=(r.data||[]).map(s=>'<div class="item"><small>Student '+esc(s.user_id)+' • '+esc(s.submitted_at)+'</small><p>'+esc(s.submission_text||s.submission_url||"")+'</p><label>Score</label><input id="score-'+s.id+'" type="number" min="0"><label>Feedback</label><textarea id="feedback-'+s.id+'"></textarea><button data-grade="'+s.id+'">Save grade</button></div>').join("")||"No submissions yet."}
 if (b.dataset.grade){const id=b.dataset.grade;
