@@ -293,114 +293,144 @@ button.secondary{
 </section>
 </div>
 </main><script>
-const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co",
-"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP");
-const $=id=>document.getElementById(id),
-status=$("status");
-let user=null,
-courses=[];
-function msg(id,
-text) {
-$(id).textContent=text
+
+const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co","sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP");
+const $=id=>document.getElementById(id);
+const status=$("status");
+let user=null,courses=[];
+const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+const show=(id,message)=>{$(id).textContent=message;};
+const courseName=id=>courses.find(course=>course.id===id)?.title||"Course";
+
+async function init(){
+  const {data:{user:currentUser},error}=await db.auth.getUser();
+  if(error||!currentUser){status.textContent="Please sign in with your DCDS administrator account.";return;}
+  user=currentUser;
+  const {data:admin,error:adminError}=await db.from("dcds_admins").select("user_id").eq("user_id",user.id).maybeSingle();
+  if(adminError)throw adminError;
+  if(!admin){status.textContent="Access denied. This page is restricted to DCDS administrators.";return;}
+  const courseResult=await db.from("courses").select("id,title").order("title");
+  if(courseResult.error)throw courseResult.error;
+  courses=courseResult.data||[];
+  ["quizCourse","assignmentCourse"].forEach(id=>{
+    $(id).innerHTML=courses.map(course=>'<option value="'+esc(course.id)+'">'+esc(course.title)+'</option>').join("");
+  });
+  status.textContent="Administrator access verified.";
+  $("app").classList.remove("hidden");
+  await refresh();
 }
-async function init() {
-const {
-data: {
-user:u
-},
-error
+
+async function refresh(){
+  const [quizResult,assignmentResult]=await Promise.all([
+    db.from("quizzes").select("id,title,status,course_id,pass_mark,max_attempts").order("created_at",{ascending:false}),
+    db.from("assignments").select("id,title,status,course_id,due_at,max_score").order("created_at",{ascending:false})
+  ]);
+  if(quizResult.error)throw quizResult.error;
+  if(assignmentResult.error)throw assignmentResult.error;
+  const quizzes=quizResult.data||[],assignments=assignmentResult.data||[];
+  $("questionQuiz").innerHTML=quizzes.filter(q=>q.status==="draft").map(q=>'<option value="'+esc(q.id)+'">'+esc(q.title)+'</option>').join("");
+  $("quizList").innerHTML=quizzes.map(q=>'<article class="item"><b>'+esc(q.title)+'</b><p><small>'+esc(courseName(q.course_id))+' • '+esc(q.status)+' • Pass mark '+Number(q.pass_mark)+'%</small></p><button class="secondary" data-q="'+esc(q.id)+'" data-status="'+(q.status==="published"?"draft":"published")+'">'+(q.status==="published"?"Unpublish":"Publish")+'</button></article>').join("")||"No quizzes created yet.";
+  $("assignmentList").innerHTML=assignments.map(a=>'<article class="item"><b>'+esc(a.title)+'</b><p><small>'+esc(courseName(a.course_id))+' • '+esc(a.status)+' • Maximum score '+Number(a.max_score)+'</small></p><button class="secondary" data-a="'+esc(a.id)+'" data-status="'+(a.status==="published"?"draft":"published")+'">'+(a.status==="published"?"Unpublish":"Publish")+'</button> <button data-submissions="'+esc(a.id)+'">View submissions</button><div id="subs-'+esc(a.id)+'"></div></article>').join("")||"No assignments created yet.";
 }
-=await db.auth.getUser();
-if(error||!u) {
-status.textContent="Please sign in with your DCDS administrator account.";
-return
-}
-user=u;
-const {
-data:admin
-}
-=await db.from("dcds_admins").select("user_id").eq("user_id",
-u.id).maybeSingle();
-if(!admin) {
-status.textContent="Access denied. This page is restricted to DCDS administrators.";
-return
-}
-status.textContent="Administrator access verified.";
-$("app").classList.remove("hidden");
-const c=await db.from("courses").select("id,title").order("title");
-if(c.error)throw c.error;
-courses=c.data||[];
-["quizCourse",
-"assignmentCourse"].forEach(id=>$(id).innerHTML=courses.map(x=>'<option value="'+x.id+'">'+esc(x.title)+'</option>').join(""));
-await refresh();
-}
-function esc(s) {
-return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;
-","<":"&lt;
-",">":"&gt;
-",'"':"&quot;
-","'":"&#39;
-"}[c]))}
-async function refresh(){const [q,a]=await Promise.all([db.from("quizzes").select("id,
-title,
-status,
-course_id,
-pass_mark,
-max_attempts").order("created_at",{ascending:false}),db.from("assignments").select("id,
-title,
-status,
-course_id,
-due_at").order("created_at",{ascending:false})]);
-if(q.error)throw q.error;
-if(a.error)throw a.error;
-$("questionQuiz").innerHTML=(q.data||[]).filter(x=>x.status==="draft").map(x=>'<option value="'+x.id+'">'+esc(x.title)+'</option>').join("");
-$("quizList").innerHTML=(q.data||[]).map(x=>'<article class="item"><b>'+esc(x.title)+'</b><p><small>'+esc(courses.find(c=>c.id===x.course_id)?.title||"Course")+' • '+x.status+' • Pass mark '+x.pass_mark+'%</small></p><button class="secondary" data-q="'+x.id+'" data-status="'+(x.status==="published"?"draft":"published")+'">'+(x.status==="published"?"Unpublish":"Publish")+'</button></article>').join("")||"No quizzes created yet.";
-$("assignmentList").innerHTML=(a.data||[]).map(x=>'<article class="item"><b>'+esc(x.title)+'</b><p><small>'+esc(courses.find(c=>c.id===x.course_id)?.title||"Course")+' • '+x.status+'</small></p><button class="secondary" data-a="'+x.id+'" data-status="'+(x.status==="published"?"draft":"published")+'">'+(x.status==="published"?"Unpublish":"Publish")+'</button> <button data-submissions="'+x.id+'">View submissions</button><div id="subs-'+x.id+'"></div></article>').join("")||"No assignments created yet.";
-}
-$("quizForm").onsubmit=async e=>{e.preventDefault();
-const {data,error}=await db.from("quizzes").insert({course_id:$("quizCourse").value,title:$("quizTitle").value.trim(),description:$("quizDescription").value,instructions:$("quizInstructions").value,time_limit_seconds:Number($("quizTime").value)||null,max_attempts:Number($("quizAttempts").value),pass_mark:Number($("quizPass").value),created_by:user.id}).select("id").single();
-if(error){msg("quizMsg",error.message);
-return}msg("quizMsg","Draft quiz created. Add questions below.");
-e.target.reset();
-await refresh();
-$("questionQuiz").value=data.id};
-$("questionForm").onsubmit=async e=>{e.preventDefault();
-const opts=[["A",$("optA").value],["B",$("optB").value],["C",$("optC").value],["D",$("optD").value]].filter(x=>x[1].trim()).map(x=>({key:x[0],text:x[1].trim()}));
-const q=await db.from("quiz_questions").insert({quiz_id:$("questionQuiz").value,question_text:$("questionText").value.trim(),options:opts,points:Number($("points").value),explanation:$("explanation").value}).select("id").single();
-if(q.error){msg("questionMsg",q.error.message);
-return}
-const k=await db.from("quiz_answer_keys").insert({question_id:q.data.id,correct_answer:$("correct").value});
-if(k.error){await db.from("quiz_questions").delete().eq("id",q.data.id);
-msg("questionMsg","Question could not be saved: "+k.error.message);
-return}msg("questionMsg","Question and answer key saved securely.");
-e.target.reset()};
-$("assignmentForm").onsubmit=async e=>{e.preventDefault();
-const {error}=await db.from("assignments").insert({course_id:$("assignmentCourse").value,title:$("assignmentTitle").value.trim(),description:$("assignmentDescription").value.trim(),instructions:$("assignmentInstructions").value,due_at:$("assignmentDue").value?new Date($("assignmentDue").value).toISOString():null,max_score:Number($("assignmentMax").value),allow_late_submissions:$("allowLate").checked,created_by:user.id});
-msg("assignmentMsg",error?error.message:"Draft assignment created.");
-if(!error){e.target.reset();
-await refresh()}};
-document.addEventListener("click",async e=>{const b=e.target.closest("button");
-if(!b)return;
-if(b.dataset.q){const r=await db.from("quizzes").update({status:b.dataset.status}).eq("id",b.dataset.q);
-if(r.error)alert(r.error.message);
-await refresh()}
-if (b.dataset.a){const r=await db.from("assignments").update({status:b.dataset.status}).eq("id",b.dataset.a);
-if(r.error)alert(r.error.message);
-await refresh()}
-if (b.dataset.submissions){const id=b.dataset.submissions,box=$("subs-"+id);
-const r=await db.from("assignment_submissions").select("id,
-user_id,
-submission_text,
-submission_url,
-submitted_at,
-status,
-score,
-feedback").eq("assignment_id",id).order("submitted_at",{ascending:false});
-if(r.error){box.textContent=r.error.message;
-return}box.innerHTML=(r.data||[]).map(s=>'<div class="item"><small>Student '+esc(s.user_id)+' • '+esc(s.submitted_at)+'</small><p>'+esc(s.submission_text||s.submission_url||"")+'</p><label>Score</label><input id="score-'+s.id+'" type="number" min="0"><label>Feedback</label><textarea id="feedback-'+s.id+'"></textarea><button data-grade="'+s.id+'">Save grade</button></div>').join("")||"No submissions yet."}
-if (b.dataset.grade){const id=b.dataset.grade;
-const {error}=await db.from("assignment_submissions").update({score:Number($("score-"+id).value),feedback:$("feedback-"+id).value,status:"graded",graded_by:user.id,graded_at:new Date().toISOString()}).eq("id",id);
-alert(error?error.message:"Grade saved.");
-}});
-init().catch(e=>{status.textContent="Could not load assessment tools: "+e.message});
+
+$("quizForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  const timeMinutes=Number($("quizTime").value),attempts=Number($("quizAttempts").value),passMark=Number($("quizPass").value);
+  if(!Number.isFinite(timeMinutes)||timeMinutes<0||!Number.isInteger(attempts)||attempts<1||attempts>20||!Number.isFinite(passMark)||passMark<0||passMark>100){show("quizMsg","Check the time limit, attempt count and pass mark.");return;}
+  const result=await db.from("quizzes").insert({
+    course_id:$("quizCourse").value,title:$("quizTitle").value.trim(),
+    description:$("quizDescription").value.trim(),instructions:$("quizInstructions").value.trim(),
+    time_limit_seconds:timeMinutes?timeMinutes*60:null,max_attempts:attempts,pass_mark:passMark,created_by:user.id
+  }).select("id").single();
+  if(result.error){show("quizMsg",result.error.message);return;}
+  event.target.reset();$("quizTime").value="0";$("quizAttempts").value="1";$("quizPass").value="50";
+  await refresh();$("questionQuiz").value=result.data.id;
+  show("quizMsg","Draft quiz created. Add its questions and answer keys before publishing.");
+});
+
+$("questionForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  const options=[["A",$("optA").value],["B",$("optB").value],["C",$("optC").value],["D",$("optD").value]].filter(item=>item[1].trim()).map(item=>({key:item[0],text:item[1].trim()}));
+  const correct=$("correct").value;
+  if(options.length<2||!options.some(option=>option.key===correct)){show("questionMsg","Enter at least two options and select one of the options as the correct answer.");return;}
+  const points=Number($("points").value);
+  if(!Number.isFinite(points)||points<=0){show("questionMsg","Points must be greater than zero.");return;}
+  const question=await db.from("quiz_questions").insert({
+    quiz_id:$("questionQuiz").value,question_text:$("questionText").value.trim(),
+    options,points,explanation:$("explanation").value.trim()||null
+  }).select("id").single();
+  if(question.error){show("questionMsg",question.error.message);return;}
+  const key=await db.from("quiz_answer_keys").insert({question_id:question.data.id,correct_answer:correct});
+  if(key.error){
+    const rollback=await db.from("quiz_questions").delete().eq("id",question.data.id);
+    show("questionMsg","Answer key could not be saved. "+key.error.message+(rollback.error?" The incomplete question may need administrator cleanup.":" The question was rolled back."));
+    return;
+  }
+  event.target.reset();$("points").value="1";
+  show("questionMsg","Question and protected answer key saved.");
+});
+
+$("assignmentForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  const maxScore=Number($("assignmentMax").value);
+  if(!Number.isFinite(maxScore)||maxScore<=0){show("assignmentMsg","Maximum score must be greater than zero.");return;}
+  const due=$("assignmentDue").value;
+  const result=await db.from("assignments").insert({
+    course_id:$("assignmentCourse").value,title:$("assignmentTitle").value.trim(),
+    description:$("assignmentDescription").value.trim(),instructions:$("assignmentInstructions").value.trim(),
+    due_at:due?new Date(due).toISOString():null,max_score:maxScore,
+    allow_late_submissions:$("allowLate").checked,created_by:user.id
+  });
+  if(result.error){show("assignmentMsg",result.error.message);return;}
+  event.target.reset();$("assignmentMax").value="100";
+  show("assignmentMsg","Draft assignment created.");
+  await refresh();
+});
+
+document.addEventListener("click",async event=>{
+  const button=event.target.closest("button");if(!button)return;
+  if(button.dataset.q){
+    button.disabled=true;
+    const targetStatus=button.dataset.status;
+    if(targetStatus==="published"){
+      const check=await db.from("quiz_questions").select("id,quiz_answer_keys(question_id)").eq("quiz_id",button.dataset.q);
+      if(check.error){alert(check.error.message);button.disabled=false;return;}
+      if(!check.data?.length||check.data.some(question=>!question.quiz_answer_keys?.length)){
+        alert("Add at least one question and save an answer key for every question before publishing.");
+        button.disabled=false;return;
+      }
+    }
+    const result=await db.from("quizzes").update({status:targetStatus}).eq("id",button.dataset.q);
+    if(result.error)alert(result.error.message);await refresh();return;
+  }
+  if(button.dataset.a){
+    button.disabled=true;
+    const result=await db.from("assignments").update({status:button.dataset.status}).eq("id",button.dataset.a);
+    if(result.error)alert(result.error.message);await refresh();return;
+  }
+  if(button.dataset.submissions){
+    const id=button.dataset.submissions,box=$("subs-"+id);box.textContent="Loading submissions…";
+    const [submissions,assignment]=await Promise.all([
+      db.from("assignment_submissions").select("id,user_id,submission_text,submission_url,submitted_at,status,score,feedback").eq("assignment_id",id).order("submitted_at",{ascending:false}),
+      db.from("assignments").select("max_score").eq("id",id).single()
+    ]);
+    if(submissions.error||assignment.error){box.textContent=(submissions.error||assignment.error).message;return;}
+    const maximum=Number(assignment.data.max_score);
+    box.innerHTML=(submissions.data||[]).map(submission=>'<div class="item"><small>Student ID: '+esc(submission.user_id)+' • '+esc(submission.submitted_at?new Date(submission.submitted_at).toLocaleString():"Date unavailable")+'</small><p>'+esc(submission.submission_text||"No written response")+'</p>'+(submission.submission_url?'<p><a href="'+esc(submission.submission_url)+'" target="_blank" rel="noopener">Open submitted work</a></p>':"")+'<p><small>Status: '+esc(submission.status)+' • Existing score: '+(submission.score===null?"Not graded":Number(submission.score))+'</small></p><label>Score (0–'+maximum+')</label><input id="score-'+esc(submission.id)+'" type="number" min="0" max="'+maximum+'" step="0.01" value="'+(submission.score===null?"":Number(submission.score))+'"><label>Feedback</label><textarea id="feedback-'+esc(submission.id)+'">'+esc(submission.feedback||"")+'</textarea><button data-grade="'+esc(submission.id)+'" data-max="'+maximum+'">Save grade</button></div>').join("")||"No submissions yet.";
+    return;
+  }
+  if(button.dataset.grade){
+    const id=button.dataset.grade,scoreInput=$("score-"+id),score=Number(scoreInput.value),maximum=Number(button.dataset.max);
+    if(scoreInput.value.trim()===""||!Number.isFinite(score)||score<0||score>maximum){alert("Enter a valid score between 0 and "+maximum+".");return;}
+    button.disabled=true;
+    const result=await db.from("assignment_submissions").update({
+      score,feedback:$("feedback-"+id).value.trim()||null,status:"graded",graded_by:user.id,graded_at:new Date().toISOString()
+    }).eq("id",id);
+    if(result.error){alert("Grade was not saved: "+result.error.message);button.disabled=false;return;}
+    alert("Grade saved successfully.");button.textContent="Grade saved";
+  }
+});
+
+init().catch(error=>{console.error(error);status.textContent="Could not load assessment tools: "+error.message;});
+
 </script></body></html>
