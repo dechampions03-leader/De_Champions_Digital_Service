@@ -85,7 +85,7 @@
             <div class="stat-card">
 
                 <p>Total Recipients</p>
-
+                
                 <h3 id="totalRecipients">0</h3>
 
             </div>
@@ -103,13 +103,8 @@
 
 
         <!-- CREATE ANNOUNCEMENT SECTION -->
-                <main id="mainContent">
 
-            <!-- PUBLIC ANNOUNCEMENT CENTRE NAVIGATION -->
-            <section id="adminSystemNavigation" aria-label="Admin systems">
-                <a class="admin-system-link" href="#createAnnouncementSection">🎓 Student Notifications</a>
-                <a class="admin-system-link active" href="#publicAnnouncementSection">📢 Public Announcement Centre</a>
-            </section>
+        <main id="mainContent">
 
             <section id="createAnnouncementSection">
 
@@ -162,7 +157,7 @@
 
                     <!-- CATEGORY -->
 
-                    <div class="form-group">
+                                        <div class="form-group">
 
                         <label for="announcementCategory">
                             Announcement Category
@@ -218,7 +213,7 @@
                             </label>
 
 
-                            <label>
+                                                        <label>
                                 <input
                                     type="radio"
                                     name="audience"
@@ -250,7 +245,47 @@
                         </div>
 
                     </div>
-                                        <!-- COURSE SELECTION -->
+
+
+                    <!-- DELIVERY CHANNEL: KEEP BELL AND TICKER SEPARATE -->
+
+                    <div class="form-group">
+
+                        <label>
+                            Choose Where This Announcement Should Appear
+                        </label>
+
+                        <div id="deliveryOptions" role="radiogroup" aria-label="Announcement delivery channel">
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="deliveryChannel"
+                                    value="notification"
+                                    checked>
+                                    
+                                🔔 Notification Only — appears in the student notification bell.
+                            </label>
+
+                            <label>
+                                <input
+                                    type="radio"
+                                    name="deliveryChannel"
+                                    value="ticker">
+
+                                📢 Ticker Only — appears in the scrolling announcement bar.
+                            </label>
+
+                        </div>
+
+                        <p class="delivery-help">
+                            Choose one channel. The announcement will not be sent to both.
+                        </p>
+
+                    </div>
+
+
+                    <!-- COURSE SELECTION -->
 
                     <div
                         class="form-group"
@@ -285,7 +320,7 @@
 
                     <!-- STATUS MESSAGE -->
 
-                    <div
+                                <div
                         id="statusMessage"
                         role="status"
                         aria-live="polite">
@@ -321,74 +356,6 @@
                 </div>
 
             </section>
-                        <!-- INDEPENDENT PUBLIC ANNOUNCEMENT SYSTEM -->
-            <section id="publicAnnouncementSection">
-                <div class="section-heading">
-                    <h2>📢 DCDS Announcement Centre</h2>
-                    <p>Manage the public purple-and-gold scrolling announcement ticker on the website.</p>
-                    <span class="public-system-label">SEPARATE PUBLIC SYSTEM</span>
-                </div>
-
-                <form id="publicAnnouncementForm">
-                    <input type="hidden" id="publicAnnouncementId">
-
-                    <div class="form-group">
-                        <label for="publicTitle">Announcement title</label>
-                        <input type="text" id="publicTitle" maxlength="150"
-                               placeholder="e.g. Big things are coming to DCDS!" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="publicImageUrl">Optional image URL (HTTPS)</label>
-                        <input type="url" id="publicImageUrl"
-                               placeholder="https://example.com/image.jpg">
-                        <small>Use a publicly accessible HTTPS image URL.</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="publicMessage">Full announcement message</label>
-                        <textarea id="publicMessage" maxlength="10000"
-                                  placeholder="Write the complete announcement visitors will read when they tap the ticker..." required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="publicStartsAt">Publication start date and time</label>
-                        <input type="datetime-local" id="publicStartsAt" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="publicExpiresAt">Expiry date and time (optional)</label>
-                        <input type="datetime-local" id="publicExpiresAt">
-                        <small>Leave blank if the announcement should not expire automatically.</small>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="publicStatus">Status</label>
-                        <select id="publicStatus">
-                            <option value="draft">Save as draft</option>
-                            <option value="published">Publish announcement</option>
-                            <option value="inactive">Inactive</option>
-                        </select>
-                    </div>
-
-                    <div class="public-form-actions">
-                        <button type="submit" id="savePublicAnnouncement">SAVE PUBLIC ANNOUNCEMENT</button>
-                        <button type="button" id="cancelPublicEdit" class="secondary-button" hidden>Cancel edit</button>
-                    </div>
-                    <p id="publicStatusMessage" role="status" aria-live="polite"></p>
-                </form>
-
-                <div class="public-management-heading">
-                    <div>
-                        <h2>Public Announcement Management</h2>
-                        <p>Edit announcements, publish drafts, deactivate items, and review their schedules.</p>
-                    </div>
-                    <button type="button" id="refreshPublicAnnouncements" class="secondary-button">Refresh</button>
-                </div>
-                <div id="publicAnnouncementList" aria-live="polite">
-                    <p class="loading">Loading public announcements...</p>
-                </div>
-            </section>
 
         </main>
 
@@ -408,7 +375,7 @@
         </footer>
 
     </div>
-     <!-- =====================================
+ <!-- =====================================
      BLOCK 2: PREMIUM CSS DESIGN PART 1
 ====================================== -->
 
@@ -442,7 +409,7 @@
 
     --danger-red: #F05252;
 
-    --card-background: rgba(255,255,255,0.055);
+        --card-background: rgba(255,255,255,0.055);
 
     --border-color: rgba(212,175,55,0.25);
 
@@ -548,7 +515,7 @@ body {
     backdrop-filter: blur(15px);
 
 }
-
+    
 
 /* =====================================
    BRAND NAME
@@ -676,7 +643,7 @@ body {
     line-height: 1.8;
 
 }   
-      /* =====================================
+  /* =====================================
    DASHBOARD STATISTICS
 ====================================== */
 
@@ -684,7 +651,7 @@ body {
 
     display: grid;
 
-    grid-template-columns: repeat(
+        grid-template-columns: repeat(
         auto-fit,
         minmax(200px, 1fr)
     );
@@ -814,7 +781,7 @@ body {
 
     color: var(--muted-text);
 
-    font-size: 13px;
+        font-size: 13px;
 
 }
 
@@ -921,12 +888,15 @@ select option {
 
     color: white;
 
-    }
-    /* =====================================
+}
+
+
+/* =====================================
    AUDIENCE SELECTION CARDS
 ====================================== */
 
-#audienceOptions {
+#audienceOptions,
+#deliveryOptions {
 
     display: grid;
 
@@ -940,7 +910,8 @@ select option {
 }
 
 
-#audienceOptions label {
+#audienceOptions label,
+#deliveryOptions label {
 
     display: flex;
 
@@ -955,7 +926,7 @@ select option {
     border: 1px solid var(--border-color);
 
     border-radius: 12px;
-
+ 
     background: rgba(255,255,255,0.035);
 
     color: var(--soft-white);
@@ -971,7 +942,8 @@ select option {
 }
 
 
-#audienceOptions label:hover {
+#audienceOptions label:hover,
+#deliveryOptions label:hover {
 
     background: rgba(108,43,217,0.2);
 
@@ -980,7 +952,10 @@ select option {
 }
 
 
-#audienceOptions input[type="radio"] {
+#audienceOptions input[type="radio"],
+#deliveryOptions input[type="radio"] {
+
+    flex: 0 0 auto;
 
     width: 17px;
 
@@ -990,6 +965,13 @@ select option {
 
     cursor: pointer;
 
+}
+
+.delivery-help {
+    margin-top: 10px;
+    color: var(--muted-text);
+    font-size: 12px;
+    line-height: 1.6;
 }
 
 
@@ -1073,7 +1055,7 @@ select option {
     opacity: 0.6;
 
     cursor: not-allowed;
-
+    
     transform: none;
 
 }
@@ -1215,13 +1197,13 @@ select option {
 #adminFooter p:last-child {
 
     color: var(--bright-gold);
-
+    
     font-weight: 800;
 
     letter-spacing: 2px;
 
 }
-      /* =====================================
+  /* =====================================
    BLOCK 4: RESPONSIVE DESIGN
 ====================================== */
 
@@ -1319,7 +1301,7 @@ select option {
         font-size: 21px;
     }
 
-    #createAnnouncementSection,
+        #createAnnouncementSection,
     #historySection {
         padding: 18px 15px;
         border-radius: 15px;
@@ -1424,7 +1406,7 @@ html {
 
 ::-webkit-scrollbar-thumb {
     background: var(--primary-purple);
-    border-radius: 10px;
+        border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -1469,7 +1451,9 @@ select:focus-visible {
     }
 
 }
-    /* =====================================
+
+
+/* =====================================
    END OF CSS DESIGN
 ====================================== */
 /* ADMIN ACCESS VISIBILITY */
@@ -1486,46 +1470,6 @@ select:focus-visible {
 #adminApp.admin-authorized {
     opacity: 1;
 }
-
-/* =====================================
-   PUBLIC ANNOUNCEMENT CENTRE
-====================================== */
-#adminSystemNavigation{display:flex;flex-wrap:wrap;gap:12px;margin:22px 0}
-.admin-system-link{display:inline-block;padding:15px 20px;border:1px solid rgba(244,207,94,.35);border-radius:15px;color:#fff;text-decoration:none;font-weight:800;background:rgba(255,255,255,.06)}
-.admin-system-link.active{background:linear-gradient(110deg,#6d28d9,#35105f);border-color:#f4cf5e}
-#publicAnnouncementSection{padding:28px;margin:24px 0;border:1px solid rgba(244,207,94,.35);border-radius:22px;background:rgba(255,255,255,.075);box-shadow:0 12px 35px rgba(0,0,0,.14)}
-#publicAnnouncementSection .section-heading h2,#publicAnnouncementSection h2{color:#f6d879}
-.public-system-label{display:inline-block;margin-top:12px;padding:9px 15px;border-radius:30px;background:rgba(74,222,128,.13);color:#86efc0;font-size:12px;font-weight:900;letter-spacing:.5px}
-#publicAnnouncementSection .form-group{margin:22px 0}
-#publicAnnouncementSection label{display:block;margin-bottom:10px;color:#fff;font-weight:800}
-#publicAnnouncementSection input,#publicAnnouncementSection textarea,#publicAnnouncementSection select{box-sizing:border-box;width:100%;padding:17px;border:1px solid rgba(244,207,94,.35);border-radius:15px;background:#160d25;color:#fff;font:inherit}
-#publicAnnouncementSection textarea{min-height:190px;resize:vertical;line-height:1.65}
-#publicAnnouncementSection small{display:block;margin-top:8px;color:#c8b9d6;line-height:1.5}
-#publicAnnouncementSection input[type="datetime-local"]{color-scheme:dark}
-.public-form-actions{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-#savePublicAnnouncement{padding:17px 22px;border:0;border-radius:15px;background:linear-gradient(110deg,#d5a51c,#f5d76e);color:#25143b;font-weight:900;cursor:pointer}
-#savePublicAnnouncement:disabled{opacity:.6;cursor:wait}
-.secondary-button{padding:14px 18px;border:1px solid rgba(244,207,94,.4);border-radius:13px;background:rgba(255,255,255,.06);color:#fff;font-weight:800;cursor:pointer}
-#publicStatusMessage{margin:14px 0;font-weight:700}
-#publicStatusMessage.success{color:#86efac}
-#publicStatusMessage.error{color:#fca5a5}
-.public-management-heading{display:flex;justify-content:space-between;align-items:center;gap:15px;margin:35px 0 20px;padding-top:25px;border-top:1px solid rgba(244,207,94,.25)}
-.public-management-heading h2{margin:0 0 8px}
-.public-management-heading p{color:#c8b9d6;line-height:1.6;margin:0}
-.public-announcement-card{padding:22px;margin:16px 0;border:1px solid rgba(244,207,94,.25);border-radius:18px;background:rgba(255,255,255,.045);overflow-wrap:anywhere}
-.public-announcement-card h3{color:#f6d879;font-size:21px;margin:0 0 12px}
-.public-announcement-card p{color:#f2eaf8;line-height:1.75;white-space:pre-wrap}
-.public-announcement-card img{display:block;max-width:100%;max-height:260px;object-fit:contain;border-radius:12px;margin:14px 0}
-.public-announcement-meta{display:flex;flex-wrap:wrap;gap:8px 18px;color:#c8b9d6;font-size:13px;margin:14px 0}
-.public-status-pill{display:inline-block;padding:7px 13px;border-radius:30px;background:rgba(74,222,128,.13);color:#86efac;font-size:12px;font-weight:900;text-transform:uppercase}
-.public-status-pill.draft{background:rgba(250,204,21,.13);color:#fde68a}
-.public-status-pill.inactive,.public-status-pill.expired{background:rgba(248,113,113,.14);color:#fca5a5}
-.public-card-actions{display:flex;flex-wrap:wrap;gap:9px;margin-top:16px}
-.public-card-actions button{padding:11px 15px;border:1px solid rgba(244,207,94,.35);border-radius:11px;background:rgba(255,255,255,.06);color:#fff;font-weight:800;cursor:pointer}
-.public-card-actions button.danger{background:#b42335;border-color:#b42335}
-.public-empty{padding:25px;text-align:center;border:1px dashed rgba(244,207,94,.3);border-radius:15px;color:#c8b9d6}
-@media(max-width:600px){#publicAnnouncementSection{padding:18px 15px}.public-management-heading{align-items:flex-start;flex-direction:column}.public-management-heading .secondary-button{width:100%}.admin-system-link{flex:1;text-align:center}}
-
 </style>
 <!-- =====================================
      BLOCK 5: SUPABASE CONNECTION
@@ -1548,7 +1492,7 @@ const SUPABASE_PUBLISHABLE_KEY =
    2. INITIALIZE SUPABASE CLIENT
 ====================================== */
 
-const db = window.supabase.createClient(
+   const db = window.supabase.createClient(
     SUPABASE_URL,
     SUPABASE_PUBLISHABLE_KEY
 );
@@ -1639,7 +1583,7 @@ function showMessage(message, type = "success") {
 }
 
 
-/* =====================================
+    /* =====================================
    7. HIDE STATUS MESSAGE
 ====================================== */
 
@@ -1741,12 +1685,12 @@ async function verifyAdminRole() {
 /* =====================================
    10. SUPABASE CONFIGURATION COMPLETE
 ====================================== */
-
+    
 console.log(
     "DCDS Admin Notification Center configuration loaded."
 );
 
-</script>
+                     </script>
                      <!-- =====================================
      BLOCK 6: ADMIN AUTHENTICATION
 ====================================== -->
@@ -1820,7 +1764,7 @@ async function initializeAdminCenter() {
 
         currentAdmin = session.user;
 
-        // Verify administrator privileges
+            // Verify administrator privileges
         const isAdmin = await verifyAdminRole();
 
         if (!isAdmin) {
@@ -1837,7 +1781,6 @@ async function initializeAdminCenter() {
         // Load administrator dashboard information
         await loadCourses();
         await loadHistory();
-        await loadPublicAnnouncements();
 
         // Reveal dashboard only after successful verification
         adminApp.hidden = false;
@@ -1890,7 +1833,7 @@ console.log(
 
 <script>
 
-/* =====================================
+    /* =====================================
    1. GET AUDIENCE ELEMENTS
 ====================================== */
 
@@ -1980,7 +1923,7 @@ async function loadCourses() {
         if (!data || data.length === 0) {
 
             availableCourses = [];
-
+      
             courseSelect.innerHTML =
                 '<option value="">No courses available</option>';
 
@@ -2055,6 +1998,21 @@ function getSelectedAudience() {
 
     const selected = document.querySelector(
         'input[name="audience"]:checked'
+    );
+
+    return selected ? selected.value : null;
+
+    }
+    
+
+/* =====================================
+   GET SELECTED DELIVERY CHANNEL
+====================================== */
+
+function getSelectedDeliveryChannel() {
+
+    const selected = document.querySelector(
+        'input[name="deliveryChannel"]:checked'
     );
 
     return selected ? selected.value : null;
@@ -2142,8 +2100,8 @@ console.log(
     "DCDS audience selection module loaded."
 );
 
-</script>
-          <!-- =====================================
+          </script>
+                    <!-- =====================================
      BLOCK 8: ANNOUNCEMENT PUBLISHING
 ====================================== -->
 
@@ -2229,6 +2187,16 @@ async function publishAnnouncement(event) {
 
     const courseId = getSelectedCourseId();
 
+        const deliveryChannel = getSelectedDeliveryChannel();
+
+    if (!deliveryChannel || !["notification", "ticker"].includes(deliveryChannel)) {
+        showMessage(
+            "Please choose Notification Only or Ticker Only.",
+            "error"
+        );
+        return;
+    }
+
 
     /* Validate announcement content */
 
@@ -2259,7 +2227,8 @@ async function publishAnnouncement(event) {
     const confirmation = confirm(
         "Are you sure you want to publish this announcement?\n\n" +
         "Title: " + title + "\n" +
-        "Audience: " + audience.replaceAll("_", " ")
+        "Audience: " + audience.replaceAll("_", " ") + "\n" +
+        "Delivery: " + (deliveryChannel === "ticker" ? "Ticker Only" : "Notification Only")
     );
 
     if (!confirmation) {
@@ -2291,10 +2260,12 @@ async function publishAnnouncement(event) {
 
                 p_audience: audience,
 
-                p_course_id: courseId
+                p_course_id: courseId,
+
+                p_delivery_channel: deliveryChannel
             }
         );
-
+        
 
         if (error) {
             throw error;
@@ -2324,9 +2295,10 @@ async function publishAnnouncement(event) {
         );
 
         showMessage(
-            "🎉 Announcement published successfully! " +
-            recipientCount +
-            " student(s) were selected to receive it.",
+            "🎉 " +
+            (deliveryChannel === "ticker"
+                ? "Ticker announcement published successfully."
+                : "Notification published successfully! " + recipientCount + " student(s) were selected to receive it."),
             "success"
         );
 
@@ -2369,7 +2341,7 @@ async function publishAnnouncement(event) {
 
         publishButton.disabled = false;
 
-        publishButton.textContent =
+         publishButton.textContent =
             "PUBLISH ANNOUNCEMENT";
 
     }
@@ -2395,7 +2367,7 @@ console.log(
     "DCDS announcement publishing module loaded."
 );
 
-</script>
+      </script>
       <!-- =====================================
      BLOCK 9: ANNOUNCEMENT HISTORY
      AND RECIPIENT STATISTICS
@@ -2453,7 +2425,7 @@ function formatAudienceName(audience) {
         specific_course: "Specific Course Students"
 
     };
-
+    
     return names[audience] || audience || "Unknown Audience";
 
 }
@@ -2478,7 +2450,7 @@ async function loadHistory() {
             .from("notifications")
 
             .select(
-                "id, title, message, category, audience, course_id, created_at"
+                "id, title, message, category, audience, course_id, delivery_channel, created_at"
             )
 
             .order("created_at", {
@@ -2527,7 +2499,7 @@ async function loadHistory() {
             item => item.id
         );
 
-        const { data: recipients, error: recipientError } =
+            const { data: recipients, error: recipientError } =
             await db
 
                 .from("notification_recipients")
@@ -2596,7 +2568,7 @@ async function loadHistory() {
             const message = document.createElement("p");
 
             message.textContent = announcement.message;
-
+            
 
             const audience = document.createElement("small");
 
@@ -2610,6 +2582,15 @@ async function loadHistory() {
             category.textContent =
                 "Category: " +
                 (announcement.category || "General");
+
+
+            const delivery = document.createElement("small");
+
+            const deliveryChannel = announcement.delivery_channel || "notification";
+
+            delivery.textContent =
+                "Delivery: " +
+                (deliveryChannel === "ticker" ? "Ticker Only" : "Notification Only");
 
 
             const recipientCount = document.createElement("small");
@@ -2634,6 +2615,8 @@ async function loadHistory() {
 
             card.appendChild(category);
 
+            card.appendChild(delivery);
+
             card.appendChild(recipientCount);
 
             card.appendChild(date);
@@ -2656,7 +2639,7 @@ async function loadHistory() {
             error
         );
 
-        historyContainer.innerHTML = `
+            historyContainer.innerHTML = `
             <div class="announcement-card">
                 <h3>Unable to Load History</h3>
                 <p>
@@ -2709,223 +2692,8 @@ console.log(
     "DCDS announcement history module loaded."
 );
 
-        </script>
-                  
-<script>
-/* =====================================
-   DCDS PUBLIC ANNOUNCEMENT CENTRE
-   Uses the independent public_announcements
-   table through the protected Edge Function.
-   Does not read or modify student notifications.
-====================================== */
-const publicForm = document.getElementById("publicAnnouncementForm");
-const publicList = document.getElementById("publicAnnouncementList");
-const publicSaveButton = document.getElementById("savePublicAnnouncement");
-const publicStatusMessage = document.getElementById("publicStatusMessage");
-let publicAnnouncementsCache = [];
-
-function publicMessage(text, type = "success") {
-    publicStatusMessage.textContent = text;
-    publicStatusMessage.className = type;
-}
-function toLocalDateTimeInput(value) {
-    if (!value) return "";
-    const date = new Date(value);
-    if (Number.isNaN(date.getTime())) return "";
-    const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
-    return local.toISOString().slice(0, 16);
-}
-function fromLocalDateTimeInput(value) {
-    return value ? new Date(value).toISOString() : null;
-}
-function publicDate(value) {
-    if (!value) return "No expiry";
-    const d = new Date(value);
-    return Number.isNaN(d.getTime()) ? "Date unavailable" :
-        d.toLocaleString("en-NG", {dateStyle:"medium",timeStyle:"short"});
-}
-function effectivePublicStatus(item) {
-    if (item.status === "published" && item.expires_at && new Date(item.expires_at) <= new Date()) return "expired";
-    if (item.status === "published" && new Date(item.starts_at) > new Date()) return "scheduled";
-    return item.status;
-}
-async function callPublicAnnouncementFunction(payload) {
-    const { data: { session }, error: sessionError } = await db.auth.getSession();
-    if (sessionError) throw sessionError;
-    if (!session?.access_token) throw new Error("Your admin session has expired. Please sign in again.");
-    const { data, error } = await db.functions.invoke("manage-public-announcements", {
-        body: payload,
-        headers: { Authorization: `Bearer ${session.access_token}` }
-    });
-    if (error) {
-        let detail = error.message || "Edge Function request failed.";
-        try {
-            const context = error.context;
-            if (context && typeof context.json === "function") {
-                const body = await context.json();
-                if (body?.error) detail = body.error;
-            }
-        } catch (_) {}
-        throw new Error(detail);
-    }
-    if (!data?.success) throw new Error(data?.error || "The announcement request was unsuccessful.");
-    return data;
-}
-async function loadPublicAnnouncements() {
-    publicList.innerHTML = '<p class="loading">Loading public announcements...</p>';
-    try {
-        const result = await callPublicAnnouncementFunction({action:"list"});
-        publicAnnouncementsCache = Array.isArray(result.announcements) ? result.announcements : [];
-        renderPublicAnnouncements();
-    } catch (error) {
-        publicList.innerHTML = `<div class="public-empty">Unable to load public announcements: ${escapeHTML(error.message)}</div>`;
-    }
-}
-function renderPublicAnnouncements() {
-    if (!publicAnnouncementsCache.length) {
-        publicList.innerHTML = '<div class="public-empty">No public announcements yet. Create one above.</div>';
-        return;
-    }
-    publicList.innerHTML = "";
-    publicAnnouncementsCache.forEach(item => {
-        const card = document.createElement("article");
-        card.className = "public-announcement-card";
-        const status = effectivePublicStatus(item);
-        const title = document.createElement("h3");
-        title.textContent = item.title;
-        const pill = document.createElement("span");
-        pill.className = `public-status-pill ${status}`;
-        pill.textContent = status;
-        const message = document.createElement("p");
-        message.textContent = item.message;
-        card.append(title, pill);
-        if (item.image_url) {
-            const image = document.createElement("img");
-            image.src = item.image_url;
-            image.alt = item.title;
-            image.loading = "lazy";
-            image.onerror = () => image.remove();
-            card.appendChild(image);
-        }
-        card.appendChild(message);
-        const meta = document.createElement("div");
-        meta.className = "public-announcement-meta";
-        meta.textContent = `Starts: ${publicDate(item.starts_at)}  •  Expires: ${publicDate(item.expires_at)}  •  Created: ${publicDate(item.created_at)}`;
-        card.appendChild(meta);
-        const actions = document.createElement("div");
-        actions.className = "public-card-actions";
-        const edit = document.createElement("button");
-        edit.type = "button";
-        edit.textContent = "Edit";
-        edit.addEventListener("click", () => editPublicAnnouncement(item.id));
-        actions.appendChild(edit);
-        if (item.status !== "published") {
-            const publish = document.createElement("button");
-            publish.type = "button";
-            publish.textContent = "Publish";
-            publish.addEventListener("click", () => changePublicStatus(item.id, "published"));
-            actions.appendChild(publish);
-        }
-        if (item.status !== "inactive") {
-            const deactivate = document.createElement("button");
-            deactivate.type = "button";
-            deactivate.className = "danger";
-            deactivate.textContent = "Deactivate";
-            deactivate.addEventListener("click", () => changePublicStatus(item.id, "inactive"));
-            actions.appendChild(deactivate);
-        }
-        if (item.status !== "draft") {
-            const draft = document.createElement("button");
-            draft.type = "button";
-            draft.textContent = "Move to draft";
-            draft.addEventListener("click", () => changePublicStatus(item.id, "draft"));
-            actions.appendChild(draft);
-        }
-        card.appendChild(actions);
-        publicList.appendChild(card);
-    });
-}
-function editPublicAnnouncement(id) {
-    const item = publicAnnouncementsCache.find(x => x.id === id);
-    if (!item) return;
-    document.getElementById("publicAnnouncementId").value = item.id;
-    document.getElementById("publicTitle").value = item.title || "";
-    document.getElementById("publicImageUrl").value = item.image_url || "";
-    document.getElementById("publicMessage").value = item.message || "";
-    document.getElementById("publicStartsAt").value = toLocalDateTimeInput(item.starts_at);
-    document.getElementById("publicExpiresAt").value = toLocalDateTimeInput(item.expires_at);
-    document.getElementById("publicStatus").value = item.status || "draft";
-    publicSaveButton.textContent = "UPDATE PUBLIC ANNOUNCEMENT";
-    document.getElementById("cancelPublicEdit").hidden = false;
-    document.getElementById("publicAnnouncementSection").scrollIntoView({behavior:"smooth"});
-    publicMessage("Editing selected announcement. Make your changes and save.", "success");
-}
-function resetPublicForm() {
-    publicForm.reset();
-    document.getElementById("publicAnnouncementId").value = "";
-    document.getElementById("publicStartsAt").value = toLocalDateTimeInput(new Date().toISOString());
-    publicSaveButton.textContent = "SAVE PUBLIC ANNOUNCEMENT";
-    document.getElementById("cancelPublicEdit").hidden = true;
-}
-async function changePublicStatus(id, status) {
-    const label = status === "published" ? "publish" : status === "inactive" ? "deactivate" : "move this announcement to draft";
-    if (!confirm(`Are you sure you want to ${label} this public announcement?`)) return;
-    try {
-        await callPublicAnnouncementFunction({action:"set_status", id, status});
-        publicMessage("Public announcement status updated.", "success");
-        await loadPublicAnnouncements();
-    } catch (error) {
-        publicMessage(error.message, "error");
-    }
-}
-publicForm.addEventListener("submit", async event => {
-    event.preventDefault();
-    const id = document.getElementById("publicAnnouncementId").value;
-    const title = document.getElementById("publicTitle").value.trim();
-    const message = document.getElementById("publicMessage").value.trim();
-    const imageValue = document.getElementById("publicImageUrl").value.trim();
-    const startsValue = document.getElementById("publicStartsAt").value;
-    const expiresValue = document.getElementById("publicExpiresAt").value;
-    if (!startsValue) return publicMessage("Please choose a publication start date and time.", "error");
-    if (expiresValue && new Date(expiresValue) <= new Date(startsValue)) return publicMessage("Expiry must be later than the publication start date.", "error");
-    if (imageValue && !/^https:\/\//i.test(imageValue)) return publicMessage("The image URL must begin with https://.", "error");
-    const payload = {
-        action: id ? "update" : "create",
-        ...(id ? {id} : {}),
-        title,
-        message,
-        image_url: imageValue || null,
-        starts_at: fromLocalDateTimeInput(startsValue),
-        expires_at: expiresValue ? fromLocalDateTimeInput(expiresValue) : null,
-        status: document.getElementById("publicStatus").value
-    };
-    publicSaveButton.disabled = true;
-    publicSaveButton.textContent = id ? "UPDATING..." : "SAVING...";
-    try {
-        await callPublicAnnouncementFunction(payload);
-        publicMessage(id ? "Public announcement updated successfully." : "Public announcement saved successfully.", "success");
-        resetPublicForm();
-        await loadPublicAnnouncements();
-    } catch (error) {
-        publicMessage(error.message, "error");
-    } finally {
-        publicSaveButton.disabled = false;
-        if (document.getElementById("publicAnnouncementId").value) {
-            publicSaveButton.textContent = "UPDATE PUBLIC ANNOUNCEMENT";
-        } else {
-            publicSaveButton.textContent = "SAVE PUBLIC ANNOUNCEMENT";
-        }
-    }
-});
-document.getElementById("cancelPublicEdit").addEventListener("click", () => {
-    resetPublicForm();
-    publicMessage("Edit cancelled.", "success");
-});
-document.getElementById("refreshPublicAnnouncements").addEventListener("click", loadPublicAnnouncements);
-document.getElementById("publicStartsAt").value = toLocalDateTimeInput(new Date().toISOString());
-</script>
-
-<script>
+          </script>
+          <script>
 /* =====================================
    DCDS ADMIN CENTER — FINAL INITIALIZATION
 ===================================== */
