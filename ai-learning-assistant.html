@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#35105f">
+<title>DCDS AI Learning Assistant | Coming Soon</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7628d8;--deep:#21083f;--dark:#451078;--gold:#e4c16d;--ink:#28183a;--muted:#776b83;--line:#eadff2;--paper:#fff;--wash:#faf6ff}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#f8f1ff,#fff 48%,#f7efff);color:var(--ink);font-family:'DM Sans',sans-serif;min-height:100vh}
+a{color:inherit}.top{background:linear-gradient(115deg,#21083f,#54208b 68%,#7d39bf);color:white;padding:18px max(22px,calc((100% - 1100px)/2));display:flex;align-items:center;justify-content:space-between;gap:15px}.brand{font-weight:800;letter-spacing:.12em;font-size:12px}.top a{color:#ffe8a7;text-decoration:none;font-weight:700;font-size:13px}
+main{max-width:1050px;margin:0 auto;padding:34px 20px 58px}.hero{position:relative;overflow:hidden;border-radius:28px;padding:clamp(28px,6vw,62px);background:radial-gradient(circle at 90% 10%,#a45be0 0,transparent 35%),linear-gradient(130deg,#21083f,#542080 65%,#7b35b8);color:#fff;box-shadow:0 22px 55px #41126a24}
+.eyebrow{font-size:11px;font-weight:800;letter-spacing:.22em;color:#ffe39a}.hero h1{font:700 clamp(34px,6vw,58px)/1.1 'Playfair Display',serif;margin:18px 0 14px;max-width:760px}.hero p{font-size:clamp(15px,2vw,18px);line-height:1.8;color:#f1e7fa;max-width:720px;margin:0}.soon{display:inline-flex;margin-top:25px;padding:10px 17px;border:1px solid #f2d78d88;border-radius:999px;background:#ffffff16;color:#ffe8a7;font-weight:800;letter-spacing:.12em;font-size:12px}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:22px}.card{background:#fff;border:1px solid var(--line);border-radius:20px;padding:22px;box-shadow:0 10px 30px #3d15500a}.card .ico{font-size:26px}.card h2{font:700 20px 'Playfair Display',serif;margin:12px 0 8px;color:#35105f}.card p{font-size:14px;line-height:1.7;color:var(--muted);margin:0}.section-title{font:700 27px 'Playfair Display',serif;color:#35105f;margin:34px 0 14px}.knowledge{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.knowledge details{background:#fff;border:1px solid var(--line);border-radius:15px;padding:16px 18px}.knowledge summary{font-weight:800;color:#4d1b7b;cursor:pointer}.knowledge p{font-size:13px;color:var(--muted);line-height:1.65;margin:10px 0 0}.note{border-left:4px solid var(--gold);background:#fffaf0;padding:16px 18px;border-radius:0 14px 14px 0;color:#6e5a31;font-size:13px;line-height:1.7;margin-top:20px}
+footer{text-align:center;color:#8a7b96;font-size:12px;letter-spacing:.04em;padding:28px 10px 10px}footer strong{display:block;color:#6c348e;letter-spacing:.17em;margin-top:8px}
+@media(max-width:720px){.grid{grid-template-columns:1fr}.knowledge{grid-template-columns:1fr}.top{padding:16px 18px}main{padding:22px 14px 45px}.hero{border-radius:22px}}
+@media(prefers-reduced-motion:no-preference){.hero,.card,.knowledge details{animation:rise .65s both}.card:nth-child(2){animation-delay:.08s}.card:nth-child(3){animation-delay:.16s}@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}}
+</style>
+</head>
+<body>
+<header class="top"><div class="brand">DE CHAMPIONS DIGITAL SERVICE · DCDS</div><a href="student-dashboard.html">← Back to dashboard</a></header>
+<main>
+<section class="hero" aria-labelledby="assistantTitle">
+<div class="eyebrow">YOUR LEARNING COMPANION IS IN DEVELOPMENT</div>
+<h1 id="assistantTitle">Meet the DCDS AI Learning Assistant.</h1>
+<p>A smarter way to understand lessons, practise new skills and find your next learning opportunity. We are preparing its knowledge, learning experience and safety controls before connecting a live AI service.</p>
+<div class="soon">✦ COMING SOON</div>
+</section>
+<h2 class="section-title">What your learning assistant is being prepared to do</h2>
+<section class="grid" aria-label="Planned assistant capabilities">
+<article class="card"><div class="ico">📚</div><h2>Explain lessons</h2><p>Break down difficult concepts into clear, practical, beginner-friendly explanations.</p></article>
+<article class="card"><div class="ico">🧠</div><h2>Help you practise</h2><p>Prepare revision prompts, practice activities and knowledge checks for your learning journey.</p></article>
+<article class="card"><div class="ico">🧭</div><h2>Guide your growth</h2><p>Help you understand DCDS courses and identify sensible next steps as you build digital skills.</p></article>
+</section>
+<h2 class="section-title">The DCDS knowledge foundation</h2>
+<p style="color:#776b83;line-height:1.7">We are organising trusted academy information first, so the future assistant can answer consistently and stay focused on DCDS learning.</p>
+<section class="knowledge">
+<details><summary>Course catalogue and fees</summary><p>Video Editing ₦15,000; AI Video Creativity ₦10,000; Graphic Design ₦10,000; AI tools and prompts access ₦30,000; AI Image Creativity ₦7,000; Whiteboard Animation ₦5,000; Website Designing ₦20,000; App Building ₦20,000; Kids' Nursery Rhymes ₦12,000; Advanced 3D Cartoon Animation ₦6,000; Affiliate Marketing ₦40,000; Social Media Management ₦70,000. Course information will be checked against the live catalogue before answers are enabled.</p></details>
+<details><summary>Learning and assessments</summary><p>Planned guidance covers lessons, course progress, quizzes, assignments, feedback and certificates. The assistant will not award grades or certificates itself.</p></details>
+<details><summary>Student support</summary><p>The assistant will be designed to guide students to official DCDS support when a question needs human attention or account-specific action.</p></details>
+<details><summary>Academy identity</summary><p>De Champions Digital Service: CREATE • LEARN • INNOVATE • EARN. The assistant will use a professional, encouraging and respectful DCDS voice.</p></details>
+</section>
+<div class="note"><strong>Preview mode:</strong> This page is a preparation preview, not a live AI chat. No AI API is connected, no message is sent to an AI provider, and no subscription or API purchase is required to view this page.</div>
+</main>
+<footer>© 2026 De Champions Digital Service.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
+<script>
+(function(){
+ const SUPABASE_URL='https://qxsenflgaweeadvggnyp.supabase.co';
+ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
+ try{
+  if(!window.supabase?.createClient){location.replace('index.html?login=required&next='+encodeURIComponent('ai-learning-assistant.html'));return;}
+  const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY);
+  client.auth.getSession().then(({data,error})=>{
+   if(error||!data?.session?.user) location.replace('index.html?login=required&next='+encodeURIComponent('ai-learning-assistant.html'));
+  }).catch(()=>location.replace('index.html?login=required&next='+encodeURIComponent('ai-learning-assistant.html')));
+ }catch(_){location.replace('index.html?login=required&next='+encodeURIComponent('ai-learning-assistant.html'));}
+})();
+</script>
+</body></html>
