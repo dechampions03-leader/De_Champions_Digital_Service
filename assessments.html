@@ -1,0 +1,264 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DCDS | Quizzes & Assignments</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><style>
+:root {
+--bg:#10091c;
+--panel:#1d102c;
+--purple:#8738d1;
+--light:#d9b8ff;
+--muted:#c7b9d7;
+--gold:#d4af37;
+--line:#563477
+}
+* {
+box-sizing:border-box
+}
+body {
+margin:0;
+background:var(--bg);
+color:#fff;
+font:15px Arial,sans-serif
+}
+header {
+padding:22px 6%;
+background:linear-gradient(120deg,#210b3d,#451080);
+border-bottom:1px solid var(--line)
+}
+header b {
+font-size:23px;
+letter-spacing:3px;
+color:var(--light)
+}
+header p {
+font-size:11px;
+letter-spacing:2px;
+color:var(--muted)
+}
+main {
+max-width:900px;
+margin:auto;
+padding:25px 16px
+}
+.panel,.card {
+background:var(--panel);
+border:1px solid var(--line);
+border-radius:16px;
+padding:20px;
+margin:16px 0
+}
+h1,h2,h3 {
+color:var(--light)
+}
+p,.muted {
+color:var(--muted);
+line-height:1.7
+}
+button {
+border:0;
+border-radius:9px;
+padding:12px 16px;
+background:linear-gradient(120deg,#8738d1,#a44bea);
+color:white;
+font-weight:bold;
+cursor:pointer;
+margin:8px 6px 0 0
+}
+button:disabled {
+opacity:.5
+}
+.option {
+display:block;
+padding:12px;
+border:1px solid var(--line);
+border-radius:9px;
+margin:8px 0
+}
+.option input {
+margin-right:8px
+}
+.field {
+width:100%;
+padding:12px;
+border-radius:9px;
+border:1px solid var(--line);
+background:#10091c;
+color:#fff
+}
+.hidden {
+display:none!important
+}
+.notice {
+padding:14px;
+border:1px solid var(--line);
+border-radius:10px;
+color:var(--muted)
+}
+small {
+color:var(--muted)
+}
+
+/* DCDS light purple-and-white visual system */
+:root{
+  --bg:#f1e8fb;
+  --panel:#ffffff;
+  --purple:#7628d8;
+  --light:#451078;
+  --muted:#756783;
+  --gold:#e4c16d;
+  --line:#eadff5;
+}
+body{
+  background:linear-gradient(145deg,#fbf9ff,#f1e8fb);
+  color:#28183a;
+}
+header{
+  background:#ffffff;
+  border-bottom:1px solid #eadff5;
+  box-shadow:0 8px 24px rgba(50,16,95,.06);
+}
+header b,h1,h2,h3{color:#451078}
+header p,small,.notice{color:#756783}
+.panel,.card{
+  background:#ffffff;
+  border:1px solid #eadff5;
+  box-shadow:0 8px 24px rgba(50,16,95,.045);
+}
+input,textarea,select,.field{
+  background:#ffffff;
+  color:#28183a;
+  border:1px solid #eadff5;
+  max-width:100%;
+}
+input:focus,textarea:focus,select:focus,.field:focus{
+  outline:2px solid #7628d8;
+  outline-offset:1px;
+}
+button{
+  background:linear-gradient(110deg,#8d3bdb,#54168e);
+  color:#ffffff;
+}
+button.secondary{
+  background:#f1e5ff;
+  border:1px solid #eadff5;
+  color:#451078;
+}
+.option{border-color:#eadff5;background:#fbf9ff}
+.item,.notice{border-color:#eadff5}
+@media(max-width:600px){
+  .panel,.card{padding:15px}
+}
+
+</style>
+</head><body>
+<header>
+<b>DCDS</b>
+<p>CREATE • LEARN • INNOVATE • EARN</p>
+</header>
+<main>
+<section id="status" class="panel">Loading your assessments…</section>
+<div id="content" class="hidden">
+<section class="panel">
+<h1>Quizzes & Assignments</h1>
+<p>Test your understanding, submit practical work and review your academic feedback.</p>
+</section>
+<h2>Available quizzes</h2>
+<div id="quizzes">
+</div>
+<h2>Course assignments</h2>
+<div id="assignments">
+</div>
+</div>
+</main><script>
+
+const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co","sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP",{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+let user=null;
+const esc=value=>String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));
+const message=(element,text)=>{element.textContent=text;};
+
+async function init(){
+  const {data:{user:currentUser},error}=await db.auth.getUser();
+  if(error||!currentUser){$("status").textContent="Please sign in to access your course assessments.";return;}
+  user=currentUser;
+  const enrollment=await db.from("enrollments").select("course_id").eq("user_id",user.id);
+  if(enrollment.error)throw enrollment.error;
+  const courseIds=[...new Set((enrollment.data||[]).map(row=>row.course_id))];
+  if(!courseIds.length){$("status").textContent="You need an active course enrollment to access assessments.";return;}
+  const [quizResult,assignmentResult]=await Promise.all([
+    db.from("quizzes").select("id,course_id,title,description,instructions,time_limit_seconds,max_attempts,pass_mark").eq("status","published").in("course_id",courseIds),
+    db.from("assignments").select("id,course_id,title,description,instructions,due_at,max_score,allow_late_submissions").eq("status","published").in("course_id",courseIds)
+  ]);
+  if(quizResult.error)throw quizResult.error;
+  if(assignmentResult.error)throw assignmentResult.error;
+  $("quizzes").innerHTML=(quizResult.data||[]).map(quiz=>'<article class="card"><h3>'+esc(quiz.title)+'</h3><p>'+esc(quiz.description||"")+'</p><p>'+esc(quiz.instructions||"")+'</p><small>Maximum attempts: '+Number(quiz.max_attempts)+' • Pass mark: '+Number(quiz.pass_mark)+'% • '+(quiz.time_limit_seconds?Math.ceil(quiz.time_limit_seconds/60)+" minutes":"No time limit")+'</small><div id="quizbox-'+esc(quiz.id)+'"></div><button type="button" data-start="'+esc(quiz.id)+'">Start quiz</button></article>').join("")||'<div class="notice">No published quizzes are available yet.</div>';
+  $("assignments").innerHTML=(assignmentResult.data||[]).map(assignment=>'<article class="card"><h3>'+esc(assignment.title)+'</h3><p>'+esc(assignment.description||"")+'</p><p>'+esc(assignment.instructions||"")+'</p><small>Due: '+(assignment.due_at?esc(new Date(assignment.due_at).toLocaleString()):"No due date")+' • Maximum score: '+Number(assignment.max_score)+'</small><form data-assignment="'+esc(assignment.id)+'"><label>Written response</label><textarea class="field" name="submission_text" rows="4" maxlength="20000" placeholder="Write your response here"></textarea><label>Optional link to your project or file</label><input class="field" name="submission_url" type="url" maxlength="2000" placeholder="https://..."><button type="submit">Submit assignment</button></form><div id="assignment-status-'+esc(assignment.id)+'" class="muted" role="status"></div></article>').join("")||'<div class="notice">No published assignments are available yet.</div>';
+  $("status").textContent="Your assessments are ready.";
+  $("content").classList.remove("hidden");
+}
+
+document.addEventListener("click",async event=>{
+  const button=event.target.closest("button[data-start]");if(!button)return;
+  const quizId=button.dataset.start,box=$("quizbox-"+quizId);
+  button.disabled=true;box.textContent="Starting your quiz…";
+  const start=await db.rpc("start_dcds_quiz",{p_quiz_id:quizId});
+  if(start.error){box.textContent=start.error.message;button.disabled=false;return;}
+  const attemptId=start.data;
+  const questions=await db.from("quiz_questions").select("id,question_text,options,points,sort_order").eq("quiz_id",quizId).order("sort_order",{ascending:true});
+  if(questions.error||!questions.data?.length){box.textContent=questions.error?.message||"This quiz has no questions.";button.disabled=false;return;}
+  const quizCard=button.closest(".card");
+  const timeText=quizCard.querySelector("small").textContent;
+  const quizData=await db.from("quizzes").select("time_limit_seconds").eq("id",quizId).single();
+  if(quizData.error){box.textContent=quizData.error.message;button.disabled=false;return;}
+  const seconds=Number(quizData.data.time_limit_seconds)||0;
+  const formId="attempt-"+quizId;
+  box.innerHTML=(seconds?'<p class="notice" id="timer-'+esc(quizId)+'" role="timer">Time remaining: '+Math.floor(seconds/60)+':'+String(seconds%60).padStart(2,"0")+'</p>':"")+'<form id="'+formId+'" data-attempt="'+esc(attemptId)+'">'+questions.data.map((question,index)=>{
+    const options=Array.isArray(question.options)?question.options:[];
+    return '<div class="card"><b>'+(index+1)+'. '+esc(question.question_text)+'</b><p><small>'+Number(question.points)+' point(s)</small></p>'+options.map(option=>'<label class="option"><input type="radio" name="'+esc(question.id)+'" value="'+esc(option.key)+'"> '+esc(option.key)+'. '+esc(option.text)+'</label>').join("")+'</div>';
+  }).join("")+'<button type="submit">Submit quiz</button></form>';
+  button.remove();
+  const form=$(formId);
+  let timer=null;
+  if(seconds){
+    let remaining=seconds;
+    const timerNode=$("timer-"+quizId);
+    timer=setInterval(()=>{
+      remaining=Math.max(0,remaining-1);
+      timerNode.textContent="Time remaining: "+Math.floor(remaining/60)+":"+String(remaining%60).padStart(2,"0");
+      if(remaining===0){clearInterval(timer);form.requestSubmit();}
+    },1000);
+  }
+  form.addEventListener("submit",async submitEvent=>{
+    submitEvent.preventDefault();
+    const submitButton=form.querySelector('button[type="submit"]');
+    if(submitButton.disabled)return;
+    submitButton.disabled=true;
+    const answers={};
+    questions.data.forEach(question=>{
+      const selected=form.querySelector('input[name="'+question.id+'"]:checked');
+      if(selected)answers[question.id]=selected.value;
+    });
+    const result=await db.rpc("submit_dcds_quiz",{p_attempt_id:attemptId,p_answers:answers});
+    if(timer)clearInterval(timer);
+    if(result.error){box.textContent="Submission failed: "+result.error.message;return;}
+    const score=result.data||{};
+    if(score.expired){box.textContent=score.message||"The quiz time limit expired. Your attempt was not graded.";return;}
+    box.textContent="Quiz submitted. Score: "+score.score+"/"+score.total_points+" ("+score.percentage+"%). "+(score.passed?"You passed!":"Keep practising and review your lessons.");
+  });
+});
+
+document.addEventListener("submit",async event=>{
+  const form=event.target.closest("form[data-assignment]");if(!form)return;
+  event.preventDefault();
+  const submitButton=form.querySelector('button[type="submit"]'),status=$("assignment-status-"+form.dataset.assignment);
+  const data=new FormData(form),written=String(data.get("submission_text")||"").trim(),url=String(data.get("submission_url")||"").trim();
+  if(!written&&!url){message(status,"Write a response or add a project link before submitting.");return;}
+  if(url){try{const parsed=new URL(url);if(!["http:","https:"].includes(parsed.protocol))throw new Error();}catch{message(status,"Enter a valid http or https project link.");return;}}
+  submitButton.disabled=true;message(status,"Submitting your assignment…");
+  const result=await db.from("assignment_submissions").insert({
+    assignment_id:form.dataset.assignment,user_id:user.id,submission_text:written||null,submission_url:url||null
+  });
+  if(result.error){message(status,"Submission was not saved: "+result.error.message);submitButton.disabled=false;return;}
+  form.reset();message(status,"Your assignment has been submitted successfully.");
+});
+
+init().catch(error=>{$("status").textContent="Could not load assessments: "+error.message;});
+
+</script></body></html>
