@@ -793,6 +793,13 @@ async function loadAmbassadorPanel(user) {
           <button class="btn light" id="savePayoutAccountBtn" type="submit">Verify & Save Bank Account</button>
           <div id="payoutAccountMessage" class="feature-message" role="status" aria-live="polite"></div>
         </form>
+        <div class="record-row" style="margin-top:14px">
+          <strong>Withdraw your available rewards</strong>
+          <p class="form-note">Minimum withdrawal: ₦5,000. Your available balance is reserved when you submit a request. This request is not a bank transfer confirmation.</p>
+          <button class="btn primary" id="requestPayoutBtn" type="button" disabled>Request Withdrawal</button>
+          <div id="payoutRequestMessage" class="feature-message" role="status" aria-live="polite"></div>
+        </div>
+        <div style="margin-top:14px"><h3>Withdrawal history</h3><div id="payoutHistory" class="record-list">Loading withdrawal history…</div></div>
       </div>
       <div style="margin-top:18px"><h3>Reward history</h3><div class="record-list">${rewardRows}</div></div>
       <p class="form-note" style="margin-top:12px">Commission: ₦1,000 for each distinct course successfully purchased by a referred student. A repeat purchase of the same course does not earn another commission. Minimum withdrawal is ₦5,000. Withdrawal requests will be enabled after the secure payout and balance-reservation process is completed.</p>
@@ -829,15 +836,52 @@ async function loadAmbassadorPanel(user) {
     const bankSelect = document.getElementById('payoutBankSelect');
     const bankMessage = document.getElementById('payoutAccountMessage');
     const bankSummary = document.getElementById('payoutAccountSummary');
+    const payoutButton = document.getElementById('requestPayoutBtn');
+    const payoutMessage = document.getElementById('payoutRequestMessage');
+    const payoutHistory = document.getElementById('payoutHistory');
+    let verifiedPayoutAccount = false;
     const { data: savedData, error: savedError } = await client.functions.invoke('dcds-payout-account', { body: { action: 'get_account' } });
     if (savedError || !savedData?.success) {
       bankSummary.textContent = 'Saved bank-account details are temporarily unavailable.';
     } else if (savedData.account) {
       const a = savedData.account;
+      verifiedPayoutAccount = a.verification_status === 'verified';
       bankSummary.textContent = a.bank_name + ' · ' + a.account_name + ' · •••• ' + a.account_number_last4 + ' · ' + String(a.verification_status).toUpperCase();
     } else {
       bankSummary.textContent = 'No verified payout account saved yet.';
     }
+
+    const refreshPayoutHistory = async () => {
+      const { data: requests, error } = await client.from('dcds_payout_requests')
+        .select('id,amount,currency,status,requested_at,processed_at,transfer_reference,failure_reason')
+        .eq('user_id', user.id).order('requested_at', {ascending:false}).limit(10);
+      if (error) {
+        payoutHistory.textContent = 'Withdrawal history is temporarily unavailable.';
+        return;
+      }
+      payoutHistory.innerHTML = requests?.length ? requests.map(r =>
+        '<div class="record-row"><strong>₦' + Number(r.amount).toLocaleString('en-NG') + ' · ' + escapeHtml(String(r.status).toUpperCase()) + '</strong><div class="record-meta"><span>' + formatAcademicDate(r.requested_at) + '</span><span>Ref: ' + escapeHtml(String(r.transfer_reference || '').slice(-10)) + '</span></div>' +
+        (r.status === 'failed' && r.failure_reason ? '<p class="form-note">' + escapeHtml(r.failure_reason) + '</p>' : '') + '</div>'
+      ).join('') : '<div class="empty-certificates">You have not requested a withdrawal yet.</div>';
+    };
+    await refreshPayoutHistory();
+    payoutButton.disabled = !(verifiedPayoutAccount && available >= 5000);
+    payoutButton.addEventListener('click', async () => {
+      if (!verifiedPayoutAccount || available < 5000) return;
+      if (!window.confirm('Submit a withdrawal request for your available rewards? The amount will be reserved while DCDS processes the request. No bank transfer is confirmed at this stage.')) return;
+      payoutButton.disabled = true;
+      payoutButton.textContent = 'Submitting request…';
+      payoutMessage.textContent = '';
+      const { data, error } = await client.functions.invoke('dcds-payout-request', { body: {} });
+      payoutButton.textContent = 'Request Withdrawal';
+      if (error || !data?.success) {
+        payoutMessage.textContent = data?.error || 'Your withdrawal request could not be submitted.';
+        payoutButton.disabled = !(verifiedPayoutAccount && available >= 5000);
+        return;
+      }
+      payoutMessage.textContent = data.message || 'Your withdrawal request has been recorded.';
+      await refreshPayoutHistory();
+    });
 
     bankSelect.disabled = true;
     bankSelect.innerHTML = '<option value="">Loading supported Nigerian banks…</option>';
@@ -880,7 +924,9 @@ async function loadAmbassadorPanel(user) {
       }
       document.getElementById('payoutAccountNumber').value = '';
       const a = data.account;
+      verifiedPayoutAccount = a.verification_status === 'verified';
       bankSummary.textContent = a.bank_name + ' · ' + a.account_name + ' · •••• ' + a.account_number_last4 + ' · VERIFIED';
+      payoutButton.disabled = !(verifiedPayoutAccount && available >= 5000);
       bankMessage.textContent = '✓ ' + (data.message || 'Bank account verified and saved.');
     });
   } catch (error) {
