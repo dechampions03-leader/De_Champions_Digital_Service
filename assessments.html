@@ -95,20 +95,46 @@ small {
 color:var(--muted)
 }
 </style>
-</head><body><header><b>DCDS</b><p>CREATE • LEARN • INNOVATE • EARN</p></header>
-<main><section id="status" class="panel">Loading your assessments…</section>
-<div id="content" class="hidden"><section class="panel"><h1>Quizzes & Assignments</h1><p>Test your understanding, submit practical work and review your academic feedback.</p></section><h2>Available quizzes</h2><div id="quizzes"></div><h2>Course assignments</h2><div id="assignments"></div></div></main><script>
+</head><body>
+<header>
+<b>DCDS</b>
+<p>CREATE • LEARN • INNOVATE • EARN</p>
+</header>
+<main>
+<section id="status" class="panel">Loading your assessments…</section>
+<div id="content" class="hidden">
+<section class="panel">
+<h1>Quizzes & Assignments</h1>
+<p>Test your understanding, submit practical work and review your academic feedback.</p>
+</section>
+<h2>Available quizzes</h2>
+<div id="quizzes">
+</div>
+<h2>Course assignments</h2>
+<div id="assignments">
+</div>
+</div>
+</main><script>
 const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co","sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP"),$=id=>document.getElementById(id);
 let user=null,activeAttempt=null;
 function esc(s) {
 return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;
 ","<":"&lt;
 ",">":"&gt;
-",'"':"&quot;","'":"&#39;
+",'"':"&quot;
+","'":"&#39;
 "}[c]))}
-async function init(){const {data:{user:u},error}=await db.auth.getUser();if(error||!u){$("status").textContent="Please sign in to access your course assessments.";return}user=u;const en=await db.from("enrollments").select("course_id").eq("user_id",u.id);if(en.error)throw en.error;const ids=(en.data||[]).map(x=>x.course_id);if(!ids.length){$("status").textContent="You need an active course enrollment to access assessments.";return}
+async function init(){const {data:{user:u},error}=await db.auth.getUser();
+if(error||!u){$("status").textContent="Please sign in to access your course assessments.";
+return}user=u;
+const en=await db.from("enrollments").select("course_id").eq("user_id",u.id);
+if(en.error)throw en.error;
+const ids=(en.data||[]).map(x=>x.course_id);
+if(!ids.length){$("status").textContent="You need an active course enrollment to access assessments.";
+return}
 const [qr,ar]=await Promise.all([db.from("quizzes").select("id,course_id,title,description,instructions,time_limit_seconds,max_attempts,pass_mark").eq("status","published").in("course_id",ids),db.from("assignments").select("id,course_id,title,description,instructions,due_at,max_score,allow_late_submissions").eq("status","published").in("course_id",ids)]);
-if(qr.error)throw qr.error;if(ar.error)throw ar.error;
+if(qr.error)throw qr.error;
+if(ar.error)throw ar.error;
 $("quizzes").innerHTML=(qr.data||[]).map(q=>'<article class="card"><h3>'+esc(q.title)+'</h3><p>'+esc(q.description||"")+'</p><small>Attempts: '+q.max_attempts+' • Pass mark: '+q.pass_mark+'% • '+(q.time_limit_seconds?Math.round(q.time_limit_seconds/60)+' minutes':'No time limit')+'</small><div id="quizbox-'+q.id+'"></div><button data-start="'+q.id+'">Start quiz</button></article>').join("")||'<div class="notice">No published quizzes are available yet.</div>';
 $("assignments").innerHTML=(ar.data||[]).map(a=>'<article class="card"><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><p>'+esc(a.instructions||"")+'</p><small>Due: '+(a.due_at?new Date(a.due_at).toLocaleString():"No due date")+' • Maximum score: '+a.max_score+'</small><form data-assignment="'+a.id+'"><label>Written response</label><textarea class="field" name="submission_text" rows="4" placeholder="Write your response here"></textarea><label>Optional link to your project or file</label><input class="field" name="submission_url" type="url" placeholder="https://..."><button>Submit assignment</button></form><div id="assignment-status-'+a.id+'" class="muted"></div></article>').join("")||'<div class="notice">No published assignments are available yet.</div>';
 $("status").textContent="Your assessments are ready.";
