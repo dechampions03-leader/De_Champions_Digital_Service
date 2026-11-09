@@ -147,6 +147,19 @@ button.secondary{
 }
 
 </style>
+<style id="dcds-scroll-motion">
+/* DCDS scroll motion: additive effects only; existing layout and colours remain untouched. */
+.dcds-motion-ready [data-dcds-reveal]{opacity:0;transition:opacity .72s ease,transform .82s cubic-bezier(.2,.75,.25,1),filter .82s ease;will-change:opacity,transform}
+.dcds-motion-ready [data-dcds-reveal="rise"]{transform:translate3d(0,38px,0)}
+.dcds-motion-ready [data-dcds-reveal="pop"]{transform:scale(.91);filter:blur(3px)}
+.dcds-motion-ready [data-dcds-reveal="left"]{transform:translate3d(-46px,0,0)}
+.dcds-motion-ready [data-dcds-reveal="right"]{transform:translate3d(46px,0,0)}
+.dcds-motion-ready [data-dcds-reveal="zoom"]{transform:scale(.94) translateY(18px)}
+.dcds-motion-ready [data-dcds-reveal].dcds-visible{opacity:1;transform:none;filter:none}
+.dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:dcdsChildPop .58s both;animation-delay:var(--dcds-delay,0ms)}
+@keyframes dcdsChildPop{from{opacity:.25;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+@media(prefers-reduced-motion:reduce){.dcds-motion-ready [data-dcds-reveal]{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}.dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:none!important}}
+</style>
 </head><body>
 <header>
 <b>DCDS</b>
@@ -262,4 +275,56 @@ document.addEventListener("submit",async event=>{
 init().catch(error=>{$("status").textContent="Could not load assessments: "+error.message;});
 
 </script><footer class="dcds-copyright-footer" style="text-align:center;padding:28px 16px 24px;margin-top:32px;color:#6b6474;font-size:14px;line-height:1.9;border-top:1px solid rgba(109,65,145,.18);">© 2026 De Champions Digital Service.<br><strong style="letter-spacing:.12em;">CREATE • LEARN • INNOVATE • EARN.</strong></footer>
+<script id="dcds-scroll-motion-script">
+(()=> {
+  if(window.__dcdsScrollMotionInstalled) return;
+  window.__dcdsScrollMotionInstalled=true;
+  const init=()=>{
+    const reduced=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const selectors=[
+      ".hero",".section-heading",".course-grid",".course-card",".service-card",
+      ".general-course-offer",".info-card",".founder-section",".founder-card",
+      ".reviews-section",".review-panel",".review-list",".review-item",
+      ".dashboard-header",".section-title",".panel",".stat-card",".record-list",
+      ".record-row",".certificate-grid",".certificate",".course",
+      ".feature-message",".profile-form",".announcement-card",
+      "#reviewModerationSection",".review-moderation-card",
+      ".support-ticket-card",".detail-panel",".footer","footer"
+    ];
+    const found=new Set();
+    selectors.forEach(selector=>document.querySelectorAll(selector).forEach(el=>{
+      if(el.closest("[data-dcds-motion-ignore]")) return;
+      found.add(el);
+    }));
+    const targets=[...found];
+    const styles=["rise","pop","left","right","zoom"];
+    targets.forEach((el,index)=>{
+      if(el.hasAttribute("data-dcds-reveal")) return;
+      el.setAttribute("data-dcds-reveal",styles[index%styles.length]);
+      const children=[...el.children].filter(child=>child.matches(".course-card,.service-card,.info-card,.record-row,.certificate,.review-item,.stat-card,.announcement-card"));
+      children.forEach((child,i)=>{
+        child.setAttribute("data-dcds-child","");
+        child.style.setProperty("--dcds-delay",Math.min(i*85,510)+"ms");
+      });
+    });
+    if(reduced){targets.forEach(el=>el.classList.add("dcds-visible"));return;}
+    document.documentElement.classList.add("dcds-motion-ready");
+    if(!("IntersectionObserver" in window)){
+      targets.forEach(el=>el.classList.add("dcds-visible"));
+      return;
+    }
+    const observer=new IntersectionObserver(entries=>{
+      entries.forEach(entry=>{
+        if(entry.isIntersecting){
+          entry.target.classList.add("dcds-visible");
+          observer.unobserve(entry.target);
+        }
+      });
+    },{threshold:.12,rootMargin:"0px 0px -45px 0px"});
+    targets.forEach(el=>observer.observe(el));
+  };
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init,{once:true});
+  else init();
+})();
+</script>
 </body></html>
