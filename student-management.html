@@ -127,6 +127,16 @@ header { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50
 .detail-table th,.detail-table td { border-bottom-color:#eadff5; }
 .danger-btn { background:#fff0f0; border-color:#f2b8b8; color:#a61b1b; }
 
+
+/* Ambassador payout administration — additive to the existing DCDS admin styling */
+.payout-toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0}
+.payout-list{display:grid;gap:12px}
+.payout-card{border:1px solid var(--border-color);border-radius:13px;padding:16px;background:#fff}
+.payout-card-head{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}
+.payout-card strong{color:var(--bright-gold)}
+.payout-meta{display:flex;gap:8px 16px;flex-wrap:wrap;color:var(--muted-text);font-size:12px;margin-top:9px}
+.payout-warning{padding:11px 13px;border:1px solid #e4c16d;border-radius:10px;background:#fffaf0;color:#654b13;font-size:13px;line-height:1.5;margin:12px 0}
+.payout-events{margin-top:16px}
 </style>
 </head>
 <body>
@@ -152,6 +162,18 @@ header { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50
     <div class="stat"><span>Students in this view</span><strong id="statStudents">—</strong></div>
     <div class="stat"><span>Students with enrolments</span><strong id="statEnrolled">—</strong></div>
     <div class="stat"><span>Email-confirmed accounts</span><strong id="statConfirmed">—</strong></div>
+  </section>
+
+  <section class="panel" id="payoutManagementPanel" style="margin:18px 0">
+    <h3>💸 DCDS Ambassador Payout Management</h3>
+    <p class="intro">Review withdrawal requests, inspect verified beneficiary details and track payout events. Full bank-account numbers are never displayed here.</p>
+    <div id="payoutSafetyNotice" class="payout-warning">Checking payout transfer status…</div>
+    <div class="payout-toolbar">
+      <button class="btn gold" id="refreshPayoutsButton" type="button">↻ Refresh Payouts</button>
+      <span id="payoutAdminMeta" class="detail-notice">Loading payout requests…</span>
+    </div>
+    <div id="adminPayoutList" class="payout-list" aria-live="polite"><div class="empty">Loading payout requests…</div></div>
+    <div class="payout-events"><h3>Recent payout audit events</h3><div id="adminPayoutEvents" class="detail-scroll"><div class="empty">Loading audit events…</div></div></div>
   </section>
 
   <section class="panel">
@@ -505,6 +527,66 @@ function renderStudentRecord(record) {
   root.appendChild(grid);
 }
 
+async function loadAdminPayouts() {
+  const list=$("adminPayoutList"),eventsRoot=$("adminPayoutEvents"),notice=$("payoutSafetyNotice"),meta=$("payoutAdminMeta");
+  list.replaceChildren(make("div","empty","Loading payout requests…"));
+  const {data,error}=await db.functions.invoke("dcds-process-payout",{body:{action:"list"}});
+  if(error||!data?.success){
+    list.replaceChildren(make("div","empty",data?.error||"Unable to load payout requests."));
+    meta.textContent="Payout information unavailable.";
+    notice.textContent="Payout transfer status could not be checked. No transfer action is available.";
+    return;
+  }
+  const requests=data.requests||[];
+  meta.textContent=requests.length+" payout request(s) · "+(data.real_payouts_enabled?"Real transfers enabled":"Real transfers disabled");
+  notice.textContent=data.real_payouts_enabled
+    ?"Real transfer processing is enabled in server configuration. Confirm operational approval and review every request before processing."
+    :"REAL TRANSFERS ARE DISABLED. You can review requests and audit events, but no bank transfer can be initiated from this page.";
+  list.replaceChildren();
+  if(!requests.length)list.appendChild(make("div","empty","No ambassador withdrawal requests have been submitted yet."));
+  requests.forEach(r=>{
+    const card=make("article","payout-card");
+    const head=make("div","payout-card-head");
+    const title=make("strong","",formatMoney(r.amount)+" · "+String(r.status||"").toUpperCase());
+    const badge=make("span","pill"+(r.status==="paid"?"":" pending"),String(r.status||"").toUpperCase());
+    head.append(title,badge);card.appendChild(head);
+    const a=r.account||{};
+    card.appendChild(make("p","",a.bank_name
+      ?a.bank_name+" · "+(a.account_name||"Account name unavailable")+" · •••• "+(a.account_number_last4||"----")+" · "+String(a.verification_status||"").toUpperCase()
+      :"Verified beneficiary summary unavailable."));
+    const metaLine=make("div","payout-meta");
+    [ "Request: "+formatDate(r.requested_at),
+      "Reference: "+String(r.transfer_reference||"—"),
+      "Student ID: "+String(r.user_id||"").slice(0,8)+"…",
+      "Provider transfer: "+(r.provider_transfer_id||"Not assigned")
+    ].forEach(v=>metaLine.appendChild(make("span","",v)));
+    card.appendChild(metaLine);
+    if(r.failure_reason)card.appendChild(make("p","detail-notice","Processing note: "+r.failure_reason));
+    if(r.status==="requested"){
+      const actions=make("div","detail-actions");
+      const process=makeActionButton(data.real_payouts_enabled?"Process Verified Transfer":"Transfer Disabled",async()=>{
+        alert("Real payout processing is disabled until sandbox testing and operational approval are complete.");
+      },data.real_payouts_enabled?"btn gold":"btn ghost");
+      process.disabled=true;
+      actions.appendChild(process);card.appendChild(actions);
+    }
+    list.appendChild(card);
+  });
+  eventsRoot.replaceChildren();
+  const ev=data.events||[];
+  if(!ev.length){eventsRoot.appendChild(make("div","empty","No payout events have been recorded yet."));return;}
+  const table=make("table","detail-table");
+  const thead=document.createElement("thead"),tr=document.createElement("tr");
+  ["Event","Amount","Request ID","Date","Details"].forEach(h=>tr.appendChild(make("th","",h)));
+  thead.appendChild(tr);const tbody=document.createElement("tbody");
+  ev.forEach(e=>{
+    const row=document.createElement("tr");
+    [e.event_type,formatMoney(e.amount),String(e.payout_request_id||"").slice(0,8)+"…",formatDate(e.created_at),JSON.stringify(e.details||{})].forEach(v=>row.appendChild(make("td","",v)));
+    tbody.appendChild(row);
+  });
+  table.append(thead,tbody);eventsRoot.appendChild(table);
+}
+
 async function initialize() {
   $("adminApp").hidden = true;
   const {data:{session},error:sessionError} = await db.auth.getSession();
@@ -522,10 +604,12 @@ async function initialize() {
   $("status").textContent = "Administrator access verified.";
   try { await loadCourseCatalog(); } catch(e) { console.error("Course catalog load failed:",e); }
   await loadStudents();
+  await loadAdminPayouts();
 }
 $("searchButton").addEventListener("click",()=>{searchTerm=$("searchInput").value.trim();page=0;loadStudents();});
 $("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter")$("searchButton").click();});
 $("refreshButton").addEventListener("click",loadStudents);
+$("refreshPayoutsButton").addEventListener("click",()=>loadAdminPayouts().catch(e=>console.error("Payout refresh failed:",e)));
 $("previousButton").addEventListener("click",()=>{if(page>0){page--;loadStudents();}});
 $("nextButton").addEventListener("click",()=>{if(students.length===PAGE_SIZE){page++;loadStudents();}});
 $("closeDetailButton").addEventListener("click",()=>{$("studentDetailPanel").hidden=true;activeStudentId=null;});
