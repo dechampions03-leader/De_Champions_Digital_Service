@@ -115,8 +115,11 @@ color:var(--muted)
 </div>
 </div>
 </main><script>
-const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co","sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP"),$=id=>document.getElementById(id);
-let user=null,activeAttempt=null;
+const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co",
+"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP"),
+$=id=>document.getElementById(id);
+let user=null,
+activeAttempt=null;
 function esc(s) {
 return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;
 ","<":"&lt;
@@ -132,7 +135,21 @@ if(en.error)throw en.error;
 const ids=(en.data||[]).map(x=>x.course_id);
 if(!ids.length){$("status").textContent="You need an active course enrollment to access assessments.";
 return}
-const [qr,ar]=await Promise.all([db.from("quizzes").select("id,course_id,title,description,instructions,time_limit_seconds,max_attempts,pass_mark").eq("status","published").in("course_id",ids),db.from("assignments").select("id,course_id,title,description,instructions,due_at,max_score,allow_late_submissions").eq("status","published").in("course_id",ids)]);
+const [qr,ar]=await Promise.all([db.from("quizzes").select("id,
+course_id,
+title,
+description,
+instructions,
+time_limit_seconds,
+max_attempts,
+pass_mark").eq("status","published").in("course_id",ids),db.from("assignments").select("id,
+course_id,
+title,
+description,
+instructions,
+due_at,
+max_score,
+allow_late_submissions").eq("status","published").in("course_id",ids)]);
 if(qr.error)throw qr.error;
 if(ar.error)throw ar.error;
 $("quizzes").innerHTML=(qr.data||[]).map(q=>'<article class="card"><h3>'+esc(q.title)+'</h3><p>'+esc(q.description||"")+'</p><small>Attempts: '+q.max_attempts+' • Pass mark: '+q.pass_mark+'% • '+(q.time_limit_seconds?Math.round(q.time_limit_seconds/60)+' minutes':'No time limit')+'</small><div id="quizbox-'+q.id+'"></div><button data-start="'+q.id+'">Start quiz</button></article>').join("")||'<div class="notice">No published quizzes are available yet.</div>';
@@ -140,12 +157,15 @@ $("assignments").innerHTML=(ar.data||[]).map(a=>'<article class="card"><h3>'+esc
 $("status").textContent="Your assessments are ready.";
 $("content").classList.remove("hidden");
 }
-document.addEventListener("click",async e=> {
+document.addEventListener("click",
+async e=> {
 const b=e.target.closest("button[data-start]");
 if(!b)return;
-const id=b.dataset.start,box=$("quizbox-"+id);
+const id=b.dataset.start,
+box=$("quizbox-"+id);
 b.disabled=true;
-const start=await db.rpc("start_dcds_quiz", {
+const start=await db.rpc("start_dcds_quiz",
+{
 p_quiz_id:id
 });
 if(start.error) {
@@ -154,13 +174,15 @@ b.disabled=false;
 return
 }
 activeAttempt=start.data;
-const q=await db.from("quiz_questions").select("id,question_text,options,points,sort_order").eq("quiz_id",id).order("sort_order");
+const q=await db.from("quiz_questions").select("id,question_text,options,points,sort_order").eq("quiz_id",
+id).order("sort_order");
 if(q.error) {
 box.textContent=q.error.message;
 b.disabled=false;
 return
 }
-box.innerHTML='<form id="attempt-'+id+'">'+q.data.map((x,i)=>'<div class="card"><b>'+(i+1)+'. '+esc(x.question_text)+'</b><p><small>'+x.points+' point(s)</small></p>'+x.options.map(o=>'<label class="option"><input type="radio" name="'+x.id+'" value="'+esc(o.key)+'"> '+esc(o.key)+'. '+esc(o.text)+'</label>').join("")+'</div>').join("")+'<button>Submit quiz</button></form>';
+box.innerHTML='<form id="attempt-'+id+'">'+q.data.map((x,
+i)=>'<div class="card"><b>'+(i+1)+'. '+esc(x.question_text)+'</b><p><small>'+x.points+' point(s)</small></p>'+x.options.map(o=>'<label class="option"><input type="radio" name="'+x.id+'" value="'+esc(o.key)+'"> '+esc(o.key)+'. '+esc(o.text)+'</label>').join("")+'</div>').join("")+'<button>Submit quiz</button></form>';
 $("attempt-"+id).onsubmit=async ev=> {
 ev.preventDefault();
 const answers= {
@@ -170,8 +192,10 @@ const v=ev.target.querySelector('input[name="'+x.id+'"]:checked');
 if(v)answers[x.id]=v.value
 });
 if(!confirm("Submit your answers now? You cannot change them after submission."))return;
-const result=await db.rpc("submit_dcds_quiz", {
-p_attempt_id:activeAttempt,p_answers:answers
+const result=await db.rpc("submit_dcds_quiz",
+{
+p_attempt_id:activeAttempt,
+p_answers:answers
 });
 if(result.error) {
 box.textContent=result.error.message;
@@ -183,17 +207,23 @@ ev.target.remove();
 };
 b.remove();
 });
-document.addEventListener("submit",async e=> {
+document.addEventListener("submit",
+async e=> {
 const f=e.target.closest("form[data-assignment]");
 if(!f)return;
 e.preventDefault();
-const d=new FormData(f),text=d.get("submission_text").trim(),url=d.get("submission_url").trim();
+const d=new FormData(f),
+text=d.get("submission_text").trim(),
+url=d.get("submission_url").trim();
 if(!text&&!url) {
 alert("Write a response or add a project link.");
 return
 }
 const r=await db.from("assignment_submissions").insert( {
-assignment_id:f.dataset.assignment,user_id:user.id,submission_text:text||null,submission_url:url||null
+assignment_id:f.dataset.assignment,
+user_id:user.id,
+submission_text:text||null,
+submission_url:url||null
 });
 $("assignment-status-"+f.dataset.assignment).textContent=r.error?r.error.message:"Your assignment has been submitted successfully.";
 if(!r.error)f.reset();
