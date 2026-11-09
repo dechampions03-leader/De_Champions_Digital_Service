@@ -905,7 +905,7 @@ async function loadAmbassadorPanel(user) {
       event.preventDefault();
       const selected = bankSelect.selectedOptions[0];
       const accountNumber = document.getElementById('payoutAccountNumber').value.trim();
-      if (!selected?.value || !/^\\d{10}$/.test(accountNumber)) {
+      if (!selected?.value || !/^\d{10}$/.test(accountNumber)) {
         bankMessage.textContent = 'Select a bank and enter a valid 10-digit account number.';
         return;
       }
