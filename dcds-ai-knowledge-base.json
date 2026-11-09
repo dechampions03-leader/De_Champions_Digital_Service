@@ -1,0 +1,174 @@
+{
+  "schema_version": "1.0",
+  "brand": {
+    "name": "De Champions Digital Service",
+    "abbreviation": "DCDS",
+    "tagline": "CREATE • LEARN • INNOVATE • EARN.",
+    "positioning": "A digital skills and creative learning brand built to help people discover their potential, develop practical abilities and explore opportunities in the digital world.",
+    "brand_voice": [
+      "professional",
+      "encouraging",
+      "clear",
+      "respectful",
+      "practical",
+      "ambitious"
+    ],
+    "visual_identity": {
+      "primary": "purple",
+      "supporting": [
+        "dark purple",
+        "black",
+        "white"
+      ],
+      "accent": "elegant gold",
+      "style": "premium, clean, simple and professional"
+    },
+    "founder": {
+      "name": "Jeremiah Chuks Godspower",
+      "also_known_as": "De Champions",
+      "title": "Founder & CEO",
+      "bio": "Jeremiah Chuks Godspower is the founder of De Champions Digital Service (DCDS), a digital skills and creative learning brand built to help people discover their potential, develop practical abilities and explore opportunities in the digital world. Driven by faith, vision and a determination not to give up on positive work that can make a meaningful difference in the future, he is passionate about learning, creativity, innovation and empowering others with useful digital skills.",
+      "motto": "Create with purpose. Learn with courage. Innovate for the future."
+    },
+    "principles": [
+      "Help learners discover their potential.",
+      "Encourage practical digital skills and creativity.",
+      "Communicate honestly and never promise guaranteed income or employment.",
+      "Promote learning, innovation and responsible use of digital tools."
+    ]
+  },
+  "course_catalog": {
+    "currency": "NGN",
+    "source_note": "Course names, descriptions and fees below are taken from the current DCDS public homepage catalogue. Check the live catalogue for any later changes.",
+    "courses": [
+      {
+        "name": "Video Editing",
+        "price": 15000,
+        "category": "Video & Animation",
+        "description": "Turn raw footage into engaging, professional-looking videos for social media, content creation and business promotion."
+      },
+      {
+        "name": "AI Video Creativity",
+        "price": 10000,
+        "category": "AI & Digital Creativity",
+        "description": "Explore AI-powered video creation techniques and develop creative video content with modern AI tools."
+      },
+      {
+        "name": "Graphic Design",
+        "price": 10000,
+        "category": "Graphic Design",
+        "description": "Create attractive graphics for branding, social media, advertising and digital communication."
+      },
+      {
+        "name": "Access to ChatGPT Prompts, Claude, Gemini, and Grok",
+        "price": 30000,
+        "category": "AI & Digital Creativity",
+        "description": "Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity."
+      },
+      {
+        "name": "AI Image Creativity",
+        "price": 7000,
+        "category": "AI & Digital Creativity",
+        "description": "Use AI creative tools to generate visual concepts, develop image ideas and produce compelling digital artwork."
+      },
+      {
+        "name": "Whiteboard Animation",
+        "price": 5000,
+        "category": "Video & Animation",
+        "description": "Learn the basics of animated whiteboard videos for education, storytelling, presentations and business communication."
+      },
+      {
+        "name": "Website Designing",
+        "price": 20000,
+        "category": "Website & App Development",
+        "description": "Learn to design and develop websites for individuals, businesses, brands and online projects."
+      },
+      {
+        "name": "App Building",
+        "price": 20000,
+        "category": "Website & App Development",
+        "description": "Plan, design and build functional applications using suitable app development tools and platforms."
+      },
+      {
+        "name": "Kids’ Nursery Rhymes",
+        "price": 12000,
+        "category": "Video & Animation",
+        "description": "Develop engaging children’s nursery-rhyme content using storytelling, music, animation and digital production tools."
+      },
+      {
+        "name": "Advanced 3D Cartoon Animation",
+        "price": 6000,
+        "category": "Video & Animation",
+        "description": "Explore 3D cartoon animation for expressive characters, animated scenes and engaging visual stories."
+      },
+      {
+        "name": "Affiliate Marketing",
+        "price": 40000,
+        "category": "Digital Marketing",
+        "description": "Learn to select products, create promotional content, attract audiences and understand commission-based marketing."
+      },
+      {
+        "name": "Social Media Management",
+        "price": 70000,
+        "category": "Digital Marketing",
+        "description": "Build skills in strategy, content planning, audience engagement, brand positioning, analytics and managing accounts professionally."
+      }
+    ],
+    "general_course": {
+      "name": "DCDS General Course",
+      "price": 103000,
+      "currency": "NGN",
+      "scope": "An additional package described on the public homepage as a learning library with more than 100 courses and four learning channels. The public homepage lists a regular total of ₦245,000 and a saving of ₦142,000. All 12 individual courses remain separately available.",
+      "caution": "Do not describe this package as identical to the 12-course individual catalogue."
+    }
+  },
+  "student_journey": {
+    "steps": [
+      "Explore course outlines and prices.",
+      "Choose a course that matches the learner’s goal.",
+      "Sign in or create a DCDS student account.",
+      "Complete the available enrolment and payment process."
+    ],
+    "platform_features": [
+      "Student dashboard",
+      "Enrolled course access",
+      "Learning progress",
+      "Assessments and assignments",
+      "Certificates",
+      "Student support",
+      "Global Ambassador & Rewards Programme"
+    ],
+    "assistant_future_capabilities": [
+      "Explain DCDS lesson concepts in beginner-friendly language.",
+      "Create revision prompts and practice activities.",
+      "Help learners understand course options.",
+      "Suggest sensible next learning steps.",
+      "Direct account-specific or sensitive issues to official DCDS support."
+    ]
+  },
+  "ambassador_programme": {
+    "name": "DCDS Global Ambassador & Rewards Programme",
+    "tagline": "SHARE KNOWLEDGE • BUILD FUTURES • EARN REWARDS",
+    "commission_ngn": 1000,
+    "minimum_withdrawal_ngn": 5000,
+    "activation": "A student must first successfully purchase at least one DCDS course before referral sharing is activated.",
+    "qualification": "Registration alone earns no reward. A reward is earned only after a referred student makes a qualifying, verified course purchase.",
+    "repeat_purchase": "One reward per distinct course per referred student. Buying a different course may qualify for another reward; repurchasing the same course does not.",
+    "safeguards": [
+      "Self-referrals are prohibited.",
+      "Referral attribution is permanent once recorded.",
+      "Refunds and reversals are subject to the programme's financial controls."
+    ]
+  },
+  "assistant_policy": {
+    "current_state": "Coming soon preview only; no AI provider/API is connected.",
+    "truthfulness": "Never claim the assistant is live, has answered using an AI model, or has completed an action unless that is actually true.",
+    "uncertainty": "If information is not in this knowledge base or current approved DCDS sources, say it is not confirmed and direct the student to official DCDS support.",
+    "pricing": "Quote listed prices accurately in Nigerian naira. Do not invent discounts, payment plans, lesson schedules, guarantees or course inclusions.",
+    "payments": "Never request passwords, OTPs, card PINs, full card details or secret credentials. Do not claim a payment is successful; rely on the verified student account/payment system.",
+    "privacy": "Do not reveal another student's personal, academic, payment, referral or support information.",
+    "certificates": "Do not promise or manually issue certificates. Explain that certificate eligibility depends on DCDS completion requirements.",
+    "human_escalation": "Escalate payment disputes, account access issues, payout problems, complaints, safeguarding matters and any request requiring admin action to official DCDS support.",
+    "earning_claims": "Explain that courses teach skills; do not guarantee jobs, clients, income or business success."
+  }
+}
