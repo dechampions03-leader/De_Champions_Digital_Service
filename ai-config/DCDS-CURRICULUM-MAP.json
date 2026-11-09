@@ -1,0 +1,272 @@
+{
+  "schema_version": "1.0",
+  "document_status": "AI-generated teaching support map; proposed learning themes only, not an approved official DCDS syllabus.",
+  "source_of_truth": "Official DCDS course outlines and lessons, when available, override this planning map. Do not present these topics as guaranteed course inclusions.",
+  "learning_design": {
+    "sequence": [
+      "orientation",
+      "core_concepts",
+      "guided_demonstration",
+      "guided_practice",
+      "independent_project",
+      "review_and_reflection"
+    ],
+    "mastery_rule": "A learner demonstrates progress by explaining a concept and applying it to a practical task; AI feedback is formative and is not an official grade.",
+    "project_rule": "Use original, appropriately licensed assets and disclose uncertainty or AI assistance where required."
+  },
+  "tracks": [
+    {
+      "course": "Video Editing",
+      "goal": "Create clear, engaging edited videos for a defined audience.",
+      "proposed_themes": [
+        "purpose, audience and video formats",
+        "story ideas, scripting and shot planning",
+        "organising footage and project files",
+        "timeline editing and basic sequencing",
+        "cuts, pacing and continuity",
+        "audio clarity, voice and music licensing",
+        "titles, captions and visual hierarchy",
+        "export settings and quality checks",
+        "portfolio project: short edited video"
+      ],
+      "practice": [
+        "Create a 20–30 second storyboard",
+        "Edit a short clip with a clear beginning, middle and end",
+        "Review audio, captions and export quality"
+      ]
+    },
+    {
+      "course": "AI Video Creativity",
+      "goal": "Use AI-assisted workflows to plan and produce video concepts responsibly.",
+      "proposed_themes": [
+        "AI video concepts and limitations",
+        "prompt structure for scenes and motion",
+        "reference consistency and visual continuity",
+        "storyboarding and scene sequencing",
+        "voice, sound and editing workflow",
+        "reviewing generated artefacts",
+        "rights, likeness consent and disclosure",
+        "portfolio project: short original AI-assisted sequence"
+      ],
+      "practice": [
+        "Write a scene prompt with subject, action, setting and camera direction",
+        "Create a shot list and continuity checklist",
+        "Critique an AI-generated clip for errors"
+      ]
+    },
+    {
+      "course": "Graphic Design",
+      "goal": "Create clear visual communication for brands and audiences.",
+      "proposed_themes": [
+        "design purpose and audience",
+        "visual hierarchy and layout",
+        "contrast, alignment, proximity and repetition",
+        "typography and font pairing",
+        "colour and accessibility",
+        "image selection and composition",
+        "brand consistency and design systems",
+        "export formats and quality review",
+        "portfolio project: campaign graphic set"
+      ],
+      "practice": [
+        "Redesign a cluttered poster using hierarchy",
+        "Create a two-font and limited-colour style guide",
+        "Check a design for legibility at phone size"
+      ]
+    },
+    {
+      "course": "Access to ChatGPT Prompts, Claude, Gemini, and Grok",
+      "goal": "Use AI assistants and prompt methods to support productive, critical work.",
+      "proposed_themes": [
+        "what language models can and cannot do",
+        "task, context, constraints and output format in prompts",
+        "iterative prompting and examples",
+        "research support and source verification",
+        "writing, brainstorming and planning workflows",
+        "comparing model outputs",
+        "privacy, bias and hallucination awareness",
+        "responsible use and disclosure",
+        "portfolio project: reusable prompt workflow"
+      ],
+      "practice": [
+        "Improve a vague prompt by adding goal, context and format",
+        "Fact-check a model-generated explanation",
+        "Compare two outputs using an accuracy rubric"
+      ]
+    },
+    {
+      "course": "AI Image Creativity",
+      "goal": "Develop visual concepts and AI-assisted image outputs responsibly.",
+      "proposed_themes": [
+        "visual idea development",
+        "prompt components: subject, setting, style and composition",
+        "reference use and consistency",
+        "iteration and critique",
+        "text rendering and common generation errors",
+        "editing and finishing workflow",
+        "copyright, consent and disclosure",
+        "portfolio project: original visual series"
+      ],
+      "practice": [
+        "Write three prompt variations for one concept",
+        "Evaluate an image for artefacts and visual clarity",
+        "Create a consistent mini-series brief"
+      ]
+    },
+    {
+      "course": "Whiteboard Animation",
+      "goal": "Communicate an idea through a simple illustrated narrative.",
+      "proposed_themes": [
+        "audience and learning objective",
+        "script and storyboard",
+        "visual metaphor and scene planning",
+        "sequence, timing and pacing",
+        "voiceover and audio clarity",
+        "visual consistency and readability",
+        "export and review",
+        "portfolio project: short explainer"
+      ],
+      "practice": [
+        "Turn a paragraph into a five-scene storyboard",
+        "Write concise voiceover for one scene",
+        "Check timing and readability"
+      ]
+    },
+    {
+      "course": "Website Designing",
+      "goal": "Plan and create usable websites for people, brands or projects.",
+      "proposed_themes": [
+        "purpose, audience and site structure",
+        "page hierarchy and navigation",
+        "layout, typography and responsive design",
+        "accessible colour, contrast and semantics",
+        "content writing and calls to action",
+        "forms and user experience",
+        "basic HTML, CSS and JavaScript concepts where appropriate",
+        "privacy, security and performance basics",
+        "testing across screen sizes",
+        "portfolio project: multi-section website"
+      ],
+      "practice": [
+        "Map a simple sitemap",
+        "Review a page at mobile and desktop widths",
+        "Create a pre-launch accessibility and content checklist"
+      ]
+    },
+    {
+      "course": "App Building",
+      "goal": "Plan, prototype and test an application using suitable tools.",
+      "proposed_themes": [
+        "problem definition and user stories",
+        "feature scope and user flows",
+        "wireframes and interface states",
+        "data concepts and permissions",
+        "no-code/low-code or code-based tool selection",
+        "validation and error handling",
+        "authentication and privacy basics",
+        "testing and iteration",
+        "release readiness and maintenance",
+        "portfolio project: functional prototype"
+      ],
+      "practice": [
+        "Write three user stories",
+        "Draw a simple screen flow",
+        "Create a test plan for a form submission"
+      ]
+    },
+    {
+      "course": "Kids’ Nursery Rhymes",
+      "goal": "Plan age-appropriate children's rhyme content using storytelling and production skills.",
+      "proposed_themes": [
+        "age-appropriate themes and learning goals",
+        "original lyrics and copyright awareness",
+        "simple narrative and repetition",
+        "character and scene planning",
+        "music and sound rights",
+        "animation and visual consistency",
+        "child safety and privacy",
+        "production and quality review",
+        "portfolio project: original short rhyme concept"
+      ],
+      "practice": [
+        "Create a safe age-appropriate story outline",
+        "Storyboard a short refrain",
+        "Review content for safety, clarity and originality"
+      ]
+    },
+    {
+      "course": "Advanced 3D Cartoon Animation",
+      "goal": "Understand a structured workflow for expressive 3D cartoon scenes.",
+      "proposed_themes": [
+        "3D pipeline overview",
+        "character and environment planning",
+        "modelling concepts",
+        "materials, colour and lighting",
+        "rigging and movement concepts",
+        "keyframes and timing",
+        "camera and composition",
+        "rendering and post-production",
+        "portfolio project: short animated scene"
+      ],
+      "practice": [
+        "Plan a character turnaround brief",
+        "Create a simple movement breakdown",
+        "Review a scene for silhouette and timing"
+      ]
+    },
+    {
+      "course": "Affiliate Marketing",
+      "goal": "Understand ethical promotion and measurement of third-party products.",
+      "proposed_themes": [
+        "business model and audience fit",
+        "product research and due diligence",
+        "value-led content and honest claims",
+        "affiliate disclosure and compliance",
+        "traffic channels and content planning",
+        "landing pages and calls to action",
+        "tracking and conversion concepts",
+        "analytics and optimisation",
+        "trust, refunds and customer care",
+        "portfolio project: ethical campaign plan"
+      ],
+      "practice": [
+        "Assess a product for audience relevance",
+        "Draft a transparent affiliate disclosure",
+        "Build a simple campaign measurement plan"
+      ]
+    },
+    {
+      "course": "Social Media Management",
+      "goal": "Plan, publish and evaluate consistent social media activity.",
+      "proposed_themes": [
+        "brand goals and audience research",
+        "platform selection and channel roles",
+        "content pillars and calendar planning",
+        "copywriting and creative formats",
+        "community management and moderation",
+        "analytics and reporting",
+        "paid promotion concepts and budget awareness",
+        "brand safety and crisis response",
+        "portfolio project: monthly content strategy"
+      ],
+      "practice": [
+        "Define three content pillars",
+        "Create a one-week content calendar",
+        "Interpret sample engagement metrics without overclaiming causation"
+      ]
+    }
+  ],
+  "general_course": {
+    "name": "DCDS General Course",
+    "status": "Separate package",
+    "known_public_description": "Learning library described as containing more than 100 courses and four learning channels.",
+    "curriculum_detail": "Specific course titles, channel names, sequence and inclusion details are not confirmed by this map. Retrieve from current official DCDS materials before answering detailed questions."
+  },
+  "teaching_rules": [
+    "Do not call proposed themes official modules.",
+    "Do not invent duration, class schedule, prerequisites, instructor, certificate terms or software inclusions.",
+    "Use live DCDS course and lesson data when connected.",
+    "Label assistant-created exercises as practice material.",
+    "Do not guarantee employment, clients, income, virality or business success."
+  ]
+}
