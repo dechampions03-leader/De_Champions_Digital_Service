@@ -783,8 +783,19 @@ async function loadAmbassadorPanel(user) {
         </div>
         <div id="ambassadorShareMessage" class="feature-message" role="status" aria-live="polite"></div>
       </div>
+      <div style="margin-top:18px;border-top:1px solid var(--line);padding-top:16px">
+        <h3>🏦 Verified payout account</h3>
+        <p class="form-note">Your account number is encrypted before storage. DCDS displays only the final four digits.</p>
+        <div id="payoutAccountSummary" class="record-row" style="margin-top:10px">Checking your saved bank account…</div>
+        <form id="payoutAccountForm" class="profile-form">
+          <label>Bank<select id="payoutBankSelect" required><option value="">Load and select your bank</option></select></label>
+          <label>Account number<input id="payoutAccountNumber" type="text" inputmode="numeric" maxlength="10" pattern="[0-9]{10}" autocomplete="off" placeholder="10-digit account number" required></label>
+          <button class="btn light" id="savePayoutAccountBtn" type="submit">Verify & Save Bank Account</button>
+          <div id="payoutAccountMessage" class="feature-message" role="status" aria-live="polite"></div>
+        </form>
+      </div>
       <div style="margin-top:18px"><h3>Reward history</h3><div class="record-list">${rewardRows}</div></div>
-      <p class="form-note" style="margin-top:12px">Commission: ₦1,000 for each distinct course successfully purchased by a referred student. A repeat purchase of the same course does not earn another commission. Minimum withdrawal is ₦5,000; bank setup and withdrawal requests will be enabled after secure payout verification is completed.</p>
+      <p class="form-note" style="margin-top:12px">Commission: ₦1,000 for each distinct course successfully purchased by a referred student. A repeat purchase of the same course does not earn another commission. Minimum withdrawal is ₦5,000. Withdrawal requests will be enabled after the secure payout and balance-reservation process is completed.</p>
     `;
 
     const copyBtn = document.getElementById('copyAmbassadorLink');
@@ -813,6 +824,64 @@ async function loadAmbassadorPanel(user) {
           shareMessage.textContent = 'Sharing is unavailable here. Select and copy the referral link above.';
         }
       }
+    });
+
+    const bankSelect = document.getElementById('payoutBankSelect');
+    const bankMessage = document.getElementById('payoutAccountMessage');
+    const bankSummary = document.getElementById('payoutAccountSummary');
+    const { data: savedData, error: savedError } = await client.functions.invoke('dcds-payout-account', { body: { action: 'get_account' } });
+    if (savedError || !savedData?.success) {
+      bankSummary.textContent = 'Saved bank-account details are temporarily unavailable.';
+    } else if (savedData.account) {
+      const a = savedData.account;
+      bankSummary.textContent = a.bank_name + ' · ' + a.account_name + ' · •••• ' + a.account_number_last4 + ' · ' + String(a.verification_status).toUpperCase();
+    } else {
+      bankSummary.textContent = 'No verified payout account saved yet.';
+    }
+
+    bankSelect.disabled = true;
+    bankSelect.innerHTML = '<option value="">Loading supported Nigerian banks…</option>';
+    const { data: bankData, error: bankError } = await client.functions.invoke('dcds-payout-account', { body: { action: 'banks' } });
+    if (bankError || !bankData?.success || !Array.isArray(bankData.banks)) {
+      bankSelect.innerHTML = '<option value="">Bank list unavailable — refresh later</option>';
+      bankMessage.textContent = bankData?.error || 'Could not load the current bank list.';
+    } else {
+      bankSelect.innerHTML = '<option value="">Select your bank</option>';
+      bankData.banks.forEach(bank => {
+        const option = document.createElement('option');
+        option.value = bank.code;
+        option.textContent = bank.name;
+        option.dataset.bankName = bank.name;
+        bankSelect.appendChild(option);
+      });
+      bankSelect.disabled = false;
+    }
+
+    document.getElementById('payoutAccountForm').addEventListener('submit', async event => {
+      event.preventDefault();
+      const selected = bankSelect.selectedOptions[0];
+      const accountNumber = document.getElementById('payoutAccountNumber').value.trim();
+      if (!selected?.value || !/^\\d{10}$/.test(accountNumber)) {
+        bankMessage.textContent = 'Select a bank and enter a valid 10-digit account number.';
+        return;
+      }
+      const saveButton = document.getElementById('savePayoutAccountBtn');
+      saveButton.disabled = true;
+      saveButton.textContent = 'Verifying securely…';
+      bankMessage.textContent = '';
+      const { data, error } = await client.functions.invoke('dcds-payout-account', {
+        body: { action: 'save_account', bank_code: selected.value, account_number: accountNumber }
+      });
+      saveButton.disabled = false;
+      saveButton.textContent = 'Verify & Save Bank Account';
+      if (error || !data?.success) {
+        bankMessage.textContent = data?.error || 'Bank verification could not be completed. No account details were saved.';
+        return;
+      }
+      document.getElementById('payoutAccountNumber').value = '';
+      const a = data.account;
+      bankSummary.textContent = a.bank_name + ' · ' + a.account_name + ' · •••• ' + a.account_number_last4 + ' · VERIFIED';
+      bankMessage.textContent = '✓ ' + (data.message || 'Bank account verified and saved.');
     });
   } catch (error) {
     console.error('Ambassador information unavailable:', error);
