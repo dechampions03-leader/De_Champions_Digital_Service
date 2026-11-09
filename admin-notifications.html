@@ -91,7 +91,7 @@
             </div>
 
 
-            <div class="stat-card">
+                        <div class="stat-card">
 
                 <p>Notification Center</p>
 
@@ -163,7 +163,7 @@
                             Announcement Category
                         </label>
 
-                        <select
+                                                                    <select
                             id="announcementCategory"
                             required>
 
@@ -220,8 +220,8 @@
                                     value="enrolled">
 
                                 Enrolled Students
-                            </label>
-
+                                                        </label>
+                                                        
 
                             <label>
                                 <input
@@ -273,7 +273,7 @@
                                     name="deliveryChannel"
                                     value="ticker">
 
-                                📢 Ticker Only — appears in the scrolling announcement bar.
+                                                                📢 Ticker Only — appears in the scrolling announcement bar.
                             </label>
 
                         </div>
@@ -307,13 +307,22 @@
                     </div>
 
 
+                    <!-- DCDS SCHEDULING CONTROLS -->
+                    <div class="form-group" id="announcementScheduleControls">
+                        <label for="announcementStartsAt">Start date and time (optional)</label>
+                        <input type="datetime-local" id="announcementStartsAt">
+                        <label for="announcementEndsAt" style="margin-top:12px">End date and time (optional)</label>
+                        <input type="datetime-local" id="announcementEndsAt">
+                        <p class="delivery-help">Leave both empty to publish immediately with no automatic end. A future start schedules the announcement; an end time automatically hides it.</p>
+                    </div>
+
                     <!-- PUBLISH BUTTON -->
 
                     <button
                         type="submit"
                         id="publishButton">
 
-                        PUBLISH ANNOUNCEMENT
+                                     PUBLISH ANNOUNCEMENT
 
                     </button>
 
@@ -414,7 +423,7 @@
     --border-color: rgba(212,175,55,0.25);
 
 }
-
+    
 
 /* =====================================
    GLOBAL RESET
@@ -540,7 +549,7 @@ body {
 
     display: block;
 
-    color: var(--pure-white);
+        color: var(--pure-white);
 
     font-size: 17px;
 
@@ -691,7 +700,7 @@ body {
 .stat-card:hover {
 
     transform: translateY(-5px);
-
+    
     border-color: var(--luxury-gold);
 
 }
@@ -838,7 +847,7 @@ select {
 
     font-size: 14px;
 
-    outline: none;
+        outline: none;
 
     transition: 0.3s ease;
 
@@ -1142,7 +1151,7 @@ select option {
 
     font-size: 17px;
 
-    margin-bottom: 9px;
+        margin-bottom: 9px;
 
 }
 
@@ -1271,7 +1280,7 @@ select option {
 
     #welcomeSection {
         padding: 10px 3px;
-        margin-bottom: 22px;
+                margin-bottom: 22px;
     }
 
     #welcomeSection h2 {
@@ -1386,7 +1395,7 @@ select option {
 /* =====================================
    SMOOTH PAGE APPEARANCE
 ====================================== */
-
+    
 html {
     scroll-behavior: smooth;
 }
@@ -1488,7 +1497,7 @@ const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
 
 
-/* =====================================
+    /* =====================================
    2. INITIALIZE SUPABASE CLIENT
 ====================================== */
 
@@ -1694,7 +1703,7 @@ console.log(
                      <!-- =====================================
      BLOCK 6: ADMIN AUTHENTICATION
 ====================================== -->
-
+    
 <script>
 
 /* =====================================
@@ -1780,7 +1789,7 @@ async function initializeAdminCenter() {
 
         // Load administrator dashboard information
         await loadCourses();
-        await loadHistory();
+                await loadHistory();
 
         // Reveal dashboard only after successful verification
         adminApp.hidden = false;
@@ -1859,7 +1868,7 @@ function updateAudienceSelection() {
     const selectedAudience = document.querySelector(
         'input[name="audience"]:checked'
     );
-
+    
     if (!selectedAudience) {
         return;
     }
@@ -1954,7 +1963,7 @@ async function loadCourses() {
 
             const option = document.createElement("option");
 
-            option.value = course.id;
+                                             option.value = course.id;
 
             option.textContent = course.title;
 
@@ -2048,7 +2057,7 @@ function validateAudienceSelection() {
                 "Please select a course before publishing.",
                 "error"
             );
-
+    
             return false;
 
         }
@@ -2151,7 +2160,7 @@ async function publishAnnouncement(event) {
 
     const isAdmin = await verifyAdminRole();
 
-    if (!isAdmin) {
+        if (!isAdmin) {
 
         showMessage(
             "Access denied. You are not authorized to publish announcements.",
@@ -2240,7 +2249,7 @@ async function publishAnnouncement(event) {
 
     publishButton.disabled = true;
 
-    publishButton.textContent = "PUBLISHING...";
+        publishButton.textContent = "PUBLISHING...";
 
 
     try {
@@ -2286,7 +2295,22 @@ async function publishAnnouncement(event) {
         }
 
 
-        /* =================================
+        /* Save activation and schedule settings for this channel */
+        const startsValue = document.getElementById("announcementStartsAt").value;
+        const endsValue = document.getElementById("announcementEndsAt").value;
+        const startsAt = startsValue ? new Date(startsValue).toISOString() : new Date().toISOString();
+        const endsAt = endsValue ? new Date(endsValue).toISOString() : null;
+        if (endsAt && new Date(endsAt) <= new Date(startsAt)) {
+            throw new Error("The end time must be later than the start time.");
+        }
+        const { error: scheduleError } = await db.rpc("manage_dcds_announcement", {
+            p_announcement_id: data.notification_id || data.id,
+            p_action: "schedule",
+            p_payload: { starts_at: startsAt, ends_at: endsAt, is_active: true }
+        });
+        if (scheduleError) throw scheduleError;
+
+            /* =================================
            5. SUCCESS MESSAGE
         ================================= */
 
@@ -2372,7 +2396,7 @@ console.log(
      BLOCK 9: ANNOUNCEMENT HISTORY
      AND RECIPIENT STATISTICS
 ====================================== -->
-
+    
 <script>
 
 /* =====================================
@@ -2450,7 +2474,7 @@ async function loadHistory() {
             .from("notifications")
 
             .select(
-                "id, title, message, category, audience, course_id, delivery_channel, created_at"
+                "id, title, message, category, audience, course_id, delivery_channel, created_at, is_active, starts_at, ends_at"
             )
 
             .order("created_at", {
@@ -2465,7 +2489,7 @@ async function loadHistory() {
         }
 
 
-        /* Handle empty history */
+         /* Handle empty history */
 
         if (!announcements || announcements.length === 0) {
 
@@ -2541,7 +2565,7 @@ async function loadHistory() {
             "totalAnnouncements"
         ).textContent = announcements.length;
 
-        document.getElementById(
+            document.getElementById(
             "totalRecipients"
         ).textContent = totalRecipients;
 
@@ -2612,10 +2636,50 @@ async function loadHistory() {
             card.appendChild(message);
 
             card.appendChild(audience);
-
+            
             card.appendChild(category);
 
             card.appendChild(delivery);
+
+            const now = new Date();
+            const starts = announcement.starts_at ? new Date(announcement.starts_at) : null;
+            const ends = announcement.ends_at ? new Date(announcement.ends_at) : null;
+            const visibleNow = announcement.is_active !== false && (!starts || starts <= now) && (!ends || ends > now);
+            const state = document.createElement("small");
+            state.textContent = !announcement.is_active ? "Status: Deactivated" : (starts && starts > now ? "Status: Scheduled" : (ends && ends <= now ? "Status: Ended" : "Status: Active"));
+            card.appendChild(state);
+            if (starts) { const startLabel=document.createElement("small"); startLabel.textContent="Starts: "+formatAnnouncementDate(announcement.starts_at); card.appendChild(startLabel); }
+            if (ends) { const endLabel=document.createElement("small"); endLabel.textContent="Ends: "+formatAnnouncementDate(announcement.ends_at); card.appendChild(endLabel); }
+
+            const actions = document.createElement("div");
+            actions.className = "announcement-admin-actions";
+            actions.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-top:14px";
+            const makeAction = (label, action, payload={}) => {
+                const button=document.createElement("button"); button.type="button"; button.textContent=label;
+                button.addEventListener("click", async () => {
+                    if (action === "delete" && !confirm("Delete this announcement and its recipient records? This cannot be undone.")) return;
+                    if (action === "edit") {
+                        const newTitle=prompt("Edit announcement title:", announcement.title); if (newTitle===null) return;
+                                                const newMessage=prompt("Edit announcement message:", announcement.message); if (newMessage===null) return;
+                        if (!newTitle.trim() || !newMessage.trim()) { alert("Title and message cannot be empty."); return; }
+                        payload={title:newTitle.trim(), message:newMessage.trim()};
+                    }
+                    if (action === "schedule") {
+                        const startInput=prompt("Start date/time (ISO format, e.g. 2026-11-10T09:00:00+01:00). Leave blank to start now:", announcement.starts_at || ""); if (startInput===null) return;
+                        const endInput=prompt("End date/time (ISO format). Leave blank for no end:", announcement.ends_at || ""); if (endInput===null) return;
+                        payload={starts_at:startInput.trim() ? new Date(startInput).toISOString() : new Date().toISOString(), ends_at:endInput.trim() ? new Date(endInput).toISOString() : null};
+                    }
+                    const {error: actionError}=await db.rpc("manage_dcds_announcement", {p_announcement_id:announcement.id,p_action:action,p_payload:payload});
+                    if(actionError){alert("Action failed: "+actionError.message);return;}
+                    await loadHistory();
+                });
+                actions.appendChild(button);
+            };
+            makeAction("Edit", "edit");
+            makeAction(announcement.is_active === false ? "Activate" : "Deactivate", "toggle", {is_active:announcement.is_active === false});
+            makeAction("Reschedule", "schedule");
+            makeAction("Delete", "delete");
+            card.appendChild(actions);
 
             card.appendChild(recipientCount);
 
@@ -2627,7 +2691,7 @@ async function loadHistory() {
         });
 
 
-        console.log(
+            console.log(
             "DCDS announcement history loaded successfully."
         );
 
