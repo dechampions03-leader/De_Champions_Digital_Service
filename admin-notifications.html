@@ -85,8 +85,8 @@
             <div class="stat-card">
 
                 <p>Total Recipients</p>
-
-                                <h3 id="totalRecipients">0</h3>
+                
+                <h3 id="totalRecipients">0</h3>
 
             </div>
 
@@ -111,7 +111,7 @@
                 <div class="section-heading">
 
                     <h2>📢 Create Announcement</h2>
-
+                    
                     <p>
                         Send important information to your students.
                     </p>
@@ -159,7 +159,7 @@
 
                                         <div class="form-group">
 
-                                                                    <label for="announcementCategory">
+                        <label for="announcementCategory">
                             Announcement Category
                         </label>
 
@@ -183,7 +183,7 @@
                                 Promotion
                             </option>
 
-                            <option value="event">
+                                                                                                    <option value="event">
                                 Event Announcement
                             </option>
 
@@ -214,7 +214,7 @@
 
 
                                                         <label>
-                                                                                            <input
+                                <input
                                     type="radio"
                                     name="audience"
                                     value="enrolled">
@@ -254,7 +254,7 @@
                         <label>
                             Choose Where This Announcement Should Appear
                         </label>
-
+                        
                         <div id="deliveryOptions" role="radiogroup" aria-label="Announcement delivery channel">
 
                             <label>
@@ -263,8 +263,8 @@
                                     name="deliveryChannel"
                                     value="notification"
                                     checked>
-
-                                                                🔔 Notification Only — appears in the student notification bell.
+                                    
+                                🔔 Notification Only — appears in the student notification bell.
                             </label>
 
                             <label>
@@ -312,7 +312,7 @@
                         <label for="announcementStartsAt">Start date and time (optional)</label>
                         <input type="datetime-local" id="announcementStartsAt">
                         <label for="announcementEndsAt" style="margin-top:12px">End date and time (optional)</label>
-                         <input type="datetime-local" id="announcementEndsAt">
+                                                <input type="datetime-local" id="announcementEndsAt">
                         <p class="delivery-help">Leave both empty to publish immediately with no automatic end. A future start schedules the announcement; an end time automatically hides it.</p>
                     </div>
 
@@ -381,7 +381,7 @@
                 </div>
 
 
-                                <div id="notificationHistory">
+                <div id="notificationHistory">
 
                     <p>
                         Notification history will appear here.
@@ -389,6 +389,30 @@
 
                 </div>
 
+            </section>
+
+
+            <!-- DCDS STUDENT SUPPORT INBOX -->
+            <section id="supportInboxSection">
+                <div class="section-heading">
+                    <h2>🎧 Student Support Inbox</h2>
+                        <p>Review student requests, respond directly, and track each request through resolution.</p>
+                </div>
+                <div class="support-inbox-toolbar">
+                    <label for="supportStatusFilter">Filter requests</label>
+                    <select id="supportStatusFilter">
+                        <option value="all">All requests</option>
+                        <option value="open">Open</option>
+                        <option value="in_progress">In progress</option>
+                        <option value="resolved">Resolved</option>
+                        <option value="closed">Closed</option>
+                    </select>
+                    <button type="button" id="refreshSupportInbox">↻ Refresh Inbox</button>
+                </div>
+                <div id="supportInboxSummary" class="support-inbox-summary" aria-live="polite"></div>
+                <div id="supportInboxList">
+                    <p>Support requests will appear here.</p>
+                </div>
             </section>
 
         </main>
@@ -463,7 +487,7 @@
     box-sizing: border-box;
 
 }
-
+    
 
 /* =====================================
    MAIN BODY DESIGN
@@ -485,7 +509,7 @@ body {
             var(--deep-purple),
             var(--dark-background)
         );
-    
+
     color: var(--pure-white);
 
     min-height: 100vh;
@@ -613,7 +637,7 @@ body {
     );
 
     color: white;
-
+    
     border: none;
 
     padding: 12px 23px;
@@ -622,7 +646,7 @@ body {
 
     font-weight: 800;
 
-        letter-spacing: 1px;
+    letter-spacing: 1px;
 
     cursor: pointer;
 
@@ -766,7 +790,7 @@ body {
 #notificationHistorySection {
 
     padding: 30px;
-    
+
     margin-bottom: 28px;
 
     border-radius: 20px;
@@ -784,7 +808,7 @@ body {
 }
 
 
-/* =====================================
+    /* =====================================
    SECTION HEADINGS
 ====================================== */
 
@@ -910,7 +934,7 @@ textarea {
 }
 
 
-  select {
+select {
 
     cursor: pointer;
 
@@ -965,7 +989,7 @@ select option {
     background: rgba(255,255,255,0.035);
 
     color: var(--soft-white);
-
+    
     font-size: 13px;
 
     font-weight: 600;
@@ -1050,7 +1074,7 @@ select option {
 
     border: none;
 
-            border-radius: 12px;
+    border-radius: 12px;
 
     background: linear-gradient(
         110deg,
@@ -1199,7 +1223,7 @@ select option {
 .announcement-card small {
 
     display: block;
-    
+
     color: var(--muted-text);
 
     font-size: 12px;
@@ -1264,7 +1288,8 @@ select option {
 
     #createAnnouncementSection,
     #historySection,
-    #notificationHistorySection {
+    #notificationHistorySection,
+    #supportInboxSection {
         padding: 24px;
     }
 
@@ -1293,7 +1318,7 @@ select option {
 
     .brand-section h1 span {
         font-size: 14px;
-        letter-spacing: 2px;
+                           letter-spacing: 2px;
     }
 
     .brand-section p {
@@ -1314,7 +1339,7 @@ select option {
     #welcomeSection h2 {
         font-size: 22px;
     }
-    
+
     #welcomeSection p {
         font-size: 13px;
     }
@@ -1507,6 +1532,138 @@ select:focus-visible {
 #adminApp.admin-authorized {
     opacity: 1;
 }
+
+/* DCDS STUDENT SUPPORT INBOX — additive styles, matching existing admin theme */
+#supportInboxSection {
+    padding: 30px;
+    margin-bottom: 28px;
+    border-radius: 20px;
+    background: linear-gradient(145deg, rgba(255,255,255,0.075), rgba(255,255,255,0.025));
+    border: 1px solid var(--border-color);
+    box-shadow: 0 12px 35px rgba(0,0,0,0.2);
+}
+.support-inbox-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 12px;
+    margin: 20px 0;
+}
+.support-inbox-toolbar label {
+    color: var(--soft-white);
+    font-weight: 700;
+}
+.support-inbox-toolbar select,
+.support-reply-form textarea,
+.support-reply-form select {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 11px 13px;
+    color: var(--soft-white);
+    background: rgba(20,10,35,0.85);
+        font: inherit;
+}
+.support-inbox-toolbar button,
+.support-reply-form button {
+    border: 0;
+    border-radius: 10px;
+    padding: 11px 16px;
+    color: #241338;
+    background: linear-gradient(110deg, var(--bright-gold), #f5d77b);
+    font-weight: 800;
+    cursor: pointer;
+}
+.support-inbox-summary {
+    color: var(--muted-text);
+    font-size: 13px;
+    margin: 8px 0 16px;
+}
+.support-ticket-card {
+    border: 1px solid var(--border-color);
+    border-radius: 15px;
+    padding: 20px;
+    margin: 14px 0;
+    background: rgba(255,255,255,0.045);
+}
+.support-ticket-card h3 {
+    color: var(--bright-gold);
+    margin: 0 0 9px;
+    font-size: 18px;
+}
+.support-ticket-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px 16px;
+    color: var(--muted-text);
+    font-size: 12px;
+    margin: 8px 0 14px;
+}
+.support-ticket-message {
+    color: var(--soft-white);
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    line-height: 1.65;
+    margin: 12px 0;
+}
+.support-ticket-status {
+    display: inline-block;
+    padding: 5px 10px;
+    border-radius: 99px;
+    background: rgba(228,193,109,0.16);
+    color: var(--bright-gold);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+}
+.support-reply-form {
+    display: grid;
+    gap: 10px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 15px;
+    margin-top: 15px;
+}
+.support-reply-form label {
+    color: var(--soft-white);
+    font-size: 12px;
+    font-weight: 800;
+}
+.support-reply-form textarea {
+    width: 100%;
+    min-height: 105px;
+    resize: vertical;
+    line-height: 1.55;
+}
+.support-reply-form select {
+    width: 100%;
+}
+.support-reply-form .reply-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-items: center;
+}
+.support-reply-form button:disabled,
+.support-inbox-toolbar button:disabled {
+    opacity: .6;
+    cursor: wait;
+}
+.support-ticket-existing-response {
+    padding: 12px 14px;
+    margin-top: 12px;
+    border-radius: 10px;
+    background: rgba(120,70,180,0.15);
+    color: var(--soft-white);
+    white-space: pre-wrap;
+    line-height: 1.6;
+}
+.support-inbox-empty {
+    border: 1px dashed var(--border-color);
+    border-radius: 13px;
+        padding: 22px;
+    color: var(--muted-text);
+    text-align: center;
+}
+
 </style>
 <!-- =====================================
      BLOCK 5: SUPABASE CONNECTION
@@ -1525,7 +1682,7 @@ const SUPABASE_PUBLISHABLE_KEY =
     "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
 
 
-      /* =====================================
+    /* =====================================
    2. INITIALIZE SUPABASE CLIENT
 ====================================== */
 
@@ -1615,7 +1772,7 @@ function showMessage(message, type = "success") {
     statusBox.className =
         "status-message " + type;
 
-    statusBox.style.display = "block";
+        statusBox.style.display = "block";
 
 }
 
@@ -1623,7 +1780,7 @@ function showMessage(message, type = "success") {
     /* =====================================
    7. HIDE STATUS MESSAGE
 ====================================== */
-    
+
 function hideMessage() {
 
     const statusBox = document.getElementById(
@@ -1734,7 +1891,7 @@ console.log(
     
 <script>
 
-    /* =====================================
+/* =====================================
    1. ADMINISTRATOR AUTHENTICATION
 ====================================== */
 
@@ -1743,7 +1900,7 @@ console.log(
 /* =====================================
    5. SECURE ADMIN LOGOUT
 ====================================== */
-
+    
 async function logoutAdmin() {
 
     const confirmation = confirm(
@@ -1817,8 +1974,9 @@ async function initializeAdminCenter() {
 
         // Load administrator dashboard information
         await loadCourses();
-                await loadHistory();
-    
+        await loadHistory();
+        await loadSupportInbox();
+
         // Reveal dashboard only after successful verification
         adminApp.hidden = false;
 
@@ -1838,7 +1996,7 @@ async function initializeAdminCenter() {
         window.location.replace("index.html");
     }
 }
-/* =====================================
+    /* =====================================
    6. MONITOR AUTHENTICATION CHANGES
 ====================================== */
 
@@ -1900,7 +2058,7 @@ function updateAudienceSelection() {
     if (!selectedAudience) {
         return;
     }
-    
+
     const audience = selectedAudience.value;
 
     if (audience === "specific_course") {
@@ -1952,7 +2110,7 @@ async function loadCourses() {
             .order("title", {
                 ascending: true
             });
-
+        
         if (error) {
             throw error;
         }
@@ -1992,7 +2150,7 @@ async function loadCourses() {
             const option = document.createElement("option");
 
                                              option.value = course.id;
-     
+
             option.textContent = course.title;
 
             courseSelect.appendChild(option);
@@ -2055,7 +2213,7 @@ function getSelectedDeliveryChannel() {
     return selected ? selected.value : null;
 
 }
-
+    
 
 /* =====================================
    8. VALIDATE AUDIENCE
@@ -2091,7 +2249,7 @@ function validateAudienceSelection() {
         }
 
     }
-    
+
     return true;
 
 }
@@ -2155,7 +2313,7 @@ function getScheduleValues() {
     if (Number.isNaN(startsAt.getTime()) || (endsAt && Number.isNaN(endsAt.getTime()))) {
         throw new Error("Please enter valid start and end dates.");
     }
-    if (endsAt && endsAt <= startsAt) {
+      if (endsAt && endsAt <= startsAt) {
         throw new Error("The end time must be later than the start time.");
     }
     return {
@@ -2166,7 +2324,7 @@ function getScheduleValues() {
 
 async function publishAnnouncement(event) {
     event.preventDefault();
-        hideMessage();
+    hideMessage();
 
     const session = await getCurrentSession();
     if (!session) {
@@ -2214,7 +2372,7 @@ async function publishAnnouncement(event) {
         (document.getElementById("announcementStartsAt").value ||
          document.getElementById("announcementEndsAt").value)) {
         showMessage("Start and end scheduling apply to ticker announcements. Clear those date fields to send a notification now.", "error");
-                return;
+            return;
     }
 
     const confirmation = confirm(
@@ -2258,7 +2416,7 @@ async function publishAnnouncement(event) {
                 throw new Error(data?.message || "The notification could not be published.");
             }
 
-                    const recipientCount = Number(data.recipients || 0);
+            const recipientCount = Number(data.recipients || 0);
             showMessage("🎉 Notification published successfully! " + recipientCount + " student(s) were selected to receive it.", "success");
         }
 
@@ -2267,7 +2425,7 @@ async function publishAnnouncement(event) {
         await loadHistory();
     } catch (error) {
         console.error("Announcement publishing error:", error);
-        showMessage("Publishing failed: " + error.message, "error");
+                showMessage("Publishing failed: " + error.message, "error");
     } finally {
         publishButton.disabled = false;
         publishButton.textContent = "PUBLISH ANNOUNCEMENT";
@@ -2309,7 +2467,7 @@ function addHistoryText(parent, tag, value) {
     return element;
 }
 
-    function makeHistoryCard(titleText, messageText) {
+function makeHistoryCard(titleText, messageText) {
     const card = document.createElement("article");
     card.className = "announcement-card";
     addHistoryText(card, "h3", titleText || "Untitled");
@@ -2328,7 +2486,7 @@ function getTickerState(announcement) {
     return "Published";
 }
 
-async function updateTickerAnnouncement(id, values) {
+    async function updateTickerAnnouncement(id, values) {
     const { error } = await db
         .from("public_announcements")
         .update({ ...values, updated_by: currentAdmin.id, updated_at: new Date().toISOString() })
@@ -2357,7 +2515,7 @@ async function renderTickerActions(card, announcement) {
                 button.disabled = false;
             }
         });
-                actions.appendChild(button);
+        actions.appendChild(button);
     };
 
     addButton("Edit", async () => {
@@ -2385,7 +2543,7 @@ async function renderTickerActions(card, announcement) {
             "Start date/time (ISO format). Leave blank to start now:",
             announcement.starts_at || ""
         );
-        if (startInput === null) return;
+                if (startInput === null) return;
         const endInput = prompt(
             "Expiry date/time (ISO format). Leave blank for no expiry:",
             announcement.expires_at || ""
@@ -2400,7 +2558,7 @@ async function renderTickerActions(card, announcement) {
         }
         if (expiresAt && expiresAt <= startsAt) {
             alert("The expiry time must be later than the start time.");
-                        return;
+            return;
         }
         await updateTickerAnnouncement(announcement.id, {
             starts_at: startsAt.toISOString(),
@@ -2434,7 +2592,7 @@ async function loadTickerHistory() {
         addHistoryText(card, "small", "Created: " + formatAnnouncementDate(announcement.created_at));
         addHistoryText(card, "small", "Starts: " + formatAnnouncementDate(announcement.starts_at));
         addHistoryText(card, "small", "Expires: " + (announcement.expires_at ? formatAnnouncementDate(announcement.expires_at) : "No expiry"));
-        renderTickerActions(card, announcement);
+                renderTickerActions(card, announcement);
         historyContainer.appendChild(card);
     });
     return announcements.length;
@@ -2443,7 +2601,7 @@ async function loadTickerHistory() {
 async function loadNotificationHistory() {
     notificationHistoryContainer.innerHTML = '<p>Loading notification history...</p>';
 
-        // NULL delivery_channel rows are legacy bell notifications and remain in this history.
+    // NULL delivery_channel rows are legacy bell notifications and remain in this history.
     const { data: notifications, error } = await db
         .from("notifications")
         .select("id, title, message, category, created_at, audience, course_id, delivery_channel")
@@ -2522,6 +2680,168 @@ async function refreshAnnouncementHistory() {
 console.log("DCDS separate history module loaded.");
 </script>
 <script>
+
+/* =====================================
+   DCDS STUDENT SUPPORT INBOX
+====================================== */
+const supportInboxList = document.getElementById("supportInboxList");
+const supportInboxSummary = document.getElementById("supportInboxSummary");
+const supportStatusFilter = document.getElementById("supportStatusFilter");
+const refreshSupportInboxButton = document.getElementById("refreshSupportInbox");
+
+function supportDate(value) {
+    if (!value) return "Date unavailable";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Date unavailable" :
+        date.toLocaleString("en-NG", {dateStyle:"medium", timeStyle:"short"});
+}
+
+function supportLabel(value) {
+    return String(value || "general").replaceAll("_", " ")
+        .replace(/\b\w/g, letter => letter.toUpperCase());
+}
+
+    function supportNode(tag, className, text) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (text !== undefined && text !== null) node.textContent = String(text);
+    return node;
+}
+
+async function loadSupportInbox() {
+    if (!currentAdmin) return;
+    supportInboxList.innerHTML = "<p>Loading student support requests…</p>";
+    supportInboxSummary.textContent = "";
+
+    let query = db.from("student_support_tickets")
+        .select("id,user_id,subject,category,message,status,admin_response,responded_by,responded_at,created_at,updated_at")
+        .order("created_at", {ascending:false})
+        .limit(100);
+
+    const filter = supportStatusFilter.value;
+    if (filter !== "all") query = query.eq("status", filter);
+
+    const {data, error} = await query;
+    if (error) {
+        console.error("Support inbox loading error:", error);
+        supportInboxList.replaceChildren(
+            supportNode("div", "support-inbox-empty",
+                "Unable to load support requests. Check the support table and administrator permissions, then refresh.")
+        );
+        supportInboxSummary.textContent = error.message;
+        return;
+    }
+
+    const tickets = data || [];
+    supportInboxSummary.textContent =
+        `${tickets.length} request(s) shown${filter === "all" ? " (latest 100)" : " · " + supportLabel(filter)}`;
+
+    if (!tickets.length) {
+        supportInboxList.replaceChildren(
+            supportNode("div", "support-inbox-empty", "No support requests found for this filter.")
+        );
+        return;
+    }
+
+    supportInboxList.replaceChildren();
+    tickets.forEach(ticket => {
+        const card = supportNode("article", "support-ticket-card");
+        const title = supportNode("h3", "", ticket.subject || "Untitled request");
+        const meta = supportNode("div", "support-ticket-meta");
+        meta.append(
+            supportNode("span", "", "Category: " + supportLabel(ticket.category)),
+            supportNode("span", "", "Submitted: " + supportDate(ticket.created_at)),
+            supportNode("span", "", "Student ID: " + ticket.user_id),
+            supportNode("span", "support-ticket-status", supportLabel(ticket.status))
+        );
+                const message = supportNode("p", "support-ticket-message", ticket.message);
+        card.append(title, meta, message);
+
+        if (ticket.admin_response) {
+            const previous = supportNode("div", "support-ticket-existing-response");
+            previous.appendChild(supportNode("strong", "", "Previous DCDS response"));
+            previous.appendChild(supportNode("p", "", ticket.admin_response));
+            if (ticket.responded_at) {
+                previous.appendChild(supportNode("small", "", "Responded: " + supportDate(ticket.responded_at)));
+            }
+            card.appendChild(previous);
+        }
+
+        const form = supportNode("form", "support-reply-form");
+        const responseLabel = supportNode("label", "", "Reply to student");
+        const textarea = document.createElement("textarea");
+        textarea.required = true;
+        textarea.minLength = 2;
+        textarea.maxLength = 5000;
+        textarea.placeholder = "Write a helpful response for the student…";
+        textarea.value = ticket.admin_response || "";
+        responseLabel.appendChild(textarea);
+
+        const statusLabel = supportNode("label", "", "Request status");
+        const statusSelect = document.createElement("select");
+        [
+            ["open","Open"],
+            ["in_progress","In progress"],
+            ["resolved","Resolved"],
+            ["closed","Closed"]
+        ].forEach(([value,label]) => {
+            const option = document.createElement("option");
+            option.value = value;
+            option.textContent = label;
+            statusSelect.appendChild(option);
+        });
+        statusSelect.value = ticket.status || "open";
+        statusLabel.appendChild(statusSelect);
+
+        const actions = supportNode("div", "reply-actions");
+        const saveButton = document.createElement("button");
+        saveButton.type = "submit";
+        saveButton.textContent = "Save Reply & Status";
+        const formStatus = supportNode("span", "support-inbox-summary", "");
+        actions.append(saveButton, formStatus);
+        form.append(responseLabel, statusLabel, actions);
+
+                            form.addEventListener("submit", async event => {
+            event.preventDefault();
+            if (!currentAdmin) return;
+            const responseText = textarea.value.trim();
+            if (responseText.length < 2) {
+                formStatus.textContent = "Please enter a response before saving.";
+                return;
+            }
+            saveButton.disabled = true;
+            saveButton.textContent = "Saving…";
+            formStatus.textContent = "";
+            const now = new Date().toISOString();
+            const {error:updateError} = await db.from("student_support_tickets")
+                .update({
+                    admin_response: responseText,
+                    status: statusSelect.value,
+                    responded_by: currentAdmin.id,
+                    responded_at: now,
+                    updated_at: now
+                })
+                .eq("id", ticket.id);
+            saveButton.disabled = false;
+            saveButton.textContent = "Save Reply & Status";
+            if (updateError) {
+                console.error("Support reply save error:", updateError);
+                formStatus.textContent = "Could not save: " + updateError.message;
+                return;
+            }
+            formStatus.textContent = "✓ Reply and status saved.";
+            await loadSupportInbox();
+        });
+
+        card.appendChild(form);
+        supportInboxList.appendChild(card);
+    });
+}
+
+refreshSupportInboxButton.addEventListener("click", loadSupportInbox);
+supportStatusFilter.addEventListener("change", loadSupportInbox);
+
+
 /* =====================================
    DCDS ADMIN CENTER — FINAL INITIALIZATION
 ===================================== */
