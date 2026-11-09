@@ -621,6 +621,41 @@ function openCertificate(certificate, studentName, courseTitle) {
 .dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:dcdsChildPop .58s both;animation-delay:var(--dcds-delay,0ms)}
 @keyframes dcdsChildPop{from{opacity:.25;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
 @media(prefers-reduced-motion:reduce){.dcds-motion-ready [data-dcds-reveal]{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}.dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:none!important}}
+
+/* DCDS refined motion: gentle text reveals and restrained ambient colour blending. */
+.dcds-motion-ready body{
+  background-image:radial-gradient(ellipse at 8% 4%,rgba(133,76,205,.075),transparent 38%),radial-gradient(ellipse at 92% 34%,rgba(215,180,90,.055),transparent 34%),linear-gradient(145deg,rgba(255,255,255,.18),transparent 58%);
+  background-attachment:fixed;
+  transition:background-position 1.4s ease,background-color 1.4s ease;
+}
+.dcds-motion-ready [data-dcds-reveal] :is(h1,h2,h3,h4,p,li,label,.eyebrow,.section-kicker,.section-kicker-text){
+  opacity:.35;
+  transform:translate3d(0,9px,0);
+  filter:blur(1.2px);
+  transition:opacity .9s ease,transform .95s cubic-bezier(.2,.72,.2,1),filter .95s ease;
+}
+.dcds-motion-ready [data-dcds-reveal].dcds-visible :is(h1,h2,h3,h4,p,li,label,.eyebrow,.section-kicker,.section-kicker-text){
+  opacity:1;
+  transform:none;
+  filter:none;
+}
+.dcds-motion-ready [data-dcds-reveal] :is(h1,h2,h3){transition-delay:90ms}
+.dcds-motion-ready [data-dcds-reveal] :is(p,li,label){transition-delay:170ms}
+.dcds-motion-ready [data-dcds-reveal] :is(.course-card,.service-card,.info-card,.record-row,.review-item,.stat-card,.announcement-card){
+  transition:box-shadow .8s ease,border-color .8s ease,background-color .8s ease;
+}
+.dcds-motion-ready [data-dcds-reveal].dcds-visible :is(.course-card,.service-card,.info-card,.record-row,.review-item,.stat-card,.announcement-card){
+  box-shadow:0 10px 28px rgba(55,20,92,.055);
+}
+@media(prefers-reduced-motion:reduce){
+ .dcds-motion-ready body{background-attachment:scroll;transition:none}
+ .dcds-motion-ready [data-dcds-reveal] :is(h1,h2,h3,h4,p,li,label,.eyebrow,.section-kicker,.section-kicker-text){opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
+}
+@media print{
+ .dcds-motion-ready body{background-image:none!important}
+ .dcds-motion-ready [data-dcds-reveal],
+ .dcds-motion-ready [data-dcds-reveal] *{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;animation:none!important}
+}
 </style>
 </head><body><button class="print" onclick="window.print()">Print / Save as PDF</button><main class="certificate"><div class="brand">DCDS</div><div class="tag">DE CHAMPIONS DIGITAL SERVICE</div><div class="rule"></div><div class="eyebrow">CERTIFICATE OF COMPLETION</div><h1 class="title">Certificate of Achievement</h1><div class="intro">This certificate is proudly presented to</div><div class="name">${safeName}</div><div class="body">for successfully completing the learning requirements for</div><div class="course">${safeCourse}</div><div class="body">and demonstrating commitment to learning, creativity, and digital excellence.</div><div class="rule"></div><div class="seal">DCDS<br>ACHIEVEMENT</div>${verified?'<div class="verified">ADMIN VERIFIED CERTIFICATE</div>':''}<div class="footer"><div><strong>Certificate No.</strong><br>${safeNumber}<br><br><strong>Date Issued</strong><br>${safeDate}</div><div style="text-align:right"><strong>DE CHAMPIONS DIGITAL SERVICE</strong><br>CREATE • LEARN • INNOVATE • EARN.<br><br>Official digital certificate</div></div></main></body></html>`);
   printWindow.document.close();
