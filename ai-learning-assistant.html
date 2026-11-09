@@ -34,6 +34,10 @@ footer{text-align:center;color:#8a7b96;font-size:12px;letter-spacing:.04em;paddi
 <article class="card"><div class="ico">🧠</div><h2>Help you practise</h2><p>Prepare revision prompts, practice activities and knowledge checks for your learning journey.</p></article>
 <article class="card"><div class="ico">🧭</div><h2>Guide your growth</h2><p>Help you understand DCDS courses and identify sensible next steps as you build digital skills.</p></article>
 </section>
+<h2 class="section-title">DCDS course catalogue</h2>
+<p style="color:#776b83;line-height:1.7">The assistant's preparation library includes the current published course names, descriptions and prices. Always confirm current availability on the official course catalogue.</p>
+<section class="knowledge" id="dcdsCourseKnowledge" aria-live="polite"><div class="card">Loading the DCDS course knowledge…</div></section>
+<div class="note" style="margin-top:14px"><strong>DCDS General Course:</strong> ₦103,000. This is an additional package described as a learning library with more than 100 courses and four learning channels. The 12 individual courses remain separately available.</div>
 <h2 class="section-title">The DCDS knowledge foundation</h2>
 <p style="color:#776b83;line-height:1.7">We are organising trusted academy information first, so the future assistant can answer consistently and stay focused on DCDS learning.</p>
 <section class="knowledge">
@@ -45,6 +49,30 @@ footer{text-align:center;color:#8a7b96;font-size:12px;letter-spacing:.04em;paddi
 <div class="note"><strong>Preview mode:</strong> This page is a preparation preview, not a live AI chat. No AI API is connected, no message is sent to an AI provider, and no subscription or API purchase is required to view this page.</div>
 </main>
 <footer>© 2026 De Champions Digital Service.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
+<script id="dcds-brand-knowledge-loader">
+(async()=>{
+ const host=document.getElementById("dcdsCourseKnowledge");
+ if(!host)return;
+ try{
+  const response=await fetch("dcds-ai-knowledge-base.json",{cache:"no-store"});
+  if(!response.ok)throw new Error("Knowledge file unavailable");
+  const data=await response.json();
+  const money=n=>"₦"+Number(n).toLocaleString("en-NG");
+  host.replaceChildren();
+  data.course_catalog.courses.forEach(course=>{
+   const card=document.createElement("article");card.className="card";
+   const category=document.createElement("div");category.className="eyebrow";category.style.color="#8a43c9";category.textContent=course.category;
+   const title=document.createElement("h2");title.textContent=course.name;
+   const desc=document.createElement("p");desc.textContent=course.description;
+   const price=document.createElement("p");price.style.cssText="font-weight:800;color:#542080;margin-top:12px";price.textContent=money(course.price);
+   card.append(category,title,desc,price);host.appendChild(card);
+  });
+ }catch(error){
+  host.textContent="The course knowledge preview is temporarily unavailable. Please consult the official DCDS course catalogue.";
+  console.warn("DCDS knowledge preview:",error);
+ }
+})();
+</script>
 <script>
 (function(){
  const SUPABASE_URL='https://qxsenflgaweeadvggnyp.supabase.co';
