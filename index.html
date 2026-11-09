@@ -1073,6 +1073,19 @@ $('courseSearch').addEventListener('input',()=>{const q=$('courseSearch').value.
 })();
 </script>
 
+<style id="dcds-course-catalog-stability">
+/* Course catalogue is intentionally static so learners can read and choose immediately. */
+html.dcds-motion-ready #courses [data-dcds-reveal],
+html.dcds-motion-ready #courses [data-dcds-text-reveal]{
+  opacity:1!important;transform:none!important;filter:none!important;
+  transition:none!important;animation:none!important;will-change:auto!important;
+}
+html.dcds-motion-ready #courses [data-dcds-child],
+html.dcds-motion-ready #courses [data-dcds-reveal].dcds-visible [data-dcds-child]{
+  opacity:1!important;transform:none!important;filter:none!important;animation:none!important;
+}
+#courses .course-card:hover{transform:none!important}
+</style>
 <script id="dcds-universal-text-motion">
 (()=> {
  if(window.__DCDSUniversalTextMotion) return;
