@@ -172,10 +172,11 @@ button.secondary{
 @media(prefers-reduced-motion:reduce){.dcds-motion-ready [data-dcds-reveal]{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}.dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:none!important}}
 
 /* DCDS refined motion: gentle text reveals and restrained ambient colour blending. */
-.dcds-motion-ready body{
-  background-image:radial-gradient(ellipse at 8% 4%,rgba(133,76,205,.075),transparent 38%),radial-gradient(ellipse at 92% 34%,rgba(215,180,90,.055),transparent 34%),linear-gradient(145deg,rgba(255,255,255,.18),transparent 58%);
-  background-attachment:fixed;
-  transition:background-position 1.4s ease,background-color 1.4s ease;
+.dcds-motion-ready body{position:relative;isolation:isolate}
+.dcds-motion-ready body::before{
+  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at 8% 4%,rgba(133,76,205,.075),transparent 38%),radial-gradient(ellipse at 92% 34%,rgba(215,180,90,.055),transparent 34%),linear-gradient(145deg,rgba(255,255,255,.12),transparent 58%);
+  opacity:.85;transition:opacity 1.4s ease;
 }
 .dcds-motion-ready [data-dcds-reveal] :is(h1,h2,h3,h4,p,li,label,.eyebrow,.section-kicker,.section-kicker-text){
   opacity:.35;
@@ -197,11 +198,11 @@ button.secondary{
   box-shadow:0 10px 28px rgba(55,20,92,.055);
 }
 @media(prefers-reduced-motion:reduce){
- .dcds-motion-ready body{background-attachment:scroll;transition:none}
+ .dcds-motion-ready body::before{position:absolute;transition:none}
  .dcds-motion-ready [data-dcds-reveal] :is(h1,h2,h3,h4,p,li,label,.eyebrow,.section-kicker,.section-kicker-text){opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
 }
 @media print{
- .dcds-motion-ready body{background-image:none!important}
+ .dcds-motion-ready body::before{display:none!important}
  .dcds-motion-ready [data-dcds-reveal],
  .dcds-motion-ready [data-dcds-reveal] *{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;animation:none!important}
 }
