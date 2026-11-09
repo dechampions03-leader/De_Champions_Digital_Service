@@ -94,7 +94,10 @@ color:var(--muted)
 small {
 color:var(--muted)
 }
-</style></head><body><header><b>DCDS</b><p>CREATE • LEARN • INNOVATE • EARN</p></header><main><section id="status" class="panel">Loading your assessments…</section><div id="content" class="hidden"><section class="panel"><h1>Quizzes & Assignments</h1><p>Test your understanding, submit practical work and review your academic feedback.</p></section><h2>Available quizzes</h2><div id="quizzes"></div><h2>Course assignments</h2><div id="assignments"></div></div></main><script>
+</style>
+</head><body><header><b>DCDS</b><p>CREATE • LEARN • INNOVATE • EARN</p></header>
+<main><section id="status" class="panel">Loading your assessments…</section>
+<div id="content" class="hidden"><section class="panel"><h1>Quizzes & Assignments</h1><p>Test your understanding, submit practical work and review your academic feedback.</p></section><h2>Available quizzes</h2><div id="quizzes"></div><h2>Course assignments</h2><div id="assignments"></div></div></main><script>
 const db=window.supabase.createClient("https://qxsenflgaweeadvggnyp.supabase.co","sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP"),$=id=>document.getElementById(id);
 let user=null,activeAttempt=null;
 function esc(s) {
@@ -110,7 +113,6 @@ $("quizzes").innerHTML=(qr.data||[]).map(q=>'<article class="card"><h3>'+esc(q.t
 $("assignments").innerHTML=(ar.data||[]).map(a=>'<article class="card"><h3>'+esc(a.title)+'</h3><p>'+esc(a.description)+'</p><p>'+esc(a.instructions||"")+'</p><small>Due: '+(a.due_at?new Date(a.due_at).toLocaleString():"No due date")+' • Maximum score: '+a.max_score+'</small><form data-assignment="'+a.id+'"><label>Written response</label><textarea class="field" name="submission_text" rows="4" placeholder="Write your response here"></textarea><label>Optional link to your project or file</label><input class="field" name="submission_url" type="url" placeholder="https://..."><button>Submit assignment</button></form><div id="assignment-status-'+a.id+'" class="muted"></div></article>').join("")||'<div class="notice">No published assignments are available yet.</div>';
 $("status").textContent="Your assessments are ready.";
 $("content").classList.remove("hidden");
-
 }
 document.addEventListener("click",async e=> {
 const b=e.target.closest("button[data-start]");
@@ -136,7 +138,6 @@ box.innerHTML='<form id="attempt-'+id+'">'+q.data.map((x,i)=>'<div class="card">
 $("attempt-"+id).onsubmit=async ev=> {
 ev.preventDefault();
 const answers= {
-
 };
 q.data.forEach(x=> {
 const v=ev.target.querySelector('input[name="'+x.id+'"]:checked');
@@ -153,10 +154,8 @@ return
 const r=result.data;
 box.textContent="Quiz submitted. Score: "+r.score+"/"+r.total_points+" ("+r.percentage+"%). "+(r.passed?"You passed!":"Keep practising and review your lessons.");
 ev.target.remove();
-
 };
 b.remove();
-
 });
 document.addEventListener("submit",async e=> {
 const f=e.target.closest("form[data-assignment]");
@@ -172,7 +171,6 @@ assignment_id:f.dataset.assignment,user_id:user.id,submission_text:text||null,su
 });
 $("assignment-status-"+f.dataset.assignment).textContent=r.error?r.error.message:"Your assignment has been submitted successfully.";
 if(!r.error)f.reset();
-
 });
 init().catch(e=> {
 $("status").textContent="Could not load assessments: "+e.message
