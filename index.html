@@ -531,6 +531,20 @@ let authMode = 'login';
 let pendingVerificationEmail = '';
 let otpCountdownTimer = null;
 let authNextPath = '';
+// Preserve a valid DCDS referral code for this browser tab until signup.
+// The database independently validates that the code belongs to an active ambassador.
+const DCDS_REFERRAL_CODE = (() => {
+ try {
+  const params = new URLSearchParams(window.location.search);
+  const incoming = String(params.get('ref') || '').trim().toUpperCase();
+  if (/^[A-Z0-9]{6,16}$/.test(incoming)) {
+   window.sessionStorage.setItem('dcds_referral_code', incoming);
+   return incoming;
+  }
+  const saved = String(window.sessionStorage.getItem('dcds_referral_code') || '').trim().toUpperCase();
+  return /^[A-Z0-9]{6,16}$/.test(saved) ? saved : '';
+ } catch (_) { return ''; }
+})();
 function safeInternalNext(raw){
  if(!raw)return '';
   try{
@@ -578,7 +592,7 @@ async function submitAuth(e){
  try{
   if(authMode==='signup'){
    if(!name)throw new Error('Please enter your full name.');
-   const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:{full_name:name}}});if(error)throw error;
+   const signupMetadata={full_name:name};if(DCDS_REFERRAL_CODE)signupMetadata.dcds_referral_code=DCDS_REFERRAL_CODE;const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}});if(error)throw error;
    pendingVerificationEmail=email;
    showEmailOtpScreen(email,'A six-digit verification code has been sent to your email.');
   }else{
