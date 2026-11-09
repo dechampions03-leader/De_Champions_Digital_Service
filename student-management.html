@@ -9,11 +9,19 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
-  --primary-purple:#6C2BD9;--deep-purple:#2B124C;--dark-background:#160B27;
-  --darker-background:#0D0717;--luxury-gold:#D4AF37;--bright-gold:#F5D77A;
-  --pure-white:#FFFFFF;--soft-white:#F3EDF9;--muted-text:#B8A9CC;
-  --success-green:#25C47A;--danger-red:#F05252;
-  --card-background:rgba(255,255,255,.055);--border-color:rgba(212,175,55,.25);
+  --primary-purple:#7628d8;
+  --deep-purple:#21083f;
+  --dark-background:#f1e8fb;
+  --darker-background:#fbf9ff;
+  --luxury-gold:#e4c16d;
+  --bright-gold:#451078;
+  --pure-white:#FFFFFF;
+  --soft-white:#28183a;
+  --muted-text:#756783;
+  --success-green:#17683a;
+  --danger-red:#b42332;
+  --card-background:#FFFFFF;
+  --border-color:#eadff5;
 }
 *{box-sizing:border-box}
 body{margin:0;background:linear-gradient(145deg,var(--darker-background),var(--dark-background) 55%,#24103A);color:var(--soft-white);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
@@ -29,7 +37,7 @@ header{display:flex;justify-content:space-between;align-items:center;gap:16px;pa
 .btn.ghost{background:transparent;color:var(--soft-white)}
 #welcome{padding:27px 8px 18px}
 #welcome h2{font:700 clamp(24px,4vw,34px) Georgia,serif;color:var(--bright-gold);margin:0 0 9px}
-#welcome p{color:var(--muted-text);line-height:1.7;margin:0;max-width:780px}
+  #welcome p{color:var(--muted-text);line-height:1.7;margin:0;max-width:780px}
 .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:15px 0 20px}
 .stat,.panel{border:1px solid var(--border-color);border-radius:18px;background:var(--card-background);padding:20px}
 .stat span{display:block;color:var(--muted-text);font-size:13px}
@@ -37,11 +45,11 @@ header{display:flex;justify-content:space-between;align-items:center;gap:16px;pa
 .panel h3{margin:0;color:var(--bright-gold);font-size:21px}
 .panel .intro{color:var(--muted-text);line-height:1.6;margin:9px 0 18px}
 .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-#searchInput{flex:1 1 260px;min-width:0;background:#12091F;color:var(--soft-white);border:1px solid var(--border-color);border-radius:10px;padding:13px 14px;outline:none}
+#searchInput{flex:1 1 260px;min-width:0;background:#FFFFFF;color:var(--soft-white);border:1px solid var(--border-color);border-radius:10px;padding:13px 14px;outline:none}
 #searchInput:focus{border-color:var(--bright-gold)}
 #resultMeta{color:var(--muted-text);font-size:13px;margin:15px 0}
 .student-list{display:grid;gap:12px}
-.student-card{border:1px solid var(--border-color);border-radius:14px;padding:17px;background:rgba(12,6,23,.38)}
+.student-card{border:1px solid var(--border-color);border-radius:14px;padding:17px;background:#FFFFFF}
 .student-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
 .student-name{font-weight:800;color:var(--bright-gold);font-size:17px;overflow-wrap:anywhere}
 .student-email{color:var(--muted-text);font-size:13px;margin-top:5px;overflow-wrap:anywhere}
@@ -55,10 +63,70 @@ header{display:flex;justify-content:space-between;align-items:center;gap:16px;pa
 .pagination{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;color:var(--muted-text);font-size:13px}
 .pagination button:disabled{opacity:.4;cursor:not-allowed}
 #status{margin:12px 0;color:var(--muted-text);font-size:13px;line-height:1.5}
-#error{display:none;color:#ffaaaa;background:rgba(240,82,82,.1);border:1px solid rgba(240,82,82,.3);padding:12px;border-radius:10px;margin:12px 0}
+  #error{display:none;color:#ffaaaa;background:rgba(240,82,82,.1);border:1px solid rgba(240,82,82,.3);padding:12px;border-radius:10px;margin:12px 0}
 footer{text-align:center;color:var(--muted-text);font-size:12px;padding:25px 0}
 [hidden]{display:none!important}
 @media(max-width:650px){#adminApp{width:min(100% - 22px,1180px);padding-top:12px}.stats{grid-template-columns:1fr}.stat{padding:15px}.student-head{display:block}.top-actions{justify-content:flex-end}.panel{padding:16px}}
+
+/* Full student record workspace — additive, retaining the existing DCDS visual system */
+.detail-panel{margin-top:18px;border:1px solid var(--border-color);border-radius:16px;padding:20px;background:#FFFFFF}
+.detail-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.detail-top h3{margin:0;color:var(--bright-gold);font-size:22px}
+.detail-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:16px}
+.detail-block{border:1px solid var(--border-color);border-radius:12px;padding:15px;background:rgba(255,255,255,.035);min-width:0}
+.detail-block h4{margin:0 0 12px;color:var(--bright-gold);font-size:15px}
+.detail-block p,.detail-block li{color:var(--soft-white);font-size:13px;line-height:1.6;overflow-wrap:anywhere}
+.detail-block ul{padding-left:19px;margin:0}
+.detail-field{display:grid;gap:6px;margin:10px 0}
+.detail-field label{font-size:12px;color:var(--muted-text);font-weight:700}
+.detail-field input,.detail-field textarea,.detail-field select{width:100%;border:1px solid var(--border-color);border-radius:9px;padding:11px;background:#FFFFFF;color:var(--soft-white);font:inherit}
+.detail-field textarea{min-height:82px;resize:vertical}
+.detail-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.detail-table{width:100%;border-collapse:collapse;font-size:12px}
+.detail-table th,.detail-table td{text-align:left;padding:8px 6px;border-bottom:1px solid rgba(212,175,55,.16);vertical-align:top}
+.detail-table th{color:var(--bright-gold)}
+.detail-scroll{overflow-x:auto}
+.detail-notice{color:var(--muted-text);font-size:12px;line-height:1.55;margin-top:9px}
+.student-open{margin-top:13px}
+.danger-btn{border:1px solid rgba(240,82,82,.5);background:rgba(240,82,82,.12);color:#ffb1b1;border-radius:9px;padding:10px 13px;font-weight:700;cursor:pointer}
+  @media(max-width:700px){.detail-grid{grid-template-columns:1fr}.detail-panel{padding:14px}}
+
+
+/* DCDS STUDENT-DASHBOARD PALETTE — light purple, white and restrained gold */
+body { background:linear-gradient(145deg,#fbf9ff,#f1e8fb); color:#28183a; }
+header { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50,16,95,.06); }
+.brand h1 { color:#451078; }
+.brand h1 span { color:#21083f; }
+.brand p,#welcome p { color:#756783; }
+#welcome h2 { color:#21083f; }
+.stat,.panel { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50,16,95,.06); }
+.stat span { color:#756783; }
+.stat strong { color:#451078; }
+.panel h3 { color:#21083f; }
+#searchInput,.detail-field input,.detail-field textarea,.detail-field select {
+  background:#FFFFFF; color:#28183a; border-color:#eadff5;
+}
+#searchInput::placeholder,.detail-field input::placeholder,.detail-field textarea::placeholder { color:#91839f; }
+#searchInput:focus,.detail-field input:focus,.detail-field textarea:focus,.detail-field select:focus {
+  border-color:#7628d8; outline-color:#7628d8;
+}
+.btn.gold { background:linear-gradient(110deg,#8d3bdb,#54168e); color:#FFFFFF; border:0; }
+.btn.ghost { background:#f1e5ff; border-color:#eadff5; color:#451078; }
+.student-card,.detail-panel,.detail-block {
+  background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50,16,95,.045);
+}
+.student-name,.detail-top h3,.detail-block h4 { color:#451078; }
+.student-email,.student-meta,.student-finance,.pagination { color:#756783; }
+.pill { background:#e7f8ed; color:#17683a; }
+.pill.pending { background:#fff1c9; color:#76551a; }
+.course-chip { color:#451078; background:#f8f4fc; border-color:#eadff5; }
+.empty { background:#FFFFFF; border-color:#d9c8e8; color:#756783; }
+.detail-block p,.detail-block li { color:#28183a; }
+.detail-field label,.detail-notice { color:#756783; }
+.detail-table th { color:#451078; }
+.detail-table th,.detail-table td { border-bottom-color:#eadff5; }
+.danger-btn { background:#fff0f0; border-color:#f2b8b8; color:#a61b1b; }
+
 </style>
 </head>
 <body>
@@ -76,7 +144,7 @@ footer{text-align:center;color:var(--muted-text);font-size:12px;padding:25px 0}
 
   <section id="welcome">
     <h2>Student Management 👩🏽‍🎓</h2>
-    <p>One secure place to review DCDS student accounts, course enrolments and confirmed order totals. This first release is a read-only student registry; existing student accounts, payments and enrolments remain in their original tables.</p>
+    <p>One secure workspace for student profiles, enrolments, payments, learning progress, certificates, support history and administrator notes. Existing student accounts and financial records remain in their original tables.</p>
   </section>
 
   <section class="stats" aria-label="Student overview">
@@ -96,15 +164,23 @@ footer{text-align:center;color:var(--muted-text);font-size:12px;padding:25px 0}
     <div id="status" role="status" aria-live="polite">Checking administrator access…</div>
     <div id="error" role="alert"></div>
     <div id="resultMeta"></div>
-    <div class="student-list" id="studentList"></div>
+     <div class="student-list" id="studentList"></div>
     <div class="pagination">
       <button class="btn ghost" id="previousButton" type="button" disabled>← Previous</button>
       <span id="pageLabel">Page 1</span>
       <button class="btn ghost" id="nextButton" type="button" disabled>Next →</button>
     </div>
+    <section id="studentDetailPanel" class="detail-panel" hidden aria-live="polite">
+      <div class="detail-top">
+        <h3 id="detailHeading">Student Record</h3>
+        <button class="btn ghost" id="closeDetailButton" type="button">Close Record ✕</button>
+      </div>
+      <div id="studentDetailContent"></div>
+    </section>
   </section>
   <footer>De Champions Digital Service · CREATE • LEARN • INNOVATE • EARN.</footer>
 </div>
+
 <script>
 const SUPABASE_URL = "https://qxsenflgaweeadvggnyp.supabase.co";
 const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
@@ -130,7 +206,7 @@ function make(tag, className, text) {
   const el = document.createElement(tag);
   if (className) el.className = className;
   if (text !== undefined) el.textContent = safeText(text);
-  return el;
+      return el;
 }
 function showError(message) {
   $("error").textContent = message;
@@ -168,7 +244,7 @@ function renderStudents() {
       make("span","",`Last sign-in: ${formatDate(student.last_sign_in_at)}`),
       make("span","",`Enrolments: ${student.enrollment_count || 0}`)
     );
-    const details = document.createElement("details");
+        const details = document.createElement("details");
     const summary = make("summary","","View enrolled courses");
     summary.style.cssText = "cursor:pointer;color:var(--bright-gold);font-weight:700;font-size:13px;margin-top:12px";
     const courses = make("div","course-list");
@@ -177,7 +253,10 @@ function renderStudents() {
     enrolled.forEach(course => courses.appendChild(make("span","course-chip",`${course.course_title || "Course"} · ${formatDate(course.enrolled_at)}`)));
     details.append(summary,courses);
     const finance = make("div","student-finance",`Successful orders: ${student.successful_order_count || 0} · Successful order total: ${formatMoney(student.total_successful_amount)}`);
-    card.append(head,meta,details,finance);
+    const openButton = make("button","btn gold student-open","Open Full Student Record");
+    openButton.type = "button";
+    openButton.addEventListener("click",()=>openStudentRecord(student.user_id));
+    card.append(head,meta,details,finance,openButton);
     list.appendChild(card);
   });
 }
@@ -198,13 +277,231 @@ async function loadStudents() {
     console.error("Student registry error:",error);
     $("status").textContent = "Student records could not be loaded.";
     showError(error.message || "Unable to retrieve student records. Please refresh or contact the system administrator.");
-    students = [];
+        students = [];
     renderStudents();
     return;
   }
   students = Array.isArray(data) ? data : [];
   $("status").textContent = "Student records loaded.";
   renderStudents();
+}
+
+
+async function rpcCall(name, args) {
+  const {data,error} = await db.rpc(name,args);
+  if (error) throw error;
+  return data;
+}
+function detailBlock(title) {
+  const block = make("section","detail-block");
+  block.appendChild(make("h4","",title));
+  return block;
+}
+function detailList(block, rows, emptyText) {
+  if (!rows || !rows.length) {
+    block.appendChild(make("p","",emptyText));
+    return;
+  }
+  const ul = document.createElement("ul");
+  rows.forEach(row => ul.appendChild(make("li","",row)));
+  block.appendChild(ul);
+}
+function detailTable(headers, rows, emptyText) {
+  const wrap = make("div","detail-scroll");
+  if (!rows || !rows.length) {
+    wrap.appendChild(make("p","",emptyText));
+    return wrap;
+  }
+  const table = make("table","detail-table");
+  const thead = document.createElement("thead");
+  const trh = document.createElement("tr");
+  headers.forEach(h=>trh.appendChild(make("th","",h)));
+  thead.appendChild(trh);
+  const tbody = document.createElement("tbody");
+  rows.forEach(row=>{
+    const tr = document.createElement("tr");
+    row.forEach(value=>tr.appendChild(make("td","",value)));
+    tbody.appendChild(tr);
+  });
+  table.append(thead,tbody);
+  wrap.appendChild(table);
+  return wrap;
+}
+function field(labelText, input) {
+  const wrap = make("div","detail-field");
+  wrap.append(make("label","",labelText),input);
+  return wrap;
+}
+function inputField(value, placeholder="") {
+  const input = document.createElement("input");
+  input.value = safeText(value);
+  input.placeholder = placeholder;
+  return input;
+}
+  function selectField(options, selected) {
+  const select = document.createElement("select");
+  options.forEach(([value,label])=>{
+    const option=document.createElement("option");
+    option.value=value;option.textContent=label;select.appendChild(option);
+  });
+  select.value=selected;
+  return select;
+}
+function makeActionButton(label, onClick, className="btn gold") {
+  const button=make("button",className,label);
+  button.type="button";
+  button.addEventListener("click",onClick);
+  return button;
+}
+let activeStudentId = null;
+let courseCatalog = [];
+
+async function loadCourseCatalog() {
+  const {data,error}=await db.from("courses").select("id,title,price,currency").order("title");
+  if(error) throw error;
+  courseCatalog=data||[];
+}
+
+async function openStudentRecord(studentId) {
+  activeStudentId=studentId;
+  $("studentDetailPanel").hidden=false;
+  $("studentDetailContent").replaceChildren(make("p","","Loading the complete student record…"));
+  $("detailHeading").textContent="Student Record";
+  $("studentDetailPanel").scrollIntoView({behavior:"smooth",block:"start"});
+  try {
+    const record=await rpcCall("admin_get_student_record",{p_student_id:studentId});
+    renderStudentRecord(record);
+  } catch(error) {
+    console.error("Student detail error:",error);
+    $("studentDetailContent").replaceChildren(make("div","empty","Unable to load this student record: "+error.message));
+  }
+}
+function renderStudentRecord(record) {
+  const student=record.student||{};
+  $("detailHeading").textContent=(student.full_name||"Student")+" · Full Record";
+  const root=$("studentDetailContent");
+  root.replaceChildren();
+  const grid=make("div","detail-grid");
+
+  // Profile and account controls
+  const profile=detailBlock("👤 Personal & Account Profile");
+    const nameInput=inputField(student.full_name);
+  const phoneInput=inputField(student.phone,"Student phone number");
+  const emailInput=inputField(student.email);
+  emailInput.disabled=true;
+  profile.append(field("Full name",nameInput),field("Email address (managed through Auth)",emailInput),field("Phone number",phoneInput));
+  const profileActions=make("div","detail-actions");
+  profileActions.appendChild(makeActionButton("Save Profile",async()=>{
+    try{
+      await rpcCall("admin_update_student_profile",{p_student_id:student.id,p_full_name:nameInput.value.trim(),p_phone:phoneInput.value.trim()||null});
+      alert("Student profile updated.");
+      await openStudentRecord(student.id);await loadStudents();
+    }catch(e){alert("Profile update failed: "+e.message);}
+  }));
+  const isSuspended=!!student.banned_until && new Date(student.banned_until)>new Date();
+  profileActions.appendChild(makeActionButton(isSuspended?"Reactivate Account":"Suspend Account",async()=>{
+    const verb=isSuspended?"reactivate":"suspend";
+    if(!confirm(`Are you sure you want to ${verb} this student's sign-in access?`))return;
+    try{
+      await rpcCall("admin_set_student_access",{p_student_id:student.id,p_suspended:!isSuspended});
+      alert("Student account access updated.");
+      await openStudentRecord(student.id);await loadStudents();
+    }catch(e){alert("Account update failed: "+e.message);}
+  },isSuspended?"btn gold":"danger-btn"));
+  profile.appendChild(profileActions);
+  profile.appendChild(make("p","detail-notice",`Created: ${formatDate(student.created_at)} · Last sign-in: ${formatDate(student.last_sign_in_at)} · Email confirmed: ${student.email_confirmed_at?"Yes":"No"} · ${isSuspended?"Account suspended":"Account active"}`));
+    grid.appendChild(profile);
+
+  // Course enrolments and management
+  const enrol=detailBlock("🎓 Course Enrolments & Access");
+  const enrolments=record.enrolments||[];
+  enrol.appendChild(detailTable(["Course","Enrolled","Source","Action"],enrolments.map(e=>[
+    e.course_title,formatDate(e.enrolled_at),e.enrollment_source==="admin_grant"?"Admin grant":"Purchase",
+    e.enrollment_source==="admin_grant"?"Admin grant — removable":"Purchased — protected"
+  ]),"No course enrolments recorded."));
+  const courseSelect=selectField(courseCatalog.map(c=>[c.id,`${c.title} · ${formatMoney(c.price)}`]),courseCatalog[0]?.id||"");
+  courseSelect.disabled=!courseCatalog.length;
+  enrol.append(field("Manually enrol in a course",courseSelect));
+  enrol.appendChild(make("p","detail-notice","Manual enrolments are recorded as administrator grants and do not create fake orders or revenue. Purchased enrolments are protected from removal here."));
+  const removable = enrolments.filter(e=>e.enrollment_source==="admin_grant");
+  if(removable.length){
+    const removeSelect=selectField(removable.map(e=>[e.id,e.course_title]),removable[0].id);
+    enrol.append(field("Remove an administrator-granted enrolment",removeSelect));
+    enrol.appendChild(makeActionButton("Remove Selected Admin Grant",async()=>{
+      if(!confirm("Remove this administrator-granted course access?"))return;
+      try{
+        await rpcCall("admin_remove_student_enrolment",{p_enrollment_id:removeSelect.value});
+        alert("Administrator-granted enrolment removed.");
+        await openStudentRecord(student.id);await loadStudents();
+      }catch(e){alert("Could not remove enrolment: "+e.message);}
+    },"danger-btn"));
+  }
+  const enrolActions=make("div","detail-actions");
+    enrolActions.appendChild(makeActionButton("Grant Course Access",async()=>{
+    if(!courseSelect.value){alert("No courses are available.");return;}
+    if(!confirm("Grant this student access to the selected course?"))return;
+    try{
+      await rpcCall("admin_enrol_student",{p_student_id:student.id,p_course_id:courseSelect.value});
+      alert("Course access granted.");
+      await openStudentRecord(student.id);await loadStudents();
+    }catch(e){alert("Could not grant access: "+e.message);}
+  }));
+  enrol.appendChild(enrolActions);
+  grid.appendChild(enrol);
+
+  // Financial history
+  const finance=detailBlock("💳 Orders & Payment History");
+  finance.appendChild(detailTable(["Course","Amount","Order status","Reference","Date"],(record.orders||[]).map(o=>[
+    o.course_title,formatMoney(o.amount),o.status,o.tx_ref||"—",formatDate(o.created_at)
+  ]),"No orders found."));
+  finance.appendChild(make("h4","","Payment transactions"));
+  finance.appendChild(detailTable(["Provider","Amount","Status","Transaction ID","Date"],(record.payments||[]).map(p=>[
+    p.provider,formatMoney(p.amount),p.status,p.transaction_id||p.tx_ref||"—",formatDate(p.created_at)
+  ]),"No payment transactions found."));
+  finance.appendChild(make("p","detail-notice","Financial records are view-only here. Verify payment status through the payment provider and existing payment workflow; this dashboard does not manually mark payments successful."));
+  grid.appendChild(finance);
+
+  // Progress and certificates
+  const learning=detailBlock("📚 Learning Progress");
+  learning.appendChild(detailTable(["Course","Lesson completed","Date"],(record.progress||[]).map(p=>[
+    p.course_title,p.lesson_title,formatDate(p.completed_at)
+  ]),"No completed lessons recorded."));
+  grid.appendChild(learning);
+    const certs=detailBlock("🏅 Certificates");
+  certs.appendChild(detailTable(["Certificate No.","Course","Status","Issued"],(record.certificates||[]).map(c=>[
+    c.certificate_number,c.course_title,c.status,formatDate(c.issued_at)
+  ]),"No certificates recorded."));
+  grid.appendChild(certs);
+
+  // Support history
+  const support=detailBlock("🎧 Student Support History");
+  support.appendChild(detailTable(["Subject","Category","Status","Submitted","Response"],(record.support_tickets||[]).map(t=>[
+    t.subject,t.category,t.status,formatDate(t.created_at),t.admin_response||"Awaiting response"
+  ]),"No support requests found."));
+  grid.appendChild(support);
+
+  // Internal admin notes
+  const notes=detailBlock("📝 Internal Administrator Notes");
+  detailList(notes,(record.admin_notes||[]).map(n=>`${formatDate(n.created_at)} — ${n.note}`),"No internal notes yet.");
+  const noteArea=document.createElement("textarea");
+  noteArea.maxLength=3000;noteArea.placeholder="Add an internal note for authorized DCDS administrators…";
+  notes.append(field("New internal note",noteArea));
+  notes.appendChild(makeActionButton("Save Internal Note",async()=>{
+    try{
+      await rpcCall("admin_add_student_note",{p_student_id:student.id,p_note:noteArea.value.trim()});
+      alert("Internal note saved.");await openStudentRecord(student.id);
+    }catch(e){alert("Could not save note: "+e.message);}
+  }));
+  notes.appendChild(make("p","detail-notice","Internal notes are not visible to students."));
+  grid.appendChild(notes);
+
+  // Audit history
+  const audit=detailBlock("🔐 Administrator Activity Log");
+  audit.appendChild(detailTable(["Action","Details","Date"],(record.audit_log||[]).map(a=>[
+    a.action,JSON.stringify(a.details||{}),formatDate(a.created_at)
+  ]),"No administrative actions recorded."));
+    grid.appendChild(audit);
+  root.appendChild(grid);
 }
 
 async function initialize() {
@@ -222,6 +519,7 @@ async function initialize() {
   }
   $("adminApp").hidden = false;
   $("status").textContent = "Administrator access verified.";
+  try { await loadCourseCatalog(); } catch(e) { console.error("Course catalog load failed:",e); }
   await loadStudents();
 }
 $("searchButton").addEventListener("click",()=>{searchTerm=$("searchInput").value.trim();page=0;loadStudents();});
@@ -229,6 +527,7 @@ $("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter")$("se
 $("refreshButton").addEventListener("click",loadStudents);
 $("previousButton").addEventListener("click",()=>{if(page>0){page--;loadStudents();}});
 $("nextButton").addEventListener("click",()=>{if(students.length===PAGE_SIZE){page++;loadStudents();}});
+$("closeDetailButton").addEventListener("click",()=>{$("studentDetailPanel").hidden=true;activeStudentId=null;});
 $("logoutButton").addEventListener("click",async()=>{await db.auth.signOut();location.replace("index.html");});
 initialize().catch(error=>{console.error(error);showError("Unexpected error while opening Student Management.");$("status").textContent="Initialization failed.";});
 </script>
