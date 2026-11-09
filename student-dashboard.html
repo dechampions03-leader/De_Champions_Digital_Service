@@ -299,6 +299,16 @@ header a{background:white;border:1px solid var(--line);color:var(--dark);font-si
 
   <div class="panel" id="academicRecordsPanel"><h3>🎓 My Academic Records</h3><p>A record of your DCDS course enrolments. Official certificates remain available in the Certificates section above.</p><div id="academicRecordList" class="record-list"><div class="empty-certificates">Loading your academic records…</div></div></div>
   
+  <section class="section-title">
+    <span>GROW WITH DCDS</span>
+    <h2>DCDS Global Ambassador & Rewards Programme</h2>
+  </section>
+  <div class="panel" id="ambassadorPanel">
+    <h3>🌍 Share Knowledge • Build Futures • Earn Rewards</h3>
+    <p>Earn ₦1,000 when someone you refer successfully purchases a qualifying DCDS course. Registration alone does not earn a reward. Your ambassador link activates after your first successful DCDS course purchase.</p>
+    <div id="ambassadorContent" class="feature-message" role="status" aria-live="polite">Checking your ambassador eligibility…</div>
+  </div>
+
   <div class="panel" id="studentProfilePanel"><h3>👤 My Student Profile</h3><p>Keep your student contact details up to date. Your login email is displayed for reference and is not changed here.</p>
     <form id="studentProfileForm" class="profile-form">
       <label>Full name<input id="profileFullName" type="text" maxlength="100" autocomplete="name" required></label>
@@ -727,6 +737,89 @@ document.getElementById('supportTicketForm').addEventListener('submit',async eve
   try{await loadSupportTickets(activeStudent);}catch(e){console.error('Support history loading error:',e);document.getElementById('supportTicketList').innerHTML='<div class="empty-certificates">Your request was submitted, but its history could not be refreshed. Please reload this page.</div>';}
 }
 );
+async function loadAmbassadorPanel(user) {
+  const box = document.getElementById('ambassadorContent');
+  box.textContent = 'Loading your ambassador details…';
+  try {
+    const [{data: ambassador, error: ambassadorError}, {data: referrals, error: referralsError}, {data: rewards, error: rewardsError}] = await Promise.all([
+      client.from('dcds_ambassadors').select('user_id,referral_code,status,activated_at').eq('user_id', user.id).maybeSingle(),
+      client.from('dcds_referrals').select('id,status,referred_at').eq('referrer_user_id', user.id),
+      client.from('dcds_reward_ledger').select('id,course_id,amount,status,created_at').eq('ambassador_user_id', user.id).order('created_at', {ascending:false})
+    ]);
+    if (ambassadorError) throw ambassadorError;
+    if (referralsError) throw referralsError;
+    if (rewardsError) throw rewardsError;
+
+    if (!ambassador || ambassador.status !== 'active') {
+      box.innerHTML = ambassador?.status === 'suspended'
+        ? '<p>Your ambassador sharing access is currently suspended. Please contact DCDS Student Support for assistance.</p>'
+        : '<p><strong>Ambassador sharing is not active yet.</strong><br>Successfully purchase at least one DCDS course using this student account. Once your payment is verified and your enrollment is activated, your personal referral code and sharing link will appear here automatically.</p>';
+      return;
+    }
+
+    const referralLink = 'https://dechampions03-leader.github.io/De_Champions_Digital_Service/?ref=' + encodeURIComponent(ambassador.referral_code);
+    const rows = rewards || [];
+    const sum = state => rows.filter(r => r.status === state).reduce((n, r) => n + Number(r.amount || 0), 0);
+    const available = sum('available');
+    const qualified = (referrals || []).filter(r => r.status === 'qualified').length;
+    const attributed = (referrals || []).length;
+    const money = value => '₦' + Number(value || 0).toLocaleString('en-NG', {maximumFractionDigits:0});
+    const rewardRows = rows.length ? rows.map(r => {
+      const state = String(r.status || 'pending').replace(/_/g,' ');
+      return '<div class="record-row"><strong>' + money(r.amount) + ' · ' + escapeHtml(state.toUpperCase()) + '</strong><div class="record-meta"><span>Course reward</span><span>' + formatAcademicDate(r.created_at) + '</span></div></div>';
+    }).join('') : '<div class="empty-certificates">Your qualifying course rewards will appear here after a referred student completes a verified purchase.</div>';
+
+    box.innerHTML = `
+      <div class="stats" style="margin:16px 0">
+        <div class="stat"><strong>${attributed}</strong><span>People referred</span></div>
+        <div class="stat"><strong>${qualified}</strong><span>Qualified referrals</span></div>
+        <div class="stat"><strong>${money(available)}</strong><span>Available rewards</span></div>
+      </div>
+      <div class="record-row"><strong>Your ambassador code</strong><div class="record-meta"><span id="ambassadorCode">${escapeHtml(ambassador.referral_code)}</span><span>Active</span></div></div>
+      <div class="record-row" style="margin-top:10px"><strong>Your personal referral link</strong><p id="ambassadorLink" style="margin-top:8px;overflow-wrap:anywhere">${escapeHtml(referralLink)}</p>
+        <div class="actions">
+          <button class="btn primary" id="copyAmbassadorLink" type="button">Copy referral link</button>
+          <button class="btn light" id="shareAmbassadorLink" type="button">Share link</button>
+        </div>
+        <div id="ambassadorShareMessage" class="feature-message" role="status" aria-live="polite"></div>
+      </div>
+      <div style="margin-top:18px"><h3>Reward history</h3><div class="record-list">${rewardRows}</div></div>
+      <p class="form-note" style="margin-top:12px">Commission: ₦1,000 for each distinct course successfully purchased by a referred student. A repeat purchase of the same course does not earn another commission. Minimum withdrawal is ₦5,000; bank setup and withdrawal requests will be enabled after secure payout verification is completed.</p>
+    `;
+
+    const copyBtn = document.getElementById('copyAmbassadorLink');
+    const shareBtn = document.getElementById('shareAmbassadorLink');
+    const shareMessage = document.getElementById('ambassadorShareMessage');
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(referralLink);
+        shareMessage.textContent = '✓ Referral link copied. Share it with your friends.';
+      } catch (error) {
+        shareMessage.textContent = 'Copy is unavailable in this browser. Select and copy the referral link above.';
+      }
+    });
+    shareBtn.addEventListener('click', async () => {
+      if (navigator.share) {
+        try {
+          await navigator.share({title:'DCDS Global Ambassador & Rewards Programme', text:'Learn digital skills with De Champions Digital Service. Register using my referral link:', url:referralLink});
+        } catch (error) {
+          if (error?.name !== 'AbortError') shareMessage.textContent = 'Sharing could not be completed. You can copy the link instead.';
+        }
+      } else {
+        try {
+          await navigator.clipboard.writeText(referralLink);
+          shareMessage.textContent = '✓ Referral link copied. You can now share it.';
+        } catch (error) {
+          shareMessage.textContent = 'Sharing is unavailable here. Select and copy the referral link above.';
+        }
+      }
+    });
+  } catch (error) {
+    console.error('Ambassador information unavailable:', error);
+    box.textContent = 'Your ambassador information is temporarily unavailable. Your student dashboard is still working; please refresh later.';
+  }
+}
+
 async function loadDashboard() {
   statusEl.textContent = 'Checking your student account and course enrollments…';
   document.getElementById('dashboard').classList.add('hidden');
@@ -753,6 +846,7 @@ async function loadDashboard() {
   document.body.classList.remove('auth-pending');
   activeStudent = user;
   loadStudentProfile(user);
+  await loadAmbassadorPanel(user);
   await loadNotifications(user);
   await showAdminNotificationLink();
   try { await loadSupportTickets(user); }
