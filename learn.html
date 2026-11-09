@@ -692,19 +692,35 @@ function downloadCertificate() {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>DCDS Certificate - ${escapeCertificateText(currentCertificate.certificate_number)}</title>
 <style>
-*{box-sizing:border-box}body{margin:0;padding:30px;background:#f4f0f8;color:#241332;font-family:Georgia,serif}
-.certificate{max-width:1000px;min-height:690px;margin:0 auto;background:#fffdf8;border:12px double #6c2bd9;outline:2px solid #d4af37;outline-offset:-22px;padding:65px 55px;text-align:center;position:relative}
+*{box-sizing:border-box}
+body{margin:0;padding:24px;background:#f4f0f8;color:#241332;font-family:Georgia,serif}
+.certificate{width:100%;max-width:1000px;min-height:690px;margin:0 auto;background:#fffdf8;border:10px double #6c2bd9;outline:2px solid #d4af37;outline-offset:-19px;padding:58px 48px;text-align:center;position:relative}
 .brand{font:900 18px Arial,sans-serif;letter-spacing:5px;color:#6c2bd9}
 .tag{font:11px Arial,sans-serif;letter-spacing:3px;color:#876d38;margin-top:8px}
-h1{font-size:46px;color:#3a1857;margin:55px 0 12px}
-.subtitle{font:15px Arial,sans-serif;letter-spacing:3px;text-transform:uppercase;color:#8b6b2d}
-.award{font-size:18px;margin-top:35px;color:#51445b}
-.name{font-size:38px;font-weight:bold;color:#32144d;border-bottom:1px solid #d4af37;display:inline-block;padding:10px 35px;margin:15px 0}
-.course{font-size:27px;color:#6c2bd9;font-weight:bold;margin:15px 0}
-.detail{font:13px Arial,sans-serif;color:#65596d;line-height:1.8;margin-top:28px}
-.signature{margin:55px auto 0;width:260px;border-top:1px solid #9c8caa;padding-top:10px;font:12px Arial,sans-serif;color:#4a3c54}
-.number{font:11px Arial,sans-serif;color:#806a39;margin-top:28px}
-@media print{body{padding:0;background:#fff}.certificate{max-width:none;min-height:100vh;border-width:12px;break-inside:avoid}@page{size:landscape;margin:10mm}}
+h1{font-size:42px;color:#3a1857;margin:30px 0 12px}
+.subtitle{font:14px Arial,sans-serif;letter-spacing:3px;text-transform:uppercase;color:#8b6b2d}
+.award{font-size:17px;margin-top:24px;color:#51445b}
+.name{font-size:34px;font-weight:bold;color:#32144d;border-bottom:1px solid #d4af37;display:inline-block;padding:8px 30px;margin:12px 0}
+.course{font-size:25px;color:#6c2bd9;font-weight:bold;margin:12px 0}
+.detail{font:12px Arial,sans-serif;color:#65596d;line-height:1.7;margin-top:20px}
+.signature{margin:32px auto 0;width:260px;border-top:1px solid #9c8caa;padding-top:8px;font:11px Arial,sans-serif;color:#4a3c54}
+.number{font:10px Arial,sans-serif;color:#806a39;margin-top:18px}
+@page{size:A4 landscape;margin:0}
+@media print{
+  html,body{width:297mm;height:210mm;margin:0;padding:0;background:#fff}
+  body{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .certificate{width:277mm;height:190mm;max-width:none;min-height:0;margin:10mm;padding:18mm 16mm;border-width:8px;outline-offset:-15px;break-inside:avoid;page-break-inside:avoid;overflow:hidden}
+  h1{font-size:36pt;margin:18mm 0 4mm}
+  .brand{font-size:15pt}
+  .tag{font-size:8pt}
+  .subtitle{font-size:10pt}
+  .award{font-size:13pt;margin-top:8mm}
+  .name{font-size:28pt;margin:4mm 0;padding:3mm 12mm}
+  .course{font-size:20pt;margin:4mm 0}
+  .detail{font-size:9pt;margin-top:7mm}
+  .signature{margin-top:10mm;font-size:9pt}
+  .number{font-size:8pt;margin-top:5mm}
+}
 </style></head><body>
 <main class="certificate">
 <div class="brand">DCDS</div><div class="tag">CREATE • LEARN • INNOVATE • EARN</div>
