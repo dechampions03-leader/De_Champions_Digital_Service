@@ -94,6 +94,58 @@ color:var(--muted)
 small {
 color:var(--muted)
 }
+
+/* DCDS light purple-and-white visual system */
+:root{
+  --bg:#f1e8fb;
+  --panel:#ffffff;
+  --purple:#7628d8;
+  --light:#451078;
+  --muted:#756783;
+  --gold:#e4c16d;
+  --line:#eadff5;
+}
+body{
+  background:linear-gradient(145deg,#fbf9ff,#f1e8fb);
+  color:#28183a;
+}
+header{
+  background:#ffffff;
+  border-bottom:1px solid #eadff5;
+  box-shadow:0 8px 24px rgba(50,16,95,.06);
+}
+header b,h1,h2,h3{color:#451078}
+header p,small,.notice{color:#756783}
+.panel,.card{
+  background:#ffffff;
+  border:1px solid #eadff5;
+  box-shadow:0 8px 24px rgba(50,16,95,.045);
+}
+input,textarea,select,.field{
+  background:#ffffff;
+  color:#28183a;
+  border:1px solid #eadff5;
+  max-width:100%;
+}
+input:focus,textarea:focus,select:focus,.field:focus{
+  outline:2px solid #7628d8;
+  outline-offset:1px;
+}
+button{
+  background:linear-gradient(110deg,#8d3bdb,#54168e);
+  color:#ffffff;
+}
+button.secondary{
+  background:#f1e5ff;
+  border:1px solid #eadff5;
+  color:#451078;
+}
+.option{border-color:#eadff5;background:#fbf9ff}
+.item,.notice{border-color:#eadff5}
+@media(max-width:600px){
+  .panel,.card{padding:15px}
+}
+
 </style>
 </head><body>
 <header>
