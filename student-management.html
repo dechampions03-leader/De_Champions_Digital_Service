@@ -562,13 +562,33 @@ async function loadAdminPayouts() {
     ].forEach(v=>metaLine.appendChild(make("span","",v)));
     card.appendChild(metaLine);
     if(r.failure_reason)card.appendChild(make("p","detail-notice","Processing note: "+r.failure_reason));
-    if(r.status==="requested"){
+    if(r.status==="requested" || r.status==="processing"){
       const actions=make("div","detail-actions");
-      const process=makeActionButton(data.real_payouts_enabled?"Process Verified Transfer":"Transfer Disabled",async()=>{
-        alert("Real payout processing is disabled until sandbox testing and operational approval are complete.");
-      },data.real_payouts_enabled?"btn gold":"btn ghost");
-      process.disabled=true;
-      actions.appendChild(process);card.appendChild(actions);
+      const reconcile=r.status==="processing";
+      const actionButton=makeActionButton(
+        !data.real_payouts_enabled?"Real Transfers Disabled":(reconcile?"Reconcile Transfer Status":"Process Verified Transfer"),
+        async()=>{
+          if(!data.real_payouts_enabled)return;
+          const promptText=reconcile
+            ?"Check the existing Flutterwave transfer status? This will not send another transfer."
+            :"Initiate this bank transfer now? Confirm that sandbox testing and operational approval are complete.";
+          if(!window.confirm(promptText))return;
+          actionButton.disabled=true;
+          actionButton.textContent=reconcile?"Checking status…":"Submitting transfer…";
+          const {data:result,error}=await db.functions.invoke("dcds-process-payout",{
+            body:{action:reconcile?"reconcile":"process",request_id:r.id}
+          });
+          if(error || !result?.success){
+            alert(result?.message||result?.error||"Payout action could not be completed. Check the audit log before retrying.");
+          }else{
+            alert(result.message||"Payout status updated.");
+          }
+          await loadAdminPayouts();
+        },
+        data.real_payouts_enabled?"btn gold":"btn ghost"
+      );
+      actionButton.disabled=!data.real_payouts_enabled;
+      actions.appendChild(actionButton);card.appendChild(actions);
     }
     list.appendChild(card);
   });
