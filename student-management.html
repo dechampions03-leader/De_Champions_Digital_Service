@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#160B27">
+<meta name="description" content="DCDS Student Management System">
+<title>DCDS Student Management System</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{
+  --primary-purple:#6C2BD9;--deep-purple:#2B124C;--dark-background:#160B27;
+  --darker-background:#0D0717;--luxury-gold:#D4AF37;--bright-gold:#F5D77A;
+  --pure-white:#FFFFFF;--soft-white:#F3EDF9;--muted-text:#B8A9CC;
+  --success-green:#25C47A;--danger-red:#F05252;
+  --card-background:rgba(255,255,255,.055);--border-color:rgba(212,175,55,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:linear-gradient(145deg,var(--darker-background),var(--dark-background) 55%,#24103A);color:var(--soft-white);font-family:Arial,Helvetica,sans-serif;min-height:100vh}
+button,input{font:inherit}
+#adminApp{width:min(1180px,calc(100% - 32px));margin:0 auto;padding:24px 0 42px}
+header{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 22px;border:1px solid var(--border-color);border-radius:18px;background:var(--card-background)}
+.brand h1{font-family:Georgia,serif;font-size:clamp(19px,4vw,27px);line-height:1.15;margin:0;color:var(--bright-gold);letter-spacing:.04em}
+.brand h1 span{display:block;font:700 11px Arial,sans-serif;letter-spacing:.24em;margin-top:7px;color:var(--soft-white)}
+.brand p{font-size:11px;letter-spacing:.14em;color:var(--muted-text);margin:10px 0 0}
+.top-actions{display:flex;gap:9px;flex-wrap:wrap}
+.btn{border:1px solid var(--border-color);border-radius:10px;padding:11px 15px;font-weight:700;text-decoration:none;cursor:pointer}
+.btn.gold{background:linear-gradient(110deg,var(--luxury-gold),var(--bright-gold));color:#241338;border:0}
+.btn.ghost{background:transparent;color:var(--soft-white)}
+#welcome{padding:27px 8px 18px}
+#welcome h2{font:700 clamp(24px,4vw,34px) Georgia,serif;color:var(--bright-gold);margin:0 0 9px}
+#welcome p{color:var(--muted-text);line-height:1.7;margin:0;max-width:780px}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:15px 0 20px}
+.stat,.panel{border:1px solid var(--border-color);border-radius:18px;background:var(--card-background);padding:20px}
+.stat span{display:block;color:var(--muted-text);font-size:13px}
+.stat strong{display:block;color:var(--bright-gold);font-size:29px;margin-top:8px}
+.panel h3{margin:0;color:var(--bright-gold);font-size:21px}
+.panel .intro{color:var(--muted-text);line-height:1.6;margin:9px 0 18px}
+.toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+#searchInput{flex:1 1 260px;min-width:0;background:#12091F;color:var(--soft-white);border:1px solid var(--border-color);border-radius:10px;padding:13px 14px;outline:none}
+#searchInput:focus{border-color:var(--bright-gold)}
+#resultMeta{color:var(--muted-text);font-size:13px;margin:15px 0}
+.student-list{display:grid;gap:12px}
+.student-card{border:1px solid var(--border-color);border-radius:14px;padding:17px;background:rgba(12,6,23,.38)}
+.student-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}
+.student-name{font-weight:800;color:var(--bright-gold);font-size:17px;overflow-wrap:anywhere}
+.student-email{color:var(--muted-text);font-size:13px;margin-top:5px;overflow-wrap:anywhere}
+.student-meta{display:flex;gap:8px 16px;flex-wrap:wrap;color:var(--muted-text);font-size:12px;margin:13px 0}
+.pill{display:inline-block;padding:5px 9px;border-radius:30px;background:rgba(37,196,122,.12);color:#8BE4B8;font-size:10px;font-weight:800}
+.pill.pending{background:rgba(212,175,55,.14);color:var(--bright-gold)}
+.course-list{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+.course-chip{border:1px solid rgba(212,175,55,.2);border-radius:8px;padding:6px 9px;color:var(--soft-white);font-size:11px;background:rgba(255,255,255,.035)}
+.student-finance{color:var(--muted-text);font-size:12px;margin-top:12px}
+.empty{padding:28px 16px;border:1px dashed var(--border-color);border-radius:13px;color:var(--muted-text);text-align:center;line-height:1.6}
+.pagination{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:18px;color:var(--muted-text);font-size:13px}
+.pagination button:disabled{opacity:.4;cursor:not-allowed}
+#status{margin:12px 0;color:var(--muted-text);font-size:13px;line-height:1.5}
+#error{display:none;color:#ffaaaa;background:rgba(240,82,82,.1);border:1px solid rgba(240,82,82,.3);padding:12px;border-radius:10px;margin:12px 0}
+footer{text-align:center;color:var(--muted-text);font-size:12px;padding:25px 0}
+[hidden]{display:none!important}
+@media(max-width:650px){#adminApp{width:min(100% - 22px,1180px);padding-top:12px}.stats{grid-template-columns:1fr}.stat{padding:15px}.student-head{display:block}.top-actions{justify-content:flex-end}.panel{padding:16px}}
+</style>
+</head>
+<body>
+<div id="adminApp" hidden>
+  <header>
+    <div class="brand">
+      <h1>DE CHAMPIONS<span>DIGITAL SERVICE</span></h1>
+      <p>STUDENT MANAGEMENT SYSTEM</p>
+    </div>
+    <div class="top-actions">
+      <a class="btn ghost" href="admin-notifications.html">Admin Centre</a>
+      <button class="btn gold" id="logoutButton" type="button">Log out</button>
+    </div>
+  </header>
+
+  <section id="welcome">
+    <h2>Student Management 👩🏽‍🎓</h2>
+    <p>One secure place to review DCDS student accounts, course enrolments and confirmed order totals. This first release is a read-only student registry; existing student accounts, payments and enrolments remain in their original tables.</p>
+  </section>
+
+  <section class="stats" aria-label="Student overview">
+    <div class="stat"><span>Students in this view</span><strong id="statStudents">—</strong></div>
+    <div class="stat"><span>Students with enrolments</span><strong id="statEnrolled">—</strong></div>
+    <div class="stat"><span>Email-confirmed accounts</span><strong id="statConfirmed">—</strong></div>
+  </section>
+
+  <section class="panel">
+    <h3>📋 Student Registry</h3>
+    <p class="intro">Search by student name, email address or phone number. Open a record's course list to review its current enrolments and successful order totals.</p>
+    <div class="toolbar">
+      <input id="searchInput" type="search" placeholder="Search name, email or phone…" autocomplete="off" aria-label="Search students">
+      <button class="btn gold" id="searchButton" type="button">Search</button>
+      <button class="btn ghost" id="refreshButton" type="button">↻ Refresh</button>
+    </div>
+    <div id="status" role="status" aria-live="polite">Checking administrator access…</div>
+    <div id="error" role="alert"></div>
+    <div id="resultMeta"></div>
+    <div class="student-list" id="studentList"></div>
+    <div class="pagination">
+      <button class="btn ghost" id="previousButton" type="button" disabled>← Previous</button>
+      <span id="pageLabel">Page 1</span>
+      <button class="btn ghost" id="nextButton" type="button" disabled>Next →</button>
+    </div>
+  </section>
+  <footer>De Champions Digital Service · CREATE • LEARN • INNOVATE • EARN.</footer>
+</div>
+<script>
+const SUPABASE_URL = "https://qxsenflgaweeadvggnyp.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+  auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
+});
+const $ = id => document.getElementById(id);
+const PAGE_SIZE = 50;
+let page = 0;
+let searchTerm = "";
+let students = [];
+
+function safeText(value) { return String(value ?? ""); }
+function formatDate(value) {
+  if (!value) return "Not available";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Not available" : date.toLocaleDateString("en-NG",{day:"numeric",month:"short",year:"numeric"});
+}
+function formatMoney(value) {
+  return new Intl.NumberFormat("en-NG",{style:"currency",currency:"NGN",maximumFractionDigits:0}).format(Number(value)||0);
+}
+function make(tag, className, text) {
+  const el = document.createElement(tag);
+  if (className) el.className = className;
+  if (text !== undefined) el.textContent = safeText(text);
+  return el;
+}
+function showError(message) {
+  $("error").textContent = message;
+  $("error").style.display = "block";
+}
+function clearError() { $("error").textContent = ""; $("error").style.display = "none"; }
+
+function renderStudents() {
+  const list = $("studentList");
+  list.replaceChildren();
+  $("statStudents").textContent = String(students.length);
+  $("statEnrolled").textContent = String(students.filter(s => Number(s.enrollment_count)>0).length);
+  $("statConfirmed").textContent = String(students.filter(s => !!s.email_confirmed_at).length);
+  $("resultMeta").textContent = `${students.length} student account(s) shown · Maximum 200 records per search`;
+  $("pageLabel").textContent = `Page ${page+1}`;
+  $("previousButton").disabled = page === 0;
+  $("nextButton").disabled = students.length < PAGE_SIZE;
+
+  if (!students.length) {
+    list.appendChild(make("div","empty","No student accounts matched your search."));
+    return;
+  }
+  students.forEach(student => {
+    const card = make("article","student-card");
+    const head = make("div","student-head");
+    const identity = make("div");
+    identity.append(make("div","student-name",student.full_name || "DCDS Student"));
+    identity.append(make("div","student-email",student.email || "No email address"));
+    const verification = make("span",student.email_confirmed_at ? "pill" : "pill pending",
+      student.email_confirmed_at ? "EMAIL CONFIRMED" : "EMAIL NOT CONFIRMED");
+    head.append(identity,verification);
+    const meta = make("div","student-meta");
+    meta.append(
+      make("span","",`Account created: ${formatDate(student.account_created_at)}`),
+      make("span","",`Last sign-in: ${formatDate(student.last_sign_in_at)}`),
+      make("span","",`Enrolments: ${student.enrollment_count || 0}`)
+    );
+    const details = document.createElement("details");
+    const summary = make("summary","","View enrolled courses");
+    summary.style.cssText = "cursor:pointer;color:var(--bright-gold);font-weight:700;font-size:13px;margin-top:12px";
+    const courses = make("div","course-list");
+    const enrolled = Array.isArray(student.enrolled_courses) ? student.enrolled_courses : [];
+    if (!enrolled.length) courses.appendChild(make("span","course-chip","No course enrolments recorded"));
+    enrolled.forEach(course => courses.appendChild(make("span","course-chip",`${course.course_title || "Course"} · ${formatDate(course.enrolled_at)}`)));
+    details.append(summary,courses);
+    const finance = make("div","student-finance",`Successful orders: ${student.successful_order_count || 0} · Successful order total: ${formatMoney(student.total_successful_amount)}`);
+    card.append(head,meta,details,finance);
+    list.appendChild(card);
+  });
+}
+
+async function loadStudents() {
+  clearError();
+  $("status").textContent = "Loading student records securely…";
+  $("studentList").replaceChildren();
+  $("previousButton").disabled = true;
+  $("nextButton").disabled = true;
+
+  const {data,error} = await db.rpc("admin_list_students",{
+    p_search: searchTerm || null,
+    p_limit: PAGE_SIZE,
+    p_offset: page * PAGE_SIZE
+  });
+  if (error) {
+    console.error("Student registry error:",error);
+    $("status").textContent = "Student records could not be loaded.";
+    showError(error.message || "Unable to retrieve student records. Please refresh or contact the system administrator.");
+    students = [];
+    renderStudents();
+    return;
+  }
+  students = Array.isArray(data) ? data : [];
+  $("status").textContent = "Student records loaded.";
+  renderStudents();
+}
+
+async function initialize() {
+  $("adminApp").hidden = true;
+  const {data:{session},error:sessionError} = await db.auth.getSession();
+  if (sessionError || !session) {
+    location.replace("index.html?login=required&next="+encodeURIComponent("student-management.html"));
+    return;
+  }
+  const {data:isAdmin,error:adminError} = await db.rpc("is_dcds_admin");
+  if (adminError || isAdmin !== true) {
+    alert("Access denied. This page is restricted to authorized DCDS administrators.");
+    location.replace("index.html");
+    return;
+  }
+  $("adminApp").hidden = false;
+  $("status").textContent = "Administrator access verified.";
+  await loadStudents();
+}
+$("searchButton").addEventListener("click",()=>{searchTerm=$("searchInput").value.trim();page=0;loadStudents();});
+$("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter")$("searchButton").click();});
+$("refreshButton").addEventListener("click",loadStudents);
+$("previousButton").addEventListener("click",()=>{if(page>0){page--;loadStudents();}});
+$("nextButton").addEventListener("click",()=>{if(students.length===PAGE_SIZE){page++;loadStudents();}});
+$("logoutButton").addEventListener("click",async()=>{await db.auth.signOut();location.replace("index.html");});
+initialize().catch(error=>{console.error(error);showError("Unexpected error while opening Student Management.");$("status").textContent="Initialization failed.";});
+</script>
+</body>
+</html>
