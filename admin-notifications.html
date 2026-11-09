@@ -41,6 +41,13 @@
 
             </div>
 
+            <a
+                href="student-management.html"
+                id="studentManagementLink"
+                style="display:inline-flex;align-items:center;justify-content:center;padding:10px 15px;border:1px solid rgba(212,175,55,.45);border-radius:10px;color:#F5D77A;text-decoration:none;font-weight:800;margin-right:8px;">
+                👩🏽‍🎓 STUDENT MANAGEMENT
+            </a>
+
             <button
                 id="logoutButton"
                 type="button"
@@ -93,7 +100,7 @@
 
                         <div class="stat-card">
 
-                <p>Notification Center</p>
+                                            <p>Notification Center</p>
 
                 <h3>ACTIVE</h3>
 
@@ -111,7 +118,7 @@
                 <div class="section-heading">
 
                     <h2>📢 Create Announcement</h2>
-                    
+
                     <p>
                         Send important information to your students.
                     </p>
@@ -175,7 +182,7 @@
                                 Important Notice
                             </option>
 
-                            <option value="course">
+                                                                                                    <option value="course">
                                 Course Update
                             </option>
 
@@ -183,7 +190,7 @@
                                 Promotion
                             </option>
 
-                                                                                                    <option value="event">
+                            <option value="event">
                                 Event Announcement
                             </option>
 
@@ -247,14 +254,14 @@
                     </div>
 
 
-                    <!-- DELIVERY CHANNEL: KEEP BELL AND TICKER SEPARATE -->
+                                        <!-- DELIVERY CHANNEL: KEEP BELL AND TICKER SEPARATE -->
 
                     <div class="form-group">
 
                         <label>
                             Choose Where This Announcement Should Appear
                         </label>
-                        
+
                         <div id="deliveryOptions" role="radiogroup" aria-label="Announcement delivery channel">
 
                             <label>
@@ -310,9 +317,9 @@
                     <!-- DCDS SCHEDULING CONTROLS -->
                     <div class="form-group" id="announcementScheduleControls">
                         <label for="announcementStartsAt">Start date and time (optional)</label>
-                        <input type="datetime-local" id="announcementStartsAt">
+                                                <input type="datetime-local" id="announcementStartsAt">
                         <label for="announcementEndsAt" style="margin-top:12px">End date and time (optional)</label>
-                                                <input type="datetime-local" id="announcementEndsAt">
+                        <input type="datetime-local" id="announcementEndsAt">
                         <p class="delivery-help">Leave both empty to publish immediately with no automatic end. A future start schedules the announcement; an end time automatically hides it.</p>
                     </div>
 
@@ -390,13 +397,13 @@
                 </div>
 
             </section>
-
+  
 
             <!-- DCDS STUDENT SUPPORT INBOX -->
             <section id="supportInboxSection">
                 <div class="section-heading">
                     <h2>🎧 Student Support Inbox</h2>
-                        <p>Review student requests, respond directly, and track each request through resolution.</p>
+                    <p>Review student requests, respond directly, and track each request through resolution.</p>
                 </div>
                 <div class="support-inbox-toolbar">
                     <label for="supportStatusFilter">Filter requests</label>
@@ -469,7 +476,7 @@
 
         --card-background: rgba(255,255,255,0.055);
 
-    --border-color: rgba(212,175,55,0.25);
+        --border-color: rgba(212,175,55,0.25);
 
 }
     
@@ -487,7 +494,7 @@
     box-sizing: border-box;
 
 }
-    
+
 
 /* =====================================
    MAIN BODY DESIGN
@@ -624,7 +631,7 @@ body {
 }
 
 
-/* =====================================
+    /* =====================================
    LOGOUT BUTTON
 ====================================== */
 
@@ -637,7 +644,7 @@ body {
     );
 
     color: white;
-    
+
     border: none;
 
     padding: 12px 23px;
@@ -795,7 +802,7 @@ body {
 
     border-radius: 20px;
 
-    background: linear-gradient(
+        background: linear-gradient(
         145deg,
         rgba(255,255,255,0.075),
         rgba(255,255,255,0.025)
@@ -808,7 +815,7 @@ body {
 }
 
 
-    /* =====================================
+/* =====================================
    SECTION HEADINGS
 ====================================== */
 
@@ -977,7 +984,7 @@ select option {
     align-items: center;
 
     gap: 11px;
-
+    
     padding: 17px;
 
     min-height: 58px;
@@ -989,7 +996,7 @@ select option {
     background: rgba(255,255,255,0.035);
 
     color: var(--soft-white);
-    
+
     font-size: 13px;
 
     font-weight: 600;
@@ -1148,7 +1155,7 @@ select option {
     color: #83F0B6;
 
     background: rgba(37,196,122,0.12);
-
+  
     border: 1px solid rgba(37,196,122,0.25);
 
 }
@@ -1309,7 +1316,7 @@ select option {
     #adminHeader {
         padding: 18px;
         border-radius: 15px;
-        margin-bottom: 25px;
+            margin-bottom: 25px;
     }
 
     .brand-section h1 {
@@ -1318,7 +1325,7 @@ select option {
 
     .brand-section h1 span {
         font-size: 14px;
-                           letter-spacing: 2px;
+        letter-spacing: 2px;
     }
 
     .brand-section p {
@@ -1448,13 +1455,13 @@ select option {
 /* =====================================
    SMOOTH PAGE APPEARANCE
 ====================================== */
-    
+        
 html {
     scroll-behavior: smooth;
 }
 
 
-    /* =====================================
+/* =====================================
    CUSTOM SCROLLBAR
 ====================================== */
 
@@ -1560,8 +1567,8 @@ select:focus-visible {
     border-radius: 10px;
     padding: 11px 13px;
     color: var(--soft-white);
-    background: rgba(20,10,35,0.85);
-        font: inherit;
+        background: rgba(20,10,35,0.85);
+    font: inherit;
 }
 .support-inbox-toolbar button,
 .support-reply-form button {
@@ -1772,7 +1779,7 @@ function showMessage(message, type = "success") {
     statusBox.className =
         "status-message " + type;
 
-        statusBox.style.display = "block";
+      statusBox.style.display = "block";
 
 }
 
@@ -2313,7 +2320,7 @@ function getScheduleValues() {
     if (Number.isNaN(startsAt.getTime()) || (endsAt && Number.isNaN(endsAt.getTime()))) {
         throw new Error("Please enter valid start and end dates.");
     }
-      if (endsAt && endsAt <= startsAt) {
+    if (endsAt && endsAt <= startsAt) {
         throw new Error("The end time must be later than the start time.");
     }
     return {
@@ -2592,7 +2599,7 @@ async function loadTickerHistory() {
         addHistoryText(card, "small", "Created: " + formatAnnouncementDate(announcement.created_at));
         addHistoryText(card, "small", "Starts: " + formatAnnouncementDate(announcement.starts_at));
         addHistoryText(card, "small", "Expires: " + (announcement.expires_at ? formatAnnouncementDate(announcement.expires_at) : "No expiry"));
-                renderTickerActions(card, announcement);
+               renderTickerActions(card, announcement);
         historyContainer.appendChild(card);
     });
     return announcements.length;
