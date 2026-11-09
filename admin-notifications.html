@@ -399,6 +399,27 @@
             </section>
   
 
+            <!-- DCDS STUDENT REVIEW MODERATION -->
+            <section id="reviewModerationSection">
+                <div class="section-heading">
+                    <h2>⭐ Student Reviews & Ratings</h2>
+                    <p>Review student feedback and approve genuine submissions before they appear publicly on the DCDS homepage.</p>
+                </div>
+                <div class="review-moderation-toolbar">
+                    <label for="reviewModerationFilter">Show reviews</label>
+                    <select id="reviewModerationFilter">
+                        <option value="pending">Awaiting approval</option>
+                        <option value="approved">Approved</option>
+                        <option value="all">All reviews</option>
+                    </select>
+                    <button type="button" id="refreshReviewModeration">↻ Refresh Reviews</button>
+                    <span id="reviewModerationSummary" role="status" aria-live="polite">Loading reviews…</span>
+                </div>
+                <div id="reviewModerationList">
+                    <p>Student reviews will appear here.</p>
+                </div>
+            </section>
+
             <!-- DCDS STUDENT SUPPORT INBOX -->
             <section id="supportInboxSection">
                 <div class="section-heading">
@@ -480,6 +501,24 @@
 
 }
     
+
+/* DCDS STUDENT REVIEW MODERATION */
+#reviewModerationSection{margin:28px 0;padding:26px;border:1px solid var(--border-color);border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.07),rgba(255,255,255,.025));box-shadow:0 12px 30px rgba(0,0,0,.16)}
+.review-moderation-toolbar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:18px 0}
+.review-moderation-toolbar label{font-weight:800;color:var(--bright-gold)}
+.review-moderation-toolbar select,.review-moderation-toolbar button,.review-approve-button{border:1px solid rgba(212,175,55,.4);border-radius:10px;padding:11px 15px;font:inherit;font-weight:800}
+.review-moderation-toolbar select{background:#211333;color:#fff}
+.review-moderation-toolbar button,.review-approve-button{background:var(--bright-gold);color:#241332;cursor:pointer}
+.review-moderation-toolbar button:disabled,.review-approve-button:disabled{opacity:.55;cursor:wait}
+#reviewModerationSummary{color:var(--muted-text);font-size:14px}
+.review-moderation-card{padding:20px;margin:14px 0;border:1px solid rgba(212,175,55,.24);border-radius:15px;background:rgba(12,7,22,.42)}
+.review-moderation-card h3{color:var(--bright-gold);margin-bottom:8px}
+.review-moderation-meta{display:flex;flex-wrap:wrap;gap:10px 18px;color:var(--muted-text);font-size:13px;margin-bottom:12px}
+.review-moderation-stars{color:var(--bright-gold);letter-spacing:2px;font-size:18px}
+.review-moderation-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:10px 0 16px}
+.review-approved-label{color:#70d9a4;font-weight:800}
+.review-empty{padding:22px;border:1px dashed rgba(212,175,55,.3);border-radius:14px;color:var(--muted-text);text-align:center}
+@media(max-width:600px){#reviewModerationSection{padding:18px 14px}.review-moderation-toolbar{align-items:stretch}.review-moderation-toolbar select,.review-moderation-toolbar button{width:100%}}
 
 /* =====================================
    GLOBAL RESET
@@ -1983,6 +2022,7 @@ async function initializeAdminCenter() {
         await loadCourses();
         await loadHistory();
         await loadSupportInbox();
+        await loadReviewModeration();
 
         // Reveal dashboard only after successful verification
         adminApp.hidden = false;
@@ -2687,6 +2727,93 @@ async function refreshAnnouncementHistory() {
 console.log("DCDS separate history module loaded.");
 </script>
 <script>
+
+/* =====================================
+   DCDS STUDENT REVIEW MODERATION
+====================================== */
+const reviewModerationList = document.getElementById("reviewModerationList");
+const reviewModerationSummary = document.getElementById("reviewModerationSummary");
+const reviewModerationFilter = document.getElementById("reviewModerationFilter");
+const refreshReviewModerationButton = document.getElementById("refreshReviewModeration");
+
+function reviewModerationNode(tag, className, value) {
+    const node = document.createElement(tag);
+    if (className) node.className = className;
+    if (value !== undefined && value !== null) node.textContent = String(value);
+    return node;
+}
+function reviewModerationDate(value) {
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? "Date unavailable" :
+        date.toLocaleString("en-NG", {dateStyle:"medium",timeStyle:"short"});
+}
+async function loadReviewModeration() {
+    if (!currentAdmin) return;
+    reviewModerationList.replaceChildren(reviewModerationNode("p","", "Loading student reviews…"));
+    reviewModerationSummary.textContent = "";
+    let query = db.from("dcds_reviews")
+        .select("id,user_id,display_name,course_title,rating,review_text,is_approved,created_at")
+        .order("created_at",{ascending:false}).limit(200);
+    const filter = reviewModerationFilter.value;
+    if (filter === "pending") query = query.eq("is_approved",false);
+    if (filter === "approved") query = query.eq("is_approved",true);
+    const {data,error} = await query;
+    if (error) {
+        console.error("DCDS review moderation load error:",error);
+        reviewModerationList.replaceChildren(reviewModerationNode("div","review-empty","Unable to load reviews. Check administrator permissions and refresh."));
+        reviewModerationSummary.textContent = error.message;
+        return;
+    }
+    const reviews = data || [];
+    const pendingCount = reviews.filter(r=>!r.is_approved).length;
+    reviewModerationSummary.textContent = reviews.length + " review(s) shown" +
+        (filter === "all" ? " · latest 200" : "") +
+        (filter === "pending" ? " awaiting approval" : "");
+    if (!reviews.length) {
+        reviewModerationList.replaceChildren(reviewModerationNode("div","review-empty",
+            filter === "pending" ? "No student reviews are waiting for approval." :
+            filter === "approved" ? "No approved reviews found." : "No student reviews have been submitted yet."));
+        return;
+    }
+    reviewModerationList.replaceChildren();
+    reviews.forEach(review=>{
+        const card=reviewModerationNode("article","review-moderation-card");
+        card.appendChild(reviewModerationNode("h3","",review.display_name+" · "+review.course_title));
+        const meta=reviewModerationNode("div","review-moderation-meta");
+        meta.append(
+            reviewModerationNode("span","review-moderation-stars","★".repeat(Math.max(0,Math.min(5,Number(review.rating)||0)))+" ("+review.rating+"/5)"),
+            reviewModerationNode("span","","Submitted: "+reviewModerationDate(review.created_at)),
+            reviewModerationNode("span","",review.is_approved?"Status: Approved":"Status: Awaiting approval")
+        );
+        card.appendChild(meta);
+        card.appendChild(reviewModerationNode("p","review-moderation-text",review.review_text));
+        if (review.is_approved) {
+            card.appendChild(reviewModerationNode("span","review-approved-label","✓ Published on the public DCDS review list"));
+        } else {
+            const approve=document.createElement("button");
+            approve.type="button"; approve.className="review-approve-button";
+            approve.textContent="✓ Approve & Publish Review";
+            approve.addEventListener("click",async()=>{
+                if(!currentAdmin || !window.confirm("Approve this student review and publish it on the DCDS homepage?")) return;
+                approve.disabled=true; approve.textContent="Approving…";
+                const {error:updateError}=await db.from("dcds_reviews")
+                    .update({is_approved:true})
+                    .eq("id",review.id).eq("is_approved",false);
+                if(updateError){
+                    console.error("DCDS review approval error:",updateError);
+                    approve.disabled=false; approve.textContent="Try approval again";
+                    reviewModerationSummary.textContent="Approval failed: "+updateError.message;
+                    return;
+                }
+                await loadReviewModeration();
+            });
+            card.appendChild(approve);
+        }
+        reviewModerationList.appendChild(card);
+    });
+}
+refreshReviewModerationButton.addEventListener("click",loadReviewModeration);
+reviewModerationFilter.addEventListener("change",loadReviewModeration);
 
 /* =====================================
    DCDS STUDENT SUPPORT INBOX
