@@ -105,7 +105,9 @@ padding:15px
 }
 
 }
-</style></head><body><header><b>DCDS</b><p>CREATE • LEARN • INNOVATE • EARN</p></header><main>
+</style>
+</head><body><header><b>DCDS</b><p>CREATE • LEARN • INNOVATE • EARN</p></header>
+<main>
 <section id="status" class="panel">Checking administrator access…</section>
 <div id="app" class="hidden">
 <section class="panel"><h1>Assessment Management</h1><p class="notice">Create course quizzes and assignments, add questions and answer keys, publish activities, review submissions and grade student work.</p></section>
@@ -148,7 +150,6 @@ if(c.error)throw c.error;
 courses=c.data||[];
 ["quizCourse","assignmentCourse"].forEach(id=>$(id).innerHTML=courses.map(x=>'<option value="'+x.id+'">'+esc(x.title)+'</option>').join(""));
 await refresh();
-
 }
 function esc(s) {
 return String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;
