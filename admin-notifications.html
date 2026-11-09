@@ -517,6 +517,9 @@
 .review-moderation-stars{color:var(--bright-gold);letter-spacing:2px;font-size:18px}
 .review-moderation-text{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.7;margin:10px 0 16px}
 .review-approved-label{color:#70d9a4;font-weight:800}
+.review-delete-button{margin:12px 0 0 10px;border:1px solid rgba(220,90,90,.55);border-radius:10px;padding:11px 15px;background:rgba(150,35,50,.16);color:#ffb8bd;font:inherit;font-weight:800;cursor:pointer}
+.review-delete-button:disabled{opacity:.55;cursor:wait}
+
 .review-empty{padding:22px;border:1px dashed rgba(212,175,55,.3);border-radius:14px;color:var(--muted-text);text-align:center}
 @media(max-width:600px){#reviewModerationSection{padding:18px 14px}.review-moderation-toolbar{align-items:stretch}.review-moderation-toolbar select,.review-moderation-toolbar button{width:100%}}
 
@@ -2809,6 +2812,22 @@ async function loadReviewModeration() {
             });
             card.appendChild(approve);
         }
+        const remove=document.createElement("button");
+        remove.type="button"; remove.className="review-delete-button";
+        remove.textContent="Delete Review";
+        remove.addEventListener("click",async()=>{
+            if(!currentAdmin || !window.confirm("Permanently delete this review and its rating? This cannot be undone.")) return;
+            remove.disabled=true; remove.textContent="Deleting…";
+            const {error:deleteError}=await db.from("dcds_reviews").delete().eq("id",review.id);
+            if(deleteError){
+                console.error("DCDS review deletion error:",deleteError);
+                remove.disabled=false; remove.textContent="Try deletion again";
+                reviewModerationSummary.textContent="Deletion failed: "+deleteError.message;
+                return;
+            }
+            await loadReviewModeration();
+        });
+        card.appendChild(remove);
         reviewModerationList.appendChild(card);
     });
 }
