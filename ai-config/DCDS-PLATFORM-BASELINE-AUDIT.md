@@ -199,3 +199,31 @@ The 59 live public policies were enumerated from `pg_policies`. The duplicate pe
 - The complete baseline contains no top-level INSERT/COPY row-data statements and no DROP TABLE/SCHEMA statements.
 - The public-only pg_dump contains broad default-privilege statements; the pg-delta complete baseline does not reproduce those default-ACL statements. The development project already has its own platform defaults, so apply the development normalization above before treating the baseline as safe for ongoing schema work.
 - Restore must be transactional, must refuse to run if the development public schema is not empty, and must verify object counts plus ACLs after application.
+
+
+## Development restore execution status — 2026-11-10
+
+- A gated workflow has been committed: `.github/workflows/dcds-development-baseline-restore.yml`.
+- The first run stopped during its preflight because the two required development-only secrets were not configured. The artifact download and every database step were skipped. No SQL ran and no development or production database object changed.
+- Required GitHub Actions repository secrets:
+  - `DCDS_DEVELOPMENT_DB_URL`: the DCDS-Development Session Pooler URI, username `postgres.tjgsxbmkpvktlqulbktv`, database `postgres`, port `5432`. Never put this value in source control or chat.
+  - `DCDS_DEVELOPMENT_BASELINE_APPROVAL`: exact value `APPROVE_DCDS_DEVELOPMENT_BASELINE`. This is a deliberate gate for a one-time empty-development-schema restore.
+- The workflow verifies the pooler URI points to the development project ref and refuses a non-empty public schema. It downloads the exact verified artifact (run 42821231297 / artifact 13767012004), uses only the complete baseline file (not the duplicate trigger companion), strips the superuser-only `ensure_rls` event-trigger block, restores in a single transaction, removes elevated browser-role table privileges, and checks schema counts, RLS, triggers, ACLs, and zero rows.
+- On successful restore, the workflow commits the canonical unmodified production baseline to `supabase/baseline/dcds-production-complete-baseline.sql`. This preserves the source used for reconstruction.
+- Development `postgres` is not a superuser and is not a member of `supabase_admin`; `supabase_admin` is the superuser but is not available to the regular connection. PostgreSQL restricts event-trigger creation to superusers. Therefore `ensure_rls` cannot be created through the normal development project connection and is intentionally omitted in development. Its function remains in the schema as a dormant definition. All 34 restored tables have explicit RLS activation, and the Phase 1 CI workflow now checks that every new public table in committed migrations has an explicit `ENABLE ROW LEVEL SECURITY` statement. This is a documented development-only operational difference, not a silent omission.
+- The DCDS referral trigger on `auth.users` is included because the development postgres role has the required trigger privilege.
+- No production database remediation is performed by this workflow. The production high-risk table/default privileges remain a separate owner-approved security remediation.
+
+## Development workflow acceptance criteria
+
+The restore workflow must pass these assertions before the baseline is considered established:
+1. 34 public base tables, 26 public function signatures, and 59 public RLS policies.
+2. Seven unique public application triggers and one DCDS referral trigger on `auth.users`.
+3. RLS enabled on all 34 public tables.
+4. No `ensure_rls` event trigger in development, for the platform-role limitation above.
+5. No data rows in any of the 34 restored tables.
+6. Zero `TRUNCATE`, `TRIGGER`, `MAINTAIN`, or `REFERENCES` privileges for `anon` and `authenticated` on the restored public tables.
+7. Those same high-risk privileges are not granted by the `postgres` role's future public table default privileges.
+8. Supabase-managed schemas, roles, extensions and platform-owned triggers remain intact.
+
+A successful baseline restore still does **not** complete Phase 1: the AI and Phase 1 migrations, payment/payout/support integration tests, browser regression tests, security/performance advisors and workflow validation remain required before PR #2 can be made ready for review.
