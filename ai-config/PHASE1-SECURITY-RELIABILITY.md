@@ -103,3 +103,8 @@ These are acceptance criteria, not test results. Execute them only against an is
 - Updated the student dashboard to display the reply timestamp.
 - Changed the event-to-ticket foreign key to `ON DELETE RESTRICT` so a ticket with history cannot be deleted accidentally and erase its audit trail.
 - Static source checks confirm the migration, admin update path, student display and payout reconciliation query contain the intended changes. These checks are not substitutes for running the migration or integration tests.
+
+
+## CI validation workflow
+- Added `.github/workflows/phase1-validation.yml` to run Deno type checks on the two Edge Function source files and static migration invariants on pushes to this feature branch and pull requests targeting `main`.
+- The workflow file is committed, but GitHub currently reports no workflow run for its commit. Therefore no CI check is yet marked passed.
