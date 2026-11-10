@@ -68,9 +68,6 @@ Deno.serve(async (request: Request) => {
   if (!supabaseUrl || !publishableKey) {
     return json({ success: false, error: "DCDS authentication is not configured." }, 503);
   }
-  if (!geminiApiKey) {
-    return json({ success: false, error: "AI_NOT_CONFIGURED: provider key is not configured on the server." }, 503);
-  }
 
   const userClient = createClient(supabaseUrl, publishableKey, {
     global: { headers: { Authorization: authorization } },
@@ -80,6 +77,10 @@ Deno.serve(async (request: Request) => {
   const { data: { user }, error: userError } = await userClient.auth.getUser();
   if (userError || !user || !user.email_confirmed_at) {
     return json({ success: false, error: "A verified DCDS student account is required." }, 401);
+  }
+
+  if (!geminiApiKey) {
+    return json({ success: false, error: "AI_NOT_CONFIGURED: provider key is not configured on the server." }, 503);
   }
 
   let body: Record<string, unknown>;
