@@ -1,0 +1,58 @@
+name: Build DCDS Android splash icons
+on:
+  push:
+    branches:
+      - fix/dcds-native-white-splash-logo-v4
+    paths:
+      - assets/dcds-enhanced-logo-v4.svg
+      - .github/workflows/build-dcds-splash-icons.yml
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  render-icons:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the icon update branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix/dcds-native-white-splash-logo-v4
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Render transparent PNG icons from the crisp vector master
+        env:
+          WORKSPACE: ${{ github.workspace }}
+        run: |
+          mkdir -p /tmp/dcds-icon-build
+          cd /tmp/dcds-icon-build
+          npm init -y
+          npm install sharp
+          node <<'NODE'
+          const sharp = require('/tmp/dcds-icon-build/node_modules/sharp');
+          const path = require('path');
+          const root = process.env.WORKSPACE;
+          const input = path.join(root, 'assets/dcds-enhanced-logo-v4.svg');
+          async function build(size) {
+            await sharp(input, { density: 384 })
+              .resize(size, size, { fit: 'contain', background: { r: 0, g: 0, b: 0, alpha: 0 } })
+              .png({ compressionLevel: 9, adaptiveFiltering: true })
+              .toFile(path.join(root, `assets/dcds-splash-icon-v4-${size}.png`));
+          }
+          Promise.all([build(192), build(512)])
+            .then(() => process.stdout.write('Created 192px and 512px transparent splash icons.\n'))
+            .catch(error => { console.error(error); process.exit(1); });
+          NODE
+      - name: Commit generated icons to the update branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add assets/dcds-splash-icon-v4-192.png assets/dcds-splash-icon-v4-512.png
+          if git diff --cached --quiet; then
+            echo "PNG icons are already current."
+          else
+            git commit -m "Generate transparent DCDS Android splash PNG icons"
+            git push origin HEAD:fix/dcds-native-white-splash-logo-v4
+          fi
