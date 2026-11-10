@@ -14,7 +14,7 @@ Base: `main`
 - Existing pending orders are not modified or automatically expired. A pending checkout blocks a new checkout until reconciled by support; this conservative behavior avoids duplicate charges while pending-order reconciliation is designed.
 - Existing orders, payments, enrolments, reward balances, and certificates are not rewritten.
 - The migration creates a `private` schema function. Confirm the schema exists and inspect its owner/permissions before applying. If private schema is not present, create it with a suitably restricted owner as part of reviewed migration.
-- The support event trigger assumes admin response updates set `responded_by` as the existing admin UI does. Status-only events may have a null actor unless the update path supplies an actor field; this is retained for audit accuracy rather than inventing an actor.
+- The support event trigger records `responded_by` only for events containing a changed reply. Status-only events currently have a null actor because the existing ticket update path has no dedicated `updated_by` field. Add a verified admin actor to the update path before treating status-event actor attribution as complete.
 
 ## Required pre-deployment checks
 1. Run TypeScript/Deno checks for both Edge Functions.
@@ -56,3 +56,12 @@ Base: `main`
 
 ### Known operational caveat
 The 37 historical pending orders without payment rows are not automatically closed. The checkout RPC conservatively blocks another checkout for the same user/course until that pending order is reconciled. Support needs a safe Flutterwave reference check before any such order is failed or retried.
+
+
+### Additional compatibility review
+- Confirmed the existing homepage invokes `create-payment` with `course_id` and expects `success` plus `payment_link`; the proposed function preserves that response contract.
+- Confirmed the current deployed payment function uses the `DCDS_SERVICE_ROLE_KEY` and `FLW_SECRET_KEY` secret names. Secret values were not read.
+- Confirmed notification categories and delivery channels allow `general` and `notification`, and recipient rows support the fields used by the support-reply trigger.
+- Confirmed the notification recipient table has two duplicate UNIQUE constraints on `(notification_id,user_id)`. The migration uses `ON CONFLICT (notification_id,user_id)`; PostgreSQL can infer the matching unique index, but duplicate constraints remain a separate cleanup candidate and are not removed in this change.
+- Corrected the support audit trigger so status-only events are not incorrectly attributed to the author of an earlier reply.
+- The support status-only actor limitation is explicit: the current ticket schema has no dedicated `updated_by` field. It is safer to store a null actor than to imply that the previous reply author made the status change.
