@@ -161,3 +161,41 @@ The usage-window migration has been hardened to use an empty search_path and sch
 - No paid Supabase branch is to be created.
 - Existing historical pending orders must be reconciled against Flutterwave references; do not auto-fail, delete, or recreate them.
 - Real payouts remain disabled unless separately approved after sandbox and operational verification.
+
+
+## Critical ACL/default-privilege finding — verified against live production and development
+
+A direct `has_table_privilege` catalog check confirmed that the broad privileges in the baseline diff are **also effective in the live production database**, not merely a pg-delta artifact:
+
+- `anon` has `TRUNCATE`, `TRIGGER`, `MAINTAIN`, and `REFERENCES` privileges on 14 public tables.
+- `authenticated` has those same four privileges on 20 public tables.
+- These are real PostgreSQL table privileges. RLS does not filter `TRUNCATE` or trigger-management privilege; the REST API may not expose every PostgreSQL command directly, so this is a database-hardening finding, not evidence of a confirmed exploit.
+- Production and the empty development project both have broad default table privileges for future objects created by `postgres` and `supabase_admin`, including the four privileges above for `anon` and `authenticated`.
+
+**Required safe-development normalization (do not run against production as part of this task):**
+
+```sql
+REVOKE TRUNCATE, TRIGGER, MAINTAIN, REFERENCES
+  ON ALL TABLES IN SCHEMA public
+  FROM anon, authenticated;
+
+ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+  REVOKE TRUNCATE, TRIGGER, MAINTAIN, REFERENCES
+  ON TABLES FROM anon, authenticated;
+```
+
+This preserves the existing SELECT/INSERT/UPDATE/DELETE grants and the existing RLS policies while removing unnecessary elevated table privileges for browser-facing roles on development objects. The default-privilege change is limited to new public objects created by `postgres`; platform-owned `supabase_admin` defaults are not modified.
+
+Production remediation must be a separate, owner-approved migration after a table-by-table application compatibility review. Do not silently normalize production during development reconstruction.
+
+## Policy review clarification
+
+The 59 live public policies were enumerated from `pg_policies`. The duplicate permissive-policy groups on `notifications` and `notification_recipients` remain cleanup candidates. The follow-up catalog pass did not establish a confirmed policy predicate attached to the wrong table, so no policy was altered on that assumption. Any consolidation requires a separate effective-policy review and regression tests.
+
+## Baseline artifact execution characteristics
+
+- The complete pg-delta baseline contains 34 `CREATE TABLE`, 26 `CREATE FUNCTION`, 59 `CREATE POLICY`, 8 application/managed-table `CREATE TRIGGER`, and 1 `CREATE EVENT TRIGGER` statements, plus explicit RLS activation and ACL statements.
+- The companion custom-trigger SQL contains the same 8 trigger attachments and event trigger. Do not apply both files; doing so would create duplicate-trigger failures.
+- The complete baseline contains no top-level INSERT/COPY row-data statements and no DROP TABLE/SCHEMA statements.
+- The public-only pg_dump contains broad default-privilege statements; the pg-delta complete baseline does not reproduce those default-ACL statements. The development project already has its own platform defaults, so apply the development normalization above before treating the baseline as safe for ongoing schema work.
+- Restore must be transactional, must refuse to run if the development public schema is not empty, and must verify object counts plus ACLs after application.
