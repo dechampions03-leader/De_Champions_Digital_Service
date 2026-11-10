@@ -4,8 +4,8 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#35105f">
-<link rel="manifest" href="/manifest.webmanifest">
-<link rel="icon" href="/assets/dcds-app-icon.svg" type="image/svg+xml">
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./assets/dcds-app-icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="/assets/dcds-app-icon.svg">
 <title>My Student Dashboard | DCDS</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -1367,7 +1367,7 @@ loadDashboard().catch(error => {
 </script>
 <script>
 if ("serviceWorker" in navigator && location.protocol === "https:") {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/sw.js").catch(error => console.warn("DCDS app setup:", error)));
+  window.addEventListener("load", () => navigator.serviceWorker.register("./sw.js").catch(error => console.warn("DCDS app setup:", error)));
 }
 </script>
 </body>
