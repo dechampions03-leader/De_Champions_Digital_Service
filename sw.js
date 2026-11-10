@@ -1,6 +1,7 @@
 const CACHE_NAME = "dcds-shell-v1";
 const CACHE_PREFIX = "dcds-";
-const OFFLINE_URL = "/offline.html";
+const APP_SCOPE_PATH = new URL(self.registration.scope).pathname;
+const OFFLINE_URL = new URL("./offline.html", self.location.href).href;
 
 self.addEventListener("install", event => {
   event.waitUntil(
@@ -24,7 +25,13 @@ self.addEventListener("activate", event => {
 self.addEventListener("fetch", event => {
   const request = event.request;
   const url = new URL(request.url);
-  if (request.method !== "GET" || url.origin !== self.location.origin || request.mode !== "navigate") return;
+  if (
+    request.method !== "GET" ||
+    url.origin !== self.location.origin ||
+    request.mode !== "navigate" ||
+    !url.pathname.startsWith(APP_SCOPE_PATH)
+  ) return;
+
   event.respondWith(
     fetch(request).catch(async () => (await caches.match(OFFLINE_URL)) || Response.error())
   );
