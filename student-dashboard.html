@@ -12,10 +12,17 @@
 <style>
 :root{--purple:#7628d8;--deep:#21083f;--dark:#451078;--gold:#e4c16d;--ink:#28183a;--muted:#756783;--line:#eadff5;--surface:#f8f4fc}
 *{box-sizing:border-box}
-/* Preserve native vertical pull-to-refresh while keeping content inside the horizontal viewport. */
-html{min-height:100%;overscroll-behavior-x:none;overscroll-behavior-y:auto}
-body{margin:0;background:linear-gradient(145deg,#fbf9ff,#f1e8fb);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh;min-height:100dvh;width:100%;max-width:100%;overflow-x:clip;overscroll-behavior-x:none;overscroll-behavior-y:auto}
-.wrap{width:min(1100px,calc(100% - 30px));margin:auto;padding:24px 0 60px}
+/* Lock the page to the phone's horizontal viewport; the refresh gesture is handled below. */
+html{width:100%;max-width:100%;min-height:100%;overflow-x:clip;overscroll-behavior-x:none;overscroll-behavior-y:none}
+body{margin:0;background:linear-gradient(145deg,#fbf9ff,#f1e8fb);font-family:'DM Sans',sans-serif;color:var(--ink);min-height:100vh;min-height:100dvh;width:100%;max-width:100%;overflow-x:clip;overscroll-behavior-x:none;overscroll-behavior-y:none}
+.wrap{width:min(1100px,calc(100% - 30px));max-width:100%;min-width:0;margin-inline:auto;padding:24px 0 60px}
+.dcds-refresh-indicator{position:fixed;top:max(10px,env(safe-area-inset-top));left:50%;z-index:10000;display:flex;align-items:center;gap:10px;padding:10px 16px;border:1px solid #eadff5;border-radius:999px;background:#fff;color:#451078;box-shadow:0 8px 24px #32105f20;font:700 13px 'DM Sans',sans-serif;white-space:nowrap;opacity:0;transform:translate(-50%,-150%);transition:opacity .16s ease,transform .16s ease;pointer-events:none}
+.dcds-refresh-indicator.is-visible{opacity:1;transform:translate(-50%,0)}
+.dcds-refresh-icon{display:inline-grid;place-items:center;width:20px;height:20px;border-radius:50%;background:#f1e5ff;color:#7628d8;font-size:17px;line-height:1;transition:transform .12s ease}
+.dcds-refresh-indicator.is-refreshing .dcds-refresh-icon{animation:dcds-refresh-spin .7s linear infinite}
+@keyframes dcds-refresh-spin{to{transform:rotate(360deg)}}
+@media(prefers-reduced-motion:reduce){.dcds-refresh-indicator,.dcds-refresh-icon{transition:none}.dcds-refresh-indicator.is-refreshing .dcds-refresh-icon{animation:none}}
+
 header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:24px}
 .brand{font-weight:900;color:var(--dark);letter-spacing:.04em;font-size:14px}
 header a,.btn{border:0;border-radius:12px;padding:11px 15px;font-weight:800;text-decoration:none;display:inline-flex;align-items:center;justify-content:center;cursor:pointer}
@@ -253,6 +260,10 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
 </style>
 </head>
 <body class="auth-pending">
+<div class="dcds-refresh-indicator" id="dcdsRefreshIndicator" role="status" aria-live="polite" aria-atomic="true">
+  <span class="dcds-refresh-icon" id="dcdsRefreshIcon" aria-hidden="true">↓</span>
+  <span id="dcdsRefreshLabel">Pull down to refresh</span>
+</div>
 <main class="wrap">
 <header class="dashboard-header">
   <div class="brand">DCDS · STUDENT PORTAL</div>
@@ -1252,6 +1263,103 @@ loadDashboard().catch(error => {
   }
  };
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+})();
+</script>
+<script id="dcds-pull-to-refresh">
+(()=> {
+  if(window.__DCDSPullToRefreshInstalled) return;
+  window.__DCDSPullToRefreshInstalled=true;
+
+  const indicator=document.getElementById("dcdsRefreshIndicator");
+  const label=document.getElementById("dcdsRefreshLabel");
+  const icon=document.getElementById("dcdsRefreshIcon");
+  if(!indicator||!label||!icon) return;
+
+  const threshold=82;
+  let tracking=false;
+  let pulling=false;
+  let refreshing=false;
+  let startX=0;
+  let startY=0;
+  let pullDistance=0;
+
+  const scrollTop=()=>Math.max(
+    window.scrollY||0,
+    document.documentElement?.scrollTop||0,
+    document.body?.scrollTop||0
+  );
+
+  const reset=()=>{
+    tracking=false;
+    pulling=false;
+    pullDistance=0;
+    indicator.classList.remove("is-visible","is-refreshing");
+    indicator.style.removeProperty("--pull-progress");
+    icon.style.transform="";
+    label.textContent="Pull down to refresh";
+  };
+
+  document.addEventListener("touchstart",event=>{
+    if(refreshing||event.touches.length!==1||scrollTop()>1){
+      tracking=false;
+      return;
+    }
+    const target=event.target;
+    if(target&&target.closest&&target.closest("input,textarea,select,button,a,[contenteditable='true']")){
+      tracking=false;
+      return;
+    }
+    const touch=event.touches[0];
+    startX=touch.clientX;
+    startY=touch.clientY;
+    pullDistance=0;
+    tracking=true;
+    pulling=false;
+  },{passive:true});
+
+  document.addEventListener("touchmove",event=>{
+    if(!tracking||refreshing||event.touches.length!==1) return;
+    const touch=event.touches[0];
+    const dx=touch.clientX-startX;
+    const dy=touch.clientY-startY;
+    if(Math.abs(dx)>Math.max(22,Math.abs(dy)*0.75)){
+      reset();
+      return;
+    }
+    if(dy<=0) return;
+    if(scrollTop()>1){
+      reset();
+      return;
+    }
+
+    pulling=true;
+    pullDistance=dy;
+    event.preventDefault();
+
+    const progress=Math.min(1,dy/threshold);
+    indicator.style.setProperty("--pull-progress",String(progress));
+    indicator.classList.add("is-visible");
+    icon.style.transform=progress>=1?"rotate(180deg)":"rotate(0deg)";
+    label.textContent=progress>=1?"Release to refresh":"Pull down to refresh";
+  },{passive:false});
+
+  document.addEventListener("touchend",()=>{
+    if(!tracking&&!pulling) return;
+    tracking=false;
+    if(pulling&&pullDistance>=threshold){
+      refreshing=true;
+      indicator.classList.add("is-visible","is-refreshing");
+      label.textContent="Refreshing DCDS dashboard…";
+      icon.textContent="↻";
+      window.setTimeout(()=>window.location.reload(),280);
+      return;
+    }
+    reset();
+  },{passive:true});
+
+  document.addEventListener("touchcancel",()=>{
+    if(!refreshing) reset();
+  },{passive:true});
 })();
 </script>
 </body>
