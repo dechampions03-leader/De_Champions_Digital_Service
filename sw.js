@@ -1,4 +1,4 @@
-const CACHE_NAME = "dcds-shell-v2";
+const CACHE_NAME = "dcds-shell-v1";
 const CACHE_PREFIX = "dcds-";
 const APP_SCOPE_PATH = new URL(self.registration.scope).pathname;
 const OFFLINE_URL = new URL("./offline.html", self.location.href).href;
