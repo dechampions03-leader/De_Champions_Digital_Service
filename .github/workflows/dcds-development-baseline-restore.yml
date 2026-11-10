@@ -1,6 +1,7 @@
 name: DCDS Development Baseline Restore (Isolated)
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - feature/phase1-security-reliability
