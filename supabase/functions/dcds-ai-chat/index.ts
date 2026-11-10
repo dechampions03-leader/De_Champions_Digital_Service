@@ -140,9 +140,8 @@ ${knowledge}`;
         method: "POST",
         headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
         body: JSON.stringify({
-          system_instruction: { parts: [{ text: systemInstruction }] },
+          systemInstruction: { parts: [{ text: systemInstruction }] },
           contents,
-          generationConfig: { temperature: 0.55, maxOutputTokens: 900 },
         }),
         signal: AbortSignal.timeout(30000),
       },
