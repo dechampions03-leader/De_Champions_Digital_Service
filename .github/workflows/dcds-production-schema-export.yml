@@ -1,4 +1,4 @@
-name: DCDS Production Schema Export (Read Only)
+name: DCDS Production Schema and Customization Audit (Read Only)
 
 on:
   workflow_dispatch:
@@ -12,11 +12,15 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: dcds-production-schema-audit
+  cancel-in-progress: false
+
 jobs:
-  export-public-schema:
-    name: Export public schema only
+  export-production-baseline:
+    name: Capture schema and managed-schema customizations
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -26,7 +30,7 @@ jobs:
         with:
           version: latest
 
-      - name: Export production schema without table data
+      - name: Validate required secret
         env:
           DCDS_PRODUCTION_DB_URL: ${{ secrets.DCDS_PRODUCTION_DB_URL }}
         shell: bash
@@ -36,25 +40,75 @@ jobs:
             echo "Missing repository secret: DCDS_PRODUCTION_DB_URL"
             exit 1
           fi
+          case "${DCDS_PRODUCTION_DB_URL}" in
+            postgres://*|postgresql://*) ;;
+            *) echo "The production database URL is not a PostgreSQL URI."; exit 1 ;;
+          esac
 
+      - name: Export public schema definitions (schema only)
+        env:
+          DCDS_PRODUCTION_DB_URL: ${{ secrets.DCDS_PRODUCTION_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
           supabase db dump \
-            --db-url "${DCDS_PRODUCTION_DB_URL}" \
+            --remote="${DCDS_PRODUCTION_DB_URL}" \
             --schema public \
-            -f dcds-production-public-schema.sql
-
+            --file dcds-production-public-schema.sql
           test -s dcds-production-public-schema.sql
-
           if grep -Eiq '^(INSERT INTO|COPY .* FROM stdin)' dcds-production-public-schema.sql; then
-            echo "Unexpected data statements found; refusing to upload the export."
+            echo "Unexpected top-level data statements found."
             exit 1
           fi
 
-          echo "Schema export completed. No table data is included."
+      - name: Capture complete custom schema diff, including managed-schema hooks
+        env:
+          DCDS_PRODUCTION_DB_URL: ${{ secrets.DCDS_PRODUCTION_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          WORKSPACE="${RUNNER_TEMP}/dcds-baseline-diff"
+          mkdir -p "${WORKSPACE}"
+          cd "${WORKSPACE}"
 
-      - name: Upload schema export for review
+          # Recent Supabase init enables pg-delta by default. The diff runs against
+          # an empty shadow baseline and does not write to the remote production DB.
+          supabase init --force
+          grep -q '\[experimental.pgdelta\]' supabase/config.toml
+          grep -q 'enabled = true' supabase/config.toml
+
+          supabase db diff \
+            --remote="${DCDS_PRODUCTION_DB_URL}" \
+            --strict-coverage > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
+
+          cd "${GITHUB_WORKSPACE}"
+          test -s dcds-production-complete-baseline.sql
+
+          # Check the SQL is a schema diff, not a data export.
+          if grep -Eiq '^(INSERT INTO|COPY .* FROM stdin)' dcds-production-complete-baseline.sql; then
+            echo "Unexpected top-level data statements found in schema diff."
+            exit 1
+          fi
+
+          public_triggers="$(grep -Eic '^CREATE( OR REPLACE)? TRIGGER ' dcds-production-complete-baseline.sql || true)"
+          if [[ "${public_triggers}" -lt 7 ]]; then
+            echo "Expected all seven DCDS public triggers; found ${public_triggers}."
+            exit 1
+          fi
+
+          if ! grep -Eiq 'dcds_capture_referral_after_signup|capture_dcds_referral_on_signup' dcds-production-complete-baseline.sql; then
+            echo "DCDS auth.users referral trigger customization was not captured."
+            exit 1
+          fi
+
+          echo "Complete schema diff captured. Public trigger DDL count: ${public_triggers}."
+
+      - name: Upload reviewed schema artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: dcds-production-public-schema
-          path: dcds-production-public-schema.sql
+          name: dcds-production-schema-and-customizations
+          path: |
+            dcds-production-public-schema.sql
+            dcds-production-complete-baseline.sql
           if-no-files-found: error
-          retention-days: 1
+          retention-days: 7
