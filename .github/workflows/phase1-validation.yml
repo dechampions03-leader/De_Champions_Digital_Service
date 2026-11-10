@@ -1,0 +1,49 @@
+name: Phase 1 validation
+
+on:
+  push:
+    branches:
+      - feature/phase1-security-reliability
+    paths:
+      - "supabase/functions/create-payment/**"
+      - "supabase/functions/dcds-process-payout/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/phase1-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/create-payment/**"
+      - "supabase/functions/dcds-process-payout/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/phase1-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase1-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  edge-function-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check create-payment
+        run: deno check supabase/functions/create-payment/index.ts
+      - name: Type-check payout processor
+        run: deno check supabase/functions/dcds-process-payout/index.ts
+      - name: Verify Phase 1 migration invariants
+        shell: bash
+        run: |
+          test -f supabase/migrations/20261110000100_phase1_security_reliability.sql
+          grep -q "email_confirmed_at" supabase/functions/create-payment/index.ts
+          grep -q "dcds_create_checkout_order" supabase/functions/create-payment/index.ts
+          grep -q "provider_transfer_id" supabase/functions/dcds-process-payout/index.ts
+          grep -qi "on delete restrict" supabase/migrations/20261110000100_phase1_security_reliability.sql
