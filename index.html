@@ -1217,14 +1217,22 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 (function(){
   const KEY="dcds-install-invitation-dismissed-until";
   const isStandalone=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
-  if(isStandalone())return;
-  let deferredPrompt=null;
   const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
   const isAndroid=/android/i.test(navigator.userAgent);
+  let deferredPrompt=null;
+  // A dismissed invitation is only a snooze, never proof of installation.
+  // Installed mode is the reliable signal when a PWA is launched from its icon.
+  if(isStandalone()){
+    try{localStorage.setItem(KEY,"installed");}catch(_){}
+    return;
+  }
+  try{
+    if(localStorage.getItem(KEY)==="installed")localStorage.removeItem(KEY);
+  }catch(_){}
   function start(){
     if(!document.body||document.getElementById("dcds-install-invitation"))return;
     const installState=localStorage.getItem(KEY)||"";
-    if(installState==="installed"||Number(installState)>Date.now())return;
+    if(Number(installState)>Date.now())return;
     const markup='<div id="dcds-install-invitation" role="dialog" aria-modal="true" aria-labelledby="dcds-install-title"><div class="dcds-install-card"><button class="dcds-install-close" type="button" aria-label="Close">×</button><img class="dcds-install-icon" src="./assets/dcds-splash-icon-v4-192.png" alt="DCDS app icon"><h2 id="dcds-install-title">Take DCDS with you</h2><p>Install De Champions Digital Service on your phone for quick access from your home screen, just like an app.</p><button class="dcds-install-primary" type="button">Install DCDS</button><div class="dcds-install-help" aria-live="polite"></div><button class="dcds-install-secondary" type="button">Maybe later</button></div></div>';
     document.body.insertAdjacentHTML("beforeend",markup);
     const modal=document.getElementById("dcds-install-invitation");
@@ -1251,8 +1259,11 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
         deferredPrompt=null;
         promptEvent.prompt();
         const choice=await promptEvent.userChoice;
-        if(choice&&choice.outcome==="accepted"){remember(null);hide();}
-        else showHelp();
+        if(choice&&choice.outcome==="accepted"){
+          // Acceptance is not confirmation; appinstalled or standalone mode confirms it.
+          remember(1);
+          hide();
+        }else showHelp();
       }else showHelp();
     });
     window.addEventListener("beforeinstallprompt",event=>{
