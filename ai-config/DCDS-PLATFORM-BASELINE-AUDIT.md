@@ -13,8 +13,9 @@ This is a read-only inventory and compatibility record. It does not authorize pr
 
 - Production is the live system and remains unchanged by this audit.
 - Development is a separate, currently empty DCDS database (zero public tables/functions/migrations at audit time) but already has Supabase-managed schemas, roles, extensions and platform triggers.
-- A successful schema-only export was obtained from production. The export contains no INSERT/COPY table data statements.
-- Do not restore the export blindly: it contains public application DDL but not the custom auth.users trigger or the global ensure_rls event trigger. Supabase-managed auth/storage/realtime objects must not be copied from production.
+- A successful read-only public-schema export was obtained. It contains public application DDL and no top-level row-data INSERT/COPY statements.
+- The public export does **not** include the seven public CREATE TRIGGER attachment statements. It includes their trigger-function definitions. The auth.users referral trigger and global ensure_rls event trigger are also outside the public-only dump.
+- Do not restore the public export blindly. A second, read-only pg-delta schema diff is being added to capture trigger attachments and supported customizations on managed schemas, especially the DCDS auth.users trigger. Event-trigger coverage must be verified separately before restore.
 - Phase 1 remains an open draft PR #2. Its database migration has not been applied to production or development.
 - Shared AI remains a separate feature branch and is not production-live.
 
@@ -25,7 +26,7 @@ This is a read-only inventory and compatibility record. It does not authorize pr
 | Public application tables | 34 | Live catalog and schema export |
 | Public function signatures | 26 | Live catalog and schema export |
 | Unique public function names | 25 | One announcement function has two overloads |
-| Public application triggers | 7 | Live catalog and schema export |
+| Public application triggers | 7 | Live catalog; trigger DDL absent from plain public dump |
 | Public RLS policies | 59 | Live catalog and schema export |
 | Public tables with RLS enabled | 34 | Live catalog |
 | Public indexes | 94 | Live catalog; export inventory records 37 explicit index DDL statements |
@@ -35,7 +36,7 @@ The difference between 94 live indexes and 37 explicit CREATE INDEX statements i
 
 ## Production application trigger inventory
 
-All seven public trigger definitions are present in the schema export:
+The live production catalog confirms seven enabled public application triggers. The plain public schema export contains **zero CREATE TRIGGER statements**, so it is not sufficient by itself to restore their attachments. Their exact DDL was separately inspected from pg_catalog:
 
 1. `dcds_log_payout_request_created` — logs payout request creation.
 2. `dcds_payout_events_immutable` — rejects payout event update/delete.
@@ -50,7 +51,7 @@ Additional DCDS automation outside the public schema:
 - `auth.users.dcds_capture_referral_after_signup` invokes `public.capture_dcds_referral_on_signup()`.
 - Database event trigger `ensure_rls` runs on CREATE TABLE / CREATE TABLE AS / SELECT INTO and invokes `public.rls_auto_enable()`.
 
-The public-only export contains the trigger functions but cannot recreate the auth.users trigger or the global event trigger. Those must be separately reviewed and recreated in development only, after all referenced functions and tables exist.
+The public-only export contains trigger-function definitions but does not recreate the trigger attachments, the auth.users referral trigger, or the global event trigger. The new pg-delta workflow supplements it with supported managed-schema customizations. Event trigger ensure_rls must still be separately verified and, if missing from the diff, recreated in development only after referenced functions and tables exist.
 
 ## Supabase-managed infrastructure
 
@@ -143,14 +144,15 @@ The usage-window migration has been hardened to use an empty search_path and sch
 
 ## Development reconstruction gates
 
-1. Preserve the Supabase-managed development schemas, roles, extensions, and managed triggers.
-2. Restore only reviewed DCDS public application schema objects from the schema-only artifact.
-3. Confirm all 34 public tables, 26 function signatures, 59 policies, 7 public triggers and 34 RLS-enabled tables.
-4. Recreate the DCDS auth.users referral trigger and `ensure_rls` event trigger separately, after reviewing dependencies and security.
-5. Reconcile the 18 historical production migration versions only after the corresponding objects are verified; do not blindly mark all as applied.
-6. Apply the shared AI usage migration and Phase 1 migration in correct dependency order on development only.
-7. Run functional tests and Supabase security/performance advisors.
-8. Keep PR #2 draft until all blockers pass. Merging to main and production deployment require separate explicit owner approval.
+1. Preserve Supabase-managed development schemas, roles, extensions, and platform-owned triggers.
+2. Generate a pg-delta diff from an empty local shadow schema, verifying the 34 public tables, 26 function signatures, 59 policies, seven public trigger attachments, and DCDS auth.users trigger customization.
+3. Verify whether pg-delta captures the custom ensure_rls event trigger. If not, add its exact reviewed DDL as a separate development-only migration.
+4. Review and sanitize default privileges before applying. The public dump includes broad default privileges for anon/authenticated; a restore must not accidentally broaden future object access.
+5. Restore reviewed DCDS objects only, then compare development catalog counts and representative definitions with production.
+6. Reconcile the 18 historical production migration versions only after corresponding objects are verified; do not blindly mark all as applied.
+7. Apply the shared AI usage migration and Phase 1 migration on development only in dependency order.
+8. Run functional tests and Supabase security/performance advisors.
+9. Keep PR #2 draft until all blockers pass. Merging to main and production deployment require separate explicit owner approval.
 
 ## Operational protections
 
