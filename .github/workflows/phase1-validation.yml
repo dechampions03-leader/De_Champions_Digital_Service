@@ -47,3 +47,32 @@ jobs:
           grep -q "dcds_create_checkout_order" supabase/functions/create-payment/index.ts
           grep -q "provider_transfer_id" supabase/functions/dcds-process-payout/index.ts
           grep -qi "on delete restrict" supabase/migrations/20261110000100_phase1_security_reliability.sql
+
+      - name: Require RLS on every new public table
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import glob
+          import re
+          import sys
+
+          files = sorted(glob.glob("supabase/migrations/*.sql"))
+          failures = []
+          for path in files:
+              sql = open(path, encoding="utf-8").read()
+              created = re.findall(
+                  r'(?im)^\\s*CREATE\\s+TABLE(?:\\s+IF\\s+NOT\\s+EXISTS)?\\s+(?:public\\.)?"?([A-Za-z_][A-Za-z0-9_]*)"?',
+                  sql,
+              )
+              for table in created:
+                  rls = re.search(
+                      rf'(?im)^\\s*ALTER\\s+TABLE(?:\\s+IF\\s+EXISTS)?\\s+(?:public\\.)?"?{re.escape(table)}"?\\s+ENABLE\\s+ROW\\s+LEVEL\\s+SECURITY\\s*;',
+                      sql,
+                  )
+                  if not rls:
+                      failures.append(f"{path}: {table} is created without explicit RLS enablement")
+          if failures:
+              print("\\n".join(failures))
+              sys.exit(1)
+          print(f"Verified explicit RLS enablement for all new public tables across {len(files)} migration files.")
+          PY
