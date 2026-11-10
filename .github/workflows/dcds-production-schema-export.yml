@@ -1,0 +1,55 @@
+name: DCDS Production Schema Export (Read Only)
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  export-public-schema:
+    name: Export public schema only
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Export production schema without table data
+        env:
+          DCDS_PRODUCTION_DB_URL: ${{ secrets.DCDS_PRODUCTION_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${DCDS_PRODUCTION_DB_URL}" ]]; then
+            echo "Missing repository secret: DCDS_PRODUCTION_DB_URL"
+            exit 1
+          fi
+
+          supabase db dump \
+            --db-url "${DCDS_PRODUCTION_DB_URL}" \
+            --schema public \
+            -f dcds-production-public-schema.sql
+
+          test -s dcds-production-public-schema.sql
+
+          if grep -Eiq '^(INSERT INTO|COPY .* FROM stdin)' dcds-production-public-schema.sql; then
+            echo "Unexpected data statements found; refusing to upload the export."
+            exit 1
+          fi
+
+          echo "Schema export completed. No table data is included."
+
+      - name: Upload schema export for review
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-production-public-schema
+          path: dcds-production-public-schema.sql
+          if-no-files-found: error
+          retention-days: 1
