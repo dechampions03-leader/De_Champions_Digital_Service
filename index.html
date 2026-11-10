@@ -1137,4 +1137,23 @@ html.dcds-motion-ready #courses [data-dcds-reveal].dcds-visible [data-dcds-child
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();
 </script>
+
+<style id="dcds-mobile-viewport-fit">
+/* Mobile viewport containment: prevent the public landing page from dragging sideways. */
+html,body{width:100%;max-width:100%;overflow-x:clip}
+@supports not (overflow:clip){html,body{overflow-x:hidden}}
+@media(max-width:760px){
+  body{min-width:0}
+  .container{width:calc(100% - 28px);max-width:1160px;margin-inline:auto}
+  .nav,.hero-grid,.hero-buttons,.catalog-tools,.footer-inner,
+  .founder-card,.review-layout,.notification-heading{min-width:0;max-width:100%}
+  .hero-grid>* ,.nav>* ,.hero-buttons>*{min-width:0;max-width:100%}
+  .hero h1,.hero p,.section-heading,.founder-card>*{max-width:100%;overflow-wrap:anywhere}
+  .hero h1{font-size:clamp(34px,10vw,54px);letter-spacing:-.04em}
+  .hero-panel,.course-card,.info-card,.step,.founder-card{min-width:0}
+  img,video,iframe,canvas,svg{max-width:100%}
+  .button,.hero-buttons a{max-width:100%;white-space:normal;text-align:center}
+}
+</style>
+
 </body></html>
