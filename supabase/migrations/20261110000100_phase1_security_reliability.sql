@@ -90,9 +90,12 @@ $$;
 revoke all on function public.dcds_create_checkout_order(uuid, uuid, text) from public, anon, authenticated;
 grant execute on function public.dcds_create_checkout_order(uuid, uuid, text) to service_role;
 
+alter table public.student_support_tickets
+  add column if not exists updated_by uuid references auth.users(id) on delete set null;
+
 create table if not exists public.student_support_ticket_events (
   id uuid primary key default gen_random_uuid(),
-  ticket_id uuid not null references public.student_support_tickets(id) on delete cascade,
+  ticket_id uuid not null references public.student_support_tickets(id) on delete restrict,
   actor_user_id uuid references auth.users(id) on delete set null,
   event_type text not null check (event_type in ('admin_reply', 'status_changed', 'reply_and_status_changed')),
   old_status text,
@@ -163,7 +166,7 @@ begin
   insert into public.student_support_ticket_events (
     ticket_id, actor_user_id, event_type, old_status, new_status, response_text
   ) values (
-    new.id, case when v_reply_changed then new.responded_by else null end,
+    new.id, case when v_reply_changed then new.responded_by else new.updated_by end,
     v_event_type, old.status, new.status,
     case when v_reply_changed then new.admin_response else null end
   );
