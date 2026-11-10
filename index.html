@@ -1199,4 +1199,69 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 
 
 
+<style id="dcds-install-invitation-styles">
+#dcds-install-invitation{position:fixed;inset:0;z-index:2147482500;display:none;align-items:center;justify-content:center;padding:22px;background:rgba(25,10,39,.58);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+#dcds-install-invitation.is-open{display:flex}
+#dcds-install-invitation .dcds-install-card{position:relative;width:min(100%,390px);padding:30px 24px 24px;border:1px solid #eee4f5;border-radius:26px;background:#fff;box-shadow:0 24px 80px rgba(28,8,46,.24);text-align:center;color:#28113c}
+#dcds-install-invitation .dcds-install-close{position:absolute;top:13px;right:14px;width:36px;height:36px;border:0;border-radius:50%;background:#f5eff9;color:#4a2465;font-size:23px;line-height:1;cursor:pointer}
+#dcds-install-invitation .dcds-install-icon{display:block;width:78px;height:78px;object-fit:contain;margin:0 auto 17px;border-radius:20px}
+#dcds-install-invitation h2{margin:0 0 9px;color:#351052;font-size:23px;line-height:1.2;font-weight:800}
+#dcds-install-invitation p{margin:0 auto 20px;max-width:300px;color:#66566f;font-size:14px;line-height:1.65}
+#dcds-install-invitation .dcds-install-primary{display:block;width:100%;min-height:49px;border:0;border-radius:14px;background:linear-gradient(110deg,#8b35cf,#4b1680);color:#fff;font-size:15px;font-weight:800;cursor:pointer;box-shadow:0 8px 20px rgba(91,31,139,.2)}
+#dcds-install-invitation .dcds-install-secondary{display:block;width:100%;margin-top:11px;padding:11px;border:0;background:transparent;color:#786a80;font-size:13px;font-weight:700;cursor:pointer}
+#dcds-install-invitation .dcds-install-help{display:none;margin:14px 0 0;padding:13px;border-radius:13px;background:#f8f3fb;color:#59476a;font-size:13px;line-height:1.55;text-align:left}
+#dcds-install-invitation .dcds-install-help.is-visible{display:block}
+@media(prefers-reduced-motion:no-preference){#dcds-install-invitation .dcds-install-card{animation:dcds-install-pop .38s cubic-bezier(.2,.8,.2,1)}@keyframes dcds-install-pop{from{opacity:0;transform:translateY(16px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}}
+</style>
+<script id="dcds-install-invitation-controller">
+(function(){
+  const KEY="dcds-install-invitation-dismissed-until";
+  const isStandalone=()=>window.matchMedia("(display-mode: standalone)").matches||window.navigator.standalone===true;
+  if(isStandalone())return;
+  let deferredPrompt=null;
+  const isIOS=/iphone|ipad|ipod/i.test(navigator.userAgent)&&!window.MSStream;
+  const isAndroid=/android/i.test(navigator.userAgent);
+  function start(){
+    if(!document.body||document.getElementById("dcds-install-invitation"))return;
+    if(Number(localStorage.getItem(KEY)||0)>Date.now())return;
+    const markup='<div id="dcds-install-invitation" role="dialog" aria-modal="true" aria-labelledby="dcds-install-title"><div class="dcds-install-card"><button class="dcds-install-close" type="button" aria-label="Close">×</button><img class="dcds-install-icon" src="./assets/dcds-splash-icon-v4-192.png" alt="DCDS app icon"><h2 id="dcds-install-title">Take DCDS with you</h2><p>Install De Champions Digital Service on your phone for quick access from your home screen, just like an app.</p><button class="dcds-install-primary" type="button">Install DCDS</button><div class="dcds-install-help" aria-live="polite"></div><button class="dcds-install-secondary" type="button">Maybe later</button></div></div>';
+    document.body.insertAdjacentHTML("beforeend",markup);
+    const modal=document.getElementById("dcds-install-invitation");
+    const install=modal.querySelector(".dcds-install-primary");
+    const help=modal.querySelector(".dcds-install-help");
+    const hide=()=>modal.classList.remove("is-open");
+    const remember=(days)=>localStorage.setItem(KEY,String(Date.now()+days*24*60*60*1000));
+    const show=()=>{if(!isStandalone()&&Number(localStorage.getItem(KEY)||0)<=Date.now())modal.classList.add("is-open");};
+    const showHelp=()=>{
+      help.textContent=isIOS
+        ?"On your iPhone: tap the Share button in Safari, choose “Add to Home Screen”, then tap “Add”."
+        :isAndroid
+        ?"If the install prompt does not open: open Chrome’s ⋮ menu and choose “Install app” or “Add to Home screen”."
+        :"Open your browser menu and choose “Install app” or “Add to Home screen”, if available.";
+      help.classList.add("is-visible");
+      install.textContent="How to install";
+    };
+    modal.querySelector(".dcds-install-close").addEventListener("click",()=>{remember(7);hide();});
+    modal.querySelector(".dcds-install-secondary").addEventListener("click",()=>{remember(7);hide();});
+    modal.addEventListener("click",e=>{if(e.target===modal){remember(7);hide();}});
+    install.addEventListener("click",async()=>{
+      if(deferredPrompt){
+        const promptEvent=deferredPrompt;
+        deferredPrompt=null;
+        promptEvent.prompt();
+        const choice=await promptEvent.userChoice;
+        if(choice&&choice.outcome==="accepted"){remember(365);hide();}
+        else showHelp();
+      }else showHelp();
+    });
+    window.addEventListener("beforeinstallprompt",event=>{
+      event.preventDefault();
+      deferredPrompt=event;
+    });
+    window.addEventListener("appinstalled",()=>{remember(365);hide();});
+    window.setTimeout(show,2600);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+})();
+</script>
 </body></html>
