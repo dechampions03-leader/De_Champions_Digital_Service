@@ -2,10 +2,15 @@ name: DCDS Production Schema Export (Read Only)
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - feature/phase1-security-reliability
+    paths:
+      - "supabase/migrations/**"
+      - ".github/workflows/dcds-production-schema-export.yml"
 
 permissions:
   contents: read
-  actions: write
 
 jobs:
   export-public-schema:
