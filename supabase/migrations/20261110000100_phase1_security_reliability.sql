@@ -163,7 +163,8 @@ begin
   insert into public.student_support_ticket_events (
     ticket_id, actor_user_id, event_type, old_status, new_status, response_text
   ) values (
-    new.id, new.responded_by, v_event_type, old.status, new.status,
+    new.id, case when v_reply_changed then new.responded_by else null end,
+    v_event_type, old.status, new.status,
     case when v_reply_changed then new.admin_response else null end
   );
 
