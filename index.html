@@ -1223,14 +1223,15 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
   const isAndroid=/android/i.test(navigator.userAgent);
   function start(){
     if(!document.body||document.getElementById("dcds-install-invitation"))return;
-    if(Number(localStorage.getItem(KEY)||0)>Date.now())return;
+    const installState=localStorage.getItem(KEY)||"";
+    if(installState==="installed"||Number(installState)>Date.now())return;
     const markup='<div id="dcds-install-invitation" role="dialog" aria-modal="true" aria-labelledby="dcds-install-title"><div class="dcds-install-card"><button class="dcds-install-close" type="button" aria-label="Close">×</button><img class="dcds-install-icon" src="./assets/dcds-splash-icon-v4-192.png" alt="DCDS app icon"><h2 id="dcds-install-title">Take DCDS with you</h2><p>Install De Champions Digital Service on your phone for quick access from your home screen, just like an app.</p><button class="dcds-install-primary" type="button">Install DCDS</button><div class="dcds-install-help" aria-live="polite"></div><button class="dcds-install-secondary" type="button">Maybe later</button></div></div>';
     document.body.insertAdjacentHTML("beforeend",markup);
     const modal=document.getElementById("dcds-install-invitation");
     const install=modal.querySelector(".dcds-install-primary");
     const help=modal.querySelector(".dcds-install-help");
     const hide=()=>modal.classList.remove("is-open");
-    const remember=(days)=>localStorage.setItem(KEY,String(Date.now()+days*24*60*60*1000));
+    const remember=(days)=>localStorage.setItem(KEY,days===null?"installed":String(Date.now()+days*24*60*60*1000));
     const show=()=>{if(!isStandalone()&&Number(localStorage.getItem(KEY)||0)<=Date.now())modal.classList.add("is-open");};
     const showHelp=()=>{
       help.textContent=isIOS
@@ -1250,7 +1251,7 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
         deferredPrompt=null;
         promptEvent.prompt();
         const choice=await promptEvent.userChoice;
-        if(choice&&choice.outcome==="accepted"){remember(365);hide();}
+        if(choice&&choice.outcome==="accepted"){remember(null);hide();}
         else showHelp();
       }else showHelp();
     });
@@ -1258,7 +1259,7 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
       event.preventDefault();
       deferredPrompt=event;
     });
-    window.addEventListener("appinstalled",()=>{remember(365);hide();});
+    window.addEventListener("appinstalled",()=>{remember(null);hide();});
     window.setTimeout(show,2600);
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
