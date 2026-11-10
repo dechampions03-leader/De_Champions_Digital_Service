@@ -807,11 +807,11 @@ function renderAcademicRecords(enrollments,titles){
   function renderSupportTickets(tickets){
   const box=document.getElementById('supportTicketList');box.innerHTML='';if(!tickets?.length){box.innerHTML='<div class="empty-certificates">You have not submitted a support request yet.</div>';return;}
   tickets.forEach(t=>{const row=document.createElement('article');row.className='ticket-row';const title=document.createElement('strong');title.textContent=t.subject;const meta=document.createElement('div');meta.className='ticket-meta';const date=document.createElement('span');date.textContent=formatAcademicDate(t.created_at);const status=document.createElement('span');status.className='ticket-status '+t.status;status.textContent=t.status.replace('_',' ');meta.append(date,status);const body=document.createElement('p');body.textContent=t.message;body.style.cssText='font-size:12px;line-height:1.6;color:var(--muted);margin:10px 0 0;white-space:pre-wrap';row.append(title,meta,body);
-    if(t.admin_response){const response=document.createElement('div');response.className='ticket-response';response.textContent='DCDS Support Response: '+t.admin_response;row.appendChild(response);}box.appendChild(row);});
+    if(t.admin_response){const response=document.createElement('div');response.className='ticket-response';const responseText=document.createElement('div');responseText.textContent='DCDS Support Response: '+t.admin_response;response.appendChild(responseText);if(t.responded_at){const responseDate=document.createElement('small');responseDate.textContent='Replied: '+formatAcademicDate(t.responded_at);responseDate.style.cssText='display:block;margin-top:6px;font-size:11px;opacity:.8';response.appendChild(responseDate);}row.appendChild(response);}box.appendChild(row);});
 }
 async function loadSupportTickets(user){
   const box=document.getElementById('supportTicketList');box.innerHTML='<div class="empty-certificates">Loading your support requests…</div>';
-  const {data,error}=await client.from('student_support_tickets').select('id,subject,category,message,status,admin_response,created_at,updated_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(30);
+  const {data,error}=await client.from('student_support_tickets').select('id,subject,category,message,status,admin_response,responded_at,created_at,updated_at').eq('user_id',user.id).order('created_at',{ascending:false}).limit(30);
   if(error)throw error;renderSupportTickets(data||[]);
 }
 document.getElementById('supportTicketForm').addEventListener('submit',async event=>{
