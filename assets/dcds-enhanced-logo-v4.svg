@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="DCDS">
+<defs>
+ <linearGradient id="purple" x1=".08" y1=".02" x2=".86" y2=".98">
+  <stop offset="0" stop-color="#c05aff"/>
+  <stop offset=".44" stop-color="#8500df"/>
+  <stop offset="1" stop-color="#350078"/>
+ </linearGradient>
+ <radialGradient id="glow" cx=".18" cy=".08" r=".92">
+  <stop offset="0" stop-color="#f0c0ff" stop-opacity=".25"/>
+  <stop offset="1" stop-color="#fff" stop-opacity="0"/>
+ </radialGradient>
+</defs>
+<rect width="512" height="512" rx="142" fill="url(#purple)"/>
+<rect width="512" height="512" rx="142" fill="url(#glow)"/>
+<text x="256" y="310" text-anchor="middle" fill="#fff"
+ font-family="Georgia, 'Liberation Serif', 'Times New Roman', serif"
+ font-size="145" font-weight="bold" letter-spacing="-9">DCDS</text>
+</svg>
