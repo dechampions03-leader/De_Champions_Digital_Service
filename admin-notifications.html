@@ -3042,14 +3042,18 @@ async function loadSupportInbox() {
             saveButton.textContent = "Saving…";
             formStatus.textContent = "";
             const now = new Date().toISOString();
+            const updatePayload = {
+                status: statusSelect.value,
+                updated_by: currentAdmin.id,
+                updated_at: now
+            };
+            if (responseText !== (ticket.admin_response || "")) {
+                updatePayload.admin_response = responseText;
+                updatePayload.responded_by = currentAdmin.id;
+                updatePayload.responded_at = now;
+            }
             const {error:updateError} = await db.from("student_support_tickets")
-                .update({
-                    admin_response: responseText,
-                    status: statusSelect.value,
-                    responded_by: currentAdmin.id,
-                    responded_at: now,
-                    updated_at: now
-                })
+                .update(updatePayload)
                 .eq("id", ticket.id);
             saveButton.disabled = false;
             saveButton.textContent = "Save Reply & Status";

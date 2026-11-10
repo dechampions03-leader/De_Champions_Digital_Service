@@ -1,0 +1,78 @@
+name: Phase 1 validation
+
+on:
+  push:
+    branches:
+      - feature/phase1-security-reliability
+    paths:
+      - "supabase/functions/create-payment/**"
+      - "supabase/functions/dcds-process-payout/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/phase1-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/create-payment/**"
+      - "supabase/functions/dcds-process-payout/**"
+      - "supabase/migrations/**"
+      - ".github/workflows/phase1-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: phase1-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  edge-function-checks:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check create-payment
+        run: deno check supabase/functions/create-payment/index.ts
+      - name: Type-check payout processor
+        run: deno check supabase/functions/dcds-process-payout/index.ts
+      - name: Verify Phase 1 migration invariants
+        shell: bash
+        run: |
+          test -f supabase/migrations/20261110000100_phase1_security_reliability.sql
+          grep -q "email_confirmed_at" supabase/functions/create-payment/index.ts
+          grep -q "dcds_create_checkout_order" supabase/functions/create-payment/index.ts
+          grep -q "provider_transfer_id" supabase/functions/dcds-process-payout/index.ts
+          grep -qi "on delete restrict" supabase/migrations/20261110000100_phase1_security_reliability.sql
+
+      - name: Require RLS on every new public table
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import glob
+          import re
+          import sys
+
+          files = sorted(glob.glob("supabase/migrations/*.sql"))
+          failures = []
+          created_pattern = r'(?im)^\s*CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+(?:"?public"?\s*\.\s*)?"?([A-Za-z_][A-Za-z0-9_]*)"?'
+          for path in files:
+              with open(path, encoding="utf-8") as source:
+                  sql = source.read()
+              created = re.findall(created_pattern, sql)
+              for table in created:
+                  rls_pattern = (
+                      rf'(?im)^\s*ALTER\s+TABLE(?:\s+IF\s+EXISTS)?\s+'
+                      rf'(?:"?public"?\s*\.\s*)?"?{re.escape(table)}"?'
+                      rf'\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\s*;'
+                  )
+                  if not re.search(rls_pattern, sql):
+                      failures.append(f"{path}: {table} is created without explicit RLS enablement")
+          if failures:
+              print("\n".join(failures))
+              sys.exit(1)
+          print(f"Verified explicit RLS enablement for all new public tables across {len(files)} migration files.")
+          PY

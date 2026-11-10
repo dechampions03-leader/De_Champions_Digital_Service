@@ -1,0 +1,177 @@
+name: DCDS Production Schema Export (Read Only)
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/phase1-security-reliability
+    paths:
+      - "supabase/migrations/**"
+      - ".github/workflows/dcds-production-schema-export.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "supabase/migrations/**"
+      - ".github/workflows/dcds-production-schema-export.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dcds-production-schema-export
+  cancel-in-progress: false
+
+jobs:
+  export-production-baseline:
+    name: Export and audit production schema (read only)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Install PostgreSQL client
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+
+      - name: Validate required secret
+        env:
+          DCDS_PRODUCTION_DB_URL: ${{ secrets.DCDS_PRODUCTION_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${DCDS_PRODUCTION_DB_URL}" ]]; then
+            echo "Missing repository secret: DCDS_PRODUCTION_DB_URL"
+            exit 1
+          fi
+          case "${DCDS_PRODUCTION_DB_URL}" in
+            postgres://*|postgresql://*) ;;
+            *) echo "The production database URL is not a PostgreSQL URI."; exit 1 ;;
+          esac
+
+      - name: Export public schema definitions (schema only)
+        env:
+          DCDS_PRODUCTION_DB_URL: ${{ secrets.DCDS_PRODUCTION_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          supabase db dump \
+            --db-url "${DCDS_PRODUCTION_DB_URL}" \
+            --schema public \
+            -f dcds-production-public-schema.sql
+          test -s dcds-production-public-schema.sql
+          if grep -Eiq '^(INSERT INTO|COPY .* FROM stdin)' dcds-production-public-schema.sql; then
+            echo "Unexpected top-level data statements found."
+            exit 1
+          fi
+
+      - name: Capture custom trigger attachments and event triggers
+        env:
+          DCDS_PRODUCTION_DB_URL: ${{ secrets.DCDS_PRODUCTION_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > "${RUNNER_TEMP}/dcds-trigger-audit.sql" <<'SQL'
+          SELECT pg_catalog.pg_get_triggerdef(t.oid, true) || ';'
+          FROM pg_catalog.pg_trigger t
+          JOIN pg_catalog.pg_class c ON c.oid = t.tgrelid
+          JOIN pg_catalog.pg_namespace tn ON tn.oid = c.relnamespace
+          JOIN pg_catalog.pg_proc p ON p.oid = t.tgfoid
+          JOIN pg_catalog.pg_namespace pn ON pn.oid = p.pronamespace
+          WHERE NOT t.tgisinternal
+            AND (
+              tn.nspname = 'public'
+              OR (tn.nspname IN ('auth','storage','realtime') AND pn.nspname = 'public')
+            )
+          ORDER BY tn.nspname, c.relname, t.tgname;
+
+          SELECT pg_catalog.format(
+            'CREATE EVENT TRIGGER %I ON %s%s EXECUTE FUNCTION %I.%I();',
+            e.evtname,
+            e.evtevent,
+            CASE WHEN e.evttags IS NULL THEN '' ELSE
+              ' WHEN TAG IN (' ||
+              (SELECT pg_catalog.string_agg(pg_catalog.quote_literal(tag), ', ')
+               FROM pg_catalog.unnest(e.evttags) AS tag) || ')'
+            END,
+            pn.nspname,
+            p.proname
+          )
+          FROM pg_catalog.pg_event_trigger e
+          JOIN pg_catalog.pg_proc p ON p.oid = e.evtfoid
+          JOIN pg_catalog.pg_namespace pn ON pn.oid = p.pronamespace
+          WHERE pn.nspname = 'public'
+          ORDER BY e.evtname;
+
+          SELECT pg_catalog.format(
+            'ALTER EVENT TRIGGER %I %s;',
+            e.evtname,
+            CASE e.evtenabled
+              WHEN 'O' THEN 'ENABLE'
+              WHEN 'D' THEN 'DISABLE'
+              WHEN 'R' THEN 'ENABLE REPLICA'
+              WHEN 'A' THEN 'ENABLE ALWAYS'
+            END
+          )
+          FROM pg_catalog.pg_event_trigger e
+          JOIN pg_catalog.pg_proc p ON p.oid = e.evtfoid
+          JOIN pg_catalog.pg_namespace pn ON pn.oid = p.pronamespace
+          WHERE pn.nspname = 'public'
+          ORDER BY e.evtname;
+          SQL
+
+          psql "${DCDS_PRODUCTION_DB_URL}" -X -v ON_ERROR_STOP=1 -At \
+            -f "${RUNNER_TEMP}/dcds-trigger-audit.sql" \
+            > dcds-production-custom-triggers.sql
+
+          test -s dcds-production-custom-triggers.sql
+          public_triggers="$(grep -Eic '^CREATE TRIGGER ' dcds-production-custom-triggers.sql || true)"
+          event_triggers="$(grep -Eic '^CREATE EVENT TRIGGER ' dcds-production-custom-triggers.sql || true)"
+          if [[ "${public_triggers}" -lt 8 ]]; then
+            echo "Expected seven public triggers and the custom auth.users referral trigger; found ${public_triggers}."
+            exit 1
+          fi
+          if ! grep -Eiq '^CREATE EVENT TRIGGER ensure_rls ' dcds-production-custom-triggers.sql; then
+            echo "The DCDS ensure_rls event trigger was not captured."
+            exit 1
+          fi
+          echo "Captured ${public_triggers} DCDS application/managed-table triggers and ${event_triggers} custom event triggers."
+
+      - name: Capture complete pg-delta schema diff (read only)
+        env:
+          DCDS_PRODUCTION_DB_URL: ${{ secrets.DCDS_PRODUCTION_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          WORKSPACE="${RUNNER_TEMP}/dcds-baseline-diff"
+          mkdir -p "${WORKSPACE}"
+          cd "${WORKSPACE}"
+          supabase init --force
+          grep -q '\[experimental.pgdelta\]' supabase/config.toml
+          grep -q 'enabled = true' supabase/config.toml
+          supabase db diff --remote="${DCDS_PRODUCTION_DB_URL}" --strict-coverage \
+            > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
+          cd "${GITHUB_WORKSPACE}"
+          test -s dcds-production-complete-baseline.sql
+          if grep -Eiq '^(INSERT INTO|COPY .* FROM stdin)' dcds-production-complete-baseline.sql; then
+            echo "Unexpected top-level data statements found in schema diff."
+            exit 1
+          fi
+
+      - name: Upload reviewed schema artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-production-schema-and-customizations
+          path: |
+            dcds-production-public-schema.sql
+            dcds-production-custom-triggers.sql
+            dcds-production-complete-baseline.sql
+          if-no-files-found: error
+          retention-days: 7

@@ -1,0 +1,260 @@
+name: DCDS Development Baseline Restore (Isolated)
+# Manual dispatch is also available for an explicitly approved development restore.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - feature/phase1-security-reliability
+    paths:
+      - ".github/workflows/dcds-development-baseline-restore.yml"
+
+permissions:
+  actions: read
+  contents: write
+
+concurrency:
+  group: dcds-development-baseline-restore
+  cancel-in-progress: false
+
+jobs:
+  restore-development-only:
+    name: Restore reviewed schema to DCDS-Development only
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+
+      - name: Require explicit development-only approval secrets
+        env:
+          DEVELOPMENT_DB_URL: ${{ secrets.DCDS_DEVELOPMENT_DB_URL }}
+          RESTORE_APPROVAL: ${{ secrets.DCDS_DEVELOPMENT_BASELINE_APPROVAL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "${DEVELOPMENT_DB_URL}" ]]; then
+            echo "Missing DCDS_DEVELOPMENT_DB_URL. No database connection was attempted."
+            exit 1
+          fi
+          if [[ "${RESTORE_APPROVAL}" != "APPROVE_DCDS_DEVELOPMENT_BASELINE" ]]; then
+            python3 - <<'PY'
+          import hashlib, os
+          value = os.environ.get("RESTORE_APPROVAL", "")
+          print(f"Approval secret present: {bool(value)}")
+          print(f"Approval secret length: {len(value)}")
+          print(f"Approval secret SHA-256: {hashlib.sha256(value.encode()).hexdigest()}")
+          print("Expected length: 33")
+          print("Expected SHA-256: " + hashlib.sha256(b"APPROVE_DCDS_DEVELOPMENT_BASELINE").hexdigest())
+          PY
+            echo "Approval secret did not match. No database connection was attempted."
+            exit 1
+          fi
+          python3 - <<'PY'
+          import os
+          from urllib.parse import urlsplit, unquote
+          u = urlsplit(os.environ["DEVELOPMENT_DB_URL"])
+          assert u.scheme in ("postgres", "postgresql"), "Expected PostgreSQL URI"
+          assert unquote(u.username or "") == "postgres.tjgsxbmkpvktlqulbktv", "URI is not for DCDS-Development"
+          assert (u.path or "").lstrip("/") == "postgres", "Expected postgres database"
+          assert u.hostname and "pooler.supabase.com" in u.hostname, "Use the development Session Pooler URI"
+          assert u.port == 5432, "Use the Session Pooler on port 5432"
+          print("Development project URI target verified; secret value remains hidden.")
+          PY
+
+      - name: Download the verified production schema artifact
+        uses: actions/download-artifact@v4
+        with:
+          artifact-ids: "13767012004"
+          github-token: ${{ github.token }}
+          repository: ${{ github.repository }}
+          run-id: "42821231297"
+          path: baseline-artifact
+
+      - name: Validate and prepare development-only SQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          BASELINE="baseline-artifact/dcds-production-complete-baseline.sql"
+          test -s "${BASELINE}"
+          python3 - "${BASELINE}" <<'PY'
+          from pathlib import Path
+          import re, sys
+          p = Path(sys.argv[1])
+          sql = p.read_text()
+          expected = {
+              "tables": (r"(?im)^CREATE TABLE ", 34),
+              "functions": (r"(?im)^CREATE(?: OR REPLACE)? FUNCTION ", 26),
+              "policies": (r"(?im)^CREATE POLICY ", 59),
+              "triggers": (r"(?im)^CREATE TRIGGER ", 8),
+              "event_triggers": (r"(?im)^CREATE EVENT TRIGGER ", 1),
+          }
+          for label, (pattern, count) in expected.items():
+              actual = len(re.findall(pattern, sql))
+              if actual != count:
+                  raise SystemExit(f"Expected {count} {label}, found {actual}")
+          if re.search(r"(?im)^(INSERT INTO|COPY .* FROM stdin)", sql):
+              raise SystemExit("Baseline contains a top-level data-copy statement")
+          if re.search(r"(?im)^\s*DROP\s+(TABLE|SCHEMA|DATABASE)\b", sql):
+              raise SystemExit("Baseline contains a destructive DROP statement")
+          # The custom ensure_rls event trigger requires the platform superuser.
+          # Supabase's project postgres login is not a superuser, so keep its
+          # function for reference but omit only the CREATE EVENT TRIGGER block.
+          sql, removed = re.subn(
+              r'(?ms)^CREATE EVENT TRIGGER "ensure_rls"\s+ON ddl_command_end\s+WHEN TAG IN \([^;]+?\)\s+EXECUTE FUNCTION "public"\."rls_auto_enable"\(\);\s*',
+              '',
+              sql,
+          )
+          if removed != 1:
+              raise SystemExit(f"Expected to omit exactly one ensure_rls event trigger block; removed {removed}")
+          if "CREATE TRIGGER dcds_capture_referral_after_signup" not in sql:
+              raise SystemExit("DCDS referral trigger attachment is missing")
+          # Keep standard row-level DML rights and policies, but remove table-level
+          # capabilities that bypass RLS or are unnecessary for browser roles.
+          sql += """
+          REVOKE TRUNCATE, TRIGGER, MAINTAIN, REFERENCES
+            ON ALL TABLES IN SCHEMA public FROM anon, authenticated;
+
+          ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public
+            REVOKE TRUNCATE, TRIGGER, MAINTAIN, REFERENCES
+            ON TABLES FROM anon, authenticated;
+          """
+          Path("dcds-development-baseline.sql").write_text(sql)
+          print("Baseline validated. The development restore will omit only the superuser-only ensure_rls event trigger.")
+          PY
+
+      - name: Confirm the development schema is empty and ready
+        env:
+          DCDS_DEVELOPMENT_DB_URL: ${{ secrets.DCDS_DEVELOPMENT_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          counts="$(psql "${DCDS_DEVELOPMENT_DB_URL}" -X -v ON_ERROR_STOP=1 -At -F '|' -c "
+            SELECT
+              (SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'),
+              (SELECT count(*) FROM information_schema.routines WHERE specific_schema='public' AND routine_type='FUNCTION'),
+              (SELECT count(*) FROM pg_policies WHERE schemaname='public'),
+              (SELECT count(*) FROM pg_event_trigger WHERE evtname='ensure_rls'),
+              (SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='auth' AND c.relname='users' AND t.tgname='dcds_capture_referral_after_signup' AND NOT t.tgisinternal);
+          ")"
+          IFS='|' read -r tables functions policies ensure_rls referral_trigger <<< "${counts}"
+          if [[ "${tables}" != "0" || "${functions}" != "0" || "${policies}" != "0" || "${ensure_rls}" != "0" || "${referral_trigger}" != "0" ]]; then
+            echo "Refusing restore: DCDS-Development is not an empty baseline target."
+            echo "Observed public tables/functions/policies/ensure_rls/referral-trigger: ${counts}"
+            exit 1
+          fi
+          echo "DCDS-Development is empty and ready."
+
+      - name: Apply the schema-only baseline atomically
+        env:
+          DCDS_DEVELOPMENT_DB_URL: ${{ secrets.DCDS_DEVELOPMENT_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "${DCDS_DEVELOPMENT_DB_URL}" -X -v ON_ERROR_STOP=1 --single-transaction -f dcds-development-baseline.sql
+
+      - name: Verify restored schema, RLS, triggers, ACLs and empty data
+        env:
+          DCDS_DEVELOPMENT_DB_URL: ${{ secrets.DCDS_DEVELOPMENT_DB_URL }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          psql "${DCDS_DEVELOPMENT_DB_URL}" -X -v ON_ERROR_STOP=1 <<'SQL'
+          DO $verify$
+          DECLARE
+            v_tables integer;
+            v_functions integer;
+            v_policies integer;
+            v_public_triggers integer;
+            v_rls_tables integer;
+            v_auth_referral integer;
+            v_ensure_rls integer;
+            v_privileged_grants integer;
+            v_default_privileges integer;
+            r record;
+            v_rows bigint;
+          BEGIN
+            SELECT count(*) INTO v_tables
+            FROM information_schema.tables
+            WHERE table_schema='public' AND table_type='BASE TABLE';
+            SELECT count(*) INTO v_functions
+            FROM information_schema.routines
+            WHERE specific_schema='public' AND routine_type='FUNCTION';
+            SELECT count(*) INTO v_policies
+            FROM pg_policies WHERE schemaname='public';
+            SELECT count(DISTINCT t.tgname) INTO v_public_triggers
+            FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
+            JOIN pg_namespace n ON n.oid=c.relnamespace
+            WHERE n.nspname='public' AND NOT t.tgisinternal;
+            SELECT count(*) INTO v_rls_tables
+            FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+            WHERE n.nspname='public' AND c.relkind IN ('r','p') AND c.relrowsecurity;
+            SELECT count(*) INTO v_auth_referral
+            FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid
+            JOIN pg_namespace n ON n.oid=c.relnamespace
+            WHERE n.nspname='auth' AND c.relname='users'
+              AND t.tgname='dcds_capture_referral_after_signup' AND NOT t.tgisinternal;
+            SELECT count(*) INTO v_ensure_rls
+            FROM pg_event_trigger WHERE evtname='ensure_rls';
+            SELECT count(*) INTO v_privileged_grants
+            FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace
+            CROSS JOIN (VALUES ('anon'::regrole), ('authenticated'::regrole)) roles(role_oid)
+            CROSS JOIN (VALUES ('TRUNCATE'),('TRIGGER'),('MAINTAIN'),('REFERENCES')) p(privilege_name)
+            WHERE n.nspname='public' AND c.relkind IN ('r','p')
+              AND has_table_privilege(roles.role_oid, c.oid, p.privilege_name);
+            SELECT count(*) INTO v_default_privileges
+            FROM pg_default_acl d
+            CROSS JOIN LATERAL aclexplode(d.defaclacl) x
+            WHERE d.defaclrole='postgres'::regrole
+              AND d.defaclnamespace='public'::regnamespace
+              AND d.defaclobjtype='r'
+              AND x.grantee IN ('anon'::regrole,'authenticated'::regrole)
+              AND x.privilege_type IN ('TRUNCATE','TRIGGER','MAINTAIN','REFERENCES');
+
+            IF v_tables <> 34 OR v_functions <> 26 OR v_policies <> 59
+              OR v_public_triggers <> 7 OR v_rls_tables <> 34 OR v_auth_referral <> 1 THEN
+              RAISE EXCEPTION 'Baseline mismatch: tables %, functions %, policies %, public triggers %, RLS tables %, auth referral trigger %',
+                v_tables, v_functions, v_policies, v_public_triggers, v_rls_tables, v_auth_referral;
+            END IF;
+            IF v_ensure_rls <> 0 THEN
+              RAISE EXCEPTION 'Unexpected ensure_rls event trigger; development restore must not create a superuser-only hook';
+            END IF;
+            IF v_privileged_grants <> 0 OR v_default_privileges <> 0 THEN
+              RAISE EXCEPTION 'High-risk browser table privileges remain: grants %, defaults %',
+                v_privileged_grants, v_default_privileges;
+            END IF;
+            FOR r IN
+              SELECT schemaname, tablename FROM pg_tables WHERE schemaname='public'
+            LOOP
+              EXECUTE format('SELECT count(*) FROM %I.%I', r.schemaname, r.tablename) INTO v_rows;
+              IF v_rows <> 0 THEN
+                RAISE EXCEPTION 'Unexpected row data found in %.%', r.schemaname, r.tablename;
+              END IF;
+            END LOOP;
+          END
+          $verify$;
+
+          SELECT
+            (SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') AS public_tables,
+            (SELECT count(*) FROM information_schema.routines WHERE specific_schema='public' AND routine_type='FUNCTION') AS public_functions,
+            (SELECT count(*) FROM pg_policies WHERE schemaname='public') AS public_policies,
+            (SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND NOT t.tgisinternal) AS public_trigger_event_rows,
+            (SELECT count(*) FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='public' AND c.relkind IN ('r','p') AND c.relrowsecurity) AS rls_enabled_tables,
+            (SELECT count(*) FROM pg_event_trigger WHERE evtname='ensure_rls') AS ensure_rls_event_trigger;
+          SQL
+
+      - name: Preserve the verified baseline in the repository
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p supabase/baseline
+          cp baseline-artifact/dcds-production-complete-baseline.sql supabase/baseline/dcds-production-complete-baseline.sql
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add supabase/baseline/dcds-production-complete-baseline.sql
+          if git diff --cached --quiet; then
+            echo "Canonical baseline is already committed."
+          else
+            git commit -m "Preserve verified DCDS production schema baseline"
+            git push
+          fi
