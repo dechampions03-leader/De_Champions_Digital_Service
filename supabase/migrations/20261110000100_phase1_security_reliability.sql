@@ -1,4 +1,6 @@
 -- Phase 1: atomic checkout creation and support reply history.
+create schema if not exists private;
+revoke all on schema private from public, anon, authenticated;
 -- Draft migration for feature branch review only. Do not apply to production before approval.
 
 create or replace function public.dcds_create_checkout_order(
