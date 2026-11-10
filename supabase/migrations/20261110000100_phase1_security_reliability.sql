@@ -126,12 +126,7 @@ drop policy if exists "DCDS admins can read support ticket events" on public.stu
 create policy "DCDS admins can read support ticket events"
   on public.student_support_ticket_events
   for select to authenticated
-  using (
-    exists (
-      select 1 from public.dcds_admins a
-      where a.user_id = (select auth.uid())
-    )
-  );
+  using ((select public.is_dcds_admin()));
 
 revoke all on public.student_support_ticket_events from anon, authenticated;
 grant select on public.student_support_ticket_events to authenticated;
