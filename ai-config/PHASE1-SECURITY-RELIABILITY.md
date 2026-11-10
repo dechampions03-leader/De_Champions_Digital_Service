@@ -13,7 +13,7 @@ Base: `main`
 - Do not enable real payouts as part of this work.
 - Existing pending orders are not modified or automatically expired. A pending checkout blocks a new checkout until reconciled by support; this conservative behavior avoids duplicate charges while pending-order reconciliation is designed.
 - Existing orders, payments, enrolments, reward balances, and certificates are not rewritten.
-- The migration creates a `private` schema function. Confirm the schema exists and inspect its owner/permissions before applying. If private schema is not present, create it with a suitably restricted owner as part of reviewed migration.
+- The migration creates the `private` schema because the live project currently has no `private` schema. The migration revokes schema access from `public`, `anon`, and `authenticated`, and the trigger function itself is not executable by client roles.
 - The support event trigger records `responded_by` only for events containing a changed reply. Status-only events currently have a null actor because the existing ticket update path has no dedicated `updated_by` field. Add a verified admin actor to the update path before treating status-event actor attribution as complete.
 
 ## Required pre-deployment checks
@@ -65,3 +65,33 @@ The 37 historical pending orders without payment rows are not automatically clos
 - Confirmed the notification recipient table has two duplicate UNIQUE constraints on `(notification_id,user_id)`. The migration uses `ON CONFLICT (notification_id,user_id)`; PostgreSQL can infer the matching unique index, but duplicate constraints remain a separate cleanup candidate and are not removed in this change.
 - Corrected the support audit trigger so status-only events are not incorrectly attributed to the author of an earlier reply.
 - The support status-only actor limitation is explicit: the current ticket schema has no dedicated `updated_by` field. It is safer to store a null actor than to imply that the previous reply author made the status change.
+
+
+## Source-level verification update
+- Re-fetched the exact feature-branch payout source and confirmed the processing lookup now includes `provider_transfer_id` at the query used by the reconciliation path. The deployed production function remains unchanged.
+- Confirmed `is_dcds_admin()` is SECURITY DEFINER with an empty search path and authenticated users have EXECUTE permission, which the new admin-history RLS policy requires.
+- Confirmed the production project currently has no `private` schema; the migration creates it. The checkout RPC does not exist in production, confirming the migration has not been applied there.
+- No GitHub Actions workflow runs are associated with the current branch head. No CI result is being represented as passed.
+
+## Manual integration test matrix (not yet executed)
+| Area | Scenario | Expected result |
+|---|---|---|
+| Checkout | Unverified account | 403; no order |
+| Checkout | Existing enrolment | Conflict; no new order |
+| Checkout | Existing pending order | Conflict; existing order untouched |
+| Checkout | Two concurrent requests | At most one pending order |
+| Checkout | Client submits altered price | Server uses current database course price |
+| Checkout | Flutterwave explicitly rejects initialization | Order marked failed only for definitive 4xx rejection |
+| Checkout | Network timeout/ambiguous response | No automatic new checkout; manual reconciliation |
+| Payout | Processing request has provider ID | Lookup provider status; do not initiate another transfer |
+| Payout | Provider reports successful transfer | One paid transition and one reward settlement |
+| Payout | Provider pending/unavailable | Remain processing; no resend |
+| Payout | Provider reports failed/reversed | Transition through existing guarded RPC |
+| Payout | Provider ID absent | Manual investigation; no resend |
+| Support | New admin reply | One history event and one student notification |
+| Support | Same response saved again | No new event or notification |
+| Support | Status-only change | History event with null actor until an explicit updated_by field is implemented |
+| Support | Student reads another student's events | Denied by RLS |
+| Support | Admin reads ticket events | Allowed only after admin predicate passes |
+
+These are acceptance criteria, not test results. Execute them only against an isolated development project and Flutterwave sandbox before merging.
