@@ -38,7 +38,16 @@ jobs:
             exit 1
           fi
           if [[ "${RESTORE_APPROVAL}" != "APPROVE_DCDS_DEVELOPMENT_BASELINE" ]]; then
-            echo "Missing explicit DCDS development-baseline approval secret. No database connection was attempted."
+            python3 - <<'PY'
+          import hashlib, os
+          value = os.environ.get("RESTORE_APPROVAL", "")
+          print(f"Approval secret present: {bool(value)}")
+          print(f"Approval secret length: {len(value)}")
+          print(f"Approval secret SHA-256: {hashlib.sha256(value.encode()).hexdigest()}")
+          print("Expected length: 37")
+          print("Expected SHA-256: " + hashlib.sha256(b"APPROVE_DCDS_DEVELOPMENT_BASELINE").hexdigest())
+          PY
+            echo "Approval secret did not match. No database connection was attempted."
             exit 1
           fi
           python3 - <<'PY'
