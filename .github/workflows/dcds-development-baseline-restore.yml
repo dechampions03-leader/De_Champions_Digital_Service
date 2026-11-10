@@ -1,4 +1,5 @@
 name: DCDS Development Baseline Restore (Isolated)
+# Manual dispatch is also available for an explicitly approved development restore.
 
 on:
   workflow_dispatch:
