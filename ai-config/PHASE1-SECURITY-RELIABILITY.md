@@ -14,7 +14,7 @@ Base: `main`
 - Existing pending orders are not modified or automatically expired. A pending checkout blocks a new checkout until reconciled by support; this conservative behavior avoids duplicate charges while pending-order reconciliation is designed.
 - Existing orders, payments, enrolments, reward balances, and certificates are not rewritten.
 - The migration creates the `private` schema because the live project currently has no `private` schema. The migration revokes schema access from `public`, `anon`, and `authenticated`, and the trigger function itself is not executable by client roles.
-- The support event trigger records `responded_by` only for events containing a changed reply. Status-only events currently have a null actor because the existing ticket update path has no dedicated `updated_by` field. Add a verified admin actor to the update path before treating status-event actor attribution as complete.
+- The support event trigger records `responded_by` only for events containing a changed reply. The migration adds an `updated_by` field, and the admin page sets it on every update. The trigger uses `responded_by` for reply events and `updated_by` for status-only events.
 
 ## Required pre-deployment checks
 1. Run TypeScript/Deno checks for both Edge Functions.
@@ -90,8 +90,16 @@ The 37 historical pending orders without payment rows are not automatically clos
 | Payout | Provider ID absent | Manual investigation; no resend |
 | Support | New admin reply | One history event and one student notification |
 | Support | Same response saved again | No new event or notification |
-| Support | Status-only change | History event with null actor until an explicit updated_by field is implemented |
+| Support | Status-only change | History event attributed to the current admin through `updated_by` |
 | Support | Student reads another student's events | Denied by RLS |
 | Support | Admin reads ticket events | Allowed only after admin predicate passes |
 
 These are acceptance criteria, not test results. Execute them only against an isolated development project and Flutterwave sandbox before merging.
+
+
+### Support workflow refinement
+- Added `student_support_tickets.updated_by` so status-only changes have an accurate actor.
+- Updated the admin support inbox to set `updated_by` for every change, while updating `responded_by` and `responded_at` only when the reply text changes.
+- Updated the student dashboard to display the reply timestamp.
+- Changed the event-to-ticket foreign key to `ON DELETE RESTRICT` so a ticket with history cannot be deleted accidentally and erase its audit trail.
+- Static source checks confirm the migration, admin update path, student display and payout reconciliation query contain the intended changes. These checks are not substitutes for running the migration or integration tests.
