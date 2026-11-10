@@ -1,0 +1,25 @@
+{
+  "id": "/",
+  "name": "De Champions Digital Service",
+  "short_name": "DCDS",
+  "description": "Create, learn, innovate and earn with De Champions Digital Service.",
+  "lang": "en",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#210b3b",
+  "theme_color": "#35105f",
+  "categories": [
+    "education",
+    "productivity"
+  ],
+  "icons": [
+    {
+      "src": "/assets/dcds-app-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
