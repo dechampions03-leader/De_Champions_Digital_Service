@@ -164,7 +164,7 @@
         "email address and password",
         "registered mobile number and password"
       ],
-      "setup_document": "ai-config/DCDS-GLOBAL-SMS-VERIFICATION-SETUP.md"
+      "setup_document": "ai-config/DCDS-AUTH-VERIFICATION-OPERATIONS.md"
     }
   },
   "ambassador_programme": {
