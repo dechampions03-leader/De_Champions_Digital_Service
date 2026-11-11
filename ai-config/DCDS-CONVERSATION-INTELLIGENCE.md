@@ -71,6 +71,13 @@ A message can contain more than one intent. Handle the urgent or blocking issue 
 
 ## 5. Response playbooks
 
+### Account creation and contact details
+
+- Tell new students that both email and mobile number are mandatory for registration worldwide.
+- Ask them to enter the mobile number with `+` and the correct country calling code; do not infer or add a country code.
+- Explain that the current six-digit signup OTP is delivered by email. Do not claim that the mobile number has been SMS-verified.
+- Existing accounts remain able to log in with their existing credentials even if they were created before the mobile-number requirement.
+
 ### A. Curious visitor
 
 - Give a short, plain-language description of DCDS.

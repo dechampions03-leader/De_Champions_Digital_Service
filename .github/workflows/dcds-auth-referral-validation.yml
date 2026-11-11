@@ -7,6 +7,7 @@ on:
     paths:
       - "index.html"
       - "student-dashboard.html"
+      - "supabase/migrations/**"
       - "ai-config/DCDS-MASTER-BRAIN.md"
       - "ai-config/DCDS-CONVERSATION-INTELLIGENCE.md"
       - ".github/workflows/dcds-auth-referral-validation.yml"
@@ -16,6 +17,7 @@ on:
     paths:
       - "index.html"
       - "student-dashboard.html"
+      - "supabase/migrations/**"
       - "ai-config/DCDS-MASTER-BRAIN.md"
       - "ai-config/DCDS-CONVERSATION-INTELLIGENCE.md"
       - ".github/workflows/dcds-auth-referral-validation.yml"
@@ -79,6 +81,7 @@ jobs:
           dashboard = Path("student-dashboard.html").read_text(encoding="utf-8")
           brain = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
           conversation = Path("ai-config/DCDS-CONVERSATION-INTELLIGENCE.md").read_text(encoding="utf-8")
+          signup_migration = Path("supabase/migrations/20261111151500_dcds_require_global_signup_mobile.sql").read_text(encoding="utf-8")
 
           required_page = [
               "grid-template-columns:repeat(6,minmax(0,1fr))",
@@ -90,11 +93,26 @@ jobs:
               "supabaseClient.auth.verifyOtp({email:pendingVerificationEmail,token,type:'signup'})",
               "id=\"studentReferralCode\"",
               "signupMetadata.dcds_referral_code=referralCode",
+              "id=\"studentPhone\"",
+              "function normalizeDcdsPhone(value)",
+              "dcds_phone_e164:phoneE164",
               "window.sessionStorage.setItem('dcds_referral_code', incoming)",
           ]
           for item in required_page:
               if item not in page:
                   raise SystemExit(f"index.html missing required auth/referral behavior: {item}")
+          if "dcds_phone_e164" not in signup_migration:
+              raise SystemExit("Signup migration is missing the required phone metadata validation.")
+          if "create table if not exists public.dcds_student_contact_numbers" not in signup_migration.lower():
+              raise SystemExit("Signup migration is missing the private mobile contact registry.")
+          if "create or replace function public.capture_dcds_referral_on_signup()" not in signup_migration.lower():
+              raise SystemExit("Signup migration is not extending the existing Auth signup trigger.")
+          if "insert into public.dcds_student_contact_numbers" not in signup_migration.lower() or "insert into public.dcds_referrals" not in signup_migration.lower():
+              raise SystemExit("Signup migration must save mobile contact and preserve referral attribution.")
+          if "enable row level security" not in signup_migration.lower() or "mobile_e164 text not null unique" not in signup_migration.lower():
+              raise SystemExit("Signup mobile registry must be private and unique.")
+          if r"^\+[1-9][0-9]{7,14}$" not in signup_migration:
+              raise SystemExit("Signup migration is missing E.164 phone validation.")
           if 'id="otpCode"' in page or "$('otpCode')" in page:
               raise SystemExit("Legacy single-box OTP input reference remains.")
 

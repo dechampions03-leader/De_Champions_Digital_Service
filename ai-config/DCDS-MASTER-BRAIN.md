@@ -83,6 +83,13 @@ When recommending a course:
 
 ## 5. Student journey and platform guidance
 
+### Global account registration requirements
+
+- Every new DCDS student registration requires both a valid email address and a mobile number.
+- Mobile numbers must include the international country calling code and be supplied in E.164 format (for example, `+2348012345678`); never assume a country from the student's location or silently add a country code.
+- The current signup confirmation remains a six-digit email OTP. A supplied mobile number is stored as a required contact detail; do not describe it as SMS-verified unless a separate SMS OTP confirmation is actually completed.
+- Existing students can continue to log in with their existing email and password. Do not claim that existing accounts without a recorded mobile number have been disabled.
+
 The general student journey is:
 1. Explore available course information.
 2. Choose a course that fits the learner's goals.

@@ -144,7 +144,17 @@
       "Help learners understand course options.",
       "Suggest sensible next learning steps.",
       "Direct account-specific or sensitive issues to official DCDS support."
-    ]
+    ],
+    "account_registration": {
+      "new_account_requirements": [
+        "email address",
+        "mobile number"
+      ],
+      "global_mobile_format": "E.164 with + and international country calling code",
+      "email_confirmation": "Six-digit email OTP",
+      "mobile_verification_status": "Mobile is a required contact detail at signup; it is not described as SMS-verified unless a separate SMS verification is completed.",
+      "existing_accounts": "Existing users can continue to sign in with their current credentials; the new mobile requirement applies to new registrations."
+    }
   },
   "ambassador_programme": {
     "name": "DCDS Global Ambassador & Rewards Programme",
