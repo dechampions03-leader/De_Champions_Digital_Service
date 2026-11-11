@@ -586,7 +586,8 @@ async function loadRegionalPrices() {
         if(!Number.isFinite(value)||value<=0){alert("Enter a valid "+currency+" price greater than zero.");return;}
         save.disabled=true;save.textContent="Saving…";
         try{
-          const payload={course_id:course.id,currency,amount:value,is_active:active.checked,updated_at:new Date().toISOString()};
+          const {data:{user:adminUser}}=await db.auth.getUser();
+          const payload={course_id:course.id,currency,amount:value,is_active:active.checked,updated_at:new Date().toISOString(),updated_by:adminUser?.id||null};
           const result=await db.from("course_regional_prices").upsert(payload,{onConflict:"course_id,currency"});
           if(result.error)throw result.error;
           status.textContent=course.title+" · "+currency+" price saved.";
