@@ -346,6 +346,19 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
     <div class="payout-events"><h3>Recent payout audit events</h3><div id="adminPayoutEvents" class="detail-scroll"><div class="empty">Loading audit events…</div></div></div>
   </section>
 
+  <section class="panel" id="internationalPayoutReadinessPanel" style="margin:18px 0">
+    <h3>🌍 International Payout Readiness</h3>
+    <p class="intro">Country and currency corridors are tracked here before they can be offered to ambassadors. A corridor stays disabled until DCDS has verified merchant approval, required wallets, IP whitelisting, sandbox testing and a live transfer test. Administrators can review beneficiary details and explicitly submit or reconcile verified requests.</p>
+    <div id="internationalPayoutSafetyNotice" class="payout-warning">Checking international payout readiness…</div>
+    <div class="payout-toolbar">
+      <button class="btn gold" id="refreshInternationalPayoutsButton" type="button">↻ Refresh International Readiness</button>
+      <span id="internationalPayoutAdminMeta" class="detail-notice">Loading route readiness…</span>
+    </div>
+    <div id="internationalPayoutGates" class="payout-meta" aria-live="polite"></div>
+    <div id="internationalPayoutRoutes" class="payout-list" aria-live="polite"><div class="empty">Loading country corridors…</div></div>
+    <div class="payout-events"><h3>International withdrawal requests</h3><div id="internationalPayoutRequests" class="payout-list" aria-live="polite"><div class="empty">Loading international withdrawal requests…</div></div></div>
+  </section>
+
   <section class="panel">
     <h3>📋 Student Registry</h3>
     <p class="intro">Search by student name, email address or phone number. Open a record's course list to review its current enrolments and successful order totals.</p>
@@ -1098,6 +1111,190 @@ async function loadAdminPayouts() {
   table.append(thead,tbody);eventsRoot.appendChild(table);
 }
 
+async function loadInternationalPayoutReadiness() {
+  const notice = $("internationalPayoutSafetyNotice");
+  const meta = $("internationalPayoutAdminMeta");
+  const gates = $("internationalPayoutGates");
+  const routesRoot = $("internationalPayoutRoutes");
+  const requestsRoot = $("internationalPayoutRequests");
+  routesRoot.replaceChildren(make("div","empty","Loading international corridors…"));
+  requestsRoot.replaceChildren(make("div","empty","Loading international withdrawal requests…"));
+  gates.replaceChildren();
+  const { data, error } = await db.functions.invoke("dcds-international-payout", { body: { action: "readiness" } });
+  if (error || !data?.success) {
+    notice.textContent = data?.error || "International payout readiness service is unavailable. No international route is enabled.";
+    meta.textContent = "Readiness information unavailable.";
+    routesRoot.replaceChildren(make("div","empty","Could not load international route records."));
+    requestsRoot.replaceChildren(make("div","empty","Could not load international withdrawal requests."));
+    return;
+  }
+
+  const routeRows = data.routes || [];
+  const requests = data.requests || [];
+  const readiness = data.readiness || {};
+  const enabledRoutes = routeRows.filter(route => route.status === "enabled").length;
+  meta.textContent = routeRows.length + " configured corridor(s) · " + enabledRoutes + " enabled · " +
+    (data.beneficiaryCount || 0) + " saved beneficiary record(s) · " + requests.length + " international request(s)";
+  notice.textContent = data.message + " Never resend a request with an uncertain provider outcome. Use reconciliation or manual investigation.";
+  const gateLabels = {
+    providerSecretConfigured: "Flutterwave API credential configured",
+    payoutEncryptionKeyConfigured: "Beneficiary encryption key configured",
+    serviceRoleConfigured: "Server-side database credential configured",
+    merchantKycApproved: "Merchant KYC approved for international transfers",
+    transfersApiEnabled: "Transfers API enabled in Flutterwave",
+    serverIpWhitelisted: "DCDS transfer server IP whitelisted",
+    destinationWalletsFunded: "Destination-currency wallets funded for transfer fees",
+    sandboxVerified: "International sandbox testing completed",
+    webhookConfigured: "Flutterwave webhook secret configured",
+    globalSwitchEnabled: "Global international payout switch enabled"
+  };
+  Object.entries(gateLabels).forEach(([key,label]) => {
+    const passed = readiness[key] === true;
+    gates.appendChild(make("span","pill" + (passed ? "" : " pending"),(passed ? "✓ " : "○ ") + label));
+  });
+
+  async function routeAction(route,stage,label) {
+    if(!window.confirm(label+" for "+route.country_name+" ("+route.currency+")? Only proceed after verifying the matching Flutterwave merchant account and test evidence."))return;
+    const note=window.prompt("Enter the provider evidence, test reference or reason for this action (minimum 12 characters):");
+    if(!note||note.trim().length<12)return;
+    const {data:result,error:actionError}=await db.functions.invoke("dcds-international-payout",{
+      body:{action:"record_route_stage",route_id:route.id,stage,evidence_note:note.trim(),confirm:true}
+    });
+    if(actionError||!result?.success){alert(result?.error||"The corridor verification record could not be updated.");return;}
+    await loadInternationalPayoutReadiness();
+  }
+
+  routesRoot.replaceChildren();
+  if(!routeRows.length)routesRoot.appendChild(make("div","empty","No international corridors are configured."));
+  routeRows.forEach(route => {
+    const card=make("article","payout-card");
+    const head=make("div","payout-card-head");
+    head.append(
+      make("strong","",route.country_name + " · " + route.currency),
+      make("span","pill"+(route.status==="enabled"?"":" pending"),String(route.status||"disabled").replaceAll("_"," ").toUpperCase())
+    );
+    card.appendChild(head);
+    card.appendChild(make("p","",[
+      "Provider approval: "+(route.provider_approved?"confirmed":"not confirmed"),
+      "Sandbox: "+(route.sandbox_verified_at?formatDate(route.sandbox_verified_at):"not verified"),
+      "Live test: "+(route.live_verified_at?formatDate(route.live_verified_at):"not verified")
+    ].join(" · ")));
+    if(route.internal_notes)card.appendChild(make("p","detail-notice","Evidence: "+route.internal_notes));
+    const actions=make("div","detail-actions");
+    const addAction=(label,stage,disabled=false)=>{
+      const btn=makeActionButton(label,async()=>{
+        btn.disabled=true;
+        try{await routeAction(route,stage,label);}finally{btn.disabled=false;}
+      });
+      btn.disabled=disabled;
+      actions.appendChild(btn);
+    };
+    addAction("Record provider approval","provider_approved",route.provider_approved);
+    addAction("Record sandbox pass","sandbox_verified",Boolean(route.sandbox_verified_at));
+    addAction("Record live test","live_verified",Boolean(route.live_verified_at));
+    if(route.status==="enabled"){
+      addAction("Suspend route","suspend",false);
+      addAction("Disable route","disable",false);
+    }else{
+      addAction("Enable verified route","enable",!(data.ready&&data.readiness?.globalSwitchEnabled&&route.provider_approved&&route.sandbox_verified_at&&route.live_verified_at));
+    }
+    card.appendChild(actions);
+    routesRoot.appendChild(card);
+  });
+
+  requestsRoot.replaceChildren();
+  if(!requests.length)requestsRoot.appendChild(make("div","empty","No international withdrawal requests have been submitted."));
+  requests.forEach(r=>{
+    const card=make("article","payout-card");
+    const head=make("div","payout-card-head");
+    head.append(
+      make("strong","",new Intl.NumberFormat(undefined,{style:"currency",currency:r.destination_currency,maximumFractionDigits:2}).format(Number(r.destination_amount))+" · "+String(r.status||"").replaceAll("_"," ").toUpperCase()),
+      make("span","pill"+(r.status==="paid"?"":" pending"),String(r.status||"").toUpperCase())
+    );
+    card.appendChild(head);
+    card.appendChild(make("p","", "NGN reward allocation: "+formatMoney(r.source_amount_ngn)+" · Provider fee: "+
+      new Intl.NumberFormat(undefined,{style:"currency",currency:r.provider_fee_currency,maximumFractionDigits:2}).format(Number(r.provider_fee_amount))));
+    const account=r.account||{};
+    card.appendChild(make("p","", (r.route?.country_name||"Destination")+
+      " · "+(account.beneficiary_name||"Beneficiary unavailable")+
+      " · •••• "+(account.account_hint_last4||"----")+
+      " · Beneficiary "+String(account.verification_status||"unknown").toUpperCase()));
+    const metaLine=make("div","payout-meta");
+    [
+      "Requested: "+formatDate(r.requested_at),
+      "Reference: "+String(r.transfer_reference||"—"),
+      "Provider transfer: "+(r.provider_transfer_id||"Not attached"),
+      "Student ID: "+String(r.user_id||"").slice(0,8)+"…"
+    ].forEach(value=>metaLine.appendChild(make("span","",value)));
+    card.appendChild(metaLine);
+    if(r.failure_reason)card.appendChild(make("p","detail-notice","Processing note: "+r.failure_reason));
+
+    const actions=make("div","detail-actions");
+    if(account.id){
+      const reveal=makeActionButton("Review beneficiary details",async()=>{
+        if(!window.confirm("Reveal encrypted beneficiary bank details for this authorised administrator review? Handle the personal and bank data confidentially."))return;
+        reveal.disabled=true;
+        const {data:detail,error:detailError}=await db.functions.invoke("dcds-international-payout",{
+          body:{action:"reveal_account_details",account_id:account.id}
+        });
+        reveal.disabled=false;
+        if(detailError||!detail?.success){alert(detail?.error||"Beneficiary details could not be decrypted.");return;}
+        const panel=make("div","record-row");
+        panel.appendChild(make("strong","","Sensitive beneficiary details — authorised admin view"));
+        Object.entries(detail.account.details||{}).forEach(([key,value])=>{
+          const row=make("div","record-meta");
+          row.append(make("span","",key.replaceAll("_"," ")),make("strong","",String(value)));
+          panel.appendChild(row);
+        });
+        card.appendChild(panel);
+        if(account.verification_status!=="verified"){
+          const verify=makeActionButton("Confirm beneficiary reviewed",async()=>{
+            if(!window.confirm("Confirm that you checked these exact beneficiary details against the provider/bank verification evidence?"))return;
+            const note=window.prompt("Enter the provider validation evidence or authorised manual verification reference (minimum 12 characters):");
+            if(!note||note.trim().length<12)return;
+            verify.disabled=true;
+            const {data:verified,error:verifyError}=await db.functions.invoke("dcds-international-payout",{
+              body:{action:"verify_account",account_id:account.id,verification_note:note.trim(),confirm:true}
+            });
+            verify.disabled=false;
+            if(verifyError||!verified?.success){alert(verified?.error||"Beneficiary verification could not be recorded.");return;}
+            await loadInternationalPayoutReadiness();
+          });
+          panel.appendChild(verify);
+        }
+      });
+      actions.appendChild(reveal);
+    }
+    if(r.status==="requested"){
+      const process=makeActionButton("Confirm & submit transfer",async()=>{
+        if(!window.confirm("Send this verified international transfer to Flutterwave now? Verify destination, beneficiary, NGN debit, FX quote and funded fee wallet first. This action may move real money."))return;
+        process.disabled=true;process.textContent="Submitting transfer…";
+        const {data:result,error:processError}=await db.functions.invoke("dcds-international-payout",{
+          body:{action:"process",request_id:r.id,confirm_send:true}
+        });
+        if(processError||!result?.success){alert(result?.error||result?.message||"Transfer did not complete. Check the provider reference before any further action.");}
+        await loadInternationalPayoutReadiness();
+      });
+      process.disabled=!data.ready||account.verification_status!=="verified";
+      actions.appendChild(process);
+    }else if(["processing","manual_review"].includes(r.status)&&r.provider_transfer_id){
+      const reconcile=makeActionButton("Reconcile provider status",async()=>{
+        reconcile.disabled=true;reconcile.textContent="Checking Flutterwave…";
+        const {data:result,error:reconcileError}=await db.functions.invoke("dcds-international-payout",{
+          body:{action:"reconcile",request_id:r.id}
+        });
+        if(reconcileError||!result?.success)alert(result?.message||result?.error||"Transfer still needs manual reconciliation.");
+        await loadInternationalPayoutReadiness();
+      });
+      actions.appendChild(reconcile);
+    }else if(r.status==="manual_review"){
+      card.appendChild(make("p","detail-notice","No provider transfer ID is stored. Investigate Flutterwave using the unique reference above. Do not submit this transfer again."));
+    }
+    if(actions.children.length)card.appendChild(actions);
+    requestsRoot.appendChild(card);
+  });
+}
+
 async function initialize() {
   $("adminApp").hidden = true;
   const {data:{session},error:sessionError} = await db.auth.getSession();
@@ -1118,6 +1315,10 @@ async function initialize() {
   try { await loadRegionalPrices(); } catch(e) { console.error("Regional pricing load failed:",e); $("regionalPriceStatus").textContent="Regional pricing table is not deployed yet."; }
   await loadStudents();
   await loadAdminPayouts();
+  try { await loadInternationalPayoutReadiness(); } catch (e) {
+    console.error("International payout readiness failed:",e);
+    $("internationalPayoutSafetyNotice").textContent="International payout readiness could not be loaded. No route was enabled.";
+  }
 }
 $("refreshRegionalPrices").addEventListener("click",()=>loadRegionalPrices().catch(e=>alert("Could not load regional prices: "+e.message)));
 $("refreshPaymentsButton").addEventListener("click",()=>loadAdminPaymentOps().catch(e=>alert("Could not load payment orders: "+e.message)));
@@ -1130,6 +1331,7 @@ $("searchButton").addEventListener("click",()=>{searchTerm=$("searchInput").valu
 $("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter")$("searchButton").click();});
 $("refreshButton").addEventListener("click",loadStudents);
 $("refreshPayoutsButton").addEventListener("click",()=>loadAdminPayouts().catch(e=>console.error("Payout refresh failed:",e)));
+$("refreshInternationalPayoutsButton").addEventListener("click",()=>loadInternationalPayoutReadiness().catch(e=>console.error("International readiness refresh failed:",e)));
 $("previousButton").addEventListener("click",()=>{if(page>0){page--;loadStudents();}});
 $("nextButton").addEventListener("click",()=>{if(students.length===PAGE_SIZE){page++;loadStudents();}});
 $("closeDetailButton").addEventListener("click",()=>{$("studentDetailPanel").hidden=true;activeStudentId=null;});

@@ -1,0 +1,92 @@
+name: DCDS international payout lifecycle validation
+
+on:
+  push:
+    branches: [main, feat/dcds-international-payout-foundation]
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/functions/dcds-international-payout/**"
+      - "supabase/functions/dcds-international-payout-webhook/**"
+      - "student-management.html"
+      - "student-dashboard.html"
+      - ".github/workflows/dcds-international-payout-validation.yml"
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/functions/dcds-international-payout/**"
+      - "supabase/functions/dcds-international-payout-webhook/**"
+      - "student-management.html"
+      - "student-dashboard.html"
+      - ".github/workflows/dcds-international-payout-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-international-payout-lifecycle:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate dashboard inline JavaScript
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          let checked = 0;
+          for (const file of ['student-management.html', 'student-dashboard.html']) {
+            const html = fs.readFileSync(file, 'utf8');
+            const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+            for (const match of scripts) {
+              if (/\bsrc\s*=/.test(match[1]) || !match[2].trim()) continue;
+              new vm.Script(match[2], { filename: file + '-inline-' + (++checked) + '.js' });
+            }
+          }
+          if (!checked) throw new Error('No inline dashboard scripts were checked.');
+          console.log('Validated ' + checked + ' inline script block(s).');
+          NODE
+      - name: Check international payout security and lifecycle contracts
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const baseSql = fs.readFileSync('supabase/migrations/20261111125858_dcds_international_payout_foundation.sql', 'utf8');
+          const lifecycleSql = fs.readFileSync('supabase/migrations/20261111131200_dcds_international_payout_lifecycle.sql', 'utf8');
+          const routeSql = fs.readFileSync('supabase/migrations/20261111134000_dcds_international_route_field_alignment.sql', 'utf8');
+          const reversalSql = fs.readFileSync('supabase/migrations/20261111135500_dcds_paid_referral_reversal_recovery.sql', 'utf8');
+          const branchSql = fs.readFileSync('supabase/migrations/20261111140500_dcds_international_bank_branch_support.sql', 'utf8');
+          const fn = fs.readFileSync('supabase/functions/dcds-international-payout/index.ts', 'utf8');
+          const webhook = fs.readFileSync('supabase/functions/dcds-international-payout-webhook/index.ts', 'utf8');
+          const admin = fs.readFileSync('student-management.html', 'utf8');
+          const student = fs.readFileSync('student-dashboard.html', 'utf8');
+
+          const lockBeforeTransfer = fn.indexOf('p_new_status: "processing"') < fn.indexOf('flutterwave("/transfers", "POST"');
+          const checks = [
+            ['all seeded corridors start disabled', (baseSql.match(/'disabled'/g) || []).length >= 12],
+            ['routes require provider approval plus sandbox and live verification', /provider_approved = true and sandbox_verified_at is not null and live_verified_at is not null/.test(baseSql)],
+            ['beneficiary details are AES-GCM encrypted before storage', /encryptPayload\(details, encryptionKey\)/.test(fn)],
+            ['international data tables are server-only', /revoke all on public\.dcds_international_payout_accounts from public, anon, authenticated/i.test(baseSql) && /revoke all on public\.dcds_international_payout_allocations from public, anon, authenticated/i.test(lifecycleSql)],
+            ['allocation prevents duplicate simultaneous reservation of a reward', /dcds_intl_one_reserved_allocation_per_reward/.test(lifecycleSql)],
+            ['atomic payout RPCs are not executable by public or authenticated users', /revoke all on function public\.dcds_internal_create_international_payout_request\(uuid,uuid,uuid\) from public, anon, authenticated/i.test(lifecycleSql) && /grant execute on function public\.dcds_internal_create_international_payout_request\(uuid,uuid,uuid\) to service_role/i.test(lifecycleSql)],
+            ['quote expiry and integer destination amount enforced', /5 \* 60 \* 1000/.test(fn) && /Number\.isSafeInteger\(amount\)/.test(fn)],
+            ['technical readiness and the global activation switch are separate gates', fn.includes('key !== "globalSwitchEnabled"') && fn.includes('readiness.checks.globalSwitchEnabled') && !fn.includes('DCDS_INTL_LIVE_TRANSFER_VERIFIED')],
+            ['route live evidence follows provider approval and sandbox verification', fn.includes('stage === "live_verified" && (!priorRouteState.provider_approved || !priorRouteState.sandbox_verified_at)')],
+            ['real transfer requires global readiness and explicit admin confirmation', /if \(!readiness\.ready \|\| !readiness\.checks\.globalSwitchEnabled \|\| body\.confirm_send !== true\)/.test(fn) && /if \(!admin\) return respond\(\{ success: false, error: "Administrator access required\."/s.test(fn)],
+            ['transfer is locked before provider submission', lockBeforeTransfer],
+            ['uncertain provider outcomes do not trigger an automatic resend', /manual_review/.test(fn) && /payoutRequest\.provider_transfer_id/.test(fn)],
+            ['webhook validates Flutterwave v3 verif-hash', /verif-hash/.test(webhook) && /constantTimeEqual\(secretHash, signature\)/.test(webhook)],
+            ['USD/GBP/EUR beneficiary fields follow provider-specific configuration', /beneficiary_country_value/.test(routeSql) && /street_name/.test(routeSql) && /swift_code/.test(routeSql)],
+            ['fixed beneficiary country and account-type rules are validated server-side', /fixedBeneficiaryCountry/.test(fn) && /checking","depository/.test(fn) && /first_name/.test(fn)],
+            ['bank branch codes are fetched and revalidated when a bank requires them', /branch_lookup_supported/.test(branchSql) && /action === "branches"/.test(fn) && /destination_branch_code/.test(fn)],
+            ['already-paid reward refunds create recovery liabilities, not unpaid reversals', reversalSql.includes("if v_reward.status='paid' then") && reversalSql.includes("'recovery_due'")],
+            ['admin can review and reconcile international requests', /internationalPayoutRequests/.test(admin) && /reconcile/.test(admin)],
+            ['student can create quotes and view international history', /create_quote/.test(student) && /internationalPayoutHistory/.test(student)]
+          ];
+          for (const [name, ok] of checks) {
+            console.log((ok ? 'PASS ' : 'FAIL ') + name);
+            if (!ok) process.exitCode = 1;
+          }
+          NODE
