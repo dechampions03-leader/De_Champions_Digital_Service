@@ -90,9 +90,9 @@ jobs:
             ['bank branch codes are fetched and revalidated when a bank requires them', /branch_lookup_supported/.test(branchSql) && /action === "branches"/.test(fn) && /destination_branch_code/.test(fn)],
             ['already-paid reward refunds create recovery liabilities, not unpaid reversals', reversalSql.includes("if v_reward.status='paid' then") && reversalSql.includes("'recovery_due'")],
             ['admin can review and reconcile international requests', /internationalPayoutRequests/.test(admin) && /reconcile/.test(admin)],
-            ['technical checklist renders once and keeps the global switch separate', /gates\\.replaceChildren\\(gateFragment\\)/.test(admin) && !/globalSwitchEnabled:\\s*\"Global international payout switch enabled\"/.test(admin)],
-            ['overlapping readiness refreshes cannot append stale duplicate checklists', /gates\\.dataset\\.requestToken/.test(admin) && /if \\(gates\\.dataset\\.requestToken !== requestToken\\) return;/.test(admin)],
-            ['mobile dashboard content reserves scroll space below the fixed dock', /body\\{padding-bottom:calc\\(156px \\+ env\\(safe-area-inset-bottom,0px\\)\\)\\}/.test(admin)],
+            ['technical checklist renders once and keeps the global switch separate', admin.includes('gates.replaceChildren(gateFragment)') && !admin.includes('globalSwitchEnabled: "Global international payout switch enabled"')],
+            ['overlapping readiness refreshes cannot append stale duplicate checklists', admin.includes('gates.dataset.requestToken') && admin.includes('if (gates.dataset.requestToken !== requestToken) return;')],
+            ['mobile dashboard content reserves scroll space below the fixed dock', admin.includes('body{padding-bottom:calc(156px + env(safe-area-inset-bottom,0px))}')],
             ['student can create quotes and view international history', /create_quote/.test(student) && /internationalPayoutHistory/.test(student)]
           ];
           for (const [name, ok] of checks) {
