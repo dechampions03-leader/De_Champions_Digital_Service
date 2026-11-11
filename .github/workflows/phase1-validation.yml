@@ -8,6 +8,7 @@ on:
       - "supabase/functions/create-payment/**"
       - "supabase/functions/admin-verify-flutterwave-payment/**"
       - "supabase/functions/dcds-process-payout/**"
+      - "supabase/functions/dcds-international-payout/**"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
   pull_request:
@@ -16,6 +17,7 @@ on:
     paths:
       - "supabase/functions/create-payment/**"
       - "supabase/functions/dcds-process-payout/**"
+      - "supabase/functions/dcds-international-payout/**"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
 
@@ -42,6 +44,8 @@ jobs:
         run: deno check supabase/functions/admin-verify-flutterwave-payment/index.ts
       - name: Type-check payout processor
         run: deno check supabase/functions/dcds-process-payout/index.ts
+      - name: Type-check international payout foundation
+        run: deno check supabase/functions/dcds-international-payout/index.ts
       - name: Verify Phase 1 migration invariants
         shell: bash
         run: |
