@@ -808,6 +808,14 @@ async function submitAuth(e){
 function hasDcdsVerifiedContact(user){
  return Boolean(user?.email_confirmed_at||user?.phone_confirmed_at);
 }
+function showPendingAccountVerification(user,message){
+ const method=user?.user_metadata?.dcds_signup_verification_method==='sms'?'sms':'email';
+ pendingVerificationMethod=method;
+ pendingVerificationEmail=user?.email||'';
+ pendingVerificationPhone=user?.phone||'';
+ const recipient=method==='sms'?pendingVerificationPhone:pendingVerificationEmail;
+ showSignupOtpScreen(method,recipient,message||('Please verify your '+(method==='sms'?'mobile number':'email address')+' before continuing.'));
+}
 function stopOtpCountdown(){if(otpCountdownTimer){clearInterval(otpCountdownTimer);otpCountdownTimer=null;}}
 function startOtpCountdown(seconds=60){
  stopOtpCountdown();let remaining=seconds;const button=$('resendOtpBtn'),label=$('otpCountdown');
@@ -957,7 +965,7 @@ async function refreshStudentEnrollmentState(){
  if(!supabaseClient){studentEnrollmentIds=new Set();hasGeneralBundle=false;return;}
  try{
   const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
-  if(sessionError)throw sessionError;  if(!session?.user?.email_confirmed_at){studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();return;}
+  if(sessionError)throw sessionError;  if(!hasDcdsVerifiedContact(session?.user)){studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();return;}
   const {data:rows,error}=await supabaseClient.from('enrollments').select('course_id').eq('user_id',session.user.id);
   if(error)throw error;
   studentEnrollmentIds=new Set((rows||[]).map(row=>String(row.course_id)));
@@ -1039,7 +1047,7 @@ async function startCoursePayment(index){
   const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
   if(sessionError)throw sessionError;
   if(!session){authMode='login';authScreen('Your session has expired. Please log in again.');return;}
-  if(!session.user?.email_confirmed_at){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before checkout.');return;}
+  if(!hasDcdsVerifiedContact(session.user)){showPendingAccountVerification(session.user,'Verify your selected contact method before checkout.');return;}
 
   const slug=COURSE_SLUGS[index];
   const {data:course,error:courseError}=await supabaseClient
@@ -1070,13 +1078,13 @@ async function enroll(index){
    try{
   const {data:{session},error}=await supabaseClient.auth.getSession();
   if(error)throw error;
-  if(session && session.user?.email_confirmed_at){
+  if(session && hasDcdsVerifiedContact(session.user)){
    await refreshStudentEnrollmentState();
    if(document.querySelector(`[data-enroll=\"${index}\"]`)?.dataset.enrolled==='true'){
     window.location.href='learn.html?course='+encodeURIComponent(COURSE_SLUGS[index]);return;
    }
    showEnrollment(index,session.user);
-  }else if(session){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before enrolling in a course.');}
+  }else if(session){showPendingAccountVerification(session.user,'Verify your selected contact method before enrolling in a course.');}
   else{authMode='login';authScreen('Log in or create your student account to continue with this course.');}
  }catch(err){authMode='login';authScreen(err.message||'We could not check your account. Please try again.');}
 }
@@ -1119,7 +1127,7 @@ async function startGeneralCoursePayment(){
   const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
   if(sessionError)throw sessionError;
   if(!session){authMode='login';authScreen('Please log in to purchase the General Course.');return;}
-  if(!session.user?.email_confirmed_at){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before checkout.');return;}
+  if(!hasDcdsVerifiedContact(session.user)){showPendingAccountVerification(session.user,'Verify your selected contact method before checkout.');return;}
   const {data:course,error:courseError}=await supabaseClient.from('courses')
     .select('id,title,price,currency').eq('id',GENERAL_COURSE_ID).single();
   if(courseError||!course)throw new Error('The General Course payment record is not set up yet. Please complete the database setup instructions first.');
@@ -1146,14 +1154,14 @@ if(generalBuyButton)generalBuyButton.addEventListener('click',async()=>{
  try{
   const {data:{session},error}=await supabaseClient.auth.getSession();
   if(error)throw error;
-  if(session && session.user?.email_confirmed_at){
+  if(session && hasDcdsVerifiedContact(session.user)){
    await refreshStudentEnrollmentState();
    if(hasGeneralBundle){
     const links=COURSE_SLUGS.map((slug,index)=>`<a class=\"button button-light\" style=\"display:block;width:100%;margin:8px 0;text-align:left\" href=\"learn.html?course=${encodeURIComponent(slug)}\">▶ ${escapeHtml(courses[index].title)}</a>`).join('');
     openModal(`<h2 id=\"modalTitle\">Your General Course Library</h2><p class=\"modal-sub\">Your General Course enrollment is recognized. Choose a course to continue learning.</p><div style=\"max-height:55vh;overflow:auto;padding-right:4px\">${links}</div>`);
    }else showGeneralEnrollment(session.user);
   }
-  else if(session){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before purchasing the General Course.');}else{authMode='login';authScreen('Log in or create your student account to purchase the General Course.');}
+  else if(session){showPendingAccountVerification(session.user,'Verify your selected contact method before purchasing the General Course.');}else{authMode='login';authScreen('Log in or create your student account to purchase the General Course.');}
  }catch(error){authMode='login';authScreen(error.message||'We could not check your account. Please try again.');}
 });
             async function handleFlutterwaveReturn(){
@@ -1198,7 +1206,7 @@ if(generalBuyButton)generalBuyButton.addEventListener('click',async()=>{
 }
 async function showAccount(){
  if(!supabaseClient){authMode='login';authScreen('Account service could not load.');return;}
- try{const {data:{user},error}=await supabaseClient.auth.getUser();if(error)throw error;if(!user){authMode='login';authScreen();return;}if(!user.email_confirmed_at){pendingVerificationEmail=user.email;showEmailOtpScreen(user.email,'Verify your email to activate your student account.');return;}
+ try{const {data:{user},error}=await supabaseClient.auth.getUser();if(error)throw error;if(!user){authMode='login';authScreen();return;}if(!hasDcdsVerifiedContact(user)){showPendingAccountVerification(user,'Verify your selected contact method to activate your student account.');return;}
  openModal(`<h2 id="modalTitle">My DCDS account</h2><p class="modal-sub">Student account details</p><div class="selected-course"><span>FULL NAME</span><strong>${escapeHtml(user.user_metadata?.full_name||'DCDS Student')}</strong><span style="display:block;margin-top:10px">EMAIL ADDRESS</span><strong style="font-size:15px">${escapeHtml(user.email||'')}</strong></div><button class="button button-light" id="logoutBtn" style="width:100%">Log out</button>`);
  $('logoutBtn').onclick=async()=>{const {error}=await supabaseClient.auth.signOut();if(error){openModal(`<h2 id="modalTitle">Could not log out</h2><p class="modal-sub">${escapeHtml(error.message)}</p>`);return;}$('accountBtn').textContent='Student Login';setNotificationAccess(false);studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();closeModal();};
  }catch(err){authMode='login';authScreen(err.message||'Could not load your account.');}
@@ -1207,13 +1215,13 @@ async function showAccount(){
 if(supabaseClient){
  supabaseClient.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){setTimeout(showPasswordRecoveryScreen,0);return;}
-  const signedIn=!!session?.user?.email_confirmed_at;
+  const signedIn=hasDcdsVerifiedContact(session?.user);
   $('accountBtn').textContent=signedIn?'My Account':'Student Login';
   setNotificationAccess(signedIn);
   if(signedIn){setTimeout(()=>refreshStudentEnrollmentState(),0);}else{studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();}
  });
  supabaseClient.auth.getSession().then(async({data})=>{
-  const signedIn=!!data.session?.user?.email_confirmed_at;
+  const signedIn=hasDcdsVerifiedContact(data.session?.user);
     $('accountBtn').textContent=signedIn?'My Account':'Student Login';setNotificationAccess(signedIn);
   if(signedIn){
    const {data:courseRows,error}=await supabaseClient.from('courses').select('id,slug').in('slug',COURSE_SLUGS);
@@ -1234,8 +1242,8 @@ if(supabaseClient){
  if(!wantsLogin&&!wantsVerify)return;
  if(!supabaseClient){authMode='login';authScreen('The account service is unavailable. Please reload and try again.');return;}
  try{
-  const {data:{session},error}=await supabaseClient.auth.getSession();if(error)throw error;  if(session?.user?.email_confirmed_at){const destination=authNextPath||'student-dashboard.html';window.location.replace(destination);return;}
-  if(session?.user&&!session.user.email_confirmed_at){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before entering the student portal.');return;}
+  const {data:{session},error}=await supabaseClient.auth.getSession();if(error)throw error;  if(hasDcdsVerifiedContact(session?.user)){const destination=authNextPath||'student-dashboard.html';window.location.replace(destination);return;}
+  if(session?.user){showPendingAccountVerification(session.user,'Verify your selected contact method before entering the student portal.');return;}
   authMode='login';authScreen(wantsVerify?'Please verify your email before accessing this page.':'Log in or create your DCDS student account to continue.');
  }catch(error){authMode='login';authScreen(error.message||'We could not check your login. Please try again.');}
 })();
