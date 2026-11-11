@@ -261,6 +261,38 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
  }
 }
 </style>
+<style id="dcds-fixed-workspace-navigation">
+html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important}
+#dcds-fixed-bottom-nav{position:fixed;z-index:60;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(820px,calc(100% - 18px));display:grid;grid-template-columns:repeat(var(--dcds-nav-count,5),minmax(0,1fr));gap:4px;padding:7px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:linear-gradient(145deg,rgba(48,20,76,.97),rgba(24,9,42,.97));box-shadow:0 14px 42px rgba(20,7,35,.3),inset 0 1px 0 rgba(255,255,255,.12);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#dcds-fixed-bottom-nav[hidden]{display:none!important}
+#dcds-fixed-bottom-nav .dcds-dock-item{min-width:0;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;border:1px solid transparent;border-radius:15px;background:transparent;color:#e9def5;font:700 9px/1.1 'DM Sans',Arial,sans-serif;letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .18s ease,color .18s ease,transform .18s ease}
+#dcds-fixed-bottom-nav .dcds-dock-item:active{transform:scale(.96)}
+#dcds-fixed-bottom-nav .dcds-dock-item[aria-current="page"]{color:#28143c;background:linear-gradient(135deg,#f1d78c,#d7b45a);border-color:rgba(255,255,255,.35);box-shadow:0 5px 16px rgba(215,180,90,.22)}
+#dcds-fixed-bottom-nav .dcds-dock-icon{font-size:19px;line-height:1.1;font-family:Arial,sans-serif}
+#dcds-fixed-bottom-nav .dcds-dock-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[data-dcds-public-screen][hidden],[data-dcds-student-screen][hidden],[data-dcds-assessment-screen][hidden]{display:none!important}
+@media(min-width:900px){#dcds-fixed-bottom-nav{bottom:14px;padding:8px 10px}#dcds-fixed-bottom-nav .dcds-dock-item{min-height:58px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){#dcds-fixed-bottom-nav .dcds-dock-item{transition:none}}
+</style>
+<style id="dcds-student-dashboard-motion-off">
+/* Student dashboard: keep the interface still and immediately readable. */
+html,body,body *,body *::before,body *::after{
+ animation:none!important;
+ transition:none!important;
+ scroll-behavior:auto!important;
+}
+html.dcds-text-motion-ready [data-dcds-text-reveal],
+.dcds-motion-ready [data-dcds-reveal],
+.dcds-motion-ready [data-dcds-reveal] *,
+[data-dcds-text-reveal]{
+ opacity:1!important;
+ visibility:visible!important;
+ transform:none!important;
+ filter:none!important;
+ animation:none!important;
+ transition:none!important;
+}
+</style>
 </head>
 <body class="auth-pending">
 <div class="dcds-refresh-indicator" id="dcdsRefreshIndicator" role="status" aria-live="polite" aria-atomic="true">
@@ -713,19 +745,7 @@ function openCertificate(certificate, studentName, courseTitle) {
  .dcds-motion-ready [data-dcds-reveal] *{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;animation:none!important}
 }
 </style>
-<style id="dcds-fixed-workspace-navigation">
-html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important}
-#dcds-fixed-bottom-nav{position:fixed;z-index:60;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(820px,calc(100% - 18px));display:grid;grid-template-columns:repeat(var(--dcds-nav-count,5),minmax(0,1fr));gap:4px;padding:7px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:linear-gradient(145deg,rgba(48,20,76,.97),rgba(24,9,42,.97));box-shadow:0 14px 42px rgba(20,7,35,.3),inset 0 1px 0 rgba(255,255,255,.12);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
-#dcds-fixed-bottom-nav[hidden]{display:none!important}
-#dcds-fixed-bottom-nav .dcds-dock-item{min-width:0;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;border:1px solid transparent;border-radius:15px;background:transparent;color:#e9def5;font:700 9px/1.1 'DM Sans',Arial,sans-serif;letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .18s ease,color .18s ease,transform .18s ease}
-#dcds-fixed-bottom-nav .dcds-dock-item:active{transform:scale(.96)}
-#dcds-fixed-bottom-nav .dcds-dock-item[aria-current="page"]{color:#28143c;background:linear-gradient(135deg,#f1d78c,#d7b45a);border-color:rgba(255,255,255,.35);box-shadow:0 5px 16px rgba(215,180,90,.22)}
-#dcds-fixed-bottom-nav .dcds-dock-icon{font-size:19px;line-height:1.1;font-family:Arial,sans-serif}
-#dcds-fixed-bottom-nav .dcds-dock-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-[data-dcds-public-screen][hidden],[data-dcds-student-screen][hidden],[data-dcds-assessment-screen][hidden]{display:none!important}
-@media(min-width:900px){#dcds-fixed-bottom-nav{bottom:14px;padding:8px 10px}#dcds-fixed-bottom-nav .dcds-dock-item{min-height:58px;font-size:10px}}
-@media(prefers-reduced-motion:reduce){#dcds-fixed-bottom-nav .dcds-dock-item{transition:none}}
-</style>
+
 </head><body><button class="print" onclick="window.print()">Print / Save as PDF</button><main class="certificate"><div class="brand">DCDS</div><div class="tag">DE CHAMPIONS DIGITAL SERVICE</div><div class="rule"></div><div class="eyebrow">CERTIFICATE OF COMPLETION</div><h1 class="title">Certificate of Achievement</h1><div class="intro">This certificate is proudly presented to</div><div class="name">${safeName}</div><div class="body">for successfully completing the learning requirements for</div><div class="course">${safeCourse}</div><div class="body">and demonstrating commitment to learning, creativity, and digital excellence.</div><div class="rule"></div><div class="seal">DCDS<br>ACHIEVEMENT</div>${verified?'<div class="verified">ADMIN VERIFIED CERTIFICATE</div>':''}<div class="footer"><div><strong>Certificate No.</strong><br>${safeNumber}<br><br><strong>Date Issued</strong><br>${safeDate}</div><div style="text-align:right"><strong>DE CHAMPIONS DIGITAL SERVICE</strong><br>CREATE • LEARN • INNOVATE • EARN.<br><br>Official digital certificate</div></div></main></body></html>`);
   printWindow.document.close();
 }async function loadCertificates(user) {
