@@ -103,8 +103,14 @@ jobs:
                   raise SystemExit(f"index.html missing required auth/referral behavior: {item}")
           if "dcds_phone_e164" not in signup_migration:
               raise SystemExit("Signup migration is missing the required phone metadata validation.")
-          if "create trigger dcds_require_signup_contact_details" not in signup_migration.lower():
-              raise SystemExit("Signup migration is missing the auth.users insert guard.")
+          if "create table if not exists public.dcds_student_contact_numbers" not in signup_migration.lower():
+              raise SystemExit("Signup migration is missing the private mobile contact registry.")
+          if "create or replace function public.capture_dcds_referral_on_signup()" not in signup_migration.lower():
+              raise SystemExit("Signup migration is not extending the existing Auth signup trigger.")
+          if "insert into public.dcds_student_contact_numbers" not in signup_migration.lower() or "insert into public.dcds_referrals" not in signup_migration.lower():
+              raise SystemExit("Signup migration must save mobile contact and preserve referral attribution.")
+          if "enable row level security" not in signup_migration.lower() or "mobile_e164 text not null unique" not in signup_migration.lower():
+              raise SystemExit("Signup mobile registry must be private and unique.")
           if r"^\+[1-9][0-9]{7,14}$" not in signup_migration:
               raise SystemExit("Signup migration is missing E.164 phone validation.")
           if 'id="otpCode"' in page or "$('otpCode')" in page:
