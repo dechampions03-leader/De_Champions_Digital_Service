@@ -47,8 +47,8 @@ Deno.serve(async (req: Request) => {
 
     const user = authData.user;
     if (!user.email) return respond({ success: false, error: "Your account has no email address." }, 400);
-    if (!user.email_confirmed_at) {
-      return respond({ success: false, error: "Please verify your email address before making a payment." }, 403);
+    if (!user.email_confirmed_at && !user.phone_confirmed_at) {
+      return respond({ success: false, error: "Please verify your email address or mobile number before making a payment." }, 403);
     }
 
     const body = await req.json();
