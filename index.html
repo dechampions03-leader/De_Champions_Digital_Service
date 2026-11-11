@@ -511,9 +511,11 @@ html.dcds-app-loading body>:not(#dcds-launch-screen){visibility:hidden!important
  <a href="#home">Back to top ↑</a><p>© 2026 De Champions Digital Service.</p>
  </div></footer>
 <style>
-.dcds-otp-box{display:block;width:100%;margin:18px 0}
-.dcds-otp-box input{display:block;box-sizing:border-box;width:100%;min-width:0;height:58px;padding:10px 14px;text-align:center;font-size:25px;letter-spacing:.48em;text-indent:.48em;font-variant-numeric:tabular-nums;font-weight:850;color:#35105f;border:1px solid #d9c8ef;border-radius:12px;background:#fbf9ff;outline:none}
+.dcds-otp-box{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;width:100%;margin:18px 0}
+.dcds-otp-box input{display:block;box-sizing:border-box;width:100%;min-width:0;height:58px;padding:0;text-align:center;font-size:24px;letter-spacing:0;text-indent:0;font-variant-numeric:tabular-nums;font-weight:850;color:#35105f;border:1px solid #d9c8ef;border-radius:12px;background:#fbf9ff;outline:none}
 .dcds-otp-box input:focus{border-color:#7a42d0;box-shadow:0 0 0 4px #6128b814}
+@media(max-width:380px){.dcds-otp-box{gap:6px}.dcds-otp-box input{height:52px;font-size:21px}}
+.dcds-referral-field small{display:block;margin-top:6px;color:#766984;font-size:11px;line-height:1.5}
 .dcds-otp-help{font-size:12px;color:#766984;line-height:1.65}.dcds-otp-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;font-size:12px}
 .dcds-text-button{border:0;background:none;color:#6128b8;font-weight:850;padding:8px 0}.dcds-text-button:disabled{color:#a49aaa;cursor:not-allowed}
 .form-error.success{color:#167044;background:#edf9f1;border:1px solid #c8ecd4;border-radius:9px;padding:9px 11px;min-height:0}
@@ -684,6 +686,7 @@ function authScreen(message=''){
  <div class="tabs"><button class="tab ${signup?'':'active'}" type="button" data-mode="login">Log in</button><button class="tab ${signup?'active':''}" type="button" data-mode="signup">Create account</button></div>
  <form id="authForm">${signup?'<label class="field"><span>Full name</span><input id="studentName" name="name" autocomplete="name" maxlength="100" required></label>':''}
  <label class="field"><span>Email address</span><input id="studentEmail" name="email" type="email" autocomplete="email" required></label> <label class="field"><span>Password</span><div class="dcds-password-wrap"><input id="studentPassword" name="password" type="password" minlength="8" autocomplete="${signup?'new-password':'current-password'}" required><button class="dcds-password-toggle" id="toggleStudentPassword" type="button" aria-controls="studentPassword" aria-pressed="false">Show</button></div></label>
+ ${signup?'<label class="field dcds-referral-field"><span>Referral code (optional)</span><input id="studentReferralCode" name="referral_code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" pattern="[A-Za-z0-9]{6,16}" value="'+escapeHtml(DCDS_REFERRAL_CODE)+'" placeholder="Enter referral code"><small>Were you invited by a DCDS ambassador? Enter their code here. Referral links also fill this in automatically.</small></label>':''}
  ${signup?'':'<div class="auth-forgot-row"><button id="forgotPasswordBtn" type="button">Forgot password?</button></div>'}
  <p class="form-error" id="authError" role="alert">${escapeHtml(message)}</p><button class="button button-primary" id="authSubmit" type="submit" style="width:100%">${signup?'Create student account':'Log in'}</button></form>
  <p class="modal-note">New accounts must verify their email with a six-digit code before accessing the student portal. Your course catalogue remains available without signing in.</p>`);
@@ -707,7 +710,9 @@ async function submitAuth(e){
  try{
   if(authMode==='signup'){
    if(!name)throw new Error('Please enter your full name.');
-   const signupMetadata={full_name:name};if(DCDS_REFERRAL_CODE)signupMetadata.dcds_referral_code=DCDS_REFERRAL_CODE;
+   const referralCode=$('studentReferralCode')?.value.trim().toUpperCase()||'';
+   if(referralCode&&!/^[A-Z0-9]{6,16}$/.test(referralCode))throw new Error('Referral codes must contain 6–16 letters or numbers.');
+   const signupMetadata={full_name:name};if(referralCode)signupMetadata.dcds_referral_code=referralCode;
    const {error}=await supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}});
    if(error){
     if(error.code==='user_already_exists'||/user already registered/i.test(error.message||'')){
@@ -741,17 +746,49 @@ function startOtpCountdown(seconds=60){
  if(button)button.disabled=true;if(label)label.textContent=`Resend available in ${remaining}s`;
  otpCountdownTimer=setInterval(()=>{remaining--;if(label)label.textContent=remaining>0?`Resend available in ${remaining}s`:'You can request another code now';if(remaining<=0){stopOtpCountdown();if(button)button.disabled=false;}},1000);
 }
+function getOtpToken(){
+ return Array.from(document.querySelectorAll('.dcds-otp-digit')).map(input=>input.value).join('');
+}
+function setupOtpInputs(){
+ const inputs=Array.from(document.querySelectorAll('.dcds-otp-digit'));
+ const fillOtp=value=>{
+  const digits=String(value||'').replace(/\D/g,'').slice(0,6);
+  inputs.forEach((input,index)=>{input.value=digits[index]||'';});
+  if(inputs.length)inputs[Math.min(digits.length,inputs.length-1)].focus();
+ };
+ inputs.forEach((input,index)=>{
+  input.addEventListener('input',()=>{
+   const digits=input.value.replace(/\D/g,'');
+   if(digits.length>1){fillOtp(digits);return;}
+   input.value=digits.slice(-1);
+   if(input.value&&index<inputs.length-1)inputs[index+1].focus();
+  });
+  input.addEventListener('keydown',event=>{
+   if(event.key==='Backspace'&&!input.value&&index>0){inputs[index-1].focus();return;}
+   if(event.key==='ArrowLeft'&&index>0){event.preventDefault();inputs[index-1].focus();}
+   if(event.key==='ArrowRight'&&index<inputs.length-1){event.preventDefault();inputs[index+1].focus();}
+  });
+  input.addEventListener('paste',event=>{
+   const pasted=event.clipboardData?.getData('text')||'';
+   if(!pasted)return;
+   event.preventDefault();fillOtp(pasted);
+  });
+ });
+ if(inputs[0])inputs[0].focus();
+}
 function showEmailOtpScreen(email,message='Enter the six-digit code sent to your email.'){
  pendingVerificationEmail=email;stopOtpCountdown();
  openModal(`${authBrandMarkup('dcds-otp-brand')}<h2 id="modalTitle">Verify your email</h2><p class="modal-sub">One quick step to activate your DCDS student account.</p><p class="dcds-otp-help">${escapeHtml(message)}<br>Code sent to <b>${escapeHtml(email)}</b>.</p>
- <form id="otpVerifyForm"><label class="field"><span>Six-digit verification code</span><div class="dcds-otp-box"><input aria-label="Verification code" id="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required></div></label>
+ <form id="otpVerifyForm"><label class="field"><span>Six-digit verification code</span><div class="dcds-otp-box" role="group" aria-label="Six-digit verification code">
+  ${Array.from({length:6},(_,i)=>'<input class="dcds-otp-digit" type="text" inputmode="numeric" autocomplete="'+(i===0?'one-time-code':'off')+'" maxlength="'+(i===0?6:1)+'" pattern="'+(i===0?'[0-9]{1,6}':'[0-9]')+'" aria-label="Digit '+(i+1)+' of 6" required>').join('')}
+ </div></label>
   <p class="form-error" id="otpError" role="alert"></p><button class="button button-primary" id="verifyOtpBtn" type="submit" style="width:100%">Verify email</button></form>
  <div class="dcds-otp-actions"><span id="otpCountdown">Resend available in 60s</span><button class="dcds-text-button" id="resendOtpBtn" type="button" disabled>Resend code</button></div>
  <p class="modal-note">Your verification code is sent to your registered email address. Check your inbox, spam and promotions folders. If you have an account already, log in instead of creating another account; DCDS can request a fresh code if that account is still unverified.</p>`);
- $('otpCode').focus();$('otpVerifyForm').addEventListener('submit',verifyEmailOtp);$('resendOtpBtn').addEventListener('click',resendEmailOtp);startOtpCountdown(60);
+ setupOtpInputs();$('otpVerifyForm').addEventListener('submit',verifyEmailOtp);$('resendOtpBtn').addEventListener('click',resendEmailOtp);startOtpCountdown(60);
 }
   async function verifyEmailOtp(e){
- e.preventDefault();const btn=$('verifyOtpBtn'),err=$('otpError'),token=$('otpCode').value.trim();
+ e.preventDefault();const btn=$('verifyOtpBtn'),err=$('otpError'),token=getOtpToken().trim();
  if(!/^\d{6}$/.test(token)){err.textContent='Enter the complete six-digit code.';return;}
  btn.disabled=true;btn.textContent='Verifying…';err.textContent='';err.className='form-error';
  try{
