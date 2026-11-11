@@ -1204,7 +1204,7 @@ async function loadCourse() {
         currentUser = user;
 
         // A Supabase session is not enough until the student's email is verified.
-        if (!user.email_confirmed_at) {
+        if (!user.email_confirmed_at && !user.phone_confirmed_at) {
             const returnTo = window.location.pathname + window.location.search;
             const verifyUrl = "index.html?verify=required&next=" + encodeURIComponent(returnTo);
             window.location.replace(verifyUrl);
@@ -1360,7 +1360,7 @@ db.auth.onAuthStateChange((event, session) => {
         window.location.replace(
             "index.html?login=required&next=" + encodeURIComponent(returnTo)
         );
-    } else if (session?.user && !session.user.email_confirmed_at) {
+    } else if (session?.user && !session.user.email_confirmed_at && !session.user.phone_confirmed_at) {
         learningContent.classList.add("hidden");
         const returnTo = window.location.pathname + window.location.search;
         window.location.replace(

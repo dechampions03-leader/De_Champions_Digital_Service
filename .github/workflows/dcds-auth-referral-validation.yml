@@ -7,6 +7,10 @@ on:
     paths:
       - "index.html"
       - "student-dashboard.html"
+      - "student-management.html"
+      - "learn.html"
+      - "general-course.html"
+      - "supabase/functions/dcds-create-account/**"
       - "supabase/migrations/**"
       - "ai-config/DCDS-MASTER-BRAIN.md"
       - "ai-config/DCDS-CONVERSATION-INTELLIGENCE.md"
@@ -17,6 +21,10 @@ on:
     paths:
       - "index.html"
       - "student-dashboard.html"
+      - "student-management.html"
+      - "learn.html"
+      - "general-course.html"
+      - "supabase/functions/dcds-create-account/**"
       - "supabase/migrations/**"
       - "ai-config/DCDS-MASTER-BRAIN.md"
       - "ai-config/DCDS-CONVERSATION-INTELLIGENCE.md"
@@ -46,7 +54,7 @@ jobs:
           import subprocess
           import tempfile
 
-          files = ["index.html", "student-dashboard.html"]
+          files = ["index.html", "student-dashboard.html", "student-management.html", "learn.html", "general-course.html"]
           checked = 0
           with tempfile.TemporaryDirectory() as tmp:
               for html_file in files:
@@ -82,6 +90,8 @@ jobs:
           brain = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
           conversation = Path("ai-config/DCDS-CONVERSATION-INTELLIGENCE.md").read_text(encoding="utf-8")
           signup_migration = Path("supabase/migrations/20261111151500_dcds_require_global_signup_mobile.sql").read_text(encoding="utf-8")
+          dual_migration = Path("supabase/migrations/20261111162500_dcds_dual_channel_signup_verification.sql").read_text(encoding="utf-8")
+          phone_signup_function = Path("supabase/functions/dcds-create-account/index.ts").read_text(encoding="utf-8")
 
           required_page = [
               "grid-template-columns:repeat(6,minmax(0,1fr))",
@@ -90,7 +100,17 @@ jobs:
               "function setupOtpInputs()",
               "function getOtpToken()",
               "getOtpToken().trim()",
-              "supabaseClient.auth.verifyOtp({email:pendingVerificationEmail,token,type:'signup'})",
+              "function showSignupOtpScreen(method,recipient,message)",
+              "supabaseClient.auth.verifyOtp(credentials)",
+              "name=\"dcdsVerificationMethod\"",
+              "value=\"email\"",
+              "value=\"sms\"",
+              "create_phone_signup",
+              "hasDcdsVerifiedContact(user)",
+              "dcds_signup_verification_method:'email'",
+              "supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}})",
+              "supabaseClient.auth.signInWithPassword(credentials)",
+              "pendingVerificationMethod==='sms'",
               "id=\"studentReferralCode\"",
               "signupMetadata.dcds_referral_code=referralCode",
               "id=\"studentPhone\"",
@@ -113,6 +133,18 @@ jobs:
               raise SystemExit("Signup mobile registry must be private and unique.")
           if r"^\+[1-9][0-9]{7,14}$" not in signup_migration:
               raise SystemExit("Signup migration is missing E.164 phone validation.")
+          if "DCDS_SMS_OTP_PROVIDER_READY" not in phone_signup_function or "DCDS_SMS_OTP_PROVIDER_READY" not in Path("ai-config/DCDS-AUTH-VERIFICATION-OPERATIONS.md").read_text(encoding="utf-8"):
+              raise SystemExit("SMS signup is missing its independent provider-readiness gate.")
+          if "phone_otp_enabled" not in dual_migration or "'false'::jsonb" not in dual_migration:
+              raise SystemExit("SMS verification must remain disabled until its provider is configured.")
+          if "dcds_internal_take_signup_attempt" not in dual_migration or "enable row level security" not in dual_migration.lower():
+              raise SystemExit("Dual-channel signup rate limiting and private settings are missing.")
+          for item in ["auth.admin.createUser", "phone_confirm: false", "type: \"sms\"", "dcds_internal_take_signup_attempt", "admin.deleteUser"]:
+              if item not in phone_signup_function:
+                  raise SystemExit(f"SMS signup function is missing required safeguard: {item}")
+          for item in ["phone_confirmed_at", "email_confirmed_at"]:
+              if item not in Path("supabase/functions/create-payment/index.ts").read_text(encoding="utf-8"):
+                  raise SystemExit(f"Checkout does not accept both verification methods: {item}")
           if 'id="otpCode"' in page or "$('otpCode')" in page:
               raise SystemExit("Legacy single-box OTP input reference remains.")
 
@@ -134,5 +166,5 @@ jobs:
               if item not in conversation:
                   raise SystemExit(f"Conversation Intelligence missing payout safeguard: {item}")
 
-          print("Six-box OTP, signup referral-code capture, global referral disclosures, and NGN-only payout safeguards passed.")
+          print("Six-box OTP, worldwide referrals, required dual contacts, selectable email/SMS OTP, SMS rate limiting, and either-contact verification gates passed.")
           PY

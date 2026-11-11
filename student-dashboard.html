@@ -782,7 +782,7 @@ function loadStudentProfile(user) {
   const m=user.user_metadata||{};
   document.getElementById('profileFullName').value=m.full_name||m.name||'';
   document.getElementById('profileEmail').value=user.email||'';
-  document.getElementById('profilePhone').value=m.phone||'';
+  document.getElementById('profilePhone').value=user.phone||m.dcds_phone_e164||m.phone||'';
 }
 document.getElementById('studentProfileForm').addEventListener('submit',async event=>{
   event.preventDefault(); if(!activeStudent)return;
@@ -1383,7 +1383,7 @@ async function loadDashboard() {
     window.location.replace('index.html?login=required&next=' + next);
     return;
   }
-  if (!session.user.email_confirmed_at) {
+  if (!session.user.email_confirmed_at && !session.user.phone_confirmed_at) {
     const next = encodeURIComponent('student-dashboard.html');
     window.location.replace('index.html?verify=required&next=' + next);
     return;
@@ -1391,7 +1391,7 @@ async function loadDashboard() {
 
     // Confirm the current identity with Supabase before revealing private dashboard data.
   const {data:{user}, error:userError} = await client.auth.getUser();
-  if (userError || !user || !user.email_confirmed_at) {
+  if (userError || !user || (!user.email_confirmed_at && !user.phone_confirmed_at)) {
     window.location.replace('index.html?login=required&next=' + encodeURIComponent('student-dashboard.html'));
     return;
   }

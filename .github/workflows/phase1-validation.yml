@@ -11,7 +11,7 @@ on:
       - "supabase/functions/dcds-international-payout/**"
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/flutterwave-webhook/**"
-      - "supabase/functions/flutterwave-webhook/**"
+      - "supabase/functions/dcds-create-account/**"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
   pull_request:
@@ -22,6 +22,7 @@ on:
       - "supabase/functions/dcds-process-payout/**"
       - "supabase/functions/dcds-international-payout/**"
       - "supabase/functions/dcds-international-payout-webhook/**"
+      - "supabase/functions/dcds-create-account/**"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
 
@@ -54,6 +55,8 @@ jobs:
         run: deno check supabase/functions/dcds-international-payout-webhook/index.ts
       - name: Type-check combined Flutterwave webhook
         run: deno check supabase/functions/flutterwave-webhook/index.ts
+      - name: Type-check DCDS account creation function
+        run: deno check supabase/functions/dcds-create-account/index.ts
       - name: Verify Phase 1 migration invariants
         shell: bash
         run: |

@@ -85,3 +85,22 @@ A route record may be enabled only after provider approval, sandbox verification
 The international database lifecycle and authenticated Edge Functions are deployed. The production database currently contains 12 registered routes, and all 12 are disabled. No beneficiary records, quotes, international requests or transfers have been created by the rollout.
 
 International payouts are not available to ambassadors until the DCDS account configuration, the webhook secret, the global flags, and at least one route's sandbox and live verification are completed. The existing Nigerian bank withdrawal flow has not been replaced.
+
+
+## Verified webhook and payout checkpoint — 11 November 2026
+
+The following is the verified rollout state after merging the combined Flutterwave payment and international payout webhook:
+
+- International payout requests: **0**.
+- International reward allocations: **0**.
+- Beneficiary accounts and FX quote records: **0** at the rollout checkpoint.
+- All 12 international payout routes remain disabled.
+- No international transfer was initiated.
+- No payout balance was moved.
+- The combined webhook is deployed at the existing customer-payment URL:
+  `https://qxsenflgaweeadvggnyp.supabase.co/functions/v1/flutterwave-webhook`.
+- The Flutterwave V3 webhook URL was not changed or replaced.
+- GitHub validation and deployment checks passed for the merged combined-webhook code.
+- Still outstanding: a real signed Flutterwave transfer callback test and a post-deployment customer payment test. Automated checks do not substitute for either live integration test.
+
+Keep these two external validation items open until each is performed and its result is recorded. Do not describe international payouts or the live callback/payment path as fully end-to-end tested before then.

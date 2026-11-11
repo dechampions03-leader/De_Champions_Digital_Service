@@ -402,7 +402,7 @@ function fail(message, showLogin = false) {
 
     if (
       !session ||
-      !session.user?.email_confirmed_at
+      !(session.user.email_confirmed_at || session.user.phone_confirmed_at)
     ) {
 
       fail(

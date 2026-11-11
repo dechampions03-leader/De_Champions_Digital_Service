@@ -554,7 +554,7 @@ let dcdsTickerRefreshTimer=null;
  const requestId=++dcdsTickerRequest;
  try{
   const {data:{user},error:userError}=await supabaseClient.auth.getUser();
-  if(userError||!user||!user.email_confirmed_at){
+  if(userError||!user||!hasDcdsVerifiedContact(user)){
    if(requestId===dcdsTickerRequest){
     ticker.classList.remove('is-visible');
     ticker.hidden=true;
@@ -646,6 +646,9 @@ const money = n => (window.DCDSGlobalCurrency && window.DCDSGlobalCurrency.forma
 let selectedCourseIndex = null;
 let authMode = 'login';
 let pendingVerificationEmail = '';
+let pendingVerificationPhone = '';
+let pendingVerificationMethod = 'email';
+let dcdsPhoneOtpEnabled = false;
 let otpCountdownTimer = null;
 let authNextPath = '';
 // Preserve a valid DCDS referral code for this browser tab until signup.
@@ -680,17 +683,33 @@ function closeModal(){ $('modalBackdrop').classList.remove('open'); document.bod
   $('modalClose').addEventListener('click',closeModal);
 $('modalBackdrop').addEventListener('click',e=>{if(e.target===$('modalBackdrop'))closeModal()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal()});
+async function refreshDcdsAuthCapabilities(){
+ const smsOption=$('dcdsVerifySms'),smsStatus=$('dcdsSmsStatus');
+ if(!smsOption||!supabaseClient)return;
+ smsOption.disabled=true;
+ try{
+  const {data,error}=await supabaseClient.functions.invoke('dcds-create-account',{body:{action:'capabilities'}});
+  if(error||!data?.success)throw error||new Error('Capabilities unavailable');
+  dcdsPhoneOtpEnabled=data.phone_otp_enabled===true;
+ }catch(_){dcdsPhoneOtpEnabled=false;}
+ smsOption.disabled=!dcdsPhoneOtpEnabled;
+ if(smsStatus)smsStatus.textContent=dcdsPhoneOtpEnabled
+  ? 'A six-digit code will be sent to this mobile number.'
+  : 'SMS delivery is not configured yet. Email verification is available now.';
+}
 function authScreen(message=''){
  const signup=authMode==='signup';
  openModal(`${authBrandMarkup()}<h2 id="modalTitle">${signup?'Create your DCDS account':'Welcome back, Champion'}</h2><p class="modal-sub">${signup?'Create your account and start your digital learning journey.':'Log in to continue to your DCDS learning space.'}</p>
  <div class="tabs"><button class="tab ${signup?'':'active'}" type="button" data-mode="login">Log in</button><button class="tab ${signup?'active':''}" type="button" data-mode="signup">Create account</button></div>
  <form id="authForm">${signup?'<label class="field"><span>Full name</span><input id="studentName" name="name" autocomplete="name" maxlength="100" required></label>':''}
- <label class="field"><span>Email address</span><input id="studentEmail" name="email" type="email" autocomplete="email" required></label>
- ${signup?'<label class="field"><span>Mobile number</span><input id="studentPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24" placeholder="+234 801 234 5678" aria-describedby="studentPhoneHelp" required><small id="studentPhoneHelp">Required for every new account. Enter your complete international number, including + and your country calling code.</small></label>':''} <label class="field"><span>Password</span><div class="dcds-password-wrap"><input id="studentPassword" name="password" type="password" minlength="8" autocomplete="${signup?'new-password':'current-password'}" required><button class="dcds-password-toggle" id="toggleStudentPassword" type="button" aria-controls="studentPassword" aria-pressed="false">Show</button></div></label>
+ <label class="field"><span>${signup?'Email address':'Email address or mobile number'}</span><input id="studentEmail" name="email" type="${signup?'email':'text'}" autocomplete="${signup?'email':'username'}" placeholder="${signup?'name@example.com':'name@example.com or +2348012345678'}" required></label>
+ ${signup?'':'<small class="modal-note" style="display:block;margin-top:-8px">Use the same contact method you verified when creating your account: email or mobile number.</small>'}
+ ${signup?'<label class="field"><span>Mobile number</span><input id="studentPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24" placeholder="+234 801 234 5678" aria-describedby="studentPhoneHelp" required><small id="studentPhoneHelp">Required for every new account. Enter your complete international number, including + and your country calling code.</small></label>':''}
+ ${signup?'<fieldset class="field dcds-verification-choice" style="border:0;padding:0;margin:4px 0 14px"><legend style="font-weight:700;margin-bottom:9px">Choose your verification method</legend><label style="display:flex;align-items:center;gap:9px;margin:8px 0"><input type="radio" name="dcdsVerificationMethod" value="email" checked> <span>Email OTP <small style="display:block;font-weight:400">Receive your six-digit code by email.</small></span></label><label style="display:flex;align-items:center;gap:9px;margin:8px 0"><input type="radio" id="dcdsVerifySms" name="dcdsVerificationMethod" value="sms" disabled> <span>Mobile OTP (SMS) <small id="dcdsSmsStatus" style="display:block;font-weight:400">SMS provider setup is required before this option can be enabled.</small></span></label></fieldset>':''} <label class="field"><span>Password</span><div class="dcds-password-wrap"><input id="studentPassword" name="password" type="password" minlength="8" autocomplete="${signup?'new-password':'current-password'}" required><button class="dcds-password-toggle" id="toggleStudentPassword" type="button" aria-controls="studentPassword" aria-pressed="false">Show</button></div></label>
  ${signup?'<label class="field dcds-referral-field"><span>Referral code (optional)</span><input id="studentReferralCode" name="referral_code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" pattern="[A-Za-z0-9]{6,16}" value="'+escapeHtml(DCDS_REFERRAL_CODE)+'" placeholder="Enter referral code"><small>Were you invited by a DCDS ambassador? Enter their code here. Referral links also fill this in automatically.</small></label>':''}
  ${signup?'':'<div class="auth-forgot-row"><button id="forgotPasswordBtn" type="button">Forgot password?</button></div>'}
  <p class="form-error" id="authError" role="alert">${escapeHtml(message)}</p><button class="button button-primary" id="authSubmit" type="submit" style="width:100%">${signup?'Create student account':'Log in'}</button></form>
- <p class="modal-note">New accounts require both an email address and an international mobile number. Verify the six-digit code sent to your email before accessing the student portal. Your course catalogue remains available without signing in.</p>`);
+ <p class="modal-note">Every new account must include both an email address and an international mobile number. Choose email or SMS verification when available. Your course catalogue remains available without signing in.</p>`);
  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{authMode=b.dataset.mode;authScreen()}));
  const passwordToggle=$('toggleStudentPassword');
  if(passwordToggle) passwordToggle.addEventListener('click',()=>{
@@ -702,6 +721,7 @@ function authScreen(message=''){
  });
  $('authForm').addEventListener('submit',submitAuth);
  const forgot=$('forgotPasswordBtn');if(forgot)forgot.addEventListener('click',requestPasswordReset);
+ if(signup)refreshDcdsAuthCapabilities();
 }
 function setAuthError(msg){const el=$('authError');if(el)el.textContent=msg||'';}
 function normalizeDcdsPhone(value){
@@ -713,42 +733,89 @@ function normalizeDcdsPhone(value){
  return international;
 }
 async function submitAuth(e){
- e.preventDefault(); const btn=$('authSubmit'); const email=$('studentEmail').value.trim(); const password=$('studentPassword').value; const name=$('studentName')?.value.trim()||''; const phoneInput=authMode==='signup' ? $('studentPhone')?.value : '';
+ e.preventDefault();
+ const btn=$('authSubmit');
+ const identifier=$('studentEmail').value.trim();
+ const password=$('studentPassword').value;
+ const name=$('studentName')?.value.trim()||'';
  if(!supabaseClient){setAuthError('The account service could not load. Please open this page with an internet connection and try again.');return;}
  btn.disabled=true;btn.textContent='Please wait…';setAuthError('');
  try{
   if(authMode==='signup'){
    if(!name)throw new Error('Please enter your full name.');
+   const email=identifier.toLowerCase();
    const referralCode=$('studentReferralCode')?.value.trim().toUpperCase()||'';
+   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('Enter a valid email address.');
    if(referralCode&&!/^[A-Z0-9]{6,16}$/.test(referralCode))throw new Error('Referral codes must contain 6–16 letters or numbers.');
-   const phoneE164=normalizeDcdsPhone(phoneInput);
-   const signupMetadata={full_name:name,dcds_phone_e164:phoneE164};if(referralCode)signupMetadata.dcds_referral_code=referralCode;
-   const {error}=await supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}});
-   if(error){
-    if(error.code==='user_already_exists'||/user already registered/i.test(error.message||'')){
-     authMode='login';
-     throw new Error('An account with this email already exists. Please switch to Log in. If the account is not verified yet, DCDS will request a fresh verification code after you log in.');
+   const phoneE164=normalizeDcdsPhone($('studentPhone')?.value);
+   const verificationMethod=document.querySelector('input[name="dcdsVerificationMethod"]:checked')?.value||'email';
+   if(verificationMethod==='sms'){
+    if(!dcdsPhoneOtpEnabled)throw new Error('Mobile verification is not available yet. Please choose email verification.');
+    const {data,error}=await supabaseClient.functions.invoke('dcds-create-account',{
+     body:{action:'create_phone_signup',email,phone:phoneE164,password,full_name:name,referral_code:referralCode}
+    });
+    if(error||!data?.success)throw new Error(data?.error||error?.message||'Could not create your account using mobile verification.');
+   }else{
+    const signupMetadata={full_name:name,dcds_phone_e164:phoneE164,dcds_signup_verification_method:'email'};
+    if(referralCode)signupMetadata.dcds_referral_code=referralCode;
+    const {error}=await supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}});
+    if(error){
+     if(error.code==='user_already_exists'||/user already registered/i.test(error.message||'')){
+      authMode='login';
+      throw new Error('An account with this email already exists. Please switch to Log in. If it is not verified, DCDS can resend its verification code.');
+     }
+     throw error;
     }
-    throw error;
    }
    pendingVerificationEmail=email;
-   showEmailOtpScreen(email,'A six-digit verification code has been sent to your email.');
+   pendingVerificationPhone=phoneE164;
+   pendingVerificationMethod=verificationMethod;
+   showSignupOtpScreen(verificationMethod,verificationMethod==='sms'?phoneE164:email);
   }else{
-   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+   const loginMethod=identifier.includes('@')?'email':'sms';
+   const loginValue=loginMethod==='email'?identifier.toLowerCase():normalizeDcdsPhone(identifier);
+   const credentials=loginMethod==='email'?{email:loginValue,password}:{phone:loginValue,password};
+   const {data,error}=await supabaseClient.auth.signInWithPassword(credentials);
    if(error){
-    if(error.code==='email_not_confirmed'||/email not confirmed/i.test(error.message||'')){
-     const {error:resendError}=await supabaseClient.auth.resend({type:'signup',email});
+    const unconfirmed=error.code==='email_not_confirmed'||error.code==='phone_not_confirmed'||/email not confirmed|phone not confirmed/i.test(error.message||'');
+    if(unconfirmed){
+     pendingVerificationMethod=loginMethod;
+     pendingVerificationEmail=loginMethod==='email'?loginValue:'';
+     pendingVerificationPhone=loginMethod==='sms'?loginValue:'';
+     const {error:resendError}=await resendSignupOtp();
      if(resendError)throw resendError;
-     pendingVerificationEmail=email;
-     showEmailOtpScreen(email,'Your account exists but the email is not verified yet. A fresh six-digit code has been requested.');
+     showSignupOtpScreen(loginMethod,loginValue,'Your account exists but this contact method is not verified yet. A fresh six-digit code has been requested.');
      return;
     }
     throw error;
    }
-   if(!data.user?.email_confirmed_at){pendingVerificationEmail=email;showEmailOtpScreen(email,'Your email still needs verification. Enter the six-digit code sent to your inbox.');return;}
+   if(!hasDcdsVerifiedContact(data.user)){
+    const storedMethod=data.user?.user_metadata?.dcds_signup_verification_method;
+    pendingVerificationMethod=storedMethod==='sms'?'sms':loginMethod;
+    pendingVerificationEmail=data.user?.email||'';
+    pendingVerificationPhone=data.user?.phone||'';
+    const {error:resendError}=await resendSignupOtp();
+    if(resendError)throw resendError;
+    showSignupOtpScreen(pendingVerificationMethod,pendingVerificationMethod==='sms'?pendingVerificationPhone:pendingVerificationEmail);
+    return;
+   }
    await afterAuthentication(data.user);
   }
- }catch(err){setAuthError(err.message||'Unable to complete account request. Please try again.');if(btn){btn.disabled=false;btn.textContent=authMode==='signup'?'Create student account':'Log in';}}
+ }catch(err){
+  setAuthError(err.message||'Unable to complete account request. Please try again.');
+  if(btn){btn.disabled=false;btn.textContent=authMode==='signup'?'Create student account':'Log in';}
+ }
+}
+function hasDcdsVerifiedContact(user){
+ return Boolean(user?.email_confirmed_at||user?.phone_confirmed_at);
+}
+function showPendingAccountVerification(user,message){
+ const method=user?.user_metadata?.dcds_signup_verification_method==='sms'?'sms':'email';
+ pendingVerificationMethod=method;
+ pendingVerificationEmail=user?.email||'';
+ pendingVerificationPhone=user?.phone||'';
+ const recipient=method==='sms'?pendingVerificationPhone:pendingVerificationEmail;
+ showSignupOtpScreen(method,recipient,message||('Please verify your '+(method==='sms'?'mobile number':'email address')+' before continuing.'));
 }
 function stopOtpCountdown(){if(otpCountdownTimer){clearInterval(otpCountdownTimer);otpCountdownTimer=null;}}
 function startOtpCountdown(seconds=60){
@@ -786,41 +853,61 @@ function setupOtpInputs(){
  });
  if(inputs[0])inputs[0].focus();
 }
-function showEmailOtpScreen(email,message='Enter the six-digit code sent to your email.'){
- pendingVerificationEmail=email;stopOtpCountdown();
- openModal(`${authBrandMarkup('dcds-otp-brand')}<h2 id="modalTitle">Verify your email</h2><p class="modal-sub">One quick step to activate your DCDS student account.</p><p class="dcds-otp-help">${escapeHtml(message)}<br>Code sent to <b>${escapeHtml(email)}</b>.</p>
- <form id="otpVerifyForm"><label class="field"><span>Six-digit verification code</span><div class="dcds-otp-box" role="group" aria-label="Six-digit verification code">
-  ${Array.from({length:6},(_,i)=>'<input class="dcds-otp-digit" type="text" inputmode="numeric" autocomplete="'+(i===0?'one-time-code':'off')+'" maxlength="'+(i===0?6:1)+'" pattern="'+(i===0?'[0-9]{1,6}':'[0-9]')+'" aria-label="Digit '+(i+1)+' of 6" required>').join('')}
- </div></label>
-  <p class="form-error" id="otpError" role="alert"></p><button class="button button-primary" id="verifyOtpBtn" type="submit" style="width:100%">Verify email</button></form>
- <div class="dcds-otp-actions"><span id="otpCountdown">Resend available in 60s</span><button class="dcds-text-button" id="resendOtpBtn" type="button" disabled>Resend code</button></div>
- <p class="modal-note">Your verification code is sent to your registered email address. Check your inbox, spam and promotions folders. If you have an account already, log in instead of creating another account; DCDS can request a fresh code if that account is still unverified.</p>`);
- setupOtpInputs();$('otpVerifyForm').addEventListener('submit',verifyEmailOtp);$('resendOtpBtn').addEventListener('click',resendEmailOtp);startOtpCountdown(60);
+function showSignupOtpScreen(method,recipient,message){
+ pendingVerificationMethod=method==='sms'?'sms':'email';
+ if(pendingVerificationMethod==='sms')pendingVerificationPhone=recipient;
+ else pendingVerificationEmail=recipient;
+ stopOtpCountdown();
+ const isSms=pendingVerificationMethod==='sms';
+ const heading=isSms?'Verify your mobile number':'Verify your email';
+ const contactLabel=isSms?'mobile number':'email address';
+ const info=message||('Enter the six-digit code sent to your '+contactLabel+'.');
+ openModal(authBrandMarkup('dcds-otp-brand')+
+  '<h2 id="modalTitle">'+heading+'</h2>'+
+  '<p class="modal-sub">One quick step to activate your DCDS student account.</p>'+
+  '<p class="dcds-otp-help">'+escapeHtml(info)+'<br>Code sent to <b>'+escapeHtml(recipient)+'</b>.</p>'+
+  '<form id="otpVerifyForm"><label class="field"><span>Six-digit verification code</span><div class="dcds-otp-box" role="group" aria-label="Six-digit verification code">'+
+  Array.from({length:6},(_,i)=>'<input class="dcds-otp-digit" type="text" inputmode="numeric" autocomplete="'+(i===0?'one-time-code':'off')+'" maxlength="'+(i===0?6:1)+'" pattern="'+(i===0?'[0-9]{1,6}':'[0-9]')+'" aria-label="Digit '+(i+1)+' of 6" required>').join('')+
+  '</div></label><p class="form-error" id="otpError" role="alert"></p><button class="button button-primary" id="verifyOtpBtn" type="submit" style="width:100%">Verify '+(isSms?'mobile number':'email')+'</button></form>'+
+  '<div class="dcds-otp-actions"><span id="otpCountdown">Resend available in 60s</span><button class="dcds-text-button" id="resendOtpBtn" type="button" disabled>Resend code</button></div>'+
+  '<p class="modal-note">Enter the code delivered to your selected contact method. Keep your password and verification code private. If you already have an account, log in instead of creating another one.</p>');
+ setupOtpInputs();
+ $('otpVerifyForm').addEventListener('submit',verifySignupOtp);
+ $('resendOtpBtn').addEventListener('click',async()=>{
+  const btn=$('resendOtpBtn'),err=$('otpError');
+  btn.disabled=true;if(err){err.textContent='';err.className='form-error';}
+  const {error}=await resendSignupOtp();
+  if(error){if(err){err.textContent=error.message||'Could not resend the code. Please try again.';err.className='form-error error';}btn.disabled=false;return;}
+  if(err){err.textContent='A new verification code has been requested.';err.className='form-error success';}
+  startOtpCountdown(60);
+ });
+ startOtpCountdown(60);
 }
-  async function verifyEmailOtp(e){
+async function verifySignupOtp(e){
  e.preventDefault();const btn=$('verifyOtpBtn'),err=$('otpError'),token=getOtpToken().trim();
  if(!/^\d{6}$/.test(token)){err.textContent='Enter the complete six-digit code.';return;}
  btn.disabled=true;btn.textContent='Verifying…';err.textContent='';err.className='form-error';
  try{
-  const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingVerificationEmail,token,type:'signup'});if(error)throw error;  stopOtpCountdown();if(!data.user?.email_confirmed_at && !data.session?.user?.email_confirmed_at)throw new Error('Supabase did not confirm the email. Please check your email OTP settings and try again.');
-  await afterAuthentication(data.user||data.session.user);
- }catch(error){err.textContent=error.message||'That code could not be verified. Request a new code and try again.';btn.disabled=false;btn.textContent='Verify email';}
-}
-async function resendEmailOtp(){
- const btn=$('resendOtpBtn'),err=$('otpError');btn.disabled=true;if(err){err.textContent='';err.className='form-error';}
- try{
-  const {error}=await supabaseClient.auth.resend({type:'signup',email:pendingVerificationEmail});
+  const credentials=pendingVerificationMethod==='sms'
+   ? {phone:pendingVerificationPhone,token,type:'sms'}
+   : {email:pendingVerificationEmail,token,type:'signup'};
+  const {data,error}=await supabaseClient.auth.verifyOtp(credentials);
   if(error)throw error;
-  if(err){err.textContent='A new verification code has been requested. Check your inbox and spam folder.';err.className='form-error success';}
-  startOtpCountdown(60);
- }catch(error){
-  if(err){err.textContent=error.message||'Could not resend the code. Please try again.';err.className='form-error error';}
-  btn.disabled=false;
+  stopOtpCountdown();
+  const verifiedUser=data.user||data.session?.user;
+  if(!hasDcdsVerifiedContact(verifiedUser))throw new Error('Supabase did not confirm the selected contact method. Please request a new code and try again.');
+  await afterAuthentication(verifiedUser);
+ }catch(error){err.textContent=error.message||'That code could not be verified. Request a new code and try again.';btn.disabled=false;btn.textContent='Verify '+(pendingVerificationMethod==='sms'?'mobile number':'email');}
+}
+async function resendSignupOtp(){
+ if(pendingVerificationMethod==='sms'){
+  return supabaseClient.auth.resend({type:'sms',phone:pendingVerificationPhone});
  }
+ return supabaseClient.auth.resend({type:'signup',email:pendingVerificationEmail});
 }
 async function requestPasswordReset(){
  const email=$('studentEmail')?.value.trim();
- if(!email){setAuthError('Enter your email address first, then choose Forgot password.');$('studentEmail')?.focus();return;}
+ if(!email||!email.includes('@')){setAuthError('Enter your account email address first, then choose Forgot password.');$('studentEmail')?.focus();return;}
  const button=$('forgotPasswordBtn');if(button){button.disabled=true;button.textContent='Sending…';}
  try{
   const redirectTo=window.location.origin+window.location.pathname+'?password-recovery=1';
@@ -842,8 +929,15 @@ function showPasswordRecoveryScreen(){
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
 async function afterAuthentication(user){
- if(!user?.email_confirmed_at){showEmailOtpScreen(user?.email||pendingVerificationEmail,'Please verify your email before continuing.');return;}
- pendingVerificationEmail='';stopOtpCountdown();
+ if(!hasDcdsVerifiedContact(user)){
+  const method=user?.user_metadata?.dcds_signup_verification_method==='sms'?'sms':'email';
+  pendingVerificationMethod=method;
+  pendingVerificationEmail=user?.email||'';
+  pendingVerificationPhone=user?.phone||'';
+  showSignupOtpScreen(method,method==='sms'?pendingVerificationPhone:pendingVerificationEmail,'Please verify your selected contact method before continuing.');
+  return;
+ }
+ pendingVerificationEmail='';pendingVerificationPhone='';pendingVerificationMethod='email';stopOtpCountdown();
  $('accountBtn').textContent='My Account';
  if(authNextPath){const destination=authNextPath;authNextPath='';window.location.replace(destination);return;}
  if(selectedCourseIndex!==null){showEnrollment(selectedCourseIndex,user);return;}
@@ -872,7 +966,7 @@ async function refreshStudentEnrollmentState(){
  if(!supabaseClient){studentEnrollmentIds=new Set();hasGeneralBundle=false;return;}
  try{
   const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
-  if(sessionError)throw sessionError;  if(!session?.user?.email_confirmed_at){studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();return;}
+  if(sessionError)throw sessionError;  if(!hasDcdsVerifiedContact(session?.user)){studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();return;}
   const {data:rows,error}=await supabaseClient.from('enrollments').select('course_id').eq('user_id',session.user.id);
   if(error)throw error;
   studentEnrollmentIds=new Set((rows||[]).map(row=>String(row.course_id)));
@@ -954,7 +1048,7 @@ async function startCoursePayment(index){
   const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
   if(sessionError)throw sessionError;
   if(!session){authMode='login';authScreen('Your session has expired. Please log in again.');return;}
-  if(!session.user?.email_confirmed_at){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before checkout.');return;}
+  if(!hasDcdsVerifiedContact(session.user)){showPendingAccountVerification(session.user,'Verify your selected contact method before checkout.');return;}
 
   const slug=COURSE_SLUGS[index];
   const {data:course,error:courseError}=await supabaseClient
@@ -985,13 +1079,13 @@ async function enroll(index){
    try{
   const {data:{session},error}=await supabaseClient.auth.getSession();
   if(error)throw error;
-  if(session && session.user?.email_confirmed_at){
+  if(session && hasDcdsVerifiedContact(session.user)){
    await refreshStudentEnrollmentState();
    if(document.querySelector(`[data-enroll=\"${index}\"]`)?.dataset.enrolled==='true'){
     window.location.href='learn.html?course='+encodeURIComponent(COURSE_SLUGS[index]);return;
    }
    showEnrollment(index,session.user);
-  }else if(session){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before enrolling in a course.');}
+  }else if(session){showPendingAccountVerification(session.user,'Verify your selected contact method before enrolling in a course.');}
   else{authMode='login';authScreen('Log in or create your student account to continue with this course.');}
  }catch(err){authMode='login';authScreen(err.message||'We could not check your account. Please try again.');}
 }
@@ -1034,7 +1128,7 @@ async function startGeneralCoursePayment(){
   const {data:{session},error:sessionError}=await supabaseClient.auth.getSession();
   if(sessionError)throw sessionError;
   if(!session){authMode='login';authScreen('Please log in to purchase the General Course.');return;}
-  if(!session.user?.email_confirmed_at){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before checkout.');return;}
+  if(!hasDcdsVerifiedContact(session.user)){showPendingAccountVerification(session.user,'Verify your selected contact method before checkout.');return;}
   const {data:course,error:courseError}=await supabaseClient.from('courses')
     .select('id,title,price,currency').eq('id',GENERAL_COURSE_ID).single();
   if(courseError||!course)throw new Error('The General Course payment record is not set up yet. Please complete the database setup instructions first.');
@@ -1061,14 +1155,14 @@ if(generalBuyButton)generalBuyButton.addEventListener('click',async()=>{
  try{
   const {data:{session},error}=await supabaseClient.auth.getSession();
   if(error)throw error;
-  if(session && session.user?.email_confirmed_at){
+  if(session && hasDcdsVerifiedContact(session.user)){
    await refreshStudentEnrollmentState();
    if(hasGeneralBundle){
     const links=COURSE_SLUGS.map((slug,index)=>`<a class=\"button button-light\" style=\"display:block;width:100%;margin:8px 0;text-align:left\" href=\"learn.html?course=${encodeURIComponent(slug)}\">▶ ${escapeHtml(courses[index].title)}</a>`).join('');
     openModal(`<h2 id=\"modalTitle\">Your General Course Library</h2><p class=\"modal-sub\">Your General Course enrollment is recognized. Choose a course to continue learning.</p><div style=\"max-height:55vh;overflow:auto;padding-right:4px\">${links}</div>`);
    }else showGeneralEnrollment(session.user);
   }
-  else if(session){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before purchasing the General Course.');}else{authMode='login';authScreen('Log in or create your student account to purchase the General Course.');}
+  else if(session){showPendingAccountVerification(session.user,'Verify your selected contact method before purchasing the General Course.');}else{authMode='login';authScreen('Log in or create your student account to purchase the General Course.');}
  }catch(error){authMode='login';authScreen(error.message||'We could not check your account. Please try again.');}
 });
             async function handleFlutterwaveReturn(){
@@ -1113,7 +1207,7 @@ if(generalBuyButton)generalBuyButton.addEventListener('click',async()=>{
 }
 async function showAccount(){
  if(!supabaseClient){authMode='login';authScreen('Account service could not load.');return;}
- try{const {data:{user},error}=await supabaseClient.auth.getUser();if(error)throw error;if(!user){authMode='login';authScreen();return;}if(!user.email_confirmed_at){pendingVerificationEmail=user.email;showEmailOtpScreen(user.email,'Verify your email to activate your student account.');return;}
+ try{const {data:{user},error}=await supabaseClient.auth.getUser();if(error)throw error;if(!user){authMode='login';authScreen();return;}if(!hasDcdsVerifiedContact(user)){showPendingAccountVerification(user,'Verify your selected contact method to activate your student account.');return;}
  openModal(`<h2 id="modalTitle">My DCDS account</h2><p class="modal-sub">Student account details</p><div class="selected-course"><span>FULL NAME</span><strong>${escapeHtml(user.user_metadata?.full_name||'DCDS Student')}</strong><span style="display:block;margin-top:10px">EMAIL ADDRESS</span><strong style="font-size:15px">${escapeHtml(user.email||'')}</strong></div><button class="button button-light" id="logoutBtn" style="width:100%">Log out</button>`);
  $('logoutBtn').onclick=async()=>{const {error}=await supabaseClient.auth.signOut();if(error){openModal(`<h2 id="modalTitle">Could not log out</h2><p class="modal-sub">${escapeHtml(error.message)}</p>`);return;}$('accountBtn').textContent='Student Login';setNotificationAccess(false);studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();closeModal();};
  }catch(err){authMode='login';authScreen(err.message||'Could not load your account.');}
@@ -1122,13 +1216,13 @@ async function showAccount(){
 if(supabaseClient){
  supabaseClient.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){setTimeout(showPasswordRecoveryScreen,0);return;}
-  const signedIn=!!session?.user?.email_confirmed_at;
+  const signedIn=hasDcdsVerifiedContact(session?.user);
   $('accountBtn').textContent=signedIn?'My Account':'Student Login';
   setNotificationAccess(signedIn);
   if(signedIn){setTimeout(()=>refreshStudentEnrollmentState(),0);}else{studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();}
  });
  supabaseClient.auth.getSession().then(async({data})=>{
-  const signedIn=!!data.session?.user?.email_confirmed_at;
+  const signedIn=hasDcdsVerifiedContact(data.session?.user);
     $('accountBtn').textContent=signedIn?'My Account':'Student Login';setNotificationAccess(signedIn);
   if(signedIn){
    const {data:courseRows,error}=await supabaseClient.from('courses').select('id,slug').in('slug',COURSE_SLUGS);
@@ -1149,8 +1243,8 @@ if(supabaseClient){
  if(!wantsLogin&&!wantsVerify)return;
  if(!supabaseClient){authMode='login';authScreen('The account service is unavailable. Please reload and try again.');return;}
  try{
-  const {data:{session},error}=await supabaseClient.auth.getSession();if(error)throw error;  if(session?.user?.email_confirmed_at){const destination=authNextPath||'student-dashboard.html';window.location.replace(destination);return;}
-  if(session?.user&&!session.user.email_confirmed_at){pendingVerificationEmail=session.user.email;showEmailOtpScreen(session.user.email,'Verify your email before entering the student portal.');return;}
+  const {data:{session},error}=await supabaseClient.auth.getSession();if(error)throw error;  if(hasDcdsVerifiedContact(session?.user)){const destination=authNextPath||'student-dashboard.html';window.location.replace(destination);return;}
+  if(session?.user){showPendingAccountVerification(session.user,'Verify your selected contact method before entering the student portal.');return;}
   authMode='login';authScreen(wantsVerify?'Please verify your email before accessing this page.':'Log in or create your DCDS student account to continue.');
  }catch(error){authMode='login';authScreen(error.message||'We could not check your login. Please try again.');}
 })();

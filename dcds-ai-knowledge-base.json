@@ -153,7 +153,18 @@
       "global_mobile_format": "E.164 with + and international country calling code",
       "email_confirmation": "Six-digit email OTP",
       "mobile_verification_status": "Mobile is a required contact detail at signup; it is not described as SMS-verified unless a separate SMS verification is completed.",
-      "existing_accounts": "Existing users can continue to sign in with their current credentials; the new mobile requirement applies to new registrations."
+      "existing_accounts": "Existing users can continue to sign in with existing credentials. The mobile requirement applies to new registrations.",
+      "available_verification_methods": [
+        "email OTP",
+        "SMS OTP when DCDS has enabled the configured Supabase Auth SMS provider"
+      ],
+      "selected_method_rule": "The student verifies the chosen email or mobile contact method. One confirmed contact is sufficient for account access; do not claim the other contact is verified.",
+      "login_methods": [
+        "email address and password",
+        "registered mobile number and password"
+      ],
+      "payment_contact": "Email remains mandatory and is retained for payment/provider communications even for accounts that verified through SMS.",
+      "sms_status": "SMS remains unavailable until the DCDS operator configures and tests a production SMS provider and enables both the Supabase-side DCDS feature gates."
     }
   },
   "ambassador_programme": {
