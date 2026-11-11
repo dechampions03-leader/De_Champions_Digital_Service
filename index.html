@@ -747,7 +747,7 @@ function showEmailOtpScreen(email,message='Enter the six-digit code sent to your
  <form id="otpVerifyForm"><label class="field"><span>Six-digit verification code</span><div class="dcds-otp-box"><input aria-label="Verification code" id="otpCode" inputmode="numeric" autocomplete="one-time-code" maxlength="6" pattern="[0-9]{6}" required></div></label>
   <p class="form-error" id="otpError" role="alert"></p><button class="button button-primary" id="verifyOtpBtn" type="submit" style="width:100%">Verify email</button></form>
  <div class="dcds-otp-actions"><span id="otpCountdown">Resend available in 60s</span><button class="dcds-text-button" id="resendOtpBtn" type="button" disabled>Resend code</button></div>
- <p class="modal-note">If the code does not arrive, check your spam or promotions folder. Verification codes require email OTP to be enabled in your Supabase project.</p>`);
+ <p class="modal-note">Your verification code is sent to your registered email address. Check your inbox, spam and promotions folders. If you have an account already, log in instead of creating another account; DCDS can request a fresh code if that account is still unverified.</p>`);
  $('otpCode').focus();$('otpVerifyForm').addEventListener('submit',verifyEmailOtp);$('resendOtpBtn').addEventListener('click',resendEmailOtp);startOtpCountdown(60);
 }
   async function verifyEmailOtp(e){
