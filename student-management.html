@@ -346,6 +346,18 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
     <div class="payout-events"><h3>Recent payout audit events</h3><div id="adminPayoutEvents" class="detail-scroll"><div class="empty">Loading audit events…</div></div></div>
   </section>
 
+  <section class="panel" id="internationalPayoutReadinessPanel" style="margin:18px 0">
+    <h3>🌍 International Payout Readiness</h3>
+    <p class="intro">Country and currency corridors are tracked here before they can be offered to ambassadors. A corridor stays disabled until DCDS has verified merchant approval, required wallets, IP whitelisting, sandbox testing and a live transfer test. This panel cannot send money.</p>
+    <div id="internationalPayoutSafetyNotice" class="payout-warning">Checking international payout readiness…</div>
+    <div class="payout-toolbar">
+      <button class="btn gold" id="refreshInternationalPayoutsButton" type="button">↻ Refresh International Readiness</button>
+      <span id="internationalPayoutAdminMeta" class="detail-notice">Loading route readiness…</span>
+    </div>
+    <div id="internationalPayoutGates" class="payout-meta" aria-live="polite"></div>
+    <div id="internationalPayoutRoutes" class="payout-list" aria-live="polite"><div class="empty">Loading country corridors…</div></div>
+  </section>
+
   <section class="panel">
     <h3>📋 Student Registry</h3>
     <p class="intro">Search by student name, email address or phone number. Open a record's course list to review its current enrolments and successful order totals.</p>
@@ -1098,6 +1110,65 @@ async function loadAdminPayouts() {
   table.append(thead,tbody);eventsRoot.appendChild(table);
 }
 
+async function loadInternationalPayoutReadiness() {
+  const notice = $("internationalPayoutSafetyNotice");
+  const meta = $("internationalPayoutAdminMeta");
+  const gates = $("internationalPayoutGates");
+  const routesRoot = $("internationalPayoutRoutes");
+  routesRoot.replaceChildren(make("div","empty","Loading international corridors…"));
+  gates.replaceChildren();
+  const { data, error } = await db.functions.invoke("dcds-international-payout", { body: { action: "readiness" } });
+  if (error || !data?.success) {
+    notice.textContent = data?.error || "International payout readiness service is unavailable. No international route is enabled.";
+    meta.textContent = "Readiness information unavailable.";
+    routesRoot.replaceChildren(make("div","empty","Could not load international route records."));
+    return;
+  }
+
+  const routeRows = data.routes || [];
+  const readiness = data.readiness || {};
+  const enabledRoutes = routeRows.filter(route => route.status === "enabled").length;
+  meta.textContent = routeRows.length + " configured corridor(s) · " + enabledRoutes + " enabled · " + (data.beneficiaryCount || 0) + " saved beneficiary record(s)";
+  notice.textContent = data.message + " This release does not create payout requests, submit transfers or automatically enable routes.";
+  const gateLabels = {
+    providerSecretConfigured: "Flutterwave API credential configured",
+    merchantKycApproved: "Merchant KYC approved for international transfers",
+    transfersApiEnabled: "Transfers API enabled in Flutterwave",
+    serverIpWhitelisted: "DCDS transfer server IP whitelisted",
+    destinationWalletsFunded: "Destination-currency wallets funded for fees",
+    sandboxVerified: "International sandbox testing completed",
+    liveTransferVerified: "Live transfer verification completed",
+    globalSwitchEnabled: "Global international payout switch enabled"
+  };
+  Object.entries(gateLabels).forEach(([key,label]) => {
+    const passed = readiness[key] === true;
+    gates.appendChild(make("span","pill" + (passed ? "" : " pending"),(passed ? "✓ " : "○ ") + label));
+  });
+
+  routesRoot.replaceChildren();
+  if (!routeRows.length) {
+    routesRoot.appendChild(make("div","empty","No international corridors are configured."));
+    return;
+  }
+  routeRows.forEach(route => {
+    const card = make("article","payout-card");
+    const head = make("div","payout-card-head");
+    head.append(
+      make("strong","",route.country_name + " · " + route.currency),
+      make("span","pill" + (route.status === "enabled" ? "" : " pending"),String(route.status || "disabled").replaceAll("_"," ").toUpperCase())
+    );
+    card.appendChild(head);
+    const state = [
+      "Provider approval: " + (route.provider_approved ? "confirmed" : "not confirmed"),
+      "Sandbox: " + (route.sandbox_verified_at ? formatDate(route.sandbox_verified_at) : "not verified"),
+      "Live test: " + (route.live_verified_at ? formatDate(route.live_verified_at) : "not verified")
+    ].join(" · ");
+    card.appendChild(make("p","",state));
+    if (route.internal_notes) card.appendChild(make("p","detail-notice",route.internal_notes));
+    routesRoot.appendChild(card);
+  });
+}
+
 async function initialize() {
   $("adminApp").hidden = true;
   const {data:{session},error:sessionError} = await db.auth.getSession();
@@ -1118,6 +1189,10 @@ async function initialize() {
   try { await loadRegionalPrices(); } catch(e) { console.error("Regional pricing load failed:",e); $("regionalPriceStatus").textContent="Regional pricing table is not deployed yet."; }
   await loadStudents();
   await loadAdminPayouts();
+  try { await loadInternationalPayoutReadiness(); } catch (e) {
+    console.error("International payout readiness failed:",e);
+    $("internationalPayoutSafetyNotice").textContent="International payout readiness could not be loaded. No route was enabled.";
+  }
 }
 $("refreshRegionalPrices").addEventListener("click",()=>loadRegionalPrices().catch(e=>alert("Could not load regional prices: "+e.message)));
 $("refreshPaymentsButton").addEventListener("click",()=>loadAdminPaymentOps().catch(e=>alert("Could not load payment orders: "+e.message)));
@@ -1130,6 +1205,7 @@ $("searchButton").addEventListener("click",()=>{searchTerm=$("searchInput").valu
 $("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter")$("searchButton").click();});
 $("refreshButton").addEventListener("click",loadStudents);
 $("refreshPayoutsButton").addEventListener("click",()=>loadAdminPayouts().catch(e=>console.error("Payout refresh failed:",e)));
+$("refreshInternationalPayoutsButton").addEventListener("click",()=>loadInternationalPayoutReadiness().catch(e=>console.error("International readiness refresh failed:",e)));
 $("previousButton").addEventListener("click",()=>{if(page>0){page--;loadStudents();}});
 $("nextButton").addEventListener("click",()=>{if(students.length===PAGE_SIZE){page++;loadStudents();}});
 $("closeDetailButton").addEventListener("click",()=>{$("studentDetailPanel").hidden=true;activeStudentId=null;});
