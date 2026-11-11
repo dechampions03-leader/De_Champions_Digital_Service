@@ -417,7 +417,7 @@ Deno.serve(async (req: Request) => {
         return respond({ success: false, error: "Branch lookup is not configured for this payout corridor." }, 400);
       }
       const bankId = String(body.bank_id || "");
-      if (!/^\\d{1,12}$/.test(bankId)) return respond({ success: false, error: "Select a valid bank before loading branches." }, 400);
+      if (!/^\d{1,12}$/.test(bankId)) return respond({ success: false, error: "Select a valid bank before loading branches." }, 400);
       const branchPayload = await flutterwave("/banks/" + encodeURIComponent(bankId) + "/branches");
       const branchData = Array.isArray(branchPayload.data) ? branchPayload.data : [];
       const branches = branchData.filter((item: any) => item && (item.code || item.branch_code || item.BranchCode))
