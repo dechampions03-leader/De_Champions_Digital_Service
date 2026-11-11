@@ -511,11 +511,13 @@ html.dcds-app-loading body>:not(#dcds-launch-screen){visibility:hidden!important
  <a href="#home">Back to top ↑</a><p>© 2026 De Champions Digital Service.</p>
  </div></footer>
 <style>
-.dcds-otp-box{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:18px 0}
-.dcds-otp-box input{width:100%;min-width:0;height:54px;text-align:center;font-size:22px;font-weight:850;color:#35105f;border:1px solid #d9c8ef;border-radius:12px;background:#fbf9ff;outline:none}
+.dcds-otp-box{display:block;width:100%;margin:18px 0}
+.dcds-otp-box input{display:block;box-sizing:border-box;width:100%;min-width:0;height:58px;padding:10px 14px;text-align:center;font-size:25px;letter-spacing:.48em;text-indent:.48em;font-variant-numeric:tabular-nums;font-weight:850;color:#35105f;border:1px solid #d9c8ef;border-radius:12px;background:#fbf9ff;outline:none}
 .dcds-otp-box input:focus{border-color:#7a42d0;box-shadow:0 0 0 4px #6128b814}
 .dcds-otp-help{font-size:12px;color:#766984;line-height:1.65}.dcds-otp-actions{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;font-size:12px}
 .dcds-text-button{border:0;background:none;color:#6128b8;font-weight:850;padding:8px 0}.dcds-text-button:disabled{color:#a49aaa;cursor:not-allowed}
+.form-error.success{color:#167044;background:#edf9f1;border:1px solid #c8ecd4;border-radius:9px;padding:9px 11px;min-height:0}
+.form-error.error{color:#b42318;background:#fff1f0;border:1px solid #f4ceca;border-radius:9px;padding:9px 11px;min-height:0}
 </style>
 <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle"><section class="modal"><button class="modal-close" id="modalClose" type="button" aria-label="Close">×</button><div id="modalContent"></div></section></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -705,11 +707,29 @@ async function submitAuth(e){
  try{
   if(authMode==='signup'){
    if(!name)throw new Error('Please enter your full name.');
-   const signupMetadata={full_name:name};if(DCDS_REFERRAL_CODE)signupMetadata.dcds_referral_code=DCDS_REFERRAL_CODE;const {data,error}=await supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}});if(error)throw error;
+   const signupMetadata={full_name:name};if(DCDS_REFERRAL_CODE)signupMetadata.dcds_referral_code=DCDS_REFERRAL_CODE;
+   const {error}=await supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}});
+   if(error){
+    if(error.code==='user_already_exists'||/user already registered/i.test(error.message||'')){
+     authMode='login';
+     throw new Error('An account with this email already exists. Please switch to Log in. If the account is not verified yet, DCDS will request a fresh verification code after you log in.');
+    }
+    throw error;
+   }
    pendingVerificationEmail=email;
    showEmailOtpScreen(email,'A six-digit verification code has been sent to your email.');
   }else{
-   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});if(error)throw error;
+   const {data,error}=await supabaseClient.auth.signInWithPassword({email,password});
+   if(error){
+    if(error.code==='email_not_confirmed'||/email not confirmed/i.test(error.message||'')){
+     const {error:resendError}=await supabaseClient.auth.resend({type:'signup',email});
+     if(resendError)throw resendError;
+     pendingVerificationEmail=email;
+     showEmailOtpScreen(email,'Your account exists but the email is not verified yet. A fresh six-digit code has been requested.');
+     return;
+    }
+    throw error;
+   }
    if(!data.user?.email_confirmed_at){pendingVerificationEmail=email;showEmailOtpScreen(email,'Your email still needs verification. Enter the six-digit code sent to your inbox.');return;}
    await afterAuthentication(data.user);
   }
@@ -733,16 +753,23 @@ function showEmailOtpScreen(email,message='Enter the six-digit code sent to your
   async function verifyEmailOtp(e){
  e.preventDefault();const btn=$('verifyOtpBtn'),err=$('otpError'),token=$('otpCode').value.trim();
  if(!/^\d{6}$/.test(token)){err.textContent='Enter the complete six-digit code.';return;}
- btn.disabled=true;btn.textContent='Verifying…';err.textContent='';
+ btn.disabled=true;btn.textContent='Verifying…';err.textContent='';err.className='form-error';
  try{
   const {data,error}=await supabaseClient.auth.verifyOtp({email:pendingVerificationEmail,token,type:'signup'});if(error)throw error;  stopOtpCountdown();if(!data.user?.email_confirmed_at && !data.session?.user?.email_confirmed_at)throw new Error('Supabase did not confirm the email. Please check your email OTP settings and try again.');
   await afterAuthentication(data.user||data.session.user);
  }catch(error){err.textContent=error.message||'That code could not be verified. Request a new code and try again.';btn.disabled=false;btn.textContent='Verify email';}
 }
 async function resendEmailOtp(){
- const btn=$('resendOtpBtn'),err=$('otpError');btn.disabled=true;if(err)err.textContent='';
- try{const {error}=await supabaseClient.auth.resend({type:'signup',email:pendingVerificationEmail});if(error)throw error;if(err)err.textContent='A new verification code has been requested.';startOtpCountdown(60);}
- catch(error){if(err)err.textContent=error.message||'Could not resend the code. Please try again.';btn.disabled=false;}
+ const btn=$('resendOtpBtn'),err=$('otpError');btn.disabled=true;if(err){err.textContent='';err.className='form-error';}
+ try{
+  const {error}=await supabaseClient.auth.resend({type:'signup',email:pendingVerificationEmail});
+  if(error)throw error;
+  if(err){err.textContent='A new verification code has been requested. Check your inbox and spam folder.';err.className='form-error success';}
+  startOtpCountdown(60);
+ }catch(error){
+  if(err){err.textContent=error.message||'Could not resend the code. Please try again.';err.className='form-error error';}
+  btn.disabled=false;
+ }
 }
 async function requestPasswordReset(){
  const email=$('studentEmail')?.value.trim();
@@ -842,6 +869,7 @@ function showEnrollment(index,user){
  <div class="selected-course"><span>COURSE SELECTED</span><strong>${escapeHtml(c.title)}</strong>
  <div class="total"><span>Course fee</span><b>${displayPrice}</b></div></div>
  <div class="modal-note">${paymentNote} Course access is granted only after payment verification.</div>
+ <p class="modal-note">If Flutterwave displays “Card not enrolled for Safe Token”, your bank has not enrolled that card on its Safe Token platform. Contact the card-issuing bank to activate it, or return to checkout and choose another payment method offered there. Avoid repeatedly retrying the same card.</p>
  <p class="form-error" id="paymentError" role="alert"></p>
  <button class="button button-primary" style="width:100%;margin-top:15px" id="payNowBtn" ${canPay?'':'disabled'}>${canPay?'Pay securely with Flutterwave':'Choose an available currency to pay'}</button>
  <button class="button button-light" style="width:100%;margin-top:9px" id="enrollCancel">Cancel</button>`);
@@ -938,6 +966,7 @@ function showGeneralEnrollment(user){
  <div class="selected-course"><span>100+ COURSES · FOUR LEARNING CHANNELS</span><strong>DCDS General Course</strong>
  <div class="total"><span>Special offer</span><b>${displayPrice}</b></div></div>
  <div class="modal-note">${paymentNote} Access to the General Course learning area is granted only after payment verification.</div>
+ <p class="modal-note">If Flutterwave displays “Card not enrolled for Safe Token”, your bank has not enrolled that card on its Safe Token platform. Contact the card-issuing bank to activate it, or return to checkout and choose another payment method offered there. Avoid repeatedly retrying the same card.</p>
  <p class="form-error" id="paymentError" role="alert"></p>
  <button class="button button-primary" style="width:100%;margin-top:15px" id="payGeneralNowBtn" ${canPay?'':'disabled'}>${canPay?'Pay securely with Flutterwave':'Choose an available currency to pay'}</button>
  <button class="button button-light" style="width:100%;margin-top:9px" id="generalEnrollCancel">Cancel</button>`);
