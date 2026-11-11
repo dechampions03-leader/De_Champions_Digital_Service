@@ -176,82 +176,8 @@ header { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50
 @media(max-width:850px){.payment-ops-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.payment-order-grid{grid-template-columns:1fr}.payment-ops-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.payment-order-card{padding:13px}.payment-manual-toolbar{padding:12px}}
 </style>
-<style id="dcds-scroll-motion">
-/* DCDS scroll motion: additive effects only; existing layout and colours remain untouched. */
-.dcds-motion-ready [data-dcds-reveal]{opacity:0;transition:opacity .72s ease,transform .82s cubic-bezier(.2,.75,.25,1),filter .82s ease;will-change:opacity,transform}
-.dcds-motion-ready [data-dcds-reveal="rise"]{transform:translate3d(0,38px,0)}
-.dcds-motion-ready [data-dcds-reveal="pop"]{transform:scale(.91);filter:blur(3px)}
-.dcds-motion-ready [data-dcds-reveal="left"]{transform:translate3d(-46px,0,0)}
-.dcds-motion-ready [data-dcds-reveal="right"]{transform:translate3d(46px,0,0)}
-.dcds-motion-ready [data-dcds-reveal="zoom"]{transform:scale(.94) translateY(18px)}
-.dcds-motion-ready [data-dcds-reveal].dcds-visible{opacity:1;transform:none;filter:none}
-.dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:dcdsChildPop .58s both;animation-delay:var(--dcds-delay,0ms)}
-@keyframes dcdsChildPop{from{opacity:.25;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(prefers-reduced-motion:reduce){.dcds-motion-ready [data-dcds-reveal]{opacity:1!important;transform:none!important;filter:none!important;transition:none!important}.dcds-motion-ready [data-dcds-reveal].dcds-visible [data-dcds-child]{animation:none!important}}
 
-/* DCDS refined motion: gentle text reveals and restrained ambient colour blending. */
-.dcds-motion-ready body{position:relative;isolation:isolate}
-.dcds-motion-ready body::before{
-  content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
-  background:radial-gradient(ellipse at 8% 4%,rgba(133,76,205,.075),transparent 38%),radial-gradient(ellipse at 92% 34%,rgba(215,180,90,.055),transparent 34%),linear-gradient(145deg,rgba(255,255,255,.12),transparent 58%);
-  opacity:.85;transition:opacity 1.4s ease;
-}
-.dcds-motion-ready [data-dcds-reveal] :is(h1,h2,h3,h4,p,li,label,.eyebrow,.section-kicker,.section-kicker-text){
-  opacity:.35;
-  transform:translate3d(0,9px,0);
-  filter:blur(1.2px);
-  transition:opacity .9s ease,transform .95s cubic-bezier(.2,.72,.2,1),filter .95s ease;
-}
-.dcds-motion-ready [data-dcds-reveal].dcds-visible :is(h1,h2,h3,h4,p,li,label,.eyebrow,.section-kicker,.section-kicker-text){
-  opacity:1;
-  transform:none;
-  filter:none;
-}
-.dcds-motion-ready [data-dcds-reveal] :is(h1,h2,h3){transition-delay:90ms}
-.dcds-motion-ready [data-dcds-reveal] :is(p,li,label){transition-delay:170ms}
-.dcds-motion-ready [data-dcds-reveal] :is(.course-card,.service-card,.info-card,.record-row,.review-item,.stat-card,.announcement-card){
-  transition:box-shadow .8s ease,border-color .8s ease,background-color .8s ease;
-}
-.dcds-motion-ready [data-dcds-reveal].dcds-visible :is(.course-card,.service-card,.info-card,.record-row,.review-item,.stat-card,.announcement-card){
-  box-shadow:0 10px 28px rgba(55,20,92,.055);
-}
-@media(prefers-reduced-motion:reduce){
- .dcds-motion-ready body::before{position:absolute;transition:none}
- .dcds-motion-ready [data-dcds-reveal] :is(h1,h2,h3,h4,p,li,label,.eyebrow,.section-kicker,.section-kicker-text){opacity:1!important;transform:none!important;filter:none!important;transition:none!important}
-}
-@media print{
- .dcds-motion-ready body::before{display:none!important}
- .dcds-motion-ready [data-dcds-reveal],
- .dcds-motion-ready [data-dcds-reveal] *{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;animation:none!important}
-}
-</style>
-<style id="dcds-universal-text-motion-style">
-/* DCDS universal text entrance: visible once revealed, then stays readable. */
-html.dcds-text-motion-ready [data-dcds-text-reveal]{
-  opacity:.06;
-  transform:translate3d(0,18px,0);
-  filter:blur(3px);
-  transition:opacity 1.05s cubic-bezier(.2,.72,.2,1),transform 1.05s cubic-bezier(.2,.72,.2,1),filter 1.05s ease;
-  transition-delay:var(--dcds-text-delay,0ms);
-  will-change:opacity,transform,filter;
-}
-html.dcds-text-motion-ready [data-dcds-text-reveal="soft"]{transform:translate3d(0,12px,0);filter:blur(2px)}
-html.dcds-text-motion-ready [data-dcds-text-reveal="lift"]{transform:translate3d(0,22px,0);filter:blur(3px)}
-html.dcds-text-motion-ready [data-dcds-text-reveal="focus"]{transform:scale(.985);filter:blur(4px)}
-html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
-  opacity:1;transform:none;filter:none;will-change:auto;
-}
-@media(prefers-reduced-motion:reduce){
- html.dcds-text-motion-ready [data-dcds-text-reveal]{
-  opacity:1!important;transform:none!important;filter:none!important;transition:none!important;will-change:auto!important
- }
-}
-@media print{
- html.dcds-text-motion-ready [data-dcds-text-reveal]{
-  opacity:1!important;transform:none!important;filter:none!important;transition:none!important
- }
-}
-</style>
+
 
 <style id="dcds-admin-command-navigation">
   #adminApp{width:min(1500px,calc(100% - 36px));margin:0 auto;padding:18px 0 36px}
@@ -367,6 +293,17 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 @media(min-width:900px){#dcds-fixed-bottom-nav{bottom:14px;padding:8px 10px}#dcds-fixed-bottom-nav .dcds-dock-item{min-height:58px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){#dcds-fixed-bottom-nav .dcds-dock-item{transition:none}}
 .admin-layout{display:block!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important}.admin-sidebar,.admin-nav-backdrop,#adminNavToggle{display:none!important}.admin-workspace{width:100%!important;max-width:none!important;min-width:0!important}#adminApp{padding-bottom:16px!important}</style>
+<style id="dcds-admin-view-visibility-safety">
+/* Admin sections must remain readable when opened from the fixed dock. */
+#adminViewStack>[data-admin-view-panel]:not([hidden]),
+#adminViewStack>[data-admin-view-panel]:not([hidden]) *,
+#adminViewStack>[data-admin-view-panel]:not([hidden])::before,
+#adminViewStack>[data-admin-view-panel]:not([hidden])::after{
+ opacity:1!important;visibility:visible!important;transform:none!important;filter:none!important;
+ animation:none!important;transition:none!important;will-change:auto!important
+}
+#adminViewStack>[data-admin-view-panel][hidden]{display:none!important}
+</style>
 </head>
 <body>
 <div id="adminApp" hidden>
@@ -1565,110 +1502,9 @@ $("closeDetailButton").addEventListener("click",()=>{$("studentDetailPanel").hid
 $("logoutButton").addEventListener("click",async()=>{await db.auth.signOut();location.replace("index.html");});
 initialize().catch(error=>{console.error(error);showError("Unexpected error while opening Student Management.");$("status").textContent="Initialization failed.";});
 </script>
-<script id="dcds-scroll-motion-script">
-(()=> {
-  if(window.__dcdsScrollMotionInstalled) return;
-  window.__dcdsScrollMotionInstalled=true;
-  const init=()=>{
-    const reduced=window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const selectors=[
-      ".hero",".section-heading",".course-grid",".course-card",".service-card",
-      ".general-course-offer",".info-card",".founder-section",".founder-card",
-      ".reviews-section",".review-panel",".review-list",".review-item",
-      ".dashboard-header",".section-title",".panel",".stat-card",".record-list",
-      ".record-row",".certificate-grid",".certificate",".course",
-      ".feature-message",".profile-form",".announcement-card",
-      "#reviewModerationSection",".review-moderation-card",
-      ".support-ticket-card",".detail-panel",".footer","footer"
-    ];
-    const found=new Set();
-    selectors.forEach(selector=>document.querySelectorAll(selector).forEach(el=>{
-      if(el.closest("[data-dcds-motion-ignore]")) return;
-      found.add(el);
-    }));
-    const targets=[...found];
-    const styles=["rise","pop","left","right","zoom"];
-    targets.forEach((el,index)=>{
-      if(el.hasAttribute("data-dcds-reveal")) return;
-      el.setAttribute("data-dcds-reveal",styles[index%styles.length]);
-      const children=[...el.children].filter(child=>child.matches(".course-card,.service-card,.info-card,.record-row,.certificate,.review-item,.stat-card,.announcement-card"));
-      children.forEach((child,i)=>{
-        child.setAttribute("data-dcds-child","");
-        child.style.setProperty("--dcds-delay",Math.min(i*85,510)+"ms");
-      });
-    });
-    if(reduced){targets.forEach(el=>el.classList.add("dcds-visible"));return;}
-    document.documentElement.classList.add("dcds-motion-ready");
-    if(!("IntersectionObserver" in window)){
-      targets.forEach(el=>el.classList.add("dcds-visible"));
-      return;
-    }
-    const observer=new IntersectionObserver(entries=>{
-      entries.forEach(entry=>{
-        if(entry.isIntersecting){
-          entry.target.classList.add("dcds-visible");
-          observer.unobserve(entry.target);
-        }
-      });
-    },{threshold:.12,rootMargin:"0px 0px -45px 0px"});
-    targets.forEach(el=>observer.observe(el));
-  };
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",init,{once:true});
-  else init();
-})();
-</script>
 
-<script id="dcds-universal-text-motion">
-(()=> {
- if(window.__DCDSUniversalTextMotion) return;
- window.__DCDSUniversalTextMotion=true;
- const start=()=>{
-  const root=document.documentElement;
-  const reduced=window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const selector="h1,h2,h3,h4,h5,h6,p,li,label,blockquote,figcaption,summary,legend,dt,dd,.eyebrow,.kicker,.subtitle,.section-heading,.section-title,.brand,.stat-label,.card-title,.panel-title";
-  const observed=new WeakSet();
-  let sequence=0;
-  let observer=null;
-  if(!reduced&&"IntersectionObserver" in window){
-   observer=new IntersectionObserver(entries=>{
-    entries.forEach(entry=>{
-     if(entry.isIntersecting){
-      entry.target.classList.add("dcds-text-visible");
-      observer.unobserve(entry.target);
-     }
-    });
-   },{threshold:.08,rootMargin:"0px 0px -28px 0px"});
-  }
-  const scan=(scope)=>{
-   if(!scope||!scope.querySelectorAll)return;
-   scope.querySelectorAll(selector).forEach(el=>{
-    if(observed.has(el)||el.hasAttribute("data-dcds-motion-ignore"))return;
-    if(el.closest("script,style,noscript,svg,template,[hidden],.hidden,[aria-hidden='true'],[data-dcds-motion-ignore]"))return;
-    if(!el.textContent||!el.textContent.trim())return;
-    observed.add(el);
-    const modes=["lift","soft","focus"];
-    el.setAttribute("data-dcds-text-reveal",modes[sequence++%modes.length]);
-    const siblingIndex=el.parentElement?[...el.parentElement.children].filter(n=>n.matches&&n.matches(selector)).indexOf(el):0;
-    el.style.setProperty("--dcds-text-delay",Math.max(0,Math.min(siblingIndex,4)*85)+"ms");
-    if(reduced){el.classList.add("dcds-text-visible");return;}
-    if(observer)observer.observe(el);else el.classList.add("dcds-text-visible");
-   });
-  };
-  root.classList.add("dcds-text-motion-ready");
-  scan(document);
-  if("MutationObserver" in window){
-   const mutations=new MutationObserver(records=>{
-    records.forEach(record=>{
-     if(record.type==="childList")record.addedNodes.forEach(node=>{if(node.nodeType===1){if(node.matches&&node.matches(selector))scan(node.parentElement||node);else scan(node);}});
-     else if(record.type==="attributes"&&record.target.classList&&!record.target.classList.contains("hidden")&&!record.target.hasAttribute("hidden"))scan(record.target);
-    });
-   });
-   mutations.observe(document.body,{subtree:true,childList:true,attributes:true,attributeFilter:["class","hidden","aria-hidden"]});
-  }
- };
- if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
-})();
-</script>
+
+
 <script id="dcds-student-management-fixed-five-button-navigation">
 (()=>{
  if(document.getElementById("dcds-fixed-bottom-nav"))return;
@@ -1683,7 +1519,11 @@ initialize().catch(error=>{console.error(error);showError("Unexpected error whil
  syncDockVisibility();
  if(adminApp)new MutationObserver(syncDockVisibility).observe(adminApp,{attributes:true,attributeFilter:["hidden","class"]});
  const selector=".admin-nav-item"+'[data-admin-view="';
- function show(key){const original=document.querySelector(selector+key+'"]');if(original)original.click();nav.querySelectorAll("button[data-view]").forEach(b=>{if(b.dataset.view===key)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});}
+ function show(key){
+  if(typeof window.setAdminView==="function")window.setAdminView(key);
+  else {const original=document.querySelector(selector+key+'"]');if(original)original.click();}
+  nav.querySelectorAll("button[data-view]").forEach(b=>{if(b.dataset.view===key)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
+}
  nav.addEventListener("click",e=>{const b=e.target.closest("button[data-view]");if(b)show(b.dataset.view);});
  document.addEventListener("click",event=>{
   const original=event.target.closest("[data-admin-view]");
