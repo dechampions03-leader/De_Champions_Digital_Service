@@ -841,6 +841,232 @@ document.getElementById('supportTicketForm').addEventListener('submit',async eve
   try{await loadSupportTickets(activeStudent);}catch(e){console.error('Support history loading error:',e);document.getElementById('supportTicketList').innerHTML='<div class="empty-certificates">Your request was submitted, but its history could not be refreshed. Please reload this page.</div>';}
 }
 );
+async function loadInternationalPayoutPanel(user) {
+  const section=document.getElementById('internationalPayoutSection');
+  const status=document.getElementById('internationalPayoutStatus');
+  const controls=document.getElementById('internationalPayoutControls');
+  const routeSelect=document.getElementById('internationalPayoutRoute');
+  const accountSelect=document.getElementById('internationalPayoutAccount');
+  const fieldsRoot=document.getElementById('internationalBeneficiaryFields');
+  const beneficiaryForm=document.getElementById('internationalBeneficiaryForm');
+  const beneficiaryMessage=document.getElementById('internationalBeneficiaryMessage');
+  const quoteForm=document.getElementById('internationalQuoteForm');
+  const quoteMessage=document.getElementById('internationalQuoteMessage');
+  const quoteSummary=document.getElementById('internationalQuoteSummary');
+  const acceptButton=document.getElementById('acceptInternationalQuote');
+  const requestMessage=document.getElementById('internationalRequestMessage');
+  const historyRoot=document.getElementById('internationalPayoutHistory');
+  if(!section||!status||!controls)return;
+
+  let routes=[];
+  let accounts=[];
+  let selectedQuote=null;
+  let selectedRoute=null;
+
+  const money=value=>'₦'+Number(value||0).toLocaleString('en-NG',{minimumFractionDigits:2,maximumFractionDigits:2});
+  const destinationMoney=(value,currency)=>new Intl.NumberFormat(undefined,{style:'currency',currency,maximumFractionDigits:2}).format(Number(value)||0);
+
+  async function refreshAccounts() {
+    const {data,error}=await client.functions.invoke('dcds-international-payout',{body:{action:'get_accounts'}});
+    if(error||!data?.success)throw new Error(data?.error||'Beneficiary records are unavailable.');
+    accounts=data.accounts||[];
+    updateAccountOptions();
+  }
+
+  async function refreshInternationalHistory() {
+    const {data,error}=await client.functions.invoke('dcds-international-payout',{body:{action:'get_requests'}});
+    if(error||!data?.success){historyRoot.textContent='International withdrawal history is temporarily unavailable.';return;}
+    const items=data.requests||[];
+    historyRoot.replaceChildren();
+    if(!items.length){historyRoot.textContent='No international withdrawal requests yet.';return;}
+    items.forEach(item=>{
+      const card=document.createElement('div');card.className='record-row';
+      const heading=document.createElement('strong');
+      heading.textContent=destinationMoney(item.destination_amount,item.destination_currency)+' · '+String(item.status||'').replaceAll('_',' ').toUpperCase();
+      const meta=document.createElement('div');meta.className='record-meta';
+      const debit=document.createElement('span');debit.textContent='NGN reserved: '+money(item.source_amount_ngn);
+      const date=document.createElement('span');date.textContent=formatAcademicDate(item.requested_at);
+      meta.append(debit,date);card.append(heading,meta);
+      if(item.failure_reason){const note=document.createElement('p');note.className='form-note';note.textContent=item.failure_reason;card.append(note);}
+      if(item.status==='requested'){
+        const cancel=document.createElement('button');cancel.type='button';cancel.className='btn light';cancel.textContent='Cancel request';
+        cancel.addEventListener('click',async()=>{
+          if(!window.confirm('Cancel this international withdrawal request and release the reserved rewards?'))return;
+          cancel.disabled=true;
+          const result=await client.functions.invoke('dcds-international-payout',{body:{action:'cancel_request',request_id:item.id}});
+          requestMessage.textContent=result.error?result.data?.error||'The request could not be cancelled.':result.data?.message||'Request cancelled.';
+          await refreshInternationalHistory();
+        });
+        card.append(cancel);
+      }
+      historyRoot.append(card);
+    });
+  }
+
+  function updateAccountOptions() {
+    accountSelect.replaceChildren();
+    const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Select a DCDS-verified beneficiary';accountSelect.append(placeholder);
+    accounts.filter(account=>!selectedRoute||account.route_id===selectedRoute.id).forEach(account=>{
+      const option=document.createElement('option');option.value=account.id;
+      option.textContent=account.beneficiary_name+' · •••• '+account.account_hint_last4+' · '+String(account.verification_status).toUpperCase();
+      option.dataset.verified=account.verification_status==='verified'?'true':'false';
+      accountSelect.append(option);
+    });
+    const verified=accounts.find(account=>account.route_id===selectedRoute?.id&&account.verification_status==='verified');
+    if(verified)accountSelect.value=verified.id;
+    updateQuoteAvailability();
+  }
+
+  function updateQuoteAvailability() {
+    const verified=accounts.some(account=>account.id===accountSelect.value&&account.verification_status==='verified');
+    const amount=document.getElementById('internationalDestinationAmount');
+    document.getElementById('createInternationalQuote').disabled=!(selectedRoute&&verified&&Number(amount.value)>0);
+  }
+
+  function addField(field,route) {
+    const wrapper=document.createElement('label');
+    const title=field.replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+    wrapper.textContent=title;
+    let input;
+    if(field==='account_bank'){
+      input=document.createElement('select');
+      const option=document.createElement('option');option.value='';option.textContent='Loading supported banks…';input.append(option);
+    }else if(field==='beneficiary_country'){
+      input=document.createElement('select');
+      const countries=[
+        ['AT','Austria'],['BE','Belgium'],['BG','Bulgaria'],['HR','Croatia'],['CY','Cyprus'],
+        ['CZ','Czechia'],['DK','Denmark'],['EE','Estonia'],['FI','Finland'],['FR','France'],
+        ['DE','Germany'],['GR','Greece'],['HU','Hungary'],['IS','Iceland'],['IE','Ireland'],
+        ['IT','Italy'],['LV','Latvia'],['LI','Liechtenstein'],['LT','Lithuania'],['LU','Luxembourg'],
+        ['MT','Malta'],['MC','Monaco'],['NL','Netherlands'],['NO','Norway'],['PL','Poland'],
+        ['PT','Portugal'],['RO','Romania'],['SM','San Marino'],['SK','Slovakia'],['SI','Slovenia'],
+        ['ES','Spain'],['SE','Sweden'],['CH','Switzerland'],['GB','United Kingdom']
+      ];
+      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Select beneficiary country';input.append(placeholder);
+      countries.forEach(([code,name])=>{const option=document.createElement('option');option.value=code;option.textContent=name;input.append(option);});
+    }else{
+      input=document.createElement('input');input.type='text';input.autocomplete='off';input.maxLength=300;
+      if(field==='email')input.type='email';
+      if(field==='account_number'||field==='iban'||field==='routing_number'||field==='swift_code'||field==='postal_code'||field==='account_type')input.autocomplete='off';
+    }
+    input.required=true;input.dataset.beneficiaryField=field;
+    if(input.tagName==='INPUT')input.placeholder='Enter '+title.toLowerCase();
+    wrapper.append(input);fieldsRoot.append(wrapper);
+    return input;
+  }
+
+  async function renderBeneficiaryFields(route) {
+    fieldsRoot.replaceChildren();
+    const config=route.route_config||{};
+    let required=[...(route.required_fields||[])];
+    if(config.country_selection_required&&!required.includes('beneficiary_country'))required.push('beneficiary_country');
+    const bankField=required.includes('account_bank')?addField('account_bank',route):null;
+    const countryField=required.includes('beneficiary_country')?addField('beneficiary_country',route):null;
+    required.filter(field=>field!=='account_bank'&&field!=='beneficiary_country').forEach(field=>addField(field,route));
+    if(bankField){
+      const loadBanks=async()=>{
+        if(countryField&&!countryField.value){bankField.innerHTML='<option value="">Select the beneficiary country first</option>';bankField.disabled=true;return;}
+        bankField.disabled=true;bankField.innerHTML='<option value="">Loading banks…</option>';
+        const {data,error}=await client.functions.invoke('dcds-international-payout',{
+          body:{action:'banks',route_id:route.id,beneficiary_country:countryField?.value||undefined}
+        });
+        bankField.replaceChildren();
+        const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Select your bank';bankField.append(placeholder);
+        if(error||!data?.success||!Array.isArray(data.banks)){
+          placeholder.textContent='Bank list unavailable';return;
+        }
+        data.banks.forEach(bank=>{const option=document.createElement('option');option.value=bank.code;option.textContent=bank.name;bankField.append(option);});
+        bankField.disabled=false;
+      };
+      if(countryField)countryField.addEventListener('change',loadBanks);
+      else await loadBanks();
+    }
+  }
+
+  try{
+    const {data:routeData,error:routeError}=await client.functions.invoke('dcds-international-payout',{body:{action:'routes'}});
+    if(routeError||!routeData?.success)throw new Error(routeData?.error||'International payout availability could not be checked.');
+    routes=routeData.routes||[];
+    if(!routeData.enabled||!routes.length){
+      status.textContent=routeData.message||'International withdrawals are not available yet. DCDS will show a destination here after its provider and country checks are complete.';
+      controls.hidden=true;return;
+    }
+    await refreshAccounts();
+    await refreshInternationalHistory();
+    routeSelect.replaceChildren();
+    const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Select a destination';routeSelect.append(placeholder);
+    routes.forEach(route=>{const option=document.createElement('option');option.value=route.id;option.textContent=route.country_name+' · '+route.currency;routeSelect.append(option);});
+    controls.hidden=false;
+    status.textContent='International payout is available only to the listed verified routes. Your rewards remain denominated in NGN. The provider will show the current FX quote and transfer fee before you accept.';
+    routeSelect.addEventListener('change',async()=>{
+      selectedQuote=null;quoteSummary.hidden=true;acceptButton.hidden=true;
+      selectedRoute=routes.find(route=>route.id===routeSelect.value)||null;
+      updateAccountOptions();
+      if(selectedRoute)await renderBeneficiaryFields(selectedRoute);else fieldsRoot.replaceChildren();
+    });
+    accountSelect.addEventListener('change',updateQuoteAvailability);
+    document.getElementById('internationalDestinationAmount').addEventListener('input',updateQuoteAvailability);
+
+    beneficiaryForm.addEventListener('submit',async event=>{
+      event.preventDefault();if(!selectedRoute)return;
+      const button=document.getElementById('saveInternationalBeneficiary');button.disabled=true;beneficiaryMessage.textContent='Encrypting and saving beneficiary details…';
+      const details={};
+      fieldsRoot.querySelectorAll('[data-beneficiary-field]').forEach(input=>{details[input.dataset.beneficiaryField]=input.value.trim();});
+      const {data,error}=await client.functions.invoke('dcds-international-payout',{body:{action:'save_account',route_id:selectedRoute.id,beneficiary_data:details}});
+      button.disabled=false;
+      if(error||!data?.success){beneficiaryMessage.textContent=data?.error||'Beneficiary details could not be saved.';return;}
+      beneficiaryForm.reset();
+      beneficiaryMessage.textContent=data.message||'Beneficiary saved and awaiting DCDS verification.';
+      await refreshAccounts();
+    });
+
+    quoteForm.addEventListener('submit',async event=>{
+      event.preventDefault();selectedQuote=null;quoteSummary.hidden=true;acceptButton.hidden=true;
+      const amount=Number(document.getElementById('internationalDestinationAmount').value);
+      const accountId=accountSelect.value;
+      if(!selectedRoute||!accountId||!accounts.some(account=>account.id===accountId&&account.verification_status==='verified')){
+        quoteMessage.textContent='Select a DCDS-verified beneficiary first.';return;
+      }
+      const button=document.getElementById('createInternationalQuote');button.disabled=true;button.textContent='Getting provider quote…';quoteMessage.textContent='';
+      const {data,error}=await client.functions.invoke('dcds-international-payout',{
+        body:{action:'create_quote',route_id:selectedRoute.id,account_id:accountId,destination_amount:amount}
+      });
+      button.textContent='Get live exchange-rate quote';button.disabled=false;
+      if(error||!data?.success){quoteMessage.textContent=data?.error||'A live provider quote could not be created.';return;}
+      selectedQuote={...data.quote,account_id:accountId};
+      quoteSummary.replaceChildren();
+      const details=[
+        ['You receive',destinationMoney(selectedQuote.destination_amount,selectedQuote.destination_currency)],
+        ['NGN reward balance reserved',money(selectedQuote.source_amount_ngn)],
+        ['Provider FX rate','1 NGN = '+Number(selectedQuote.fx_rate).toPrecision(8)+' '+selectedQuote.destination_currency],
+        ['Transfer fee',destinationMoney(selectedQuote.provider_fee_amount,selectedQuote.provider_fee_currency)+' (separate provider wallet fee)'],
+        ['Quote expires',new Date(selectedQuote.expires_at).toLocaleString()]
+      ];
+      details.forEach(([label,value])=>{const line=document.createElement('div');line.className='record-meta';const strong=document.createElement('strong');strong.textContent=label;const span=document.createElement('span');span.textContent=value;line.append(strong,span);quoteSummary.append(line);});
+      quoteSummary.hidden=false;acceptButton.hidden=false;
+      quoteMessage.textContent=data.message||'Review the amounts before accepting.';
+    });
+
+    acceptButton.addEventListener('click',async()=>{
+      if(!selectedQuote)return;
+      if(!window.confirm('Accept this five-minute FX quote and reserve '+money(selectedQuote.source_amount_ngn)+' of your NGN rewards? This creates a withdrawal request; it does not confirm that a transfer has been sent.'))return;
+      acceptButton.disabled=true;acceptButton.textContent='Reserving rewards…';
+      const {data,error}=await client.functions.invoke('dcds-international-payout',{
+        body:{action:'accept_quote',quote_id:selectedQuote.id,account_id:selectedQuote.account_id}
+      });
+      acceptButton.disabled=false;acceptButton.textContent='Accept quote & reserve rewards';
+      if(error||!data?.success){requestMessage.textContent=data?.error||'The payout request could not be created. Request a fresh quote.';return;}
+      selectedQuote=null;quoteSummary.hidden=true;acceptButton.hidden=true;
+      requestMessage.textContent=data.message||'Withdrawal request created. DCDS will review and process it.';
+      await refreshInternationalHistory();
+    });
+  }catch(error){
+    console.error('DCDS international payout panel error:',error);
+    controls.hidden=true;
+    status.textContent=error.message||'International withdrawal information is currently unavailable.';
+  }
+}
+
 async function loadAmbassadorPanel(user) {
   const box = document.getElementById('ambassadorContent');
   box.textContent = 'Loading your ambassador details…';
@@ -864,7 +1090,11 @@ async function loadAmbassadorPanel(user) {
     const referralLink = 'https://dechampions03-leader.github.io/De_Champions_Digital_Service/?ref=' + encodeURIComponent(ambassador.referral_code);
     const rows = rewards || [];
     const sum = state => rows.filter(r => r.status === state).reduce((n, r) => n + Number(r.amount || 0), 0);
-    const available = sum('available');
+    let available = sum('available');
+    try {
+      const {data:balanceData,error:balanceError}=await client.functions.invoke('dcds-international-payout',{body:{action:'balance'}});
+      if(!balanceError&&balanceData?.success&&balanceData.balance)available=Number(balanceData.balance.available_ngn||0);
+    } catch(error) { console.warn('DCDS referral balance service unavailable; using visible ledger total.',error); }
     const qualified = (referrals || []).filter(r => r.status === 'qualified').length;
     const attributed = (referrals || []).length;
     const money = value => '₦' + Number(value || 0).toLocaleString('en-NG', {maximumFractionDigits:0});
@@ -899,10 +1129,40 @@ async function loadAmbassadorPanel(user) {
         </form>
         <div class="record-row" style="margin-top:14px">
           <strong>Withdraw your available rewards</strong>
-          <p class="form-note">Minimum withdrawal: ₦5,000 NGN. Current withdrawals support verified Nigerian bank accounts only. International beneficiary setup, FX quotes and transfers are not enabled yet. Your available balance is reserved when you submit a request. This request is not a bank transfer confirmation.</p>
+          <p class="form-note">Minimum withdrawal: ₦5,000 NGN. Nigerian withdrawals use verified Nigerian bank accounts. International withdrawals are shown separately and only appear for corridors DCDS has approved and activated. Your available balance is reserved when you submit a request. This request is not a bank transfer confirmation.</p>
           <button class="btn primary" id="requestPayoutBtn" type="button" disabled>Request Withdrawal</button>
           <div id="payoutRequestMessage" class="feature-message" role="status" aria-live="polite"></div>
         </div>
+        <section id="internationalPayoutSection" class="record-row" style="margin-top:18px" aria-labelledby="internationalPayoutHeading">
+          <h3 id="internationalPayoutHeading">🌍 International withdrawal</h3>
+          <p class="form-note">International payouts use your NGN rewards balance and a short-lived Flutterwave exchange-rate quote. Your beneficiary details are encrypted. DCDS reviews the beneficiary before it can be used. No transfer is sent when you save details or request a quote.</p>
+          <div id="internationalPayoutStatus" class="feature-message" role="status" aria-live="polite">Checking available international destinations…</div>
+          <div id="internationalPayoutControls" hidden>
+            <label>Destination country and currency
+              <select id="internationalPayoutRoute"><option value="">Select an enabled destination</option></select>
+            </label>
+            <label>Verified beneficiary
+              <select id="internationalPayoutAccount"><option value="">Select a verified beneficiary</option></select>
+            </label>
+            <form id="internationalBeneficiaryForm" class="profile-form">
+              <div id="internationalBeneficiaryFields"></div>
+              <button class="btn light" id="saveInternationalBeneficiary" type="submit">Save encrypted beneficiary details</button>
+              <div id="internationalBeneficiaryMessage" class="feature-message" role="status" aria-live="polite"></div>
+            </form>
+            <form id="internationalQuoteForm" class="profile-form">
+              <label>Amount to receive
+                <input id="internationalDestinationAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Enter destination amount" required>
+              </label>
+              <button class="btn primary" id="createInternationalQuote" type="submit">Get live exchange-rate quote</button>
+              <div id="internationalQuoteMessage" class="feature-message" role="status" aria-live="polite"></div>
+            </form>
+            <div id="internationalQuoteSummary" class="record-row" hidden></div>
+            <button class="btn primary" id="acceptInternationalQuote" type="button" hidden>Accept quote & reserve rewards</button>
+            <div id="internationalRequestMessage" class="feature-message" role="status" aria-live="polite"></div>
+            <h4 style="margin-top:16px">International withdrawal history</h4>
+            <div id="internationalPayoutHistory" class="record-list">Loading international withdrawal history…</div>
+          </div>
+        </section>
         <div style="margin-top:14px"><h3>Withdrawal history</h3><div id="payoutHistory" class="record-list">Loading withdrawal history…</div></div>
       </div>
       <div style="margin-top:18px"><h3>Reward history</h3><div class="record-list">${rewardRows}</div></div>
@@ -986,6 +1246,8 @@ async function loadAmbassadorPanel(user) {
       payoutMessage.textContent = data.message || 'Your withdrawal request has been recorded.';
       await refreshPayoutHistory();
     });
+
+    await loadInternationalPayoutPanel(user);
 
     bankSelect.disabled = true;
     bankSelect.innerHTML = '<option value="">Loading supported Nigerian banks…</option>';
