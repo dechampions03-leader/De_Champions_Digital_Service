@@ -744,7 +744,7 @@ async function submitAuth(e){
    if(!name)throw new Error('Please enter your full name.');
    const email=identifier.toLowerCase();
    const referralCode=$('studentReferralCode')?.value.trim().toUpperCase()||'';
-   if(!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email))throw new Error('Enter a valid email address.');
+   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))throw new Error('Enter a valid email address.');
    if(referralCode&&!/^[A-Z0-9]{6,16}$/.test(referralCode))throw new Error('Referral codes must contain 6–16 letters or numbers.');
    const phoneE164=normalizeDcdsPhone($('studentPhone')?.value);
    const verificationMethod=document.querySelector('input[name="dcdsVerificationMethod"]:checked')?.value||'email';
@@ -884,7 +884,7 @@ function showSignupOtpScreen(method,recipient,message){
 }
 async function verifySignupOtp(e){
  e.preventDefault();const btn=$('verifyOtpBtn'),err=$('otpError'),token=getOtpToken().trim();
- if(!/^\\d{6}$/.test(token)){err.textContent='Enter the complete six-digit code.';return;}
+ if(!/^\d{6}$/.test(token)){err.textContent='Enter the complete six-digit code.';return;}
  btn.disabled=true;btn.textContent='Verifying…';err.textContent='';err.className='form-error';
  try{
   const credentials=pendingVerificationMethod==='sms'
