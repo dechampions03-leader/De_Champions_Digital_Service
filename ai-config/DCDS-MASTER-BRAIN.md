@@ -83,6 +83,16 @@ When recommending a course:
 
 ## 5. Student journey and platform guidance
 
+### Global account verification
+
+- Every new student must provide both an email address and an international mobile number, regardless of country.
+- During account creation, the student chooses one verification route: email OTP or SMS OTP. The selected contact must be confirmed before the account can access private student features.
+- Email OTP remains the default available route. SMS OTP is only available when DCDS explicitly enables it after a production SMS provider has been configured and tested in Supabase Auth.
+- An account is considered contact-verified when either `email_confirmed_at` or `phone_confirmed_at` is present. Never state that both contacts were verified unless both timestamps are present.
+- Keep both email and mobile contact details on the student account. The email remains required for payment receipts and provider checkout communications even when SMS was the verification route.
+- Existing students may continue to sign in with their existing credentials. The new contact requirement applies to new registrations; do not imply old accounts were disabled.
+- Do not ask users to share passwords, OTPs, provider API credentials or secret hashes in chat.
+
 ### Global account registration requirements
 
 - Every new DCDS student registration requires both a valid email address and a mobile number.
