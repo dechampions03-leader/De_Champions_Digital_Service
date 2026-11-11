@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#160B27">
-<meta name="description" content="DCDS Student Management System">
-<title>DCDS Student Management System</title>
+<meta name="description" content="DCDS administrator dashboard for student records, payments, regional pricing and ambassador payouts">
+<title>DCDS Admin Operations Centre</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -267,8 +267,8 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
   </header>
 
   <section id="welcome">
-    <h2>Student Management 👩🏽‍🎓</h2>
-    <p>One secure workspace for student profiles, enrolments, payments, learning progress, certificates, support history and administrator notes. Existing student accounts and financial records remain in their original tables.</p>
+    <h2>DCDS Admin Dashboard 👩🏽‍💼</h2>
+    <p>One secure workspace for payment approvals, receipt verification, regional course prices, ambassador payouts, student profiles, enrolments, learning progress, certificates and administrator notes.</p>
   </section>
 
   <section class="stats" aria-label="Student overview">
@@ -895,12 +895,12 @@ function renderAdminPaymentOrders(rows){
       const actions=make("section","payment-subpanel");
       if(order.order_source==="flutterwave_checkout"){
         actions.appendChild(make("h4","","Verify with Flutterwave"));
-        actions.appendChild(make("p","payment-muted","Paste the numeric transaction ID shown in the Flutterwave transaction details or verified payment receipt. DCDS will query Flutterwave directly and compare amount, currency and order reference."));
-        const tx=document.createElement("input");tx.type="text";tx.inputMode="numeric";tx.placeholder="Flutterwave transaction ID";tx.maxLength=30;
+        actions.appendChild(make("p","payment-muted","Paste the numeric transaction ID from a receipt, or let DCDS look up this order directly using its unique Flutterwave reference. Amount, currency, status and reference are checked with Flutterwave before approval."));
+        const tx=document.createElement("input");tx.type="text";tx.inputMode="numeric";tx.placeholder="Flutterwave transaction ID (optional for lookup)";tx.maxLength=30;
         const txField=make("div","payment-field");txField.append(make("label","","Flutterwave transaction ID"),tx);actions.appendChild(txField);
-        const verify=paymentActionButton("Verify & approve payment",async()=>{
-          const id=tx.value.trim();if(!/^\d{1,30}$/.test(id)){alert("Enter the numeric Flutterwave transaction ID.");return;}
-          if(!window.confirm("Verify this transaction directly with Flutterwave and, only if all order details match, approve the order and enrol the student?"))return;
+        const verify=paymentActionButton("Verify supplied transaction ID",async()=>{
+          const id=tx.value.trim();if(!/^\\d{1,30}$/.test(id)){alert("Enter the numeric Flutterwave transaction ID, or use the order-reference lookup below.");return;}
+          if(!window.confirm("Verify this transaction directly with Flutterwave and approve only if every order detail matches?"))return;
           verify.disabled=true;verify.textContent="Verifying with Flutterwave…";
           try{
             const {data,error}=await db.functions.invoke("admin-verify-flutterwave-payment",{body:{order_id:order.order_id,transaction_id:id}});
@@ -908,9 +908,20 @@ function renderAdminPaymentOrders(rows){
             alert(data.message||"Flutterwave payment verified and student enrolled.");
             await Promise.all([loadAdminPaymentOps(),loadStudents()]);
           }catch(error){alert(error.message||"Payment verification failed.");}
-          finally{verify.disabled=false;verify.textContent="Verify & approve payment";}
+          finally{verify.disabled=false;verify.textContent="Verify supplied transaction ID";}
         });
-        actions.appendChild(verify);
+        const lookup=paymentActionButton("Find payment by DCDS order reference",async()=>{
+          if(!window.confirm("Ask Flutterwave to look up this exact DCDS order reference? DCDS will approve only a successful transaction with a matching amount and currency."))return;
+          lookup.disabled=true;lookup.textContent="Looking up order reference…";
+          try{
+            const {data,error}=await db.functions.invoke("admin-verify-flutterwave-payment",{body:{order_id:order.order_id}});
+            if(error||!data?.success)throw new Error(await paymentFunctionError(error,data));
+            alert(data.message||"Flutterwave payment verified and student enrolled.");
+            await Promise.all([loadAdminPaymentOps(),loadStudents()]);
+          }catch(error){alert(error.message||"No successful payment was found. The order has not been approved.");}
+          finally{lookup.disabled=false;lookup.textContent="Find payment by DCDS order reference";}
+        },"btn ghost");
+        actions.append(verify,lookup);
       }else{
         actions.appendChild(make("h4","","Direct bank-transfer approval"));
         actions.appendChild(make("p","payment-muted","This order has no Flutterwave checkout link. Manual approval is allowed only after the funds have cleared into the DCDS account and the receipt amount and currency match exactly."));
