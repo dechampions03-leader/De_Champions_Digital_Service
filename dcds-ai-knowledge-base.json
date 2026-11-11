@@ -151,20 +151,20 @@
         "mobile number"
       ],
       "global_mobile_format": "E.164 with + and international country calling code",
-      "email_confirmation": "Six-digit email OTP",
-      "mobile_verification_status": "Mobile is a required contact detail at signup; it is not described as SMS-verified unless a separate SMS verification is completed.",
-      "existing_accounts": "Existing users can continue to sign in with existing credentials. The mobile requirement applies to new registrations.",
       "available_verification_methods": [
         "email OTP",
-        "SMS OTP when DCDS has enabled the configured Supabase Auth SMS provider"
+        "SMS OTP when the production Supabase Auth SMS provider is configured, tested and enabled"
       ],
-      "selected_method_rule": "The student verifies the chosen email or mobile contact method. One confirmed contact is sufficient for account access; do not claim the other contact is verified.",
+      "selected_method_rule": "Student chooses one method and verifies that selected contact. The other contact is required but is not represented as verified by this step.",
+      "email_requirement": "Email is mandatory for every new account and retained for account recovery, receipts and platform communications, including when SMS is selected.",
+      "mobile_requirement": "Mobile number is mandatory for every new account and must be unique in the DCDS private contact registry.",
+      "sms_status": "SMS OTP is implemented but disabled until the production provider has passed a real delivery-and-verification test and both DCDS server-side feature gates are enabled.",
+      "existing_accounts": "Existing users can continue to sign in with existing credentials. The mobile requirement applies to new registrations.",
       "login_methods": [
         "email address and password",
         "registered mobile number and password"
       ],
-      "payment_contact": "Email remains mandatory and is retained for payment/provider communications even for accounts that verified through SMS.",
-      "sms_status": "SMS remains unavailable until the DCDS operator configures and tests a production SMS provider and enables both the Supabase-side DCDS feature gates."
+      "setup_document": "ai-config/DCDS-GLOBAL-SMS-VERIFICATION-SETUP.md"
     }
   },
   "ambassador_programme": {
