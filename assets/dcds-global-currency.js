@@ -29,6 +29,7 @@
     } catch (_) { return "NG"; }
   }
   function preferredCurrency() { return COUNTRY_CURRENCY[countryCode()] || "USD"; }
+  function savedCurrency() { try { return localStorage.getItem("dcds-global-currency-choice-v1") || ""; } catch (_) { return ""; } }
   function currencyName(code) {
     try { return currencyNames ? currencyNames.of(code) || code : code; } catch (_) { return code; }
   }
@@ -68,11 +69,12 @@
       option.textContent = code + " — " + currencyName(code);
       select.appendChild(option);
     });
-    const wanted = preferredCurrency();
+    const wanted = savedCurrency() || preferredCurrency();
     currency = codes.includes(wanted) ? wanted : "NGN";
     select.value = currency;
     select.addEventListener("change", () => {
       currency = codes.includes(select.value) ? select.value : "NGN";
+      try { localStorage.setItem("dcds-global-currency-choice-v1", currency); } catch (_) {}
       updatePrices();
     });
     window.DCDSGlobalCurrency = {format, get currency(){return currency;}, get rates(){return {...rates};}};
@@ -127,8 +129,10 @@
       option.textContent = code + " — " + currencyName(code);
       select.appendChild(option);
     });
-    if (!rates[current]) { currency = "NGN"; select.value = "NGN"; }
-    else currency = current;
+    const wanted = savedCurrency() || preferredCurrency();
+    const finalChoice = rates[wanted] ? wanted : (rates[current] ? current : "NGN");
+    currency = finalChoice;
+    select.value = finalChoice;
     updatePrices();
   }
   if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, {once:true});
