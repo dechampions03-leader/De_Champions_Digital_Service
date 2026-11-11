@@ -53,7 +53,7 @@ jobs:
           const checks = [
             ['all seeded routes disabled', (sql.match(/'disabled'/g) || []).length >= 12],
             ['route enablement requires provider and verification evidence', /provider_approved = true and sandbox_verified_at is not null and live_verified_at is not null/.test(sql)],
-            ['beneficiary data encrypted before database write', /encryptPayload\(data, encryptionKey\)/.test(fn)],
+            ['beneficiary data encrypted before database write', /encryptPayload\(details, encryptionKey\)/.test(fn)],
             ['beneficiary table has no direct authenticated grants', /revoke all on public\.dcds_international_payout_accounts from public, anon, authenticated/i.test(sql)],
             ['international payout global switch defaults off', /DCDS_INTL_PAYOUTS_ENABLED/.test(fn)],
             ['no transfer creation action exists in the foundation function', !/api\.flutterwave\.com\/v3\/transfers["']/i.test(fn)],
