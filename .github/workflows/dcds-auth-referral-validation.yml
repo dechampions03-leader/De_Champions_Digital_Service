@@ -95,7 +95,7 @@ jobs:
               "signupMetadata.dcds_referral_code=referralCode",
               "id=\"studentPhone\"",
               "function normalizeDcdsPhone(value)",
-              "signupMetadata.dcds_phone_e164=phoneE164",
+              "dcds_phone_e164:phoneE164",
               "window.sessionStorage.setItem('dcds_referral_code', incoming)",
           ]
           for item in required_page:
