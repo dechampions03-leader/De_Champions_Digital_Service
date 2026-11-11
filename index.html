@@ -855,7 +855,7 @@ async function startCoursePayment(index){
   if(courseError||!course)throw new Error('This course is not available in the payment database yet. Please contact DCDS support.');
 
   const {data,error}=await supabaseClient.functions.invoke('create-payment',{
-    body:{course_id:course.id}
+    body:{course_id:course.id,currency:window.DCDSGlobalCurrency?.currency||"NGN"}
   });
   if(error)throw error;
   if(!data?.success||!data?.payment_link)throw new Error(data?.error||'Flutterwave checkout could not be started.');
@@ -912,7 +912,7 @@ async function startGeneralCoursePayment(){
     .select('id,title,price,currency').eq('id',GENERAL_COURSE_ID).single();
   if(courseError||!course)throw new Error('The General Course payment record is not set up yet. Please complete the database setup instructions first.');
   if(Number(course.price)!==103000)throw new Error('The General Course price record does not match the ₦103,000 offer. Please contact DCDS support.');
-  const {data,error}=await supabaseClient.functions.invoke('create-payment',{body:{course_id:course.id}});
+  const {data,error}=await supabaseClient.functions.invoke('create-payment',{body:{course_id:course.id,currency:window.DCDSGlobalCurrency?.currency||"NGN"}});
   if(error)throw error;
   if(!data?.success||!data?.payment_link)throw new Error(data?.error||'Flutterwave checkout could not be started.');
   window.location.assign(data.payment_link);
