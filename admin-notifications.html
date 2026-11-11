@@ -403,10 +403,17 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
 
                     <button
                         type="submit"
-                        id="publishButton">
+                        id="publishButton"
+                        data-announcement-status="published">
 
                                      PUBLISH ANNOUNCEMENT
 
+                    </button>
+                    <button
+                        type="submit"
+                        id="saveAnnouncementDraftButton"
+                        data-announcement-status="draft">
+                        SAVE TICKER AS DRAFT
                     </button>
 
 
@@ -439,12 +446,19 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
                 </div>
 
 
+                <div class="ticker-history-tools" aria-label="Filter homepage ticker history">
+                    <input id="tickerHistorySearch" type="search" placeholder="Search ticker title or message…" aria-label="Search ticker announcements">
+                    <select id="tickerHistoryFilter" aria-label="Filter ticker status">
+                        <option value="all">All ticker announcements</option>
+                        <option value="Published">Published</option>
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Inactive / Draft">Inactive / Draft</option>
+                        <option value="Expired">Expired</option>
+                    </select>
+                    <span class="ticker-history-count" id="tickerHistoryCount" role="status" aria-live="polite">Loading ticker history…</span>
+                </div>
                 <div id="announcementHistory">
-
-                    <p>
-                        Announcement history will appear here.
-                    </p>
-
+                    <p>Announcement history will appear here.</p>
                 </div>
 
             </section>
@@ -1789,6 +1803,27 @@ select:focus-visible {
     text-align: center;
 }
 
+
+/* Existing ticker workflow controls — no duplicate announcement module. */
+.ticker-history-tools{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:0 0 15px}
+.ticker-history-tools input,.ticker-history-tools select{flex:1 1 190px;min-width:0;padding:12px 14px;border:1px solid var(--border-color);border-radius:10px;background:rgba(13,7,23,.75);color:var(--pure-white);font:inherit}
+.ticker-history-tools .ticker-history-count{flex:1 1 100%;color:var(--muted-text);font-size:12px}
+.announcement-card .ticker-inline-editor{margin-top:13px;padding:15px;border:1px solid var(--border-color);border-radius:12px;background:rgba(13,7,23,.38)}
+.ticker-inline-editor summary{cursor:pointer;color:var(--bright-gold);font-weight:800;font-size:13px}
+.ticker-inline-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:13px}
+.ticker-inline-field{display:grid;gap:6px;min-width:0}
+.ticker-inline-field.full{grid-column:1/-1}
+.ticker-inline-field label{color:var(--muted-text);font-size:12px;font-weight:700}
+.ticker-inline-field input,.ticker-inline-field textarea,.ticker-inline-field select{width:100%;min-width:0;padding:11px 12px;border:1px solid var(--border-color);border-radius:9px;background:rgba(13,7,23,.75);color:var(--pure-white);font:inherit}
+.ticker-inline-field textarea{min-height:110px;resize:vertical}
+.ticker-inline-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.ticker-inline-actions button{border:1px solid var(--border-color);border-radius:9px;padding:10px 13px;background:rgba(255,255,255,.07);color:var(--pure-white);font:700 12px Arial,sans-serif;cursor:pointer}
+.ticker-inline-actions button.primary{background:linear-gradient(110deg,#B88A16,#F5D77A,#D4AF37);color:#241438;border:0}
+.ticker-inline-actions button:disabled{opacity:.55;cursor:wait}
+.ticker-status-line{display:inline-flex;align-items:center;border-radius:30px;padding:5px 9px;margin-top:8px;background:rgba(212,175,55,.12);color:var(--bright-gold);font-size:11px;font-weight:800}
+#saveAnnouncementDraftButton{display:block;width:100%;margin-top:10px;padding:14px;border:1px solid var(--border-color);border-radius:11px;background:rgba(255,255,255,.07);color:var(--pure-white);font-weight:800;letter-spacing:.5px;cursor:pointer}
+#saveAnnouncementDraftButton:disabled{opacity:.6;cursor:not-allowed}
+@media(max-width:600px){.ticker-inline-grid{grid-template-columns:1fr}.ticker-inline-field.full{grid-column:auto}.ticker-history-tools input,.ticker-history-tools select{flex-basis:100%}}
 </style>
 <!-- =====================================
      BLOCK 5: SUPABASE CONNECTION
@@ -2471,6 +2506,7 @@ async function publishAnnouncement(event) {
     const audience = getSelectedAudience();
     const courseId = getSelectedCourseId();
     const deliveryChannel = getSelectedDeliveryChannel();
+    const targetTickerStatus = event.submitter?.dataset?.announcementStatus === "draft" ? "draft" : "published";
 
     if (!title || !message) {
         showMessage("Please enter both an announcement title and message.", "error");
@@ -2493,24 +2529,33 @@ async function publishAnnouncement(event) {
         return;
     }
 
+    // Draft status belongs only to the dedicated homepage ticker table.
+    if (deliveryChannel === "notification" && targetTickerStatus === "draft") {
+        showMessage("Drafts are for homepage ticker announcements. Choose Ticker Only or use Publish for a student notification.", "error");
+        return;
+    }
+
     // The notification table has no scheduling columns. Scheduling is supported for ticker announcements.
     if (deliveryChannel === "notification" &&
         (document.getElementById("announcementStartsAt").value ||
          document.getElementById("announcementEndsAt").value)) {
         showMessage("Start and end scheduling apply to ticker announcements. Clear those date fields to send a notification now.", "error");
-            return;
+        return;
     }
 
     const confirmation = confirm(
-        "Are you sure you want to publish this announcement?\n\n" +
+        (deliveryChannel === "ticker" && targetTickerStatus === "draft" ? "Save this ticker announcement as a draft?" : "Are you sure you want to publish this announcement?") + "\n\n" +
         "Title: " + title + "\n" +
         "Audience: " + audience.replaceAll("_", " ") + "\n" +
         "Delivery: " + (deliveryChannel === "ticker" ? "Ticker Only" : "Notification Only")
     );
     if (!confirmation) return;
 
+    const submitter = event.submitter || publishButton;
+    const draftButton = document.getElementById("saveAnnouncementDraftButton");
     publishButton.disabled = true;
-    publishButton.textContent = "PUBLISHING...";
+    draftButton.disabled = true;
+    submitter.textContent = targetTickerStatus === "draft" && deliveryChannel === "ticker" ? "SAVING DRAFT..." : "PUBLISHING...";
 
     try {
         if (deliveryChannel === "ticker") {
@@ -2518,7 +2563,7 @@ async function publishAnnouncement(event) {
             const { error } = await db.from("public_announcements").insert({
                 title,
                 message,
-                status: "published",
+                status: targetTickerStatus,
                 starts_at: schedule.starts_at,
                 expires_at: schedule.expires_at,
                 created_by: session.user.id,
@@ -2526,7 +2571,12 @@ async function publishAnnouncement(event) {
             });
             if (error) throw error;
 
-            showMessage("🎉 Ticker announcement published successfully. It will appear on the homepage according to its schedule.", "success");
+            showMessage(
+                targetTickerStatus === "draft"
+                    ? "📝 Ticker draft saved. It stays off the homepage until you activate it from Announcement History."
+                    : "🎉 Ticker announcement published successfully. It will appear on the homepage according to its schedule.",
+                "success"
+            );
         } else {
             // Bell notifications use the existing secure RPC and recipient creation logic.
             const { data, error } = await db.rpc("publish_dcds_announcement", {
@@ -2554,7 +2604,9 @@ async function publishAnnouncement(event) {
                 showMessage("Publishing failed: " + error.message, "error");
     } finally {
         publishButton.disabled = false;
+        draftButton.disabled = false;
         publishButton.textContent = "PUBLISH ANNOUNCEMENT";
+        draftButton.textContent = "SAVE TICKER AS DRAFT";
     }
 }
 
@@ -2621,82 +2673,116 @@ function getTickerState(announcement) {
     await loadHistory();
 }
 
-async function renderTickerActions(card, announcement) {
-    const actions = document.createElement("div");
-    actions.className = "announcement-admin-actions";
-    actions.style.cssText = "display:flex;flex-wrap:wrap;gap:8px;margin-top:14px";
+function localDateTimeValue(value) {
+    if (!value) return "";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return "";
+    return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
 
-    const addButton = (label, handler) => {
-        const button = document.createElement("button");
-        button.type = "button";
-        button.textContent = label;
-        button.addEventListener("click", async () => {
-            button.disabled = true;
-            try {
-                await handler();
-            } catch (error) {
-                console.error("Ticker announcement action failed:", error);
-                alert("Action failed: " + error.message);
-            } finally {
-                button.disabled = false;
-            }
-        });
-        actions.appendChild(button);
+function renderTickerActions(card, announcement) {
+    const statusLine = addHistoryText(card, "span", getTickerState(announcement));
+    statusLine.className = "ticker-status-line";
+
+    const editor = document.createElement("details");
+    editor.className = "ticker-inline-editor";
+    const summary = document.createElement("summary");
+    summary.textContent = "Edit content, schedule or publication status";
+    editor.appendChild(summary);
+
+    const grid = document.createElement("div");
+    grid.className = "ticker-inline-grid";
+
+    const makeField = (labelText, control, full = false) => {
+        const wrap = document.createElement("div");
+        wrap.className = "ticker-inline-field" + (full ? " full" : "");
+        const label = document.createElement("label");
+        label.textContent = labelText;
+        wrap.append(label, control);
+        grid.appendChild(wrap);
     };
 
-    addButton("Edit", async () => {
-        const newTitle = prompt("Edit announcement title:", announcement.title || "");
-        if (newTitle === null) return;
-        const newMessage = prompt("Edit announcement message:", announcement.message || "");
-        if (newMessage === null) return;
-        if (!newTitle.trim() || !newMessage.trim()) {
-            alert("Title and message cannot be empty.");
-            return;
-        }
-        await updateTickerAnnouncement(announcement.id, {
-            title: newTitle.trim(),
-            message: newMessage.trim()
-        });
+    const title = document.createElement("input");
+    title.type = "text"; title.maxLength = 150; title.value = announcement.title || "";
+    makeField("Announcement title", title);
+
+    const status = document.createElement("select");
+    [["published","Published"],["draft","Draft"],["inactive","Inactive"]].forEach(([value,label]) => {
+        const option = document.createElement("option");
+        option.value = value; option.textContent = label; status.appendChild(option);
     });
+    status.value = announcement.status || "draft";
+    makeField("Publication status", status);
 
-    addButton(announcement.status === "published" ? "Deactivate" : "Activate", async () => {
-        const nextStatus = announcement.status === "published" ? "draft" : "published";
-        await updateTickerAnnouncement(announcement.id, { status: nextStatus });
-    });
+    const message = document.createElement("textarea");
+    message.maxLength = 10000; message.value = announcement.message || "";
+    makeField("Announcement message", message, true);
 
-    addButton("Reschedule", async () => {
-        const startInput = prompt(
-            "Start date/time (ISO format). Leave blank to start now:",
-            announcement.starts_at || ""
-        );
-                if (startInput === null) return;
-        const endInput = prompt(
-            "Expiry date/time (ISO format). Leave blank for no expiry:",
-            announcement.expires_at || ""
-        );
-        if (endInput === null) return;
+    const starts = document.createElement("input");
+    starts.type = "datetime-local"; starts.value = localDateTimeValue(announcement.starts_at);
+    makeField("Start date and time", starts);
 
-        const startsAt = startInput.trim() ? new Date(startInput.trim()) : new Date();
-        const expiresAt = endInput.trim() ? new Date(endInput.trim()) : null;
+    const expires = document.createElement("input");
+    expires.type = "datetime-local"; expires.value = localDateTimeValue(announcement.expires_at);
+    makeField("Expiry date and time (optional)", expires);
+
+    const actions = document.createElement("div");
+    actions.className = "ticker-inline-actions";
+    const save = document.createElement("button");
+    save.type = "button"; save.className = "primary"; save.textContent = "Save changes";
+    save.addEventListener("click", async () => {
+        const cleanTitle = title.value.trim();
+        const cleanMessage = message.value.trim();
+        if (!cleanTitle || !cleanMessage) { alert("Title and message cannot be empty."); return; }
+        const startsAt = starts.value ? new Date(starts.value) : new Date();
+        const expiresAt = expires.value ? new Date(expires.value) : null;
         if (Number.isNaN(startsAt.getTime()) || (expiresAt && Number.isNaN(expiresAt.getTime()))) {
-            alert("Please enter valid date/time values.");
-            return;
+            alert("Enter valid start and expiry date/time values."); return;
         }
         if (expiresAt && expiresAt <= startsAt) {
-            alert("The expiry time must be later than the start time.");
-            return;
+            alert("The expiry time must be later than the start time."); return;
         }
-        await updateTickerAnnouncement(announcement.id, {
-            starts_at: startsAt.toISOString(),
-            expires_at: expiresAt ? expiresAt.toISOString() : null
-        });
+        save.disabled = true; save.textContent = "Saving…";
+        try {
+            await updateTickerAnnouncement(announcement.id, {
+                title: cleanTitle, message: cleanMessage, status: status.value,
+                starts_at: startsAt.toISOString(), expires_at: expiresAt ? expiresAt.toISOString() : null
+            });
+        } catch (error) {
+            alert("Could not save announcement: " + error.message);
+        } finally {
+            save.disabled = false; save.textContent = "Save changes";
+        }
     });
+    const close = document.createElement("button");
+    close.type = "button"; close.textContent = "Close editor";
+    close.addEventListener("click", () => { editor.open = false; });
+    actions.append(save, close);
+    editor.append(grid, actions);
+    card.appendChild(editor);
 
-    card.appendChild(actions);
+    const quick = document.createElement("div");
+    quick.className = "ticker-inline-actions";
+    const toggle = document.createElement("button");
+    toggle.type = "button"; toggle.className = "primary";
+    toggle.textContent = announcement.status === "published" ? "Deactivate ticker" : "Activate ticker";
+    toggle.addEventListener("click", async () => {
+        const nextStatus = announcement.status === "published" ? "draft" : "published";
+        if (!window.confirm(nextStatus === "published"
+            ? "Activate this ticker announcement? Its schedule still controls when students see it."
+            : "Deactivate this ticker announcement? It will no longer appear on the homepage.")) return;
+        toggle.disabled = true;
+        try { await updateTickerAnnouncement(announcement.id, { status: nextStatus }); }
+        catch (error) { alert("Could not update ticker status: " + error.message); }
+        finally { toggle.disabled = false; }
+    });
+    quick.appendChild(toggle);
+    card.appendChild(quick);
 }
 
 async function loadTickerHistory() {
     historyContainer.innerHTML = '<p>Loading announcement history...</p>';
+    const countLabel = document.getElementById("tickerHistoryCount");
 
     const { data: announcements, error } = await db
         .from("public_announcements")
@@ -2706,22 +2792,37 @@ async function loadTickerHistory() {
 
     if (error) throw error;
 
-    if (!announcements || announcements.length === 0) {
-        historyContainer.innerHTML = '<div class="announcement-card"><h3>No Ticker Announcements Yet</h3><p>Homepage ticker announcements will appear here.</p></div>';
-        return 0;
+    const all = announcements || [];
+    const query = (document.getElementById("tickerHistorySearch")?.value || "").trim().toLowerCase();
+    const selectedStatus = document.getElementById("tickerHistoryFilter")?.value || "all";
+    const filtered = all.filter(item => {
+        const state = getTickerState(item);
+        const matchesStatus = selectedStatus === "all" || state === selectedStatus;
+        const haystack = (String(item.title || "") + " " + String(item.message || "")).toLowerCase();
+        return matchesStatus && (!query || haystack.includes(query));
+    });
+
+    if (countLabel) countLabel.textContent = "Showing " + filtered.length + " of " + all.length + " ticker announcement(s) · latest 100";
+    if (!filtered.length) {
+        historyContainer.innerHTML = '<div class="announcement-card"><h3>' +
+            (all.length ? "No Matching Ticker Announcements" : "No Ticker Announcements Yet") +
+            "</h3><p>" +
+            (all.length ? "Try a different search or status filter." : "Homepage ticker announcements will appear here.") +
+            "</p></div>";
+        return all.length;
     }
 
-    historyContainer.innerHTML = "";
-    announcements.forEach(announcement => {
+    historyContainer.replaceChildren();
+    filtered.forEach(announcement => {
         const card = makeHistoryCard(announcement.title, announcement.message);
-        addHistoryText(card, "small", "Status: " + getTickerState(announcement));
         addHistoryText(card, "small", "Created: " + formatAnnouncementDate(announcement.created_at));
         addHistoryText(card, "small", "Starts: " + formatAnnouncementDate(announcement.starts_at));
         addHistoryText(card, "small", "Expires: " + (announcement.expires_at ? formatAnnouncementDate(announcement.expires_at) : "No expiry"));
-               renderTickerActions(card, announcement);
+        addHistoryText(card, "small", "Last updated: " + formatAnnouncementDate(announcement.updated_at));
+        renderTickerActions(card, announcement);
         historyContainer.appendChild(card);
     });
-    return announcements.length;
+    return all.length;
 }
 
 async function loadNotificationHistory() {
@@ -2797,6 +2898,23 @@ function escapeHTML(value) {
         '"': "&quot;",
         "'": "&#039;"
     })[character]);
+}
+
+const tickerSearchInput = document.getElementById("tickerHistorySearch");
+const tickerStatusFilter = document.getElementById("tickerHistoryFilter");
+let tickerHistoryFilterTimer = null;
+if (tickerSearchInput) {
+    tickerSearchInput.addEventListener("input", () => {
+        if (tickerHistoryFilterTimer) clearTimeout(tickerHistoryFilterTimer);
+        tickerHistoryFilterTimer = setTimeout(() => loadTickerHistory().catch(error => {
+            console.error("Ticker history search failed:", error);
+        }), 180);
+    });
+}
+if (tickerStatusFilter) {
+    tickerStatusFilter.addEventListener("change", () => loadTickerHistory().catch(error => {
+        console.error("Ticker history filter failed:", error);
+    }));
 }
 
 async function refreshAnnouncementHistory() {
