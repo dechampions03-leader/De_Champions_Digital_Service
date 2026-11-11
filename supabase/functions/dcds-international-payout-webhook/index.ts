@@ -122,15 +122,14 @@ Deno.serve(async (req: Request) => {
       if (result.error) throw result.error;
     }
 
-    await db.from("dcds_international_payout_events").insert({
+    const { error: auditError } = await db.from("dcds_international_payout_events").insert({
       request_id: request.id,
       user_id: request.user_id,
       event_type: "provider_webhook_received",
       provider_event_key: "flutterwave-transfer:" + transferId + ":" + status,
       details: { provider_status: status, verified: true },
-    }).then(() => undefined).catch((error) => {
-      console.error("DCDS international payout webhook audit insert failed:", error?.message || "Unknown error");
     });
+    if (auditError && auditError.code !== "23505") throw auditError;
 
     return response(200);
   } catch (error) {
