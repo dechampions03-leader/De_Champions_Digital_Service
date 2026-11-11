@@ -152,19 +152,15 @@ where route_code in ('FLW_GH_GHS_BANK','FLW_KE_KES_BANK','FLW_MW_MWK_BANK',
                      'FLW_TZ_TZS_BANK','FLW_UG_UGX_BANK','FLW_CM_XAF_BANK',
                      'FLW_CI_XOF_BANK','FLW_SN_XOF_BANK','FLW_ZA_ZAR_BANK');
 
-create schema if not exists private;
-revoke all on schema private from public, anon, authenticated;
-grant usage on schema private to service_role;
-
 -- Atomic reservation of reward balances for an international payout.
-create or replace function private.dcds_create_international_payout_request(
+create or replace function public.dcds_internal_create_international_payout_request(
   p_user_id uuid,
   p_quote_id uuid,
   p_payout_account_id uuid
 ) returns jsonb
 language plpgsql
 security definer
-set search_path = public, private, pg_temp
+set search_path = public, pg_temp
 as $function$
 declare
   v_ambassador public.dcds_ambassadors%rowtype;
@@ -308,7 +304,7 @@ end;
 $function$;
 
 -- Idempotent state transitions; rewards are only released after verified failure/cancellation.
-create or replace function private.dcds_transition_international_payout(
+create or replace function public.dcds_internal_transition_international_payout(
   p_request_id uuid,
   p_new_status text,
   p_actor_user_id uuid default null,
@@ -318,7 +314,7 @@ create or replace function private.dcds_transition_international_payout(
 ) returns jsonb
 language plpgsql
 security definer
-set search_path = public, private, pg_temp
+set search_path = public, pg_temp
 as $function$
 declare
   v_request public.dcds_international_payout_requests%rowtype;
@@ -583,10 +579,10 @@ begin
 end;
 $function$;
 
-revoke all on function private.dcds_create_international_payout_request(uuid,uuid,uuid) from public, anon, authenticated;
-revoke all on function private.dcds_transition_international_payout(uuid,text,uuid,text,text,jsonb) from public, anon, authenticated;
-grant execute on function private.dcds_create_international_payout_request(uuid,uuid,uuid) to service_role;
-grant execute on function private.dcds_transition_international_payout(uuid,text,uuid,text,text,jsonb) to service_role;
+revoke all on function public.dcds_internal_create_international_payout_request(uuid,uuid,uuid) from public, anon, authenticated;
+revoke all on function public.dcds_internal_transition_international_payout(uuid,text,uuid,text,text,jsonb) from public, anon, authenticated;
+grant execute on function public.dcds_internal_create_international_payout_request(uuid,uuid,uuid) to service_role;
+grant execute on function public.dcds_internal_transition_international_payout(uuid,text,uuid,text,text,jsonb) to service_role;
 
 revoke all on function public.dcds_create_payout_request(uuid) from public, anon, authenticated;
 grant execute on function public.dcds_create_payout_request(uuid) to service_role;
