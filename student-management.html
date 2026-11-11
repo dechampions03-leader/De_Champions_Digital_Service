@@ -1196,7 +1196,7 @@ async function loadInternationalPayoutReadiness() {
       addAction("Suspend route","suspend",false);
       addAction("Disable route","disable",false);
     }else{
-      addAction("Enable verified route","enable",!(data.ready&&route.provider_approved&&route.sandbox_verified_at&&route.live_verified_at));
+      addAction("Enable verified route","enable",!(data.ready&&data.readiness?.globalSwitchEnabled&&route.provider_approved&&route.sandbox_verified_at&&route.live_verified_at));
     }
     card.appendChild(actions);
     routesRoot.appendChild(card);
