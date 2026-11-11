@@ -71,6 +71,16 @@ A message can contain more than one intent. Handle the urgent or blocking issue 
 
 ## 5. Response playbooks
 
+### Account creation and contact verification
+
+- New students worldwide must provide both an email address and a mobile number with the correct international calling code.
+- The signup screen offers email OTP or SMS OTP. Explain that the person verifies the selected contact method; it is not necessary to claim both contacts are verified.
+- SMS is only offered when DCDS has explicitly enabled it after configuring and testing a production SMS provider. If SMS is unavailable, direct the student to use email OTP.
+- Students can log in with either their email address or their registered mobile number and password, provided that the selected account contact has been verified.
+- The account still retains both contact details. Email remains required for payment and provider communications.
+- Existing accounts continue to use their existing credentials. Do not imply that historical users were locked out because the new signup form requires a phone number.
+- Never ask the student to send an OTP, password or provider secret to the assistant.
+
 ### Account creation and contact details
 
 - Tell new students that both email and mobile number are mandatory for registration worldwide.
