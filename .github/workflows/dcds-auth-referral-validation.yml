@@ -1,0 +1,120 @@
+name: DCDS signup OTP and referral validation
+
+on:
+  push:
+    branches:
+      - fix/dcds-six-box-otp-global-referrals
+    paths:
+      - "index.html"
+      - "student-dashboard.html"
+      - "ai-config/DCDS-MASTER-BRAIN.md"
+      - "ai-config/DCDS-CONVERSATION-INTELLIGENCE.md"
+      - ".github/workflows/dcds-auth-referral-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "index.html"
+      - "student-dashboard.html"
+      - "ai-config/DCDS-MASTER-BRAIN.md"
+      - "ai-config/DCDS-CONVERSATION-INTELLIGENCE.md"
+      - ".github/workflows/dcds-auth-referral-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-auth-referrals:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Check inline JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import subprocess
+          import tempfile
+
+          files = ["index.html", "student-dashboard.html"]
+          checked = 0
+          with tempfile.TemporaryDirectory() as tmp:
+              for html_file in files:
+                  content = pathlib.Path(html_file).read_text(encoding="utf-8")
+                  for attrs, script in re.findall(
+                      r"<script\\b([^>]*)>([\\s\\S]*?)</script\\s*>",
+                      content,
+                      flags=re.IGNORECASE,
+                  ):
+                      if re.search(r"\\bsrc\\s*=", attrs, flags=re.IGNORECASE):
+                          continue
+                      if re.search(r'type\\s*=\\s*["\\'](?:application/[^"\\']+|importmap)["\\']', attrs, flags=re.IGNORECASE):
+                          continue
+                      if not script.strip():
+                          continue
+                      path = pathlib.Path(tmp) / f"{pathlib.Path(html_file).stem}-{checked}.js"
+                      path.write_text(script, encoding="utf-8")
+                      subprocess.run(["node", "--check", str(path)], check=True)
+                      checked += 1
+          if checked == 0:
+              raise SystemExit("No inline JavaScript blocks were checked.")
+          print(f"JavaScript syntax passed for {checked} inline script blocks.")
+          PY
+
+      - name: Validate six-box OTP and signup referral contract
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          page = Path("index.html").read_text(encoding="utf-8")
+          dashboard = Path("student-dashboard.html").read_text(encoding="utf-8")
+          brain = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
+          conversation = Path("ai-config/DCDS-CONVERSATION-INTELLIGENCE.md").read_text(encoding="utf-8")
+
+          required_page = [
+              "grid-template-columns:repeat(6,minmax(0,1fr))",
+              "Array.from({length:6}",
+              "class=\"dcds-otp-digit\"",
+              "function setupOtpInputs()",
+              "function getOtpToken()",
+              "getOtpToken().trim()",
+              "supabaseClient.auth.verifyOtp({email:pendingVerificationEmail,token,type:'signup'})",
+              "id=\"studentReferralCode\"",
+              "signupMetadata.dcds_referral_code=referralCode",
+              "window.sessionStorage.setItem('dcds_referral_code', incoming)",
+          ]
+          for item in required_page:
+              if item not in page:
+                  raise SystemExit(f"index.html missing required auth/referral behavior: {item}")
+          if 'id="otpCode"' in page or "$('otpCode')" in page:
+              raise SystemExit("Legacy single-box OTP input reference remains.")
+
+          required_dashboard = [
+              "learners anywhere in the world",
+              "Referral registration and attribution are worldwide",
+              "rewards are credited in NGN",
+              "Nigerian bank accounts only",
+              "International payout methods are not yet enabled",
+          ]
+          for item in required_dashboard:
+              if item not in dashboard:
+                  raise SystemExit(f"student dashboard missing referral disclosure: {item}")
+
+          for item in ["Referral registration and attribution are **worldwide**", "₦1,000 NGN", "Current payout processing supports verified **Nigerian bank accounts only**"]:
+              if item not in brain:
+                  raise SystemExit(f"Master Brain missing global referral rule: {item}")
+          for item in ["Referral links and referral-code attribution work worldwide", "Current withdrawals support verified Nigerian bank accounts only"]:
+              if item not in conversation:
+                  raise SystemExit(f"Conversation Intelligence missing payout safeguard: {item}")
+
+          print("Six-box OTP, signup referral-code capture, global referral disclosures, and NGN-only payout safeguards passed.")
+          PY
