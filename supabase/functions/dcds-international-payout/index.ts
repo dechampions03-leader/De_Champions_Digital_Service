@@ -33,14 +33,15 @@ function getReadiness() {
   return { checks, ready: Object.values(checks).every(Boolean) };
 }
 
-function decodeHex(value: string): Uint8Array {
+function decodeHex(value: string): ArrayBuffer {
   const normalized = String(value || "").replace(/\s/g, "");
   if (!/^[0-9a-fA-F]{64}$/.test(normalized)) {
     throw new Error("Payout encryption key is not configured.");
   }
-  const bytes = new Uint8Array(32);
+  const buffer = new ArrayBuffer(32);
+  const bytes = new Uint8Array(buffer);
   for (let i = 0; i < 32; i++) bytes[i] = parseInt(normalized.slice(i * 2, i * 2 + 2), 16);
-  return bytes;
+  return buffer;
 }
 
 async function encryptPayload(value: Record<string, string>, keyHex: string): Promise<string> {
