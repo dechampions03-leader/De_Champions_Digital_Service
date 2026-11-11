@@ -68,7 +68,7 @@ function getReadiness() {
     serverIpWhitelisted: envTrue("DCDS_FLW_IP_WHITELISTED"),
     destinationWalletsFunded: envTrue("DCDS_FLW_DESTINATION_WALLETS_FUNDED"),
     sandboxVerified: envTrue("DCDS_INTL_SANDBOX_VERIFIED"),
-    webhookConfigured: Boolean(Deno.env.get("FLW_SECRET_HASH")),
+    webhookConfigured: Boolean(Deno.env.get("FLW_WEBHOOK_HASH") || Deno.env.get("FLW_SECRET_HASH")),
     globalSwitchEnabled: envTrue("DCDS_INTL_PAYOUTS_ENABLED"),
   };
   // The global payout switch is a separate, final kill switch. Exclude it from
