@@ -21,6 +21,7 @@ function envTrue(name) {
 function getReadiness() {
   const checks = {
     providerSecretConfigured: Boolean(Deno.env.get("FLW_SECRET_KEY")),
+    payoutEncryptionKeyConfigured: Boolean(Deno.env.get("DCDS_PAYOUT_ENCRYPTION_KEY")),
     merchantKycApproved: envTrue("DCDS_FLW_INTL_KYC_APPROVED"),
     transfersApiEnabled: envTrue("DCDS_FLW_TRANSFER_API_ENABLED"),
     serverIpWhitelisted: envTrue("DCDS_FLW_IP_WHITELISTED"),
