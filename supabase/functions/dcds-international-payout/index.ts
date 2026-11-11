@@ -401,8 +401,31 @@ Deno.serve(async (req: Request) => {
       const bankPayload = await flutterwave("/banks/" + encodeURIComponent(country) + "?include_provider_type=1");
       const data = Array.isArray(bankPayload.data) ? bankPayload.data : [];
       const banks = data.filter((bank: any) => bank && (bank.code || bank.id))
-        .map((bank: any) => ({ code: String(bank.code || bank.id), name: String(bank.name || bank.bank_name || "Bank") }));
+        .map((bank: any) => ({
+          code: String(bank.code || bank.id),
+          id: String(bank.id || bank.code),
+          name: String(bank.name || bank.bank_name || "Bank"),
+          has_branches: bank.has_branches === true || String(bank.has_branches).toLowerCase() === "true",
+        }));
       return respond({ success: true, banks, country_code: country });
+    }
+
+    if (action === "branches") {
+      if (!readiness.ready) return respond({ success: false, error: "International withdrawals are not enabled yet." }, 423);
+      const route = await getRoute(db, String(body.route_id || ""));
+      if (route.route_config?.branch_lookup_supported !== true) {
+        return respond({ success: false, error: "Branch lookup is not configured for this payout corridor." }, 400);
+      }
+      const bankId = String(body.bank_id || "");
+      if (!/^\\d{1,12}$/.test(bankId)) return respond({ success: false, error: "Select a valid bank before loading branches." }, 400);
+      const branchPayload = await flutterwave("/banks/" + encodeURIComponent(bankId) + "/branches");
+      const branchData = Array.isArray(branchPayload.data) ? branchPayload.data : [];
+      const branches = branchData.filter((item: any) => item && (item.code || item.branch_code || item.BranchCode))
+        .map((item: any) => ({
+          code: String(item.code || item.branch_code || item.BranchCode),
+          name: String(item.name || item.branch_name || item.BranchName || item.code || item.branch_code || item.BranchCode),
+        }));
+      return respond({ success: true, branches });
     }
 
     if (action === "save_account") {
@@ -722,6 +745,23 @@ Deno.serve(async (req: Request) => {
           narration: "DCDS Global Ambassador Reward",
         };
         if (details.account_bank) transferBody.account_bank = details.account_bank;
+        if (details.destination_branch_code) transferBody.destination_branch_code = details.destination_branch_code;
+        if (route.route_config?.branch_lookup_supported === true && details.account_bank) {
+          const country = route.country_code;
+          const bankPayload = await flutterwave("/banks/" + encodeURIComponent(country) + "?include_provider_type=1");
+          const bankRows = Array.isArray(bankPayload.data) ? bankPayload.data as JsonObject[] : [];
+          const selectedBank = bankRows.find((bank: JsonObject) => String(bank.code || bank.id) === String(details.account_bank));
+          if (!selectedBank) return respond({ success: false, error: "The saved destination bank is no longer listed by Flutterwave. Ask the ambassador to update the beneficiary details." }, 409);
+          const hasBranches = selectedBank.has_branches === true || String(selectedBank.has_branches).toLowerCase() === "true";
+          if (hasBranches) {
+            if (!details.destination_branch_code) return respond({ success: false, error: "This bank requires a destination branch. Update the beneficiary with a branch selected from Flutterwave's current branch list." }, 409);
+            const branchPayload = await flutterwave("/banks/" + encodeURIComponent(String(selectedBank.id || selectedBank.code)) + "/branches");
+            const branchRows = Array.isArray(branchPayload.data) ? branchPayload.data as JsonObject[] : [];
+            const branchExists = branchRows.some((item: JsonObject) =>
+              String(item.code || item.branch_code || item.BranchCode) === String(details.destination_branch_code));
+            if (!branchExists) return respond({ success: false, error: "The saved destination branch is no longer listed by Flutterwave. Ask the ambassador to update the beneficiary details." }, 409);
+          }
+        }
         if (Object.keys(meta).length) transferBody.meta = [meta];
 
         const { data: lock, error: lockError } = await db.rpc("dcds_internal_transition_international_payout", {
