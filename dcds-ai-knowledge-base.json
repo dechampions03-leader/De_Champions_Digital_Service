@@ -151,6 +151,7 @@
     "tagline": "SHARE KNOWLEDGE • BUILD FUTURES • EARN REWARDS",
     "commission_ngn": 1000,
     "minimum_withdrawal_ngn": 5000,
+    "current_withdrawal_status": "Verified Nigerian bank accounts only. International beneficiary setup, FX quotes, withdrawal requests and transfers are not enabled until provider KYC, transfer API access, server IP whitelisting, destination-currency wallet funding, sandbox verification and live route verification are complete.",
     "activation": "A student must first successfully purchase at least one DCDS course before referral sharing is activated.",
     "qualification": "Registration alone earns no reward. A reward is earned only after a referred student makes a qualifying, verified course purchase.",
     "repeat_purchase": "One reward per distinct course per referred student. Buying a different course may qualify for another reward; repurchasing the same course does not.",
