@@ -1204,7 +1204,7 @@ async function loadCourse() {
         currentUser = user;
 
         // A Supabase session is not enough until the student's email is verified.
-        if (!user.email_confirmed_at) {
+        if (!user.email_confirmed_at && !user.phone_confirmed_at) {
             const returnTo = window.location.pathname + window.location.search;
             const verifyUrl = "index.html?verify=required&next=" + encodeURIComponent(returnTo);
             window.location.replace(verifyUrl);
