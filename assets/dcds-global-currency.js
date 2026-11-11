@@ -164,23 +164,15 @@
     if (!select) return;
     const cached = (() => { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || "null"); } catch (_) { return null; } })();
     if (cached?.rates?.NGN === 1) rates = cached.rates;
-    const supported = typeof Intl.supportedValuesOf === "function"
-      ? Intl.supportedValuesOf("currency").filter(code => rates[code] || FALLBACK_CURRENCIES.includes(code))
-      : FALLBACK_CURRENCIES;
-    populateSelector(select, [...supported, ...FALLBACK_CURRENCIES]);
+    // Only offer checkout currencies for which DCDS has a configured regional
+    // price, plus NGN. Visitors can still see indicative conversions in the
+    // catalogue for other currencies through the existing estimates fallback.
+    populateSelector(select, ["USD","GBP","EUR"]);
     await Promise.all([loadRates(), loadRegionalPrices()]);
-    const allCodes = Object.keys(rates).filter(code => /^[A-Z]{3}$/.test(code));
-    const options = new Set([...select.options].map(option => option.value));
-    allCodes.forEach(code => {
-      if (options.has(code)) return;
-      const option = document.createElement("option");
-      option.value = code;
-      option.textContent = code + " — " + currencyName(code);
-      select.appendChild(option);
-    });
     const wanted = savedCurrency() || preferredCurrency();
     const current = select.value;
-    const finalChoice = rates[wanted] ? wanted : (rates[current] ? current : "NGN");
+    const allowed = ["NGN","USD","GBP","EUR"];
+    const finalChoice = allowed.includes(wanted) ? wanted : (allowed.includes(current) ? current : "NGN");
     currency = finalChoice;
     select.value = finalChoice;
     updatePrices();
