@@ -68,7 +68,6 @@ function getReadiness() {
     serverIpWhitelisted: envTrue("DCDS_FLW_IP_WHITELISTED"),
     destinationWalletsFunded: envTrue("DCDS_FLW_DESTINATION_WALLETS_FUNDED"),
     sandboxVerified: envTrue("DCDS_INTL_SANDBOX_VERIFIED"),
-    liveTransferVerified: envTrue("DCDS_INTL_LIVE_TRANSFER_VERIFIED"),
     webhookConfigured: Boolean(Deno.env.get("FLW_SECRET_HASH")),
     globalSwitchEnabled: envTrue("DCDS_INTL_PAYOUTS_ENABLED"),
   };
