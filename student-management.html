@@ -240,6 +240,17 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
     <div class="stat"><span>Email-confirmed accounts</span><strong id="statConfirmed">—</strong></div>
   </section>
 
+  <section class="panel" id="regionalPricingPanel" style="margin:18px 0">
+    <h3>🌍 Global Course Pricing</h3>
+    <p class="intro">Set approved regional selling prices per course. NGN remains the existing default. Only active regional prices are offered to students; checkout validates the amount on the server.</p>
+    <div class="toolbar" style="margin:12px 0">
+      <button class="btn gold" id="refreshRegionalPrices" type="button">↻ Refresh Prices</button>
+      <span class="detail-notice" id="regionalPriceStatus">Loading regional prices…</span>
+    </div>
+    <div id="regionalPriceList" class="student-list"><div class="empty">Loading regional prices…</div></div>
+    <p class="detail-notice">Initial rollout supports NGN plus administrator-managed USD, GBP and EUR prices. Additional settlement currencies will be enabled only after Flutterwave account support is confirmed.</p>
+  </section>
+
   <section class="panel" id="payoutManagementPanel" style="margin:18px 0">
     <h3>💸 DCDS Ambassador Payout Management</h3>
     <p class="intro">Review withdrawal requests, inspect verified beneficiary details and track payout events. Full bank-account numbers are never displayed here.</p>
@@ -454,6 +465,59 @@ function makeActionButton(label, onClick, className="btn gold") {
 }
 let activeStudentId = null;
 let courseCatalog = [];
+
+async function loadRegionalPrices() {
+  const root=$("regionalPriceList"),status=$("regionalPriceStatus");
+  root.replaceChildren(make("div","empty","Loading regional prices…"));
+  const [{data:courses,error:courseError},{data:prices,error:priceError}]=await Promise.all([
+    db.from("courses").select("id,title,price,currency").order("title"),
+    db.from("course_regional_prices").select("id,course_id,currency,amount,is_active").order("currency")
+  ]);
+  if(courseError||priceError) throw courseError||priceError;
+  root.replaceChildren();
+  const currencies=["USD","GBP","EUR"];
+  courses.forEach(course=>{
+    const card=make("article","student-card");
+    card.appendChild(make("strong","student-name",course.title));
+    card.appendChild(make("p","student-finance","Base price: "+new Intl.NumberFormat("en-NG",{style:"currency",currency:course.currency||"NGN",maximumFractionDigits:0}).format(Number(course.price))));
+    const grid=make("div","detail-grid");
+    currencies.forEach(currency=>{
+      const existing=prices.find(p=>p.course_id===course.id&&p.currency===currency);
+      const block=make("div","detail-block");
+      const amount=make("input","");
+      amount.type="number";amount.min="0.01";amount.step="0.01";amount.inputMode="decimal";
+      amount.value=existing?String(existing.amount):"";
+      amount.placeholder="Set "+currency+" price";
+      amount.setAttribute("aria-label",course.title+" "+currency+" price");
+      const label=make("label","",currency+" amount");
+      label.appendChild(amount);
+      const activeWrap=make("label","detail-notice");
+      const active=make("input","");
+      active.type="checkbox";active.checked=!!existing?.is_active;
+      active.style.marginRight="7px";
+      activeWrap.append(active,"Active for checkout");
+      const save=make("button","btn gold","Save "+currency);
+      save.type="button";
+      save.addEventListener("click",async()=>{
+        const value=Number(amount.value);
+        if(!Number.isFinite(value)||value<=0){alert("Enter a valid "+currency+" price greater than zero.");return;}
+        save.disabled=true;save.textContent="Saving…";
+        try{
+          const payload={course_id:course.id,currency,amount:value,is_active:active.checked,updated_at:new Date().toISOString()};
+          const result=await db.from("course_regional_prices").upsert(payload,{onConflict:"course_id,currency"});
+          if(result.error)throw result.error;
+          status.textContent=course.title+" · "+currency+" price saved.";
+          await loadRegionalPrices();
+        }catch(error){alert("Could not save price: "+error.message);}
+        finally{save.disabled=false;save.textContent="Save "+currency;}
+      });
+      block.append(label,activeWrap,save);
+      grid.appendChild(block);
+    });
+    card.appendChild(grid);root.appendChild(card);
+  });
+  status.textContent=courses.length+" courses · "+prices.length+" regional price records · USD / GBP / EUR";
+}
 
 async function loadCourseCatalog() {
   const {data,error}=await db.from("courses").select("id,title,price,currency").order("title");
@@ -699,9 +763,11 @@ async function initialize() {
   $("adminApp").hidden = false;
   $("status").textContent = "Administrator access verified.";
   try { await loadCourseCatalog(); } catch(e) { console.error("Course catalog load failed:",e); }
+  try { await loadRegionalPrices(); } catch(e) { console.error("Regional pricing load failed:",e); $("regionalPriceStatus").textContent="Regional pricing table is not deployed yet."; }
   await loadStudents();
   await loadAdminPayouts();
 }
+$("refreshRegionalPrices").addEventListener("click",()=>loadRegionalPrices().catch(e=>alert("Could not load regional prices: "+e.message)));
 $("searchButton").addEventListener("click",()=>{searchTerm=$("searchInput").value.trim();page=0;loadStudents();});
 $("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter")$("searchButton").click();});
 $("refreshButton").addEventListener("click",loadStudents);
