@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#160B27">
-<meta name="description" content="DCDS Student Management System">
-<title>DCDS Student Management System</title>
+<meta name="description" content="DCDS administrator dashboard for student records, payments, regional pricing and ambassador payouts">
+<title>DCDS Admin Operations Centre</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 :root{
@@ -137,6 +137,44 @@ header { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50
 .payout-meta{display:flex;gap:8px 16px;flex-wrap:wrap;color:var(--muted-text);font-size:12px;margin-top:9px}
 .payout-warning{padding:11px 13px;border:1px solid #e4c16d;border-radius:10px;background:#fffaf0;color:#654b13;font-size:13px;line-height:1.5;margin:12px 0}
 .payout-events{margin-top:16px}
+
+/* DCDS payment operations workspace */
+.payment-ops-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:15px 0}
+.payment-ops-stats .stat{padding:15px}
+.payment-ops-stats .stat strong{font-size:25px}
+.payment-ops-toolbar,.payment-manual-toolbar{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin:12px 0}
+.payment-manual-toolbar{padding:15px;border:1px solid var(--border-color);border-radius:13px;background:#fbf9ff}
+.payment-field{display:grid;gap:6px;flex:1 1 190px;min-width:0}
+.payment-field label{font-size:12px;font-weight:700;color:var(--muted-text)}
+.payment-field input,.payment-field select,.payment-field textarea{width:100%;min-width:0;border:1px solid var(--border-color);border-radius:9px;padding:11px;background:#fff;color:#28183a;font:inherit}
+.payment-field textarea{min-height:70px;resize:vertical}
+.payment-ops-toolbar #paymentSearchInput{flex:2 1 240px;min-width:0;border:1px solid var(--border-color);border-radius:9px;padding:11px;background:#fff;color:#28183a}
+.payment-ops-toolbar #paymentSearchInput:focus{border-color:#7628d8;outline-color:#7628d8}
+.payment-order-list{display:grid;gap:13px}
+.payment-order-card{border:1px solid var(--border-color);border-radius:15px;background:#fff;padding:16px;box-shadow:0 7px 22px rgba(50,16,95,.04)}
+.payment-order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.payment-order-title{font-weight:800;font-size:17px;color:#451078;overflow-wrap:anywhere}
+.payment-badges{display:flex;gap:6px;flex-wrap:wrap}
+.payment-badge{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:800;background:#fff1c9;color:#76551a}
+.payment-badge.success{background:#e7f8ed;color:#17683a}
+.payment-badge.failed{background:#fff0f0;color:#a61b1b}
+.payment-order-meta{display:flex;gap:8px 16px;flex-wrap:wrap;color:var(--muted-text);font-size:12px;line-height:1.55;margin:11px 0}
+.payment-order-ref{font-family:monospace;overflow-wrap:anywhere;background:#f8f4fc;border-radius:8px;padding:8px;color:#451078;font-size:11px}
+.payment-order-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:13px}
+.payment-subpanel{border:1px solid var(--border-color);border-radius:11px;padding:13px;min-width:0;background:#fbf9ff}
+.payment-subpanel h4{margin:0 0 10px;color:#451078;font-size:14px}
+.payment-subpanel .payment-field{margin:9px 0}
+.payment-subpanel .payment-field input,.payment-subpanel .payment-field select,.payment-subpanel .payment-field textarea{padding:9px;font-size:13px}
+.payment-confirm-line{display:flex;align-items:flex-start;gap:8px;color:#654b13;font-size:12px;line-height:1.5;margin:10px 0}
+.payment-confirm-line input{margin-top:2px;flex:0 0 auto}
+.payment-danger-note{color:#a61b1b;background:#fff0f0;border-radius:8px;padding:10px;font-size:12px;line-height:1.5;margin:9px 0}
+.payment-event-list{overflow-x:auto;margin-top:12px}
+.payment-event-list table{min-width:580px}
+.payment-order-card .btn{font-size:12px}
+.payment-order-card input[type=file]{font-size:12px}
+.payment-muted{font-size:12px;color:var(--muted-text);line-height:1.5}
+@media(max-width:850px){.payment-ops-stats{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.payment-order-grid{grid-template-columns:1fr}.payment-ops-stats{grid-template-columns:repeat(2,minmax(0,1fr))}.payment-order-card{padding:13px}.payment-manual-toolbar{padding:12px}}
 </style>
 <style id="dcds-scroll-motion">
 /* DCDS scroll motion: additive effects only; existing layout and colours remain untouched. */
@@ -220,7 +258,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
   <header>
     <div class="brand">
       <h1>DE CHAMPIONS<span>DIGITAL SERVICE</span></h1>
-      <p>STUDENT MANAGEMENT SYSTEM</p>
+      <p>ADMIN OPERATIONS CENTRE</p>
     </div>
     <div class="top-actions">
       <a class="btn ghost" href="admin-notifications.html">Admin Centre</a>
@@ -230,14 +268,59 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
   </header>
 
   <section id="welcome">
-    <h2>Student Management 👩🏽‍🎓</h2>
-    <p>One secure workspace for student profiles, enrolments, payments, learning progress, certificates, support history and administrator notes. Existing student accounts and financial records remain in their original tables.</p>
+    <h2>DCDS Admin Dashboard 👩🏽‍💼</h2>
+    <p>One secure workspace for payment approvals, receipt verification, regional course prices, ambassador payouts, student profiles, enrolments, learning progress, certificates and administrator notes.</p>
   </section>
 
   <section class="stats" aria-label="Student overview">
     <div class="stat"><span>Students in this view</span><strong id="statStudents">—</strong></div>
     <div class="stat"><span>Students with enrolments</span><strong id="statEnrolled">—</strong></div>
     <div class="stat"><span>Email-confirmed accounts</span><strong id="statConfirmed">—</strong></div>
+  </section>
+
+  <section class="panel" id="paymentOperationsPanel" style="margin:18px 0">
+    <h3>💳 Payment &amp; Order Operations Centre</h3>
+    <p class="intro">Review pending checkouts, inspect payment receipts, verify Flutterwave transactions, record direct bank transfers, and keep a traceable approval history. An uploaded receipt alone never marks an order as paid.</p>
+    <div class="payment-ops-stats" aria-label="Payment overview">
+      <div class="stat"><span>Pending orders</span><strong id="paymentStatPending">—</strong></div>
+      <div class="stat"><span>Receipts awaiting review</span><strong id="paymentStatReceipts">—</strong></div>
+      <div class="stat"><span>Successful today</span><strong id="paymentStatSuccessful">—</strong></div>
+      <div class="stat"><span>Failed / cancelled</span><strong id="paymentStatFailed">—</strong></div>
+    </div>
+
+    <div class="payment-manual-toolbar">
+      <div style="flex:1 1 100%">
+        <strong style="color:#451078">＋ Record a direct bank-transfer order</strong>
+        <p class="payment-muted">Use this only when a student has paid directly into the DCDS bank account and sent you a receipt. This creates a separate NGN manual order without creating a Flutterwave checkout link. Existing pending Flutterwave orders must be reconciled first.</p>
+      </div>
+      <div class="payment-field"><label for="manualStudentEmail">Student email address</label><input id="manualStudentEmail" type="email" placeholder="student@example.com" autocomplete="email"></div>
+      <div class="payment-field"><label for="manualCourseSelect">Course</label><select id="manualCourseSelect"><option value="">Loading courses…</option></select></div>
+      <button class="btn gold" id="createManualOrderButton" type="button">Create manual order</button>
+    </div>
+
+    <div class="payment-ops-toolbar">
+      <input id="paymentSearchInput" type="search" placeholder="Search student, course, order or bank reference…" aria-label="Search payment orders">
+      <select id="paymentStatusFilter" aria-label="Filter payment status" class="detail-field" style="min-width:155px;border:1px solid var(--border-color);border-radius:9px;padding:11px;background:#fff;color:#28183a">
+        <option value="pending">Pending orders</option>
+        <option value="receipt_submitted">Receipts submitted</option>
+        <option value="successful">Successful</option>
+        <option value="failed">Failed / cancelled</option>
+        <option value="all">All orders</option>
+      </select>
+      <select id="paymentCurrencyFilter" aria-label="Filter currency" style="min-width:110px;border:1px solid var(--border-color);border-radius:9px;padding:11px;background:#fff;color:#28183a">
+        <option value="">All currencies</option><option value="NGN">NGN</option><option value="USD">USD</option><option value="GBP">GBP</option><option value="EUR">EUR</option>
+      </select>
+      <button class="btn ghost" id="searchPaymentsButton" type="button">Search</button>
+      <button class="btn gold" id="refreshPaymentsButton" type="button">↻ Refresh</button>
+    </div>
+    <div id="paymentOpsStatus" class="detail-notice" role="status" aria-live="polite">Loading payment operations…</div>
+    <div id="adminPaymentOrdersList" class="payment-order-list" aria-live="polite"><div class="empty">Loading orders…</div></div>
+
+    <div class="payment-events-section" style="margin-top:22px">
+      <h3>🧾 Recent payment review activity</h3>
+      <div id="adminPaymentEvents" class="payment-event-list"><div class="empty">Loading payment audit events…</div></div>
+    </div>
+    <p class="detail-notice">Security: receipt files are stored privately and visible only to authorized DCDS administrators. Direct bank-transfer approvals require a matching order amount/reference and your confirmation that cleared funds appear in the DCDS account. Flutterwave checkouts must be verified against Flutterwave itself.</p>
   </section>
 
   <section class="panel" id="regionalPricingPanel" style="margin:18px 0">
@@ -503,7 +586,8 @@ async function loadRegionalPrices() {
         if(!Number.isFinite(value)||value<=0){alert("Enter a valid "+currency+" price greater than zero.");return;}
         save.disabled=true;save.textContent="Saving…";
         try{
-          const payload={course_id:course.id,currency,amount:value,is_active:active.checked,updated_at:new Date().toISOString()};
+          const {data:{user:adminUser}}=await db.auth.getUser();
+          const payload={course_id:course.id,currency,amount:value,is_active:active.checked,updated_at:new Date().toISOString(),updated_by:adminUser?.id||null};
           const result=await db.from("course_regional_prices").upsert(payload,{onConflict:"course_id,currency"});
           if(result.error)throw result.error;
           status.textContent=course.title+" · "+currency+" price saved.";
@@ -667,6 +751,273 @@ function renderStudentRecord(record) {
   root.appendChild(grid);
 }
 
+
+// DCDS Payment & Order Operations Centre
+const PAYMENT_RECEIPT_BUCKET="dcds-payment-receipts";
+let paymentOrders=[];
+let paymentStatusFilter="pending";
+let paymentCurrencyFilter="";
+let paymentSearchTerm="";
+
+function formatPaymentMoney(amount,currency){
+  try{return new Intl.NumberFormat(undefined,{style:"currency",currency:currency||"NGN",maximumFractionDigits:2}).format(Number(amount)||0);}
+  catch(_){return (currency||"NGN")+" "+(Number(amount)||0).toFixed(2);}
+}
+async function paymentFunctionError(error,data){
+  if(data?.error)return String(data.error);
+  const context=error?.context;
+  if(context&&typeof context.clone==="function"){
+    try{const body=await context.clone().json();if(body?.error)return String(body.error);}catch(_){}
+  }
+  return error?.message||"The payment action could not be completed.";
+}
+function paymentActionButton(label,handler,className="btn gold"){
+  const b=make("button",className,label);b.type="button";b.addEventListener("click",handler);return b;
+}
+async function loadAdminPaymentOps(){
+  const root=$("adminPaymentOrdersList"),meta=$("paymentOpsStatus");
+  if(!root)return;
+  root.replaceChildren(make("div","empty","Loading payment orders…"));
+  meta.textContent="Checking orders and payment review records…";
+  const [ordersResult,statsResult,eventsResult]=await Promise.all([
+    db.rpc("admin_list_payment_orders",{
+      p_status:paymentStatusFilter,
+      p_search:paymentSearchTerm||null,
+      p_currency:paymentCurrencyFilter||null,
+      p_limit:120
+    }),
+    db.rpc("admin_payment_dashboard_stats"),
+    db.rpc("admin_list_payment_review_events",{p_limit:30})
+  ]);
+  if(ordersResult.error)throw ordersResult.error;
+  if(statsResult.error)throw statsResult.error;
+  if(eventsResult.error)throw eventsResult.error;
+  const stats=statsResult.data||{};
+  $("paymentStatPending").textContent=String(stats.pending_orders??0);
+  $("paymentStatReceipts").textContent=String(stats.submitted_receipts??0);
+  $("paymentStatSuccessful").textContent=String(stats.successful_today??0);
+  $("paymentStatFailed").textContent=String(stats.failed_orders??0);
+  paymentOrders=ordersResult.data||[];
+  renderAdminPaymentOrders(paymentOrders);
+  renderAdminPaymentEvents(eventsResult.data||[]);
+  meta.textContent=paymentOrders.length+" order(s) in this view · "+(stats.manual_pending||0)+" manual bank-transfer order(s) pending";
+}
+function renderAdminPaymentOrders(rows){
+  const root=$("adminPaymentOrdersList");root.replaceChildren();
+  if(!rows.length){root.appendChild(make("div","empty","No payment orders match these filters."));return;}
+  rows.forEach(order=>{
+    const card=make("article","payment-order-card");
+    const head=make("div","payment-order-head");
+    const left=make("div");
+    left.appendChild(make("div","payment-order-title",order.course_title||"DCDS Course"));
+    left.appendChild(make("div","student-email",(order.student_name||"Student")+" · "+(order.student_email||"No email")));
+    const badges=make("div","payment-badges");
+    const orderBadge=make("span","payment-badge"+(order.order_status==="successful"?" success":(["failed","cancelled"].includes(order.order_status)?" failed":"")),String(order.order_status||"").toUpperCase());
+    badges.appendChild(orderBadge);
+    if(order.review_status)badges.appendChild(make("span","payment-badge"+(order.review_status==="approved"?" success":order.review_status==="rejected"?" failed":""),"RECEIPT "+String(order.review_status).toUpperCase()));
+    badges.appendChild(make("span","payment-badge",order.order_source==="manual_bank_transfer"?"DIRECT BANK TRANSFER":"FLUTTERWAVE CHECKOUT"));
+    head.append(left,badges);card.appendChild(head);
+    const info=make("div","payment-order-meta");
+    [
+      "Amount: "+formatPaymentMoney(order.amount,order.currency),
+      "Placed: "+formatDate(order.order_created_at),
+      "Channel: "+(order.payment_channel||"Not recorded"),
+      "Receipt reference: "+(order.bank_reference||"—")
+    ].forEach(v=>info.appendChild(make("span","",v)));
+    card.appendChild(info);
+    card.appendChild(make("div","payment-order-ref","Order reference: "+String(order.tx_ref||"—")));
+    if(order.admin_note)card.appendChild(make("p","payment-muted","Admin note: "+order.admin_note));
+    if(order.receipt_path){
+      const view=paymentActionButton("View private receipt",async()=>{
+        view.disabled=true;view.textContent="Preparing secure link…";
+        try{
+          const {data,error}=await db.storage.from(PAYMENT_RECEIPT_BUCKET).createSignedUrl(order.receipt_path,90);
+          if(error)throw error;
+          const a=document.createElement("a");a.href=data.signedUrl;a.target="_blank";a.rel="noopener noreferrer";a.click();
+        }catch(e){alert("Could not open receipt: "+e.message);}
+        finally{view.disabled=false;view.textContent="View private receipt";}
+      },"btn ghost");
+      card.appendChild(view);
+    }
+
+    if(order.order_status==="pending"){
+      const grid=make("div","payment-order-grid");
+      const evidence=make("section","payment-subpanel");
+      evidence.appendChild(make("h4", "",order.review_status==="submitted"?"Update payment receipt evidence":"Attach payment receipt"));
+      evidence.appendChild(make("p","payment-muted",order.order_source==="manual_bank_transfer"
+        ?"Upload the receipt the student sent you, enter its bank reference and amount, then confirm the bank credit before approving."
+        :"You can attach the student's receipt for the audit file. This order can only be approved after Flutterwave verifies its transaction ID."));
+      const fileInput=document.createElement("input");fileInput.type="file";fileInput.accept="image/jpeg,image/png,image/webp,application/pdf";
+      fileInput.setAttribute("aria-label","Payment receipt image or PDF");
+      const fileField=make("div","payment-field");fileField.append(make("label","","Receipt file (JPG, PNG, WEBP or PDF; max 8 MB)"),fileInput);
+      const bankRef=document.createElement("input");bankRef.type="text";bankRef.placeholder="Bank transaction / receipt reference";bankRef.maxLength=120;bankRef.value=order.bank_reference||"";
+      const refField=make("div","payment-field");refField.append(make("label","","Bank / receipt reference"),bankRef);
+      const amount=document.createElement("input");amount.type="number";amount.min="0.01";amount.step="0.01";amount.value=String(order.claimed_amount??order.amount);
+      const amountField=make("div","payment-field");amountField.append(make("label","","Amount shown on receipt"),amount);
+      const currency=document.createElement("select");["NGN","USD","GBP","EUR"].forEach(code=>{const o=document.createElement("option");o.value=code;o.textContent=code;currency.appendChild(o);});currency.value=order.claimed_currency||order.currency;
+      const currencyField=make("div","payment-field");currencyField.append(make("label","","Currency on receipt"),currency);
+      const channel=document.createElement("select");
+      [["bank_transfer","Bank transfer"],["flutterwave","Flutterwave"],["mobile_money","Mobile money"],["pos","POS"],["other","Other"]].forEach(([v,l])=>{const o=document.createElement("option");o.value=v;o.textContent=l;channel.appendChild(o);});
+      channel.value=order.payment_channel||"bank_transfer";
+      const channelField=make("div","payment-field");channelField.append(make("label","","Payment channel"),channel);
+      const payer=document.createElement("input");payer.type="text";payer.placeholder="Payer name (optional)";payer.value=order.payer_name||"";
+      const payerField=make("div","payment-field");payerField.append(make("label","","Payer name"),payer);
+      const note=document.createElement("textarea");note.placeholder="Admin note (optional)";note.value=order.admin_note||"";
+      const noteField=make("div","payment-field");noteField.append(make("label","","Admin note"),note);
+      evidence.append(fileField,refField,amountField,currencyField,channelField,payerField,noteField);
+      const saveEvidence=paymentActionButton(order.review_status==="submitted"?"Update receipt record":"Save receipt evidence",async()=>{
+        const file=fileInput.files?.[0];
+        if(!file){alert("Choose the receipt image or PDF first.");return;}
+        if(!["image/jpeg","image/png","image/webp","application/pdf"].includes(file.type)){alert("Only JPG, PNG, WEBP and PDF receipts are supported.");return;}
+        if(file.size>8*1024*1024){alert("The receipt must be 8 MB or smaller.");return;}
+        if(!bankRef.value.trim()||Number(amount.value)<=0){alert("Enter the receipt reference and a valid amount.");return;}
+        saveEvidence.disabled=true;saveEvidence.textContent="Uploading receipt…";
+        let path="";
+        try{
+          const ext=(file.name.split(".").pop()||"bin").toLowerCase().replace(/[^a-z0-9]/g,"")||"bin";
+          path=order.order_id+"/"+crypto.randomUUID()+"."+ext;
+          const {error:uploadError}=await db.storage.from(PAYMENT_RECEIPT_BUCKET).upload(path,file,{contentType:file.type,upsert:false});
+          if(uploadError)throw uploadError;
+          const {data,error}=await db.rpc("admin_record_payment_receipt",{
+            p_order_id:order.order_id,p_receipt_path:path,p_bank_reference:bankRef.value.trim(),
+            p_payment_channel:channel.value,p_payer_name:payer.value.trim()||null,
+            p_claimed_amount:Number(amount.value),p_claimed_currency:currency.value,p_admin_note:note.value.trim()||null
+          });
+          if(error)throw error;
+          if(order.receipt_path&&order.receipt_path!==path){
+            const {error:removeError}=await db.storage.from(PAYMENT_RECEIPT_BUCKET).remove([order.receipt_path]);
+            if(removeError)console.warn("Previous private receipt could not be cleaned up:",removeError.message);
+          }
+          alert("Receipt evidence saved securely. It has not been approved or marked as paid.");
+          await loadAdminPaymentOps();
+        }catch(error){
+          if(path)await db.storage.from(PAYMENT_RECEIPT_BUCKET).remove([path]).catch(()=>{});
+          alert("Could not save receipt: "+error.message);
+        }finally{saveEvidence.disabled=false;saveEvidence.textContent="Save receipt evidence";}
+      });
+      evidence.appendChild(make("div","detail-actions"));evidence.lastChild.appendChild(saveEvidence);
+      grid.appendChild(evidence);
+
+      const actions=make("section","payment-subpanel");
+      if(order.order_source==="flutterwave_checkout"){
+        actions.appendChild(make("h4","","Verify with Flutterwave"));
+        actions.appendChild(make("p","payment-muted","Paste the numeric transaction ID from a receipt, or let DCDS look up this order directly using its unique Flutterwave reference. Amount, currency, status and reference are checked with Flutterwave before approval."));
+        const tx=document.createElement("input");tx.type="text";tx.inputMode="numeric";tx.placeholder="Flutterwave transaction ID (optional for lookup)";tx.maxLength=30;
+        const txField=make("div","payment-field");txField.append(make("label","","Flutterwave transaction ID"),tx);actions.appendChild(txField);
+        const verify=paymentActionButton("Verify supplied transaction ID",async()=>{
+          const id=tx.value.trim();if(!/^[0-9]{1,30}$/.test(id)){alert("Enter the numeric Flutterwave transaction ID, or use the order-reference lookup below.");return;}
+          if(!window.confirm("Verify this transaction directly with Flutterwave and approve only if every order detail matches?"))return;
+          verify.disabled=true;verify.textContent="Verifying with Flutterwave…";
+          try{
+            const {data,error}=await db.functions.invoke("admin-verify-flutterwave-payment",{body:{order_id:order.order_id,transaction_id:id}});
+            if(error||!data?.success)throw new Error(await paymentFunctionError(error,data));
+            alert(data.message||"Flutterwave payment verified and student enrolled.");
+            await Promise.all([loadAdminPaymentOps(),loadStudents()]);
+          }catch(error){alert(error.message||"Payment verification failed.");}
+          finally{verify.disabled=false;verify.textContent="Verify supplied transaction ID";}
+        });
+        const lookup=paymentActionButton("Find payment by DCDS order reference",async()=>{
+          if(!window.confirm("Ask Flutterwave to look up this exact DCDS order reference? DCDS will approve only a successful transaction with a matching amount and currency."))return;
+          lookup.disabled=true;lookup.textContent="Looking up order reference…";
+          try{
+            const {data,error}=await db.functions.invoke("admin-verify-flutterwave-payment",{body:{order_id:order.order_id}});
+            if(error||!data?.success)throw new Error(await paymentFunctionError(error,data));
+            alert(data.message||"Flutterwave payment verified and student enrolled.");
+            await Promise.all([loadAdminPaymentOps(),loadStudents()]);
+          }catch(error){alert(error.message||"No successful payment was found. The order has not been approved.");}
+          finally{lookup.disabled=false;lookup.textContent="Find payment by DCDS order reference";}
+        },"btn ghost");
+        actions.append(verify,lookup);
+      }else{
+        actions.appendChild(make("h4","","Direct bank-transfer approval"));
+        actions.appendChild(make("p","payment-muted","This order has no Flutterwave checkout link. Manual approval is allowed only after the funds have cleared into the DCDS account and the receipt amount and currency match exactly."));
+        if(order.review_status==="submitted"&&order.review_id){
+          const confirmWrap=make("label","payment-confirm-line");
+          const confirm=document.createElement("input");confirm.type="checkbox";
+          confirmWrap.append(confirm,document.createTextNode("I have checked the DCDS bank account statement and independently confirmed these funds have cleared."));
+          actions.appendChild(confirmWrap);
+          const approvalNote=document.createElement("textarea");approvalNote.placeholder="Approval note (optional)";approvalNote.className="payment-field";
+          const approve=paymentActionButton("Approve & enrol student",async()=>{
+            if(!confirm.checked){alert("Confirm that cleared funds are visible in the DCDS account.");return;}
+            if(!window.confirm("Approve this direct bank transfer? This records a successful payment and grants course access."))return;
+            approve.disabled=true;approve.textContent="Approving…";
+            try{
+              const {data,error}=await db.rpc("admin_approve_manual_bank_payment",{
+                p_review_id:order.review_id,p_admin_note:approvalNote.value.trim()||null,p_confirm_bank_credit:true
+              });
+              if(error||!data?.success)throw error||new Error("Payment approval was not confirmed.");
+              alert("Payment approved. The order is successful and the student has been enrolled.");
+              await Promise.all([loadAdminPaymentOps(),loadStudents()]);
+            }catch(error){alert(error.message||"Could not approve manual bank transfer.");}
+            finally{approve.disabled=false;approve.textContent="Approve & enrol student";}
+          });
+          actions.append(approvalNote,approve);
+        }else{
+          actions.appendChild(make("p","payment-muted","Save receipt evidence first. The approval controls will appear after the receipt is recorded."));
+        }
+      }
+      if(order.review_status==="submitted"&&order.review_id){
+        const reason=document.createElement("input");reason.type="text";reason.placeholder="Reason for rejecting this receipt";
+        const reject=paymentActionButton("Reject receipt",async()=>{
+          if(reason.value.trim().length<3){alert("Enter a short reason for rejecting the receipt.");return;}
+          if(!window.confirm("Reject this receipt? A manual bank-transfer order will be closed as failed."))return;
+          reject.disabled=true;
+          try{
+            const {data,error}=await db.rpc("admin_reject_payment_receipt",{p_review_id:order.review_id,p_admin_note:reason.value.trim()});
+            if(error||!data?.success)throw error||new Error("Receipt rejection was not confirmed.");
+            alert("Receipt rejected and audit record saved.");await loadAdminPaymentOps();
+          }catch(e){alert(e.message||"Could not reject receipt.");}
+          finally{reject.disabled=false;}
+        },"danger-btn");
+        const rejection=make("div","payment-field");rejection.append(make("label","","Rejection reason"),reason,reject);actions.appendChild(rejection);
+      }
+      grid.appendChild(actions);
+      card.appendChild(grid);
+    }
+    root.appendChild(card);
+  });
+}
+function renderAdminPaymentEvents(events){
+  const root=$("adminPaymentEvents");root.replaceChildren();
+  if(!events.length){root.appendChild(make("div","empty","No payment review events have been recorded yet."));return;}
+  const table=make("table","detail-table");
+  const thead=document.createElement("thead"),head=document.createElement("tr");
+  ["Activity","Administrator","Order","Details","Date"].forEach(v=>head.appendChild(make("th","",v)));
+  thead.appendChild(head);
+  const body=document.createElement("tbody");
+  events.forEach(event=>{
+    const row=document.createElement("tr");
+    [
+      event.event_type,event.actor_email||"DCDS admin",String(event.order_id||"").slice(0,8)+"…",
+      JSON.stringify(event.details||{}),formatDate(event.created_at)
+    ].forEach(v=>row.appendChild(make("td","",v)));
+    body.appendChild(row);
+  });
+  table.append(thead,body);root.appendChild(table);
+}
+async function createManualBankOrder(){
+  const email=$("manualStudentEmail").value.trim(),courseId=$("manualCourseSelect").value;
+  if(!email||!courseId){alert("Enter the student's registered email and select a course.");return;}
+  const button=$("createManualOrderButton");button.disabled=true;button.textContent="Creating manual order…";
+  try{
+    const {data,error}=await db.rpc("admin_create_manual_bank_order",{p_student_email:email,p_course_id:courseId});
+    if(error)throw error;
+    alert("Manual bank-transfer order created for "+data.student_email+" · "+data.course_title+" · "+formatPaymentMoney(data.amount,data.currency)+". It has no Flutterwave checkout link. Upload the receipt in the new order card.");
+    $("manualStudentEmail").value="";
+    await loadAdminPaymentOps();
+  }catch(error){alert("Could not create manual bank-transfer order: "+error.message);}
+  finally{button.disabled=false;button.textContent="Create manual order";}
+}
+function populateManualCourseOptions(){
+  const select=$("manualCourseSelect");select.replaceChildren();
+  const placeholder=document.createElement("option");placeholder.value="";placeholder.textContent="Choose a course";select.appendChild(placeholder);
+  courseCatalog.forEach(course=>{
+    const option=document.createElement("option");option.value=course.id;
+    option.textContent=course.title+" · "+formatPaymentMoney(course.price,course.currency||"NGN");
+    select.appendChild(option);
+  });
+}
+
 async function loadAdminPayouts() {
   const list=$("adminPayoutList"),eventsRoot=$("adminPayoutEvents"),notice=$("payoutSafetyNotice"),meta=$("payoutAdminMeta");
   list.replaceChildren(make("div","empty","Loading payout requests…"));
@@ -762,12 +1113,19 @@ async function initialize() {
   }
   $("adminApp").hidden = false;
   $("status").textContent = "Administrator access verified.";
-  try { await loadCourseCatalog(); } catch(e) { console.error("Course catalog load failed:",e); }
+  try { await loadCourseCatalog(); populateManualCourseOptions(); } catch(e) { console.error("Course catalog load failed:",e); }
+  try { await loadAdminPaymentOps(); } catch(e) { console.error("Payment operations load failed:",e); $("paymentOpsStatus").textContent="Payment operations could not be loaded."; }
   try { await loadRegionalPrices(); } catch(e) { console.error("Regional pricing load failed:",e); $("regionalPriceStatus").textContent="Regional pricing table is not deployed yet."; }
   await loadStudents();
   await loadAdminPayouts();
 }
 $("refreshRegionalPrices").addEventListener("click",()=>loadRegionalPrices().catch(e=>alert("Could not load regional prices: "+e.message)));
+$("refreshPaymentsButton").addEventListener("click",()=>loadAdminPaymentOps().catch(e=>alert("Could not load payment orders: "+e.message)));
+$("searchPaymentsButton").addEventListener("click",()=>{paymentSearchTerm=$("paymentSearchInput").value.trim();paymentStatusFilter=$("paymentStatusFilter").value;paymentCurrencyFilter=$("paymentCurrencyFilter").value;loadAdminPaymentOps().catch(e=>alert("Payment search failed: "+e.message));});
+$("paymentSearchInput").addEventListener("keydown",e=>{if(e.key==="Enter")$("searchPaymentsButton").click();});
+$("paymentStatusFilter").addEventListener("change",()=>{paymentStatusFilter=$("paymentStatusFilter").value;loadAdminPaymentOps().catch(e=>console.error(e));});
+$("paymentCurrencyFilter").addEventListener("change",()=>{paymentCurrencyFilter=$("paymentCurrencyFilter").value;loadAdminPaymentOps().catch(e=>console.error(e));});
+$("createManualOrderButton").addEventListener("click",createManualBankOrder);
 $("searchButton").addEventListener("click",()=>{searchTerm=$("searchInput").value.trim();page=0;loadStudents();});
 $("searchInput").addEventListener("keydown",event=>{if(event.key==="Enter")$("searchButton").click();});
 $("refreshButton").addEventListener("click",loadStudents);
