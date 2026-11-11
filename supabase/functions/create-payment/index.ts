@@ -53,17 +53,22 @@ Deno.serve(async (req: Request) => {
 
     const body = await req.json();
     const courseId = body?.course_id;
+    const requestedCurrency = typeof body?.currency === "string" ? body.currency.trim().toUpperCase() : "NGN";
     if (typeof courseId !== "string" || !/^[0-9a-f-]{36}$/i.test(courseId)) {
       return respond({ success: false, error: "A valid course is required." }, 400);
     }
+    if (!/^[A-Z]{3}$/.test(requestedCurrency)) {
+      return respond({ success: false, error: "Please select a valid payment currency." }, 400);
+    }
 
-    // The database function locks the student/course pair, checks verified email,
-    // blocks existing enrolments and open checkouts, and creates the order atomically.
+    // The database selects the authoritative active regional price and creates
+    // the order atomically. The browser never supplies a payment amount.
     const txRef = `DCDS-${crypto.randomUUID()}`;
     const { data: checkout, error: checkoutError } = await supabase.rpc("dcds_create_checkout_order", {
       p_user_id: user.id,
       p_course_id: courseId,
       p_tx_ref: txRef,
+      p_currency: requestedCurrency,
     });
 
     if (checkoutError || !checkout) {
