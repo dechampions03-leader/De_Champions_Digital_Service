@@ -77,7 +77,7 @@ jobs:
             ['webhook validates Flutterwave v3 verif-hash', /verif-hash/.test(webhook) && /constantTimeEqual\(secretHash, signature\)/.test(webhook)],
             ['USD/GBP/EUR beneficiary fields follow provider-specific configuration', /beneficiary_country_value/.test(routeSql) && /street_name/.test(routeSql) && /swift_code/.test(routeSql)],
             ['fixed beneficiary country and account-type rules are validated server-side', /fixedBeneficiaryCountry/.test(fn) && /checking","depository/.test(fn) && /first_name/.test(fn)],
-            ['already-paid reward refunds create recovery liabilities, not unpaid reversals', /if v_reward.status='paid' then[\\s\\S]*recovery_due/.test(reversalSql)],
+            ['already-paid reward refunds create recovery liabilities, not unpaid reversals', reversalSql.includes("if v_reward.status='paid' then") && reversalSql.includes("'recovery_due'")],
             ['admin can review and reconcile international requests', /internationalPayoutRequests/.test(admin) && /reconcile/.test(admin)],
             ['student can create quotes and view international history', /create_quote/.test(student) && /internationalPayoutHistory/.test(student)]
           ];
