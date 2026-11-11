@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://dechampions03-leader.github.io",
@@ -7,14 +7,14 @@ const corsHeaders = {
   "Vary": "Origin",
 };
 
-function respond(data, status = 200) {
+function respond(data: unknown, status: number = 200): Response {
   return new Response(JSON.stringify(data), {
     status,
     headers: { ...corsHeaders, "Content-Type": "application/json", "Cache-Control": "no-store" },
   });
 }
 
-function envTrue(name) {
+function envTrue(name: string): boolean {
   return Deno.env.get(name) === "true";
 }
 
@@ -33,7 +33,7 @@ function getReadiness() {
   return { checks, ready: Object.values(checks).every(Boolean) };
 }
 
-function decodeHex(value) {
+function decodeHex(value: string): Uint8Array {
   const normalized = String(value || "").replace(/\s/g, "");
   if (!/^[0-9a-fA-F]{64}$/.test(normalized)) {
     throw new Error("Payout encryption key is not configured.");
@@ -43,7 +43,7 @@ function decodeHex(value) {
   return bytes;
 }
 
-async function encryptPayload(value, keyHex) {
+async function encryptPayload(value: Record<string, string>, keyHex: string): Promise<string> {
   const key = await crypto.subtle.importKey("raw", decodeHex(keyHex), { name: "AES-GCM" }, false, ["encrypt"]);
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const plaintext = new TextEncoder().encode(JSON.stringify(value));
@@ -54,20 +54,20 @@ async function encryptPayload(value, keyHex) {
   return btoa(String.fromCharCode(...combined));
 }
 
-function sanitizeFieldValue(value) {
+function sanitizeFieldValue(value: unknown): string | null {
   if (typeof value !== "string" && typeof value !== "number") return null;
   const clean = String(value).trim();
   if (!clean || clean.length > 300) return null;
   return clean;
 }
 
-async function isAdmin(db, userId) {
+async function isAdmin(db: SupabaseClient, userId: string): Promise<boolean> {
   const { data, error } = await db.from("dcds_admins").select("user_id").eq("user_id", userId).maybeSingle();
   if (error) throw error;
   return Boolean(data);
 }
 
-Deno.serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return respond({ success: false, error: "Method not allowed." }, 405);
 
@@ -92,7 +92,7 @@ Deno.serve(async (req) => {
     const { data: authData, error: authError } = await db.auth.getUser(authorization.slice(7));
     if (authError || !authData.user) return respond({ success: false, error: "Your login session is invalid." }, 401);
 
-    let body;
+    let body: Record<string, unknown>;
     try { body = await req.json(); } catch { return respond({ success: false, error: "Invalid request." }, 400); }
     const action = String(body.action || "");
     const readiness = getReadiness();
@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
       const required = Array.isArray(route.required_fields) ? route.required_fields : [];
       const optional = Array.isArray(route.optional_fields) ? route.optional_fields : [];
       const allowed = new Set(["beneficiary_name", ...required, ...optional]);
-      const data = {};
+      const data: Record<string, string> = {};
       for (const [key, value] of Object.entries(source)) {
         if (!allowed.has(key)) return respond({ success: false, error: "An unsupported beneficiary field was supplied." }, 400);
         const clean = sanitizeFieldValue(value);
@@ -205,8 +205,8 @@ Deno.serve(async (req) => {
     }
 
     return respond({ success: false, error: "Unsupported action." }, 400);
-  } catch (error) {
-    console.error("DCDS international payout service error:", error?.message || "Unknown error");
+  } catch (error: unknown) {
+    console.error("DCDS international payout service error:", error instanceof Error ? error.message : "Unknown error");
     return respond({ success: false, error: "The international payout request could not be completed. Please try again later." }, 500);
   }
 });
