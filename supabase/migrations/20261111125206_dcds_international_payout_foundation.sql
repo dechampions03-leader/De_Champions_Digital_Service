@@ -121,7 +121,7 @@ values
   ('FLW_CM_XAF_BANK','CM','Cameroon','XAF','bank_account','disabled',
    array['beneficiary_name','account_number','account_bank']::text[],
    'Route remains disabled pending merchant and sandbox verification.'),
-  ('FLW_CI_XOF_BANK','CI',E'Co\u0302te d’Ivoire','XOF','bank_account','disabled',
+  ('FLW_CI_XOF_BANK','CI','Cote d''Ivoire','XOF','bank_account','disabled',
    array['beneficiary_name','account_number','account_bank']::text[],
    'Route remains disabled pending merchant and sandbox verification.'),
   ('FLW_SN_XOF_BANK','SN','Senegal','XOF','bank_account','disabled',
