@@ -7,6 +7,7 @@ on:
     paths:
       - "index.html"
       - "student-dashboard.html"
+      - "student-management.html"
       - "learn.html"
       - "general-course.html"
       - "supabase/functions/dcds-create-account/**"
@@ -20,6 +21,7 @@ on:
     paths:
       - "index.html"
       - "student-dashboard.html"
+      - "student-management.html"
       - "learn.html"
       - "general-course.html"
       - "supabase/functions/dcds-create-account/**"
@@ -52,7 +54,7 @@ jobs:
           import subprocess
           import tempfile
 
-          files = ["index.html", "student-dashboard.html", "learn.html", "general-course.html"]
+          files = ["index.html", "student-dashboard.html", "student-management.html", "learn.html", "general-course.html"]
           checked = 0
           with tempfile.TemporaryDirectory() as tmp:
               for html_file in files:
@@ -100,11 +102,15 @@ jobs:
               "getOtpToken().trim()",
               "function showSignupOtpScreen(method,recipient,message)",
               "supabaseClient.auth.verifyOtp(credentials)",
-              "name=\\\"dcdsVerificationMethod\\\"",
-              "value=\\\"email\\\"",
-              "value=\\\"sms\\\"",
+              "name=\"dcdsVerificationMethod\"",
+              "value=\"email\"",
+              "value=\"sms\"",
               "create_phone_signup",
               "hasDcdsVerifiedContact(user)",
+              "dcds_signup_verification_method:'email'",
+              "supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}})",
+              "supabaseClient.auth.signInWithPassword(credentials)",
+              "pendingVerificationMethod==='sms'",
               "id=\"studentReferralCode\"",
               "signupMetadata.dcds_referral_code=referralCode",
               "id=\"studentPhone\"",
@@ -127,6 +133,8 @@ jobs:
               raise SystemExit("Signup mobile registry must be private and unique.")
           if r"^\+[1-9][0-9]{7,14}$" not in signup_migration:
               raise SystemExit("Signup migration is missing E.164 phone validation.")
+          if "DCDS_SMS_OTP_PROVIDER_READY" not in phone_signup_function or "DCDS_SMS_OTP_PROVIDER_READY" not in Path("ai-config/DCDS-AUTH-VERIFICATION-OPERATIONS.md").read_text(encoding="utf-8"):
+              raise SystemExit("SMS signup is missing its independent provider-readiness gate.")
           if "phone_otp_enabled" not in dual_migration or "'false'::jsonb" not in dual_migration:
               raise SystemExit("SMS verification must remain disabled until its provider is configured.")
           if "dcds_internal_take_signup_attempt" not in dual_migration or "enable row level security" not in dual_migration.lower():
