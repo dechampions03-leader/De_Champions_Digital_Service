@@ -56,7 +56,7 @@ The NGN reward ledger remains the source of funds. Partial allocations are recor
 The international function is fail-closed. Set each value only after the named condition has been verified in the DCDS Flutterwave account:
 
 - `FLW_SECRET_KEY` — Flutterwave secret key (server-side only).
-- `FLW_SECRET_HASH` — the webhook secret hash set in Flutterwave.
+- `FLW_WEBHOOK_HASH` — the existing V3 webhook secret hash already used by the customer-payment webhook. The combined endpoint reuses this same value for payment and international transfer events. `FLW_SECRET_HASH` remains a supported fallback alias, but a second Flutterwave webhook URL or separate secret is not required.
 - `DCDS_PAYOUT_ENCRYPTION_KEY` — the existing 32-byte hexadecimal AES key used by the payout encryption workflow.
 - `DCDS_FLW_INTL_KYC_APPROVED=true` — Flutterwave confirms international transfer approval for the DCDS merchant.
 - `DCDS_FLW_TRANSFER_API_ENABLED=true` — transfer API is activated on the DCDS merchant account.
