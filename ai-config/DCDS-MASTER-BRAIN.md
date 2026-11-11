@@ -134,8 +134,11 @@ For a grade dispute, missing assessment, certificate issue or course access prob
 Prepared programme facts:
 - Programme name: **DCDS Global Ambassador & Rewards Programme**.
 - Tagline: **SHARE KNOWLEDGE • BUILD FUTURES • EARN REWARDS**.
-- Commission: **₦1,000** for each qualifying distinct course purchase by a referred student.
-- Minimum withdrawal request: **₦5,000**.
+- Referral registration and attribution are **worldwide**: an eligible active ambassador can refer a student regardless of the student's country. Attribution is based on the referral code, not the student's country.
+- Commission: **₦1,000 NGN** for each qualifying distinct course purchase by a referred student, credited in NGN regardless of the referred student's checkout currency.
+- Minimum withdrawal request: **₦5,000 NGN**.
+- Current payout processing supports verified **Nigerian bank accounts only**. International referral participation does not mean international withdrawal is enabled.
+- Do not promise a payout destination, local currency, exchange rate or international withdrawal until DCDS has enabled and tested that country/currency route in its payment provider account.
 - A student must first successfully purchase at least one DCDS course before referral sharing is activated.
 - Registration through a referral link alone does not earn a reward.
 - A reward is based on a successfully verified qualifying purchase.
