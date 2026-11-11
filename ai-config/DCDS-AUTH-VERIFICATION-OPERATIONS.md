@@ -24,6 +24,18 @@ Existing students can continue to sign in with their existing email/password. Th
 - The signup flow is rate-limited by SHA-256 fingerprints of email, phone and (when available) IP. The private table does not store raw IP addresses or contact details.
 - A failed SMS send rolls back the newly created Auth user; DCDS does not leave an account that cannot complete the selected SMS verification route.
 
+## Recommended production provider setup
+
+Supabase hosted Auth supports Twilio, MessageBird and Vonage (TextLocal is also documented as community-supported). Twilio is the recommended first option for this DCDS rollout, subject to its country coverage, sender availability and pricing for the countries DCDS serves.
+
+For Twilio:
+1. Prepare an approved, billed Twilio account.
+2. Create a Messaging Service and attach an SMS-capable sender.
+3. Confirm the destination countries are allowed in Twilio SMS Geo Permissions and that the sender can deliver there.
+4. In Supabase **Authentication → Sign In / Providers → Phone**, enable Phone authentication and select/configure Twilio.
+5. Enter the Account SID, Auth Token and Messaging Service SID only in Supabase's secure provider settings. Never commit them or send them in chat.
+6. Keep the six-digit OTP, Supabase OTP rate limits and CAPTCHA protections enabled. SMS delivery can incur provider charges.
+
 ## Enable SMS only after provider setup
 
 1. In Supabase Dashboard, open **Authentication → Sign In / Providers → Phone**.
@@ -53,3 +65,13 @@ To disable SMS immediately, set the database flag back to `false` and remove/dis
 - DCDS private-page access, course access, General Course access and checkout accept either timestamp, while requiring the account to retain a valid email for payment-provider communication.
 - Login accepts either the account email or registered phone number with the same password.
 - Do not mark the unused contact method verified or claim both contacts are confirmed when only one OTP was completed.
+
+
+## Global signup verification state — 11 November 2026
+
+- The signup form already provides a two-choice selector: email OTP or mobile SMS OTP.
+- Email OTP is available now.
+- SMS is intentionally disabled until Supabase Auth has a production SMS provider configured and a controlled real-phone delivery-and-verification test passes.
+- The server checks both `public.dcds_auth_settings.phone_otp_enabled` and the Edge Function secret `DCDS_SMS_OTP_PROVIDER_READY=true`. Keep both disabled until that test is complete.
+- SMS signup uses the deployed `dcds-create-account` Edge Function, a server-side Auth Admin create, rate limiting and rollback if the SMS send fails.
+- A student must always provide both email and mobile number, but only the selected verification contact is confirmed by that OTP step.
