@@ -275,7 +275,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
   <section class="stats" aria-label="Student overview">
     <div class="stat"><span>Students in this view</span><strong id="statStudents">—</strong></div>
     <div class="stat"><span>Students with enrolments</span><strong id="statEnrolled">—</strong></div>
-    <div class="stat"><span>Email-confirmed accounts</span><strong id="statConfirmed">—</strong></div>
+    <div class="stat"><span>Accounts with a verified contact</span><strong id="statConfirmed">—</strong></div>
   </section>
 
   <section class="panel" id="paymentOperationsPanel" style="margin:18px 0">
@@ -442,12 +442,13 @@ function renderStudents() {
     identity.append(make("div","student-name",student.full_name || "DCDS Student"));
     identity.append(make("div","student-email",student.email || "No email address"));
     const verification = make("span",student.email_confirmed_at ? "pill" : "pill pending",
-      student.email_confirmed_at ? "EMAIL CONFIRMED" : "EMAIL NOT CONFIRMED");
+      student.email_confirmed_at ? "CONTACT VERIFIED" : "NO VERIFIED CONTACT");
     head.append(identity,verification);
     const meta = make("div","student-meta");
     meta.append(
       make("span","",`Account created: ${formatDate(student.account_created_at)}`),
       make("span","",`Last sign-in: ${formatDate(student.last_sign_in_at)}`),
+      make("span","",`Mobile: ${student.phone || "Not recorded"}`),
       make("span","",`Enrolments: ${student.enrollment_count || 0}`)
     );
         const details = document.createElement("details");
@@ -669,7 +670,7 @@ function renderStudentRecord(record) {
     }catch(e){alert("Account update failed: "+e.message);}
   },isSuspended?"btn gold":"danger-btn"));
   profile.appendChild(profileActions);
-  profile.appendChild(make("p","detail-notice",`Created: ${formatDate(student.created_at)} · Last sign-in: ${formatDate(student.last_sign_in_at)} · Email confirmed: ${student.email_confirmed_at?"Yes":"No"} · ${isSuspended?"Account suspended":"Account active"}`));
+  profile.appendChild(make("p","detail-notice",`Created: ${formatDate(student.created_at)} · Last sign-in: ${formatDate(student.last_sign_in_at)} · Email verified: ${record.student.email_confirmed_at?"Yes":"No"} · Mobile verified: ${record.student.phone_confirmed_at?"Yes":"No"} · ${isSuspended?"Account suspended":"Account active"}`));
     grid.appendChild(profile);
 
   // Course enrolments and management
