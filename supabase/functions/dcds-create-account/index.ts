@@ -101,7 +101,8 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: "Unsupported account action." }, 400);
     }
 
-    // Both the DB feature flag and this server-only readiness secret must be set after the SMS provider is actually configured.\n    if (!smsEnabled) {
+    // Both the DB feature flag and this server-only readiness secret must be set after the SMS provider is actually configured.
+    if (!smsEnabled) {
       return respond({
         success: false,
         code: "PHONE_OTP_NOT_CONFIGURED",
