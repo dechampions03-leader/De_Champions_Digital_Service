@@ -252,10 +252,158 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
  }
 }
 </style>
-</head>
+
+<style id="dcds-admin-command-navigation">
+  #adminApp{width:min(1500px,calc(100% - 36px));margin:0 auto;padding:18px 0 36px}
+  .admin-layout{display:grid;grid-template-columns:264px minmax(0,1fr);gap:22px;align-items:start}
+  .admin-workspace{min-width:0}
+  .admin-sidebar{position:sticky;top:18px;display:flex;flex-direction:column;min-width:0;height:calc(100vh - 36px);min-height:590px;overflow:auto;padding:18px 14px;border:1px solid rgba(255,255,255,.1);border-radius:23px;background:radial-gradient(circle at 8% 0%,rgba(151,92,215,.25),transparent 34%),linear-gradient(165deg,#2a1247 0%,#1b0c2e 60%,#140821 100%);box-shadow:0 18px 48px rgba(35,12,58,.2);color:#fff;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent}
+  .admin-sidebar-head{display:flex;align-items:center;gap:11px;padding:3px 4px 15px}
+  .admin-logo-mark{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,#b77bf0,#7131b5);box-shadow:0 8px 22px rgba(130,70,190,.32);font:900 15px Georgia,serif;letter-spacing:-1px;color:#fff}
+  .admin-brand-copy{display:grid;gap:3px;min-width:0;flex:1}
+  .admin-brand-copy strong{font:800 16px Georgia,serif;letter-spacing:.12em;color:#fff}
+  .admin-brand-copy span{font-size:9px;letter-spacing:.18em;color:#cbb6e4;font-weight:800}
+  .admin-sidebar-collapse{display:grid;place-items:center;flex:0 0 31px;width:31px;height:31px;padding:0;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:rgba(255,255,255,.07);color:#e8d8f8;cursor:pointer;transition:background .2s,transform .2s}
+  .admin-sidebar-collapse:hover{background:rgba(255,255,255,.15)}
+  .admin-sidebar-collapse svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  .admin-sidebar-divider{height:1px;background:linear-gradient(90deg,rgba(218,183,255,.28),rgba(218,183,255,0));margin:1px 2px 17px}
+  .admin-sidebar-label{margin:0 10px 9px;color:#a993c1;font-size:9px;font-weight:900;letter-spacing:.2em}
+  .admin-nav{display:grid;gap:7px}
+  .admin-nav-item{position:relative;display:flex;align-items:center;gap:11px;width:100%;min-height:59px;padding:9px 10px;border:1px solid transparent;border-radius:14px;background:transparent;color:#e7d9f4;text-align:left;cursor:pointer;transition:background .2s,border-color .2s,transform .2s,box-shadow .2s}
+  .admin-nav-item:hover{background:rgba(255,255,255,.075);border-color:rgba(255,255,255,.08);transform:translateX(2px)}
+  .admin-nav-item.active{background:linear-gradient(112deg,#8745c8 0%,#6426a4 100%);border-color:rgba(226,197,255,.2);color:#fff;box-shadow:0 9px 24px rgba(99,39,157,.34),inset 0 1px 0 rgba(255,255,255,.15)}
+  .admin-nav-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.075);color:#d9c4f0}
+  .admin-nav-item.active .admin-nav-icon{background:rgba(255,255,255,.17);color:#fff}
+  .admin-nav-icon svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+  .admin-nav-copy{display:grid;gap:4px;min-width:0;flex:1}
+  .admin-nav-copy strong{font-size:12px;font-weight:800;letter-spacing:.01em}
+  .admin-nav-copy small{font-size:10px;color:#bda9d2;white-space:nowrap}
+  .admin-nav-item.active .admin-nav-copy small{color:#eadcf8}
+  .admin-nav-indicator{width:5px;height:5px;border-radius:50%;background:transparent}
+  .admin-nav-item.active .admin-nav-indicator{background:#f2d58f;box-shadow:0 0 0 4px rgba(242,213,143,.12)}
+  .admin-sidebar-bottom{display:grid;gap:10px;margin-top:auto;padding-top:18px}
+  .admin-secure-state{display:flex;align-items:center;gap:8px;padding:10px 9px;color:#c9b8dc;font-size:10px}
+  .admin-secure-dot{width:7px;height:7px;border-radius:50%;background:#72d6a0;box-shadow:0 0 0 4px rgba(114,214,160,.12)}
+  .admin-communication-link{display:flex;align-items:center;gap:9px;min-height:43px;padding:10px;border:1px solid rgba(226,197,255,.16);border-radius:12px;background:rgba(255,255,255,.055);color:#f0e6fa;text-decoration:none;font-size:11px;font-weight:800;transition:background .2s,border-color .2s}
+  .admin-communication-link:hover{background:rgba(255,255,255,.12);border-color:rgba(226,197,255,.34)}
+  .admin-communication-icon{display:grid;place-items:center;width:23px;height:23px;border-radius:8px;background:rgba(211,174,248,.17);color:#f1d994}
+  .admin-communication-copy{flex:1}
+  .admin-communication-arrow{color:#c8b3df}
+  .admin-mobile-menu{display:none;align-items:center;gap:7px;padding:9px 11px;border:1px solid #e7d9f3;border-radius:11px;background:#f8f3ff;color:#4e1e7e;font-size:12px;font-weight:800;cursor:pointer}
+  .admin-mobile-menu svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  .admin-nav-backdrop{display:none}
+  .admin-view-stack{display:grid;gap:17px;min-width:0}
+  .admin-quick-access{margin:0 0 18px}
+  .admin-quick-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:17px}
+  .admin-quick-heading h3{margin:4px 0 5px}
+  .admin-quick-heading p{margin:0;color:#756783;font-size:12px;line-height:1.55}
+  .admin-eyebrow{font-size:9px;font-weight:900;letter-spacing:.18em;color:#8952bc}
+  .admin-quick-spark{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:12px;background:linear-gradient(145deg,#f3e7ff,#fff8e8);color:#8b55bc;font-size:18px}
+  .admin-shortcut-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+  .admin-shortcut{display:flex;align-items:center;gap:11px;min-width:0;padding:13px;border:1px solid #eadff5;border-radius:14px;background:linear-gradient(145deg,#fff 0%,#fcf9ff 100%);color:#32134f;text-align:left;cursor:pointer;box-shadow:0 5px 17px rgba(50,16,95,.035);transition:transform .2s,border-color .2s,box-shadow .2s}
+  .admin-shortcut:hover{transform:translateY(-2px);border-color:#c9a8e9;box-shadow:0 10px 24px rgba(91,42,137,.11)}
+  .admin-shortcut-icon{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border-radius:12px;background:linear-gradient(145deg,#f2e6ff,#e9d5ff);color:#6f31a7;font-size:19px;font-weight:900}
+  .admin-shortcut>span:nth-child(2){display:grid;gap:4px;min-width:0;flex:1}
+  .admin-shortcut strong{font-size:12px}
+  .admin-shortcut small{color:#837393;font-size:10px;line-height:1.4}
+  .admin-shortcut-arrow{color:#9462bd;font-size:16px}
+  .admin-workspace>header{margin-bottom:19px}
+  .admin-workspace footer{padding-bottom:8px}
+  .admin-view-stack>[data-admin-view-panel][hidden]{display:none!important}
+  .admin-nav-item:focus-visible,.admin-shortcut:focus-visible,.admin-sidebar-collapse:focus-visible,.admin-mobile-menu:focus-visible,.admin-communication-link:focus-visible{outline:3px solid #d5b6f3;outline-offset:3px}
+  .admin-layout.sidebar-collapsed{grid-template-columns:84px minmax(0,1fr)}
+  .admin-layout.sidebar-collapsed .admin-sidebar{padding-left:9px;padding-right:9px}
+  .admin-layout.sidebar-collapsed .admin-brand-copy,.admin-layout.sidebar-collapsed .admin-sidebar-label,.admin-layout.sidebar-collapsed .admin-nav-copy,.admin-layout.sidebar-collapsed .admin-sidebar-bottom-copy,.admin-layout.sidebar-collapsed .admin-communication-copy,.admin-layout.sidebar-collapsed .admin-communication-arrow{display:none}
+  .admin-layout.sidebar-collapsed .admin-sidebar-head{justify-content:center;flex-wrap:wrap}
+  .admin-layout.sidebar-collapsed .admin-sidebar-collapse{transform:rotate(180deg)}
+  .admin-layout.sidebar-collapsed .admin-nav-item{justify-content:center;padding:9px 5px}
+  .admin-layout.sidebar-collapsed .admin-nav-indicator{position:absolute;right:4px;top:9px}
+  .admin-layout.sidebar-collapsed .admin-secure-state{justify-content:center;padding:10px 0}
+  .admin-layout.sidebar-collapsed .admin-communication-link{justify-content:center;padding:9px}
+  @media(max-width:1050px){
+    .admin-layout{grid-template-columns:226px minmax(0,1fr);gap:15px}
+    .admin-sidebar{padding-left:11px;padding-right:11px}
+  }
+  @media(max-width:820px){
+    #adminApp{width:calc(100% - 22px);padding:12px 0 28px}
+    .admin-layout{display:block}
+    .admin-sidebar{position:fixed;z-index:1202;left:11px;top:11px;bottom:11px;width:min(300px,calc(100vw - 48px));height:auto;min-height:0;transform:translateX(calc(-100% - 24px));transition:transform .26s cubic-bezier(.2,.75,.25,1);box-shadow:0 24px 70px rgba(17,5,29,.36)}
+    .admin-layout.admin-nav-open .admin-sidebar{transform:translateX(0)}
+    .admin-nav-backdrop{position:fixed;inset:0;z-index:1201;display:block;visibility:hidden;opacity:0;pointer-events:none;border:0;background:rgba(20,8,34,.54);transition:opacity .2s,visibility .2s}
+    .admin-layout.admin-nav-open .admin-nav-backdrop{visibility:visible;opacity:1;pointer-events:auto}
+    .admin-mobile-menu{display:inline-flex;flex:0 0 auto}
+    .admin-sidebar-collapse{display:none}
+    .admin-layout.sidebar-collapsed .admin-brand-copy,.admin-layout.sidebar-collapsed .admin-sidebar-label,.admin-layout.sidebar-collapsed .admin-nav-copy,.admin-layout.sidebar-collapsed .admin-sidebar-bottom-copy,.admin-layout.sidebar-collapsed .admin-communication-copy,.admin-layout.sidebar-collapsed .admin-communication-arrow{display:initial}
+    .admin-layout.sidebar-collapsed .admin-nav-copy{display:grid}
+    .admin-layout.sidebar-collapsed .admin-sidebar-head{justify-content:flex-start}
+    .admin-layout.sidebar-collapsed .admin-nav-item{justify-content:flex-start;padding:9px 10px}
+    .admin-workspace>header{gap:10px;padding:15px}
+    .admin-workspace .top-actions{flex:1;justify-content:flex-end}
+    .admin-shortcut-grid{grid-template-columns:1fr}
+  }
+  @media(max-width:540px){
+    .admin-workspace>header{align-items:flex-start;flex-wrap:wrap}
+    .admin-mobile-menu{order:0}
+    .admin-workspace .brand{order:1;flex:1 1 calc(100% - 90px);min-width:160px}
+    .admin-workspace .top-actions{order:2;flex:1 1 100%;justify-content:flex-start}
+    .admin-workspace .top-actions .btn{flex:1;text-align:center;padding:10px 9px;font-size:11px}
+    .admin-quick-access{padding:15px}
+    .admin-shortcut{padding:11px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .admin-nav-item,.admin-shortcut,.admin-sidebar,.admin-nav-backdrop{transition:none!important}
+  }
+</style>\n</head>
 <body>
-<div id="adminApp" hidden>
+<div id="adminApp" hidden>\n  <div class="admin-layout" id="adminLayout">
+    <aside class="admin-sidebar" id="adminSidebar" aria-label="Administration navigation">
+      <div class="admin-sidebar-head">
+        <div class="admin-logo-mark" aria-hidden="true">DC</div>
+        <div class="admin-brand-copy"><strong>DCDS</strong><span>ADMIN CONTROL</span></div>
+        <button class="admin-sidebar-collapse" id="adminSidebarCollapse" type="button" aria-label="Collapse navigation" aria-expanded="true" title="Collapse navigation">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7"/></svg>
+        </button>
+      </div>
+      <div class="admin-sidebar-divider"></div>
+      <p class="admin-sidebar-label">WORKSPACE</p>
+      <nav class="admin-nav" aria-label="Administration sections">
+        <button class="admin-nav-item active" type="button" data-admin-view="overview" aria-label="Overview" aria-current="page" title="Overview">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="7" rx="1.5"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.5"/><rect x="13.5" y="13.5" width="7" height="7" rx="1.5"/></svg></span>
+          <span class="admin-nav-copy"><strong>Overview</strong><small>Command centre</small></span><span class="admin-nav-indicator"></span>
+        </button>
+        <button class="admin-nav-item" type="button" data-admin-view="students" aria-label="Student management" title="Student management">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20v-1.2A5.5 5.5 0 0 1 9 13.3h.2a5.5 5.5 0 0 1 5.5 5.5V20"/><path d="M16 5.2a3 3 0 0 1 0 5.7M17 14a4.8 4.8 0 0 1 3.5 4.6V20"/></svg></span>
+          <span class="admin-nav-copy"><strong>Students</strong><small>Profiles & enrolments</small></span><span class="admin-nav-indicator"></span>
+        </button>
+        <button class="admin-nav-item" type="button" data-admin-view="payments" aria-label="Payment management" title="Payment management">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.2"/><path d="M3 10h18M7 15h3"/></svg></span>
+          <span class="admin-nav-copy"><strong>Payments</strong><small>Orders & approvals</small></span><span class="admin-nav-indicator"></span>
+        </button>
+        <button class="admin-nav-item" type="button" data-admin-view="pricing" aria-label="Course pricing" title="Course pricing">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="M4 6v12M8 7h8M8 11h7"/></svg></span>
+          <span class="admin-nav-copy"><strong>Course Pricing</strong><small>Regional course rates</small></span><span class="admin-nav-indicator"></span>
+        </button>
+        <button class="admin-nav-item" type="button" data-admin-view="payouts" aria-label="Payout management" title="Payout management">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/><path d="M4 4v16h16"/></svg></span>
+          <span class="admin-nav-copy"><strong>Payouts</strong><small>Rewards & withdrawals</small></span><span class="admin-nav-indicator"></span>
+        </button>
+      </nav>
+      <div class="admin-sidebar-bottom">
+        <div class="admin-secure-state"><span class="admin-secure-dot"></span><span class="admin-sidebar-bottom-copy">Protected admin workspace</span></div>
+        <a class="admin-communication-link" href="admin-notifications.html" aria-label="Open communication centre" title="Communication centre">
+          <span class="admin-communication-icon" aria-hidden="true">✦</span>
+          <span class="admin-communication-copy">Communications & Support</span>
+          <span class="admin-communication-arrow" aria-hidden="true">↗</span>
+        </a>
+      </div>
+    </aside>
+    <button class="admin-nav-backdrop" id="adminNavBackdrop" type="button" aria-label="Close administration menu"></button>
+    <div class="admin-workspace">
+
   <header>
+    <button class="admin-mobile-menu" id="adminNavToggle" type="button" aria-controls="adminSidebar" aria-expanded="false" aria-label="Open administration menu">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menu</span>
+    </button>
     <div class="brand">
       <h1>DE CHAMPIONS<span>DIGITAL SERVICE</span></h1>
       <p>ADMIN OPERATIONS CENTRE</p>
@@ -267,18 +415,29 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
     </div>
   </header>
 
-  <section id="welcome">
+  <main class="admin-view-stack" id="adminViewStack">
+  <section id="welcome" data-admin-view-panel="overview">
     <h2>DCDS Admin Dashboard 👩🏽‍💼</h2>
     <p>One secure workspace for payment approvals, receipt verification, regional course prices, ambassador payouts, student profiles, enrolments, learning progress, certificates and administrator notes.</p>
   </section>
 
-  <section class="stats" aria-label="Student overview">
+  <section class="stats" aria-label="Student overview" data-admin-view-panel="overview">
     <div class="stat"><span>Students in this view</span><strong id="statStudents">—</strong></div>
     <div class="stat"><span>Students with enrolments</span><strong id="statEnrolled">—</strong></div>
     <div class="stat"><span>Accounts with a verified contact</span><strong id="statConfirmed">—</strong></div>
   </section>
 
-  <section class="panel" id="paymentOperationsPanel" style="margin:18px 0">
+  <section class="panel admin-quick-access" data-admin-view-panel="overview" aria-label="Quick access">
+    <div class="admin-quick-heading"><div><span class="admin-eyebrow">MOVE AROUND DCDS</span><h3>Quick access</h3><p>Jump straight to the area you need to manage.</p></div><span class="admin-quick-spark" aria-hidden="true">✦</span></div>
+    <div class="admin-shortcut-grid">
+      <button class="admin-shortcut" type="button" data-admin-view="students"><span class="admin-shortcut-icon">♙</span><span><strong>Student records</strong><small>Find and manage learners</small></span><span class="admin-shortcut-arrow">↗</span></button>
+      <button class="admin-shortcut" type="button" data-admin-view="payments"><span class="admin-shortcut-icon">₦</span><span><strong>Payment operations</strong><small>Review orders and receipts</small></span><span class="admin-shortcut-arrow">↗</span></button>
+      <button class="admin-shortcut" type="button" data-admin-view="pricing"><span class="admin-shortcut-icon">▤</span><span><strong>Course pricing</strong><small>Manage regional rates</small></span><span class="admin-shortcut-arrow">↗</span></button>
+      <button class="admin-shortcut" type="button" data-admin-view="payouts"><span class="admin-shortcut-icon">⇧</span><span><strong>Payout management</strong><small>Review withdrawal activity</small></span><span class="admin-shortcut-arrow">↗</span></button>
+    </div>
+  </section>
+
+  <section class="panel" id="paymentOperationsPanel" data-admin-view-panel="payments" style="margin:18px 0">
     <h3>💳 Payment &amp; Order Operations Centre</h3>
     <p class="intro">Review pending checkouts, inspect payment receipts, verify Flutterwave transactions, record direct bank transfers, and keep a traceable approval history. An uploaded receipt alone never marks an order as paid.</p>
     <div class="payment-ops-stats" aria-label="Payment overview">
@@ -323,7 +482,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
     <p class="detail-notice">Security: receipt files are stored privately and visible only to authorized DCDS administrators. Direct bank-transfer approvals require a matching order amount/reference and your confirmation that cleared funds appear in the DCDS account. Flutterwave checkouts must be verified against Flutterwave itself.</p>
   </section>
 
-  <section class="panel" id="regionalPricingPanel" style="margin:18px 0">
+  <section class="panel" id="regionalPricingPanel" data-admin-view-panel="pricing" style="margin:18px 0">
     <h3>🌍 Global Course Pricing</h3>
     <p class="intro">Set approved regional selling prices per course. NGN remains the existing default. Only active regional prices are offered to students; checkout validates the amount on the server.</p>
     <div class="toolbar" style="margin:12px 0">
@@ -334,7 +493,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
     <p class="detail-notice">Initial rollout supports NGN plus administrator-managed USD, GBP and EUR prices. Additional settlement currencies will be enabled only after Flutterwave account support is confirmed.</p>
   </section>
 
-  <section class="panel" id="payoutManagementPanel" style="margin:18px 0">
+  <section class="panel" id="payoutManagementPanel" data-admin-view-panel="payouts" style="margin:18px 0">
     <h3>💸 DCDS Ambassador Payout Management</h3>
     <p class="intro">Review withdrawal requests, inspect verified beneficiary details and track payout events. Full bank-account numbers are never displayed here.</p>
     <div id="payoutSafetyNotice" class="payout-warning">Checking payout transfer status…</div>
@@ -346,7 +505,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
     <div class="payout-events"><h3>Recent payout audit events</h3><div id="adminPayoutEvents" class="detail-scroll"><div class="empty">Loading audit events…</div></div></div>
   </section>
 
-  <section class="panel" id="internationalPayoutReadinessPanel" style="margin:18px 0">
+  <section class="panel" id="internationalPayoutReadinessPanel" data-admin-view-panel="payouts" style="margin:18px 0">
     <h3>🌍 International Payout Readiness</h3>
     <p class="intro">Country and currency corridors are tracked here before they can be offered to ambassadors. A corridor stays disabled until DCDS has verified merchant approval, required wallets, IP whitelisting, sandbox testing and a live transfer test. Administrators can review beneficiary details and explicitly submit or reconcile verified requests.</p>
     <div id="internationalPayoutSafetyNotice" class="payout-warning">Checking international payout readiness…</div>
@@ -359,7 +518,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
     <div class="payout-events"><h3>International withdrawal requests</h3><div id="internationalPayoutRequests" class="payout-list" aria-live="polite"><div class="empty">Loading international withdrawal requests…</div></div></div>
   </section>
 
-  <section class="panel">
+  <section class="panel" id="studentRegistryPanel" data-admin-view-panel="students">
     <h3>📋 Student Registry</h3>
     <p class="intro">Search by student name, email address or phone number. Open a record's course list to review its current enrolments and successful order totals.</p>
     <div class="toolbar">
@@ -384,7 +543,10 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
       <div id="studentDetailContent"></div>
     </section>
   </section>
+  </main>
   <footer>© 2026 De Champions Digital Service.<br>CREATE • LEARN • INNOVATE • EARN.</footer>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -398,6 +560,55 @@ const PAGE_SIZE = 50;
 let page = 0;
 let searchTerm = "";
 let students = [];
+
+const ADMIN_VIEW_META = {
+  overview: {title:"Overview", description:"Your DCDS command centre."},
+  students: {title:"Student Management", description:"Search student records, profiles and enrolments."},
+  payments: {title:"Payment Management", description:"Review orders, receipts and payment activity."},
+  pricing: {title:"Course Pricing", description:"Manage approved regional course prices."},
+  payouts: {title:"Payout Management", description:"Review ambassador withdrawals and international payout readiness."}
+};
+function closeAdminNavigation(){
+  const layout=$("adminLayout"),toggle=$("adminNavToggle");
+  if(layout)layout.classList.remove("admin-nav-open");
+  if(toggle)toggle.setAttribute("aria-expanded","false");
+}
+function setAdminView(view,options={}){
+  if(!ADMIN_VIEW_META[view])return;
+  document.querySelectorAll("[data-admin-view-panel]").forEach(panel=>{
+    const active=panel.dataset.adminViewPanel===view;
+    panel.hidden=!active;
+    panel.setAttribute("aria-hidden",active?"false":"true");
+  });
+  document.querySelectorAll(".admin-nav-item[data-admin-view]").forEach(button=>{
+    const active=button.dataset.adminView===view;
+    button.classList.toggle("active",active);
+    if(active)button.setAttribute("aria-current","page");
+    else button.removeAttribute("aria-current");
+  });
+  document.title=ADMIN_VIEW_META[view].title+" | DCDS Admin Operations Centre";
+  closeAdminNavigation();
+  if(options.scroll!==false)window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("[data-admin-view]").forEach(button=>{
+  button.addEventListener("click",()=>setAdminView(button.dataset.adminView));
+});
+$("adminNavToggle").addEventListener("click",()=>{
+  const layout=$("adminLayout"),toggle=$("adminNavToggle");
+  const open=layout.classList.toggle("admin-nav-open");
+  toggle.setAttribute("aria-expanded",open?"true":"false");
+  toggle.setAttribute("aria-label",open?"Close administration menu":"Open administration menu");
+});
+$("adminNavBackdrop").addEventListener("click",closeAdminNavigation);
+$("adminSidebarCollapse").addEventListener("click",()=>{
+  const layout=$("adminLayout"),button=$("adminSidebarCollapse");
+  const collapsed=layout.classList.toggle("sidebar-collapsed");
+  button.setAttribute("aria-expanded",collapsed?"false":"true");
+  button.setAttribute("aria-label",collapsed?"Expand navigation":"Collapse navigation");
+  button.title=collapsed?"Expand navigation":"Collapse navigation";
+});
+setAdminView("overview",{scroll:false});
+
 
 function safeText(value) { return String(value ?? ""); }
 function formatDate(value) {
