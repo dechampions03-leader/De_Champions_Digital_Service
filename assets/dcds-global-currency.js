@@ -20,6 +20,7 @@
   let rates = {NGN:1};
   let currency = "NGN";
   let currencyNames;
+  let regionalPrices = {};
   try { currencyNames = new Intl.DisplayNames([navigator.language || "en"], {type:"currency"}); } catch (_) { currencyNames = null; }
 
   function countryCode() {
@@ -33,31 +34,53 @@
   function currencyName(code) {
     try { return currencyNames ? currencyNames.of(code) || code : code; } catch (_) { return code; }
   }
-  function format(amount) {
-    const converted = Number(amount || 0) * Number(rates[currency] || 1);
+  function formatValue(amount, code) {
     try {
-      return new Intl.NumberFormat(navigator.language || "en", {
-        style:"currency", currency
-      }).format(converted);
-    } catch (_) { return currency + " " + numberFormat.format(converted); }
+      return new Intl.NumberFormat(navigator.language || "en", {style:"currency", currency:code}).format(Number(amount || 0));
+    } catch (_) { return code + " " + numberFormat.format(Number(amount || 0)); }
+  }
+  function format(amount) {
+    return formatValue(Number(amount || 0) * Number(rates[currency] || 1), currency);
+  }
+  function regionalAmount(slug, code=currency) {
+    return regionalPrices[slug + ":" + code];
+  }
+  function formatCourse(amount, slug) {
+    const approved = regionalAmount(slug);
+    return approved ? formatValue(approved.amount, currency) : format(amount);
+  }
+  function canCheckout(slug) {
+    return currency === "NGN" || !!regionalAmount(slug);
+  }
+  function approvedCount() {
+    return Object.keys(regionalPrices).filter(key => key.endsWith(":" + currency)).length;
   }
   function updatePrices() {
     document.querySelectorAll("[data-dcds-base-ngn]").forEach(node => {
       const base = Number(node.dataset.dcdsBaseNgn);
       if (!Number.isFinite(base)) return;
-      node.textContent = format(base);
+      const slug = node.dataset.dcdsCourseSlug || "";
+      node.textContent = slug ? formatCourse(base, slug) : format(base);
+      if (slug && currency !== "NGN" && !canCheckout(slug)) {
+        node.title = "Indicative conversion only. This course does not yet have an approved " + currency + " checkout price.";
+      } else {
+        node.removeAttribute("title");
+      }
     });
     const status = document.getElementById("dcdsCurrencyStatus");
-    if (status) status.textContent = currency === "NGN"
-      ? "12 courses · Showing Nigerian naira prices"
-      : "12 courses · Approximate " + currency + " display";
+    if (status) {
+      const count = approvedCount();
+      status.textContent = currency === "NGN"
+        ? "12 courses · Showing Nigerian naira prices"
+        : count + " of 13 products have approved " + currency + " prices";
+    }
     const note = document.getElementById("dcdsCurrencyDisclaimer");
     if (note) note.textContent = currency === "NGN"
-      ? "Prices are shown in Nigerian naira. Flutterwave checkout currently charges in NGN. Your bank or card provider may apply its own fees."
-      : "Prices shown in " + currency + " are estimates converted from DCDS's approved NGN prices using a reference exchange rate. Flutterwave checkout currently charges in NGN; your bank or card provider determines the final conversion and may apply fees.";
+      ? "Prices are shown in Nigerian naira. Flutterwave checkout uses the approved NGN course price."
+      : "Approved " + currency + " prices are shown where available. Other amounts are indicative conversions only and cannot be used for checkout until DCDS activates an approved price. Your final payment remains subject to Flutterwave's currency and account support.";
     const generalButton = document.getElementById("generalCourseBuy");
     if (generalButton && !generalButton.textContent.includes("CONTINUE LEARNING")) {
-      generalButton.textContent = "Get the General Course — " + format(103000);
+      generalButton.textContent = "Get the General Course — " + formatCourse(103000, "general-course");
     }
   }
   function populateSelector(select, available) {
@@ -77,7 +100,14 @@
       try { localStorage.setItem("dcds-global-currency-choice-v1", currency); } catch (_) {}
       updatePrices();
     });
-    window.DCDSGlobalCurrency = {format, get currency(){return currency;}, get rates(){return {...rates};}};
+    window.DCDSGlobalCurrency = {
+      format,
+      formatCourse,
+      canCheckout,
+      get currency(){return currency;},
+      get rates(){return {...rates};},
+      get regionalPrices(){return {...regionalPrices};}
+    };
     updatePrices();
   }
   async function loadRates() {
@@ -105,32 +135,44 @@
       return false;
     }
   }
+  async function loadRegionalPrices() {
+    try {
+      if (typeof supabaseClient === "undefined" || !supabaseClient) return;
+      const [{data:courses,error:courseError},{data:prices,error:priceError}] = await Promise.all([
+        supabaseClient.from("courses").select("id,slug"),
+        supabaseClient.from("course_regional_prices").select("course_id,currency,amount").eq("is_active",true)
+      ]);
+      if (courseError || priceError) throw courseError || priceError;
+      const slugById = Object.fromEntries((courses || []).map(course => [course.id, course.slug]));
+      regionalPrices = {};
+      (prices || []).forEach(price => {
+        const slug = slugById[price.course_id];
+        const amount = Number(price.amount);
+        if (slug && /^[A-Z]{3}$/.test(price.currency) && Number.isFinite(amount) && amount > 0) {
+          regionalPrices[slug + ":" + price.currency] = {amount, currency:price.currency};
+        }
+      });
+      return true;
+    } catch (error) {
+      console.warn("DCDS approved regional prices could not be loaded; showing reference conversions.", error);
+      regionalPrices = {};
+      return false;
+    }
+  }
   async function init() {
     const select = document.getElementById(SELECT_ID);
     if (!select) return;
     const cached = (() => { try { return JSON.parse(localStorage.getItem(CACHE_KEY) || "null"); } catch (_) { return null; } })();
     if (cached?.rates?.NGN === 1) rates = cached.rates;
-    const supported = typeof Intl.supportedValuesOf === "function"
-      ? Intl.supportedValuesOf("currency").filter(code => rates[code] || FALLBACK_CURRENCIES.includes(code))
-      : FALLBACK_CURRENCIES;
-    populateSelector(select, [...supported, ...FALLBACK_CURRENCIES]);
-    const hadRates = await loadRates();
-    const allCodes = Object.keys(rates).filter(code => /^[A-Z]{3}$/.test(code));
-    if (!hadRates && currency !== "NGN" && !rates[currency]) {
-      currency = "NGN";
-      select.value = "NGN";
-    }
-    const current = select.value;
-    const options = new Set([...select.options].map(option => option.value));
-    allCodes.forEach(code => {
-      if (options.has(code)) return;
-      const option = document.createElement("option");
-      option.value = code;
-      option.textContent = code + " — " + currencyName(code);
-      select.appendChild(option);
-    });
+    // Only offer checkout currencies for which DCDS has a configured regional
+    // price, plus NGN. Visitors can still see indicative conversions in the
+    // catalogue for other currencies through the existing estimates fallback.
+    populateSelector(select, ["USD","GBP","EUR"]);
+    await Promise.all([loadRates(), loadRegionalPrices()]);
     const wanted = savedCurrency() || preferredCurrency();
-    const finalChoice = rates[wanted] ? wanted : (rates[current] ? current : "NGN");
+    const current = select.value;
+    const allowed = ["NGN","USD","GBP","EUR"];
+    const finalChoice = allowed.includes(wanted) ? wanted : (allowed.includes(current) ? current : "NGN");
     currency = finalChoice;
     select.value = finalChoice;
     updatePrices();
