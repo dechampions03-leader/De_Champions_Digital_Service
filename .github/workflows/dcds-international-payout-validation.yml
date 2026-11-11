@@ -1,0 +1,68 @@
+name: DCDS international payout foundation validation
+
+on:
+  push:
+    branches: [main, feat/dcds-international-payout-foundation]
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/functions/dcds-international-payout/**"
+      - "student-management.html"
+      - ".github/workflows/dcds-international-payout-validation.yml"
+  pull_request:
+    paths:
+      - "supabase/migrations/**"
+      - "supabase/functions/dcds-international-payout/**"
+      - "student-management.html"
+      - ".github/workflows/dcds-international-payout-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-international-payout-foundation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Validate edge-function JavaScript syntax
+        run: node --check < supabase/functions/dcds-international-payout/index.ts
+      - name: Validate dashboard inline JavaScript
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const vm = require('node:vm');
+          const html = fs.readFileSync('student-management.html', 'utf8');
+          const scripts = [...html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)];
+          let checked = 0;
+          for (const match of scripts) {
+            if (/\bsrc\s*=/.test(match[1]) || !match[2].trim()) continue;
+            new vm.Script(match[2], { filename: 'student-management-inline-' + (++checked) + '.js' });
+          }
+          if (!checked) throw new Error('No inline dashboard scripts were checked.');
+          console.log('Validated ' + checked + ' inline script block(s).');
+          NODE
+      - name: Check international payout safety contracts
+        run: |
+          node <<'NODE'
+          const fs = require('node:fs');
+          const sql = fs.readFileSync('supabase/migrations/20261111125206_dcds_international_payout_foundation.sql', 'utf8');
+          const fn = fs.readFileSync('supabase/functions/dcds-international-payout/index.ts', 'utf8');
+          const html = fs.readFileSync('student-management.html', 'utf8');
+          const checks = [
+            ['all seeded routes disabled', (sql.match(/'disabled'/g) || []).length >= 12],
+            ['route enablement requires provider and verification evidence', /provider_approved = true and sandbox_verified_at is not null and live_verified_at is not null/.test(sql)],
+            ['beneficiary data encrypted before database write', /encryptPayload\(data, encryptionKey\)/.test(fn)],
+            ['beneficiary table has no direct authenticated grants', /revoke all on public\.dcds_international_payout_accounts from public, anon, authenticated/i.test(sql)],
+            ['international payout global switch defaults off', /DCDS_INTL_PAYOUTS_ENABLED/.test(fn)],
+            ['no transfer creation action exists in the foundation function', !/api\.flutterwave\.com\/v3\/transfers["']/i.test(fn)],
+            ['admin readiness panel exists', /internationalPayoutReadinessPanel/.test(html)]
+          ];
+          for (const [name, ok] of checks) {
+            console.log((ok ? 'PASS ' : 'FAIL ') + name);
+            if (!ok) process.exitCode = 1;
+          }
+          NODE
