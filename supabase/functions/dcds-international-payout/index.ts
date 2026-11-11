@@ -632,11 +632,12 @@ Deno.serve(async (req: Request) => {
         .eq("id", accountId)
         .select("id,user_id,route_id,beneficiary_name,account_hint_last4,verification_status,verified_at,verification_note").single();
       if (error) throw error;
-      await db.from("dcds_international_payout_events").insert({
-        request_id: (await db.from("dcds_international_payout_requests").select("id").eq("payout_account_id", accountId).limit(1).maybeSingle()).data?.id,
-        user_id: account.user_id, event_type: "beneficiary_verified", actor_user_id: userId,
-        details: { account_id: accountId, verification_method: "authorised_admin_review", evidence_note: note },
-      }).then(() => undefined).catch(() => undefined);
+      const { error: auditError } = await db.from("dcds_international_payout_beneficiary_events").insert({
+        account_id: accountId, user_id: account.user_id, event_type: "beneficiary_verified",
+        actor_user_id: userId,
+        details: { verification_method: "authorised_admin_review", evidence_note: note },
+      });
+      if (auditError) throw auditError;
       return respond({ success: true, account: updated, message: "Beneficiary marked verified by authorised DCDS administrator review." });
     }
 
