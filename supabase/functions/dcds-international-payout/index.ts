@@ -550,7 +550,17 @@ Deno.serve(async (req: Request) => {
       const stage = String(body.stage || "");
       const evidence = cleanText(body.evidence_note, 500);
       if (!evidence || evidence.length < 12 || body.confirm !== true) return respond({ success: false, error: "Confirm the action and provide an evidence note of at least 12 characters." }, 400);
-      const patch: JsonObject = { internal_notes: evidence, updated_at: new Date().toISOString() };
+      const previousEvidence = Array.isArray((route.route_config || {}).verification_evidence)
+        ? (route.route_config as any).verification_evidence as JsonObject[] : [];
+      const evidenceHistory = [...previousEvidence, {
+        stage, evidence_note: evidence, actor_user_id: userId, recorded_at: new Date().toISOString(),
+      }].slice(-25);
+      const priorNote = cleanText(route.internal_notes, 2000);
+      const patch: JsonObject = {
+        internal_notes: [priorNote, stage + ": " + evidence].filter(Boolean).join("\\n").slice(-2000),
+        route_config: { ...(route.route_config || {}), verification_evidence: evidenceHistory },
+        updated_at: new Date().toISOString(),
+      };
       if (stage === "provider_approved") patch.provider_approved = true;
       else if (stage === "sandbox_verified") patch.sandbox_verified_at = new Date().toISOString();
       else if (stage === "live_verified") patch.live_verified_at = new Date().toISOString();
