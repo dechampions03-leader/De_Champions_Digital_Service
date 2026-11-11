@@ -1360,7 +1360,7 @@ db.auth.onAuthStateChange((event, session) => {
         window.location.replace(
             "index.html?login=required&next=" + encodeURIComponent(returnTo)
         );
-    } else if (session?.user && !session.user.email_confirmed_at) {
+    } else if (session?.user && !session.user.email_confirmed_at && !session.user.phone_confirmed_at) {
         learningContent.classList.add("hidden");
         const returnTo = window.location.pathname + window.location.search;
         window.location.replace(
