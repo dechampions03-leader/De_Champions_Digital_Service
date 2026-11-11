@@ -148,7 +148,8 @@ header { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50
 .payment-field label{font-size:12px;font-weight:700;color:var(--muted-text)}
 .payment-field input,.payment-field select,.payment-field textarea{width:100%;min-width:0;border:1px solid var(--border-color);border-radius:9px;padding:11px;background:#fff;color:#28183a;font:inherit}
 .payment-field textarea{min-height:70px;resize:vertical}
-.payment-ops-toolbar #paymentSearchInput{flex:2 1 240px}
+.payment-ops-toolbar #paymentSearchInput{flex:2 1 240px;min-width:0;border:1px solid var(--border-color);border-radius:9px;padding:11px;background:#fff;color:#28183a}
+.payment-ops-toolbar #paymentSearchInput:focus{border-color:#7628d8;outline-color:#7628d8}
 .payment-order-list{display:grid;gap:13px}
 .payment-order-card{border:1px solid var(--border-color);border-radius:15px;background:#fff;padding:16px;box-shadow:0 7px 22px rgba(50,16,95,.04)}
 .payment-order-head{display:flex;justify-content:space-between;align-items:flex-start;gap:10px;flex-wrap:wrap}
@@ -882,6 +883,10 @@ function renderAdminPaymentOrders(rows){
             p_claimed_amount:Number(amount.value),p_claimed_currency:currency.value,p_admin_note:note.value.trim()||null
           });
           if(error)throw error;
+          if(order.receipt_path&&order.receipt_path!==path){
+            const {error:removeError}=await db.storage.from(PAYMENT_RECEIPT_BUCKET).remove([order.receipt_path]);
+            if(removeError)console.warn("Previous private receipt could not be cleaned up:",removeError.message);
+          }
           alert("Receipt evidence saved securely. It has not been approved or marked as paid.");
           await loadAdminPaymentOps();
         }catch(error){
