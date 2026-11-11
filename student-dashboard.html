@@ -931,6 +931,13 @@ async function loadInternationalPayoutPanel(user) {
     if(field==='account_bank'){
       input=document.createElement('select');
       const option=document.createElement('option');option.value='';option.textContent='Loading supported banks…';input.append(option);
+    }else if(field==='account_type'){
+      input=document.createElement('select');
+      const options=route.currency==='USD'
+        ?[['checking','Checking'],['depository','Depository']]
+        :[['personal','Personal'],['corporate','Corporate']];
+      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Select account type';input.append(placeholder);
+      options.forEach(([value,label])=>{const option=document.createElement('option');option.value=value;option.textContent=label;input.append(option);});
     }else if(field==='beneficiary_country'){
       input=document.createElement('select');
       const config=route.route_config||{};
@@ -971,6 +978,29 @@ async function loadInternationalPayoutPanel(user) {
     const bankField=required.includes('account_bank')?addField('account_bank',route):null;
     const countryField=required.includes('beneficiary_country')?addField('beneficiary_country',route):null;
     required.filter(field=>field!=='account_bank'&&field!=='beneficiary_country').forEach(field=>addField(field,route));
+    if(route.currency==='GBP'){
+      const accountTypeField=fieldsRoot.querySelector('[data-beneficiary-field="account_type"]');
+      const conditionalRoot=document.createElement('div');
+      conditionalRoot.id='internationalGbpConditionalFields';
+      fieldsRoot.append(conditionalRoot);
+      const renderConditionalFields=()=>{
+        conditionalRoot.replaceChildren();
+        if(accountTypeField?.value==='personal'){
+          addField('first_name',route);
+          addField('last_name',route);
+          const first=fieldsRoot.querySelector('[data-beneficiary-field="first_name"]');
+          const last=fieldsRoot.querySelector('[data-beneficiary-field="last_name"]');
+          if(first)conditionalRoot.append(first.closest('label'));
+          if(last)conditionalRoot.append(last.closest('label'));
+        }else if(accountTypeField?.value==='corporate'){
+          addField('beneficiary_merchant_name',route);
+          const business=fieldsRoot.querySelector('[data-beneficiary-field="beneficiary_merchant_name"]');
+          if(business)conditionalRoot.append(business.closest('label'));
+        }
+      };
+      accountTypeField?.addEventListener('change',renderConditionalFields);
+      renderConditionalFields();
+    }
     if(bankField){
       const loadBanks=async()=>{
         if(countryField&&!countryField.value){bankField.innerHTML='<option value="">Select the beneficiary country first</option>';bankField.disabled=true;return;}
