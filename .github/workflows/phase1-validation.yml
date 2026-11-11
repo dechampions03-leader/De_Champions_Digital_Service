@@ -6,6 +6,7 @@ on:
       - feature/phase1-security-reliability
     paths:
       - "supabase/functions/create-payment/**"
+      - "supabase/functions/admin-verify-flutterwave-payment/**"
       - "supabase/functions/dcds-process-payout/**"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
@@ -37,6 +38,8 @@ jobs:
           deno-version: v2.x
       - name: Type-check create-payment
         run: deno check supabase/functions/create-payment/index.ts
+      - name: Type-check admin Flutterwave verifier
+        run: deno check supabase/functions/admin-verify-flutterwave-payment/index.ts
       - name: Type-check payout processor
         run: deno check supabase/functions/dcds-process-payout/index.ts
       - name: Verify Phase 1 migration invariants
@@ -47,6 +50,11 @@ jobs:
           grep -q "dcds_create_checkout_order" supabase/functions/create-payment/index.ts
           grep -q "provider_transfer_id" supabase/functions/dcds-process-payout/index.ts
           grep -qi "on delete restrict" supabase/migrations/20261110000100_phase1_security_reliability.sql
+          test -f supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          test -f supabase/migrations/20261111113000_dcds_payment_verification_audit_event.sql
+          grep -q "admin_approve_manual_bank_payment" supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          grep -q "dcds-payment-receipts" supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          grep -q "verify_by_reference" supabase/functions/admin-verify-flutterwave-payment/index.ts
 
       - name: Require RLS on every new public table
         shell: bash
