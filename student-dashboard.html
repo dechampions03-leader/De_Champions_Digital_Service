@@ -713,6 +713,19 @@ function openCertificate(certificate, studentName, courseTitle) {
  .dcds-motion-ready [data-dcds-reveal] *{opacity:1!important;transform:none!important;filter:none!important;transition:none!important;animation:none!important}
 }
 </style>
+<style id="dcds-fixed-workspace-navigation">
+html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important}
+#dcds-fixed-bottom-nav{position:fixed;z-index:99999;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(820px,calc(100% - 18px));display:grid;grid-template-columns:repeat(var(--dcds-nav-count,5),minmax(0,1fr));gap:4px;padding:7px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:linear-gradient(145deg,rgba(48,20,76,.97),rgba(24,9,42,.97));box-shadow:0 14px 42px rgba(20,7,35,.3),inset 0 1px 0 rgba(255,255,255,.12);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#dcds-fixed-bottom-nav[hidden]{display:none!important}
+#dcds-fixed-bottom-nav .dcds-dock-item{min-width:0;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;border:1px solid transparent;border-radius:15px;background:transparent;color:#e9def5;font:700 9px/1.1 'DM Sans',Arial,sans-serif;letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .18s ease,color .18s ease,transform .18s ease}
+#dcds-fixed-bottom-nav .dcds-dock-item:active{transform:scale(.96)}
+#dcds-fixed-bottom-nav .dcds-dock-item[aria-current="page"]{color:#28143c;background:linear-gradient(135deg,#f1d78c,#d7b45a);border-color:rgba(255,255,255,.35);box-shadow:0 5px 16px rgba(215,180,90,.22)}
+#dcds-fixed-bottom-nav .dcds-dock-icon{font-size:19px;line-height:1.1;font-family:Arial,sans-serif}
+#dcds-fixed-bottom-nav .dcds-dock-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[data-dcds-public-screen][hidden],[data-dcds-student-screen][hidden],[data-dcds-assessment-screen][hidden]{display:none!important}
+@media(min-width:900px){#dcds-fixed-bottom-nav{bottom:14px;padding:8px 10px}#dcds-fixed-bottom-nav .dcds-dock-item{min-height:58px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){#dcds-fixed-bottom-nav .dcds-dock-item{transition:none}}
+</style>
 </head><body><button class="print" onclick="window.print()">Print / Save as PDF</button><main class="certificate"><div class="brand">DCDS</div><div class="tag">DE CHAMPIONS DIGITAL SERVICE</div><div class="rule"></div><div class="eyebrow">CERTIFICATE OF COMPLETION</div><h1 class="title">Certificate of Achievement</h1><div class="intro">This certificate is proudly presented to</div><div class="name">${safeName}</div><div class="body">for successfully completing the learning requirements for</div><div class="course">${safeCourse}</div><div class="body">and demonstrating commitment to learning, creativity, and digital excellence.</div><div class="rule"></div><div class="seal">DCDS<br>ACHIEVEMENT</div>${verified?'<div class="verified">ADMIN VERIFIED CERTIFICATE</div>':''}<div class="footer"><div><strong>Certificate No.</strong><br>${safeNumber}<br><br><strong>Date Issued</strong><br>${safeDate}</div><div style="text-align:right"><strong>DE CHAMPIONS DIGITAL SERVICE</strong><br>CREATE • LEARN • INNOVATE • EARN.<br><br>Official digital certificate</div></div></main></body></html>`);
   printWindow.document.close();
 }async function loadCertificates(user) {
@@ -1778,6 +1791,29 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
     window.setTimeout(show,2600);
   }
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
+})();
+</script>
+<script id="dcds-student-five-screen-navigation">
+(()=>{
+ const dashboard=document.getElementById("dashboard");if(!dashboard||document.getElementById("dcds-fixed-bottom-nav"))return;
+ const children=Array.from(dashboard.children);
+ const direct=id=>{let n=document.getElementById(id);if(!n)return null;while(n&&n.parentElement!==dashboard)n=n.parentElement;return n||null;};
+ const range=(start,end,key)=>{const a=children.indexOf(start),b=children.indexOf(end);if(a<0||b<a)return false;children.slice(a,b+1).forEach(n=>n.dataset.dcdsStudentScreen=key);return true;};
+ const ai=direct("dcdsAiAssistantPreview"),courses=direct("courseGrid"),progress=direct("learningProgressPanel"),cert=direct("certificateGrid"),records=direct("academicRecordsPanel"),ambassador=direct("ambassadorPanel"),profile=direct("studentProfilePanel"),support=direct("studentSupportPanel");
+ if(children[0]&&ai)range(children[0],ai,"home");
+ if(courses&&progress)range(courses.previousElementSibling,progress,"learning");
+ if(cert&&records){const heading=cert.previousElementSibling&&cert.previousElementSibling.previousElementSibling;range(heading,records,"awards");}
+ if(ambassador)range(ambassador.previousElementSibling,ambassador,"rewards");
+ if(profile&&support)range(profile,children[children.length-1],"account");
+ const nodes=children.filter(n=>n.hasAttribute("data-dcds-student-screen")),required=["home","learning","awards","rewards","account"];
+ if(!required.every(k=>nodes.some(n=>n.dataset.dcdsStudentScreen===k)))return;
+ const labels=[["home","⌂","Home"],["learning","▤","Learning"],["awards","★","Awards"],["rewards","◇","Rewards"],["account","☻","Account"]];
+ const nav=document.createElement("nav");nav.id="dcds-fixed-bottom-nav";nav.setAttribute("aria-label","Student dashboard sections");nav.style.setProperty("--dcds-nav-count","5");
+ labels.forEach(([key,icon,label])=>{const b=document.createElement("button");b.type="button";b.className="dcds-dock-item";b.dataset.screen=key;b.setAttribute("aria-label",label==="Awards"?"Certificates and academic records":label==="Account"?"Profile and student support":label);const i=document.createElement("span");i.className="dcds-dock-icon";i.setAttribute("aria-hidden","true");i.textContent=icon;const t=document.createElement("span");t.className="dcds-dock-label";t.textContent=label;b.append(i,t);nav.appendChild(b);});
+ document.body.appendChild(nav);
+ function show(key,scroll=true){nodes.forEach(n=>n.hidden=n.dataset.dcdsStudentScreen!==key);nav.querySelectorAll("button[data-screen]").forEach(b=>{if(b.dataset.screen===key)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});if(scroll)window.scrollTo({top:0,behavior:"smooth"});}
+ nav.addEventListener("click",e=>{const b=e.target.closest("button[data-screen]");if(b)show(b.dataset.screen,true);});show("home",false);
+ const sync=()=>nav.hidden=dashboard.classList.contains("hidden")||dashboard.hasAttribute("hidden");sync();new MutationObserver(sync).observe(dashboard,{attributes:true,attributeFilter:["class","hidden"]});
 })();
 </script>
 </body>
