@@ -59,8 +59,8 @@ Deno.serve(async (req: Request) => {
 
     const orderId = String(body.order_id ?? "").trim();
     const transactionId = String(body.transaction_id ?? "").trim();
-    if (!/^[0-9a-f-]{36}$/i.test(orderId) || !/^\d{1,30}$/.test(transactionId)) {
-      return respond({ success: false, error: "Enter a valid order and Flutterwave transaction ID." }, 400);
+    if (!/^[0-9a-f-]{36}$/i.test(orderId) || (transactionId && !/^\d{1,30}$/.test(transactionId))) {
+      return respond({ success: false, error: "Enter a valid DCDS order and, when available, a numeric Flutterwave transaction ID." }, 400);
     }
 
     const { data: order, error: orderError } = await supabase
@@ -76,26 +76,35 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: "This order is not eligible for payment verification." }, 409);
     }
 
-    const verificationResponse = await fetch(
-      `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transactionId)}/verify`,
-      {
-        method: "GET",
-        headers: {
-          Authorization: `Bearer ${flutterwaveKey}`,
-          Accept: "application/json",
-        },
+    const verificationUrl = transactionId
+      ? `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transactionId)}/verify`
+      : `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(String(order.tx_ref))}`;
+    const verificationResponse = await fetch(verificationUrl, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${flutterwaveKey}`,
+        Accept: "application/json",
       },
-    );
+    });
     const verification = await verificationResponse.json();
     const payment = verification?.data;
     if (!verificationResponse.ok || verification?.status !== "success" || !payment) {
-      return respond({ success: false, error: "Flutterwave could not verify that transaction. Check the transaction ID and try again." }, 400);
+      return respond({
+        success: false,
+        error: transactionId
+          ? "Flutterwave could not find or verify that transaction ID. No payment has been approved."
+          : "Flutterwave could not find a transaction for this DCDS order reference. No payment has been approved; the order remains pending.",
+      }, 404);
     }
 
+    const verifiedTransactionId = String(payment.id ?? transactionId).trim();
+    if (!/^\d{1,30}$/.test(verifiedTransactionId)) {
+      return respond({ success: false, error: "Flutterwave did not return a valid transaction ID. No payment has been approved." }, 409);
+    }
     const amountMatches = Number(payment.amount) === Number(order.amount);
     const currencyMatches = String(payment.currency ?? "").toUpperCase() === String(order.currency).toUpperCase();
     const referenceMatches = String(payment.tx_ref ?? "") === String(order.tx_ref ?? "");
-    const idMatches = !payment.id || String(payment.id) === transactionId;
+    const idMatches = !transactionId || verifiedTransactionId === transactionId;
     if (
       String(payment.status ?? "").toLowerCase() !== "successful" ||
       !amountMatches || !currencyMatches || !referenceMatches || !idMatches
@@ -109,7 +118,7 @@ Deno.serve(async (req: Request) => {
     const { data: finalized, error: finalizeError } = await supabase.rpc("admin_finalize_flutterwave_payment", {
       p_order_id: order.id,
       p_admin_user_id: authData.user.id,
-      p_transaction_id: transactionId,
+      p_transaction_id: verifiedTransactionId,
       p_tx_ref: String(payment.tx_ref),
       p_amount: Number(payment.amount),
       p_currency: String(payment.currency).toUpperCase(),
@@ -124,7 +133,7 @@ Deno.serve(async (req: Request) => {
       success: true,
       message: "Flutterwave confirmed the transaction. The order and student enrolment have been updated.",
       order_id: order.id,
-      transaction_id: transactionId,
+      transaction_id: verifiedTransactionId,
       amount: Number(payment.amount),
       currency: String(payment.currency).toUpperCase(),
     });
