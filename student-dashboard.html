@@ -931,6 +931,9 @@ async function loadInternationalPayoutPanel(user) {
     if(field==='account_bank'){
       input=document.createElement('select');
       const option=document.createElement('option');option.value='';option.textContent='Loading supported banks…';input.append(option);
+    }else if(field==='destination_branch_code'){
+      input=document.createElement('select');
+      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Loading bank branches…';input.append(placeholder);
     }else if(field==='account_type'){
       input=document.createElement('select');
       const options=route.currency==='USD'
@@ -1002,6 +1005,29 @@ async function loadInternationalPayoutPanel(user) {
       renderConditionalFields();
     }
     if(bankField){
+      const loadBranchesForBank=async()=>{
+        const selected=bankField.selectedOptions[0];
+        const existing=fieldsRoot.querySelector('[data-beneficiary-field="destination_branch_code"]');
+        existing?.closest('label')?.remove();
+        if(!config.branch_lookup_supported||selected?.dataset.hasBranches!=='true')return;
+        const branchField=addField('destination_branch_code',route);
+        branchField.disabled=true;
+        branchField.replaceChildren();
+        const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Loading required branches…';branchField.append(placeholder);
+        const {data,error}=await client.functions.invoke('dcds-international-payout',{
+          body:{action:'branches',route_id:route.id,bank_id:selected.dataset.bankId}
+        });
+        branchField.replaceChildren();
+        const selectPlaceholder=document.createElement('option');selectPlaceholder.value='';selectPlaceholder.textContent='Select your bank branch';branchField.append(selectPlaceholder);
+        if(error||!data?.success||!Array.isArray(data.branches)||!data.branches.length){
+          selectPlaceholder.textContent='Branch list unavailable — contact DCDS support';
+          branchField.disabled=true;return;
+        }
+        data.branches.forEach(branch=>{
+          const option=document.createElement('option');option.value=branch.code;option.textContent=branch.name;branchField.append(option);
+        });
+        branchField.disabled=false;
+      };
       const loadBanks=async()=>{
         if(countryField&&!countryField.value){bankField.innerHTML='<option value="">Select the beneficiary country first</option>';bankField.disabled=true;return;}
         bankField.disabled=true;bankField.innerHTML='<option value="">Loading banks…</option>';
@@ -1013,9 +1039,16 @@ async function loadInternationalPayoutPanel(user) {
         if(error||!data?.success||!Array.isArray(data.banks)){
           placeholder.textContent='Bank list unavailable';return;
         }
-        data.banks.forEach(bank=>{const option=document.createElement('option');option.value=bank.code;option.textContent=bank.name;bankField.append(option);});
+        data.banks.forEach(bank=>{
+          const option=document.createElement('option');option.value=bank.code;option.textContent=bank.name;
+          option.dataset.bankId=bank.id||bank.code;
+          option.dataset.hasBranches=bank.has_branches?'true':'false';
+          bankField.append(option);
+        });
         bankField.disabled=false;
+        await loadBranchesForBank();
       };
+      bankField.addEventListener('change',loadBranchesForBank);
       if(countryField)countryField.addEventListener('change',loadBanks);
       else await loadBanks();
     }
