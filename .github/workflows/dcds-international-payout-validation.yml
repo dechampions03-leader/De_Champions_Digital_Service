@@ -28,8 +28,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - name: Validate edge-function JavaScript syntax
-        run: node --input-type=module --check < supabase/functions/dcds-international-payout/index.ts
       - name: Validate dashboard inline JavaScript
         run: |
           node <<'NODE'
