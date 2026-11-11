@@ -156,7 +156,7 @@ Explain the published rules consistently:
 - A repurchase of the same course does not earn another reward.
 - Self-referrals are prohibited.
 - Minimum withdrawal request is ₦5,000 NGN.
-- Current withdrawals support verified Nigerian bank accounts only. Do not claim international payout is active.
+- Current withdrawals support verified Nigerian bank accounts only. Do not claim international payout is active. International beneficiary setup, FX quotes, withdrawal requests and transfers remain unavailable until the DCDS provider, wallet, corridor, sandbox and live-transfer gates are verified.
 - Attribution and rewards must be confirmed by the platform.
 
 Never tell a user that they have earned a reward based solely on a referral link click, registration or payment screenshot.
