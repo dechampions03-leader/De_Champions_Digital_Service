@@ -66,6 +66,18 @@ create table if not exists public.dcds_international_payout_events (
 create index if not exists dcds_intl_payout_events_request_idx
   on public.dcds_international_payout_events(request_id, created_at desc);
 
+create table if not exists public.dcds_international_payout_beneficiary_events (
+  id uuid primary key default gen_random_uuid(),
+  account_id uuid not null references public.dcds_international_payout_accounts(id) on delete restrict,
+  user_id uuid not null references auth.users(id) on delete restrict,
+  event_type text not null,
+  actor_user_id uuid references auth.users(id) on delete set null,
+  details jsonb not null default '{}'::jsonb check (jsonb_typeof(details)='object'),
+  created_at timestamptz not null default now()
+);
+create index if not exists dcds_intl_beneficiary_events_account_idx
+  on public.dcds_international_payout_beneficiary_events(account_id, created_at desc);
+
 -- Configure the destination-specific data required by Flutterwave's v3 bank-transfer API.
 update public.dcds_international_payout_routes
 set required_fields = array[
@@ -592,11 +604,14 @@ grant execute on function public.dcds_reverse_referral_reward(uuid,text,uuid) to
 alter table public.dcds_international_payout_requests enable row level security;
 alter table public.dcds_international_payout_allocations enable row level security;
 alter table public.dcds_international_payout_events enable row level security;
+alter table public.dcds_international_payout_beneficiary_events enable row level security;
 revoke all on public.dcds_international_payout_requests from public, anon, authenticated;
 revoke all on public.dcds_international_payout_allocations from public, anon, authenticated;
 revoke all on public.dcds_international_payout_events from public, anon, authenticated;
+revoke all on public.dcds_international_payout_beneficiary_events from public, anon, authenticated;
 grant select,insert,update,delete on public.dcds_international_payout_requests to service_role;
 grant select,insert,update,delete on public.dcds_international_payout_allocations to service_role;
 grant select,insert,update,delete on public.dcds_international_payout_events to service_role;
+grant select,insert,update,delete on public.dcds_international_payout_beneficiary_events to service_role;
 
 commit;
