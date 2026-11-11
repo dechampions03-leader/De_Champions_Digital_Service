@@ -171,6 +171,9 @@ header { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50
 .intl-route-evidence p{margin:8px 0 0;color:#756783;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
 .intl-route-card .detail-actions{margin-top:12px}
 .intl-route-card .btn:disabled{opacity:.58;cursor:not-allowed}
+.intl-gate-list{display:flex;align-items:flex-start;gap:8px;flex-wrap:wrap;margin:14px 0 16px}
+.intl-gate-heading{flex:0 0 100%;color:#451078;font-size:13px;font-weight:800}
+.intl-gate-list .pill{max-width:100%;white-space:normal;line-height:1.4}
 @media(max-width:850px){.intl-readiness-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:520px){.intl-readiness-stat{padding:12px}.intl-readiness-stat strong{font-size:22px}.intl-route-card{padding:13px}.intl-route-steps{gap:6px}.intl-route-step{padding:8px}.intl-route-step span{font-size:9px}.intl-route-step strong{font-size:10px}.intl-route-tools input,.intl-route-tools select{flex-basis:100%}}
 
@@ -325,6 +328,8 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 #dcds-fixed-bottom-nav .dcds-dock-item[aria-current="page"]{color:#28143c;background:linear-gradient(135deg,#f1d78c,#d7b45a);border-color:rgba(255,255,255,.35);box-shadow:0 5px 16px rgba(215,180,90,.22)}
 #dcds-fixed-bottom-nav .dcds-dock-icon{font-size:19px;line-height:1.1;font-family:Arial,sans-serif}
 #dcds-fixed-bottom-nav .dcds-dock-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+@media(max-width:899px){body{padding-bottom:calc(156px + env(safe-area-inset-bottom,0px))}}
+@media(min-width:900px){body{padding-bottom:104px}}
 [data-dcds-public-screen][hidden],[data-dcds-student-screen][hidden],[data-dcds-assessment-screen][hidden]{display:none!important}
 @media(min-width:900px){#dcds-fixed-bottom-nav{bottom:14px;padding:8px 10px}#dcds-fixed-bottom-nav .dcds-dock-item{min-height:58px;font-size:10px}}
 @media(prefers-reduced-motion:reduce){#dcds-fixed-bottom-nav .dcds-dock-item{transition:none}}
@@ -516,7 +521,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       <button class="btn gold" id="refreshInternationalPayoutsButton" type="button">↻ Refresh International Readiness</button>
       <span id="internationalPayoutAdminMeta" class="detail-notice">Loading route readiness…</span>
     </div>
-    <div id="internationalPayoutGates" class="payout-meta" aria-live="polite"></div>
+    <div id="internationalPayoutGates" class="intl-gate-list" aria-live="polite"></div>
     <div class="intl-route-tools">
       <input id="internationalRouteSearch" type="search" placeholder="Find a country or currency…" aria-label="Search international payout corridors">
       <select id="internationalRouteFilter" aria-label="Filter international payout corridors">
@@ -1374,6 +1379,8 @@ async function loadInternationalPayoutReadiness() {
   const notice = $("internationalPayoutSafetyNotice");
   const meta = $("internationalPayoutAdminMeta");
   const gates = $("internationalPayoutGates");
+  const requestToken = String((Number(gates.dataset.requestToken) || 0) + 1);
+  gates.dataset.requestToken = requestToken;
   const summary = $("internationalPayoutSummary");
   const globalMeta = $("internationalPayoutGlobalMeta");
   const globalBar = $("internationalPayoutGlobalBar");
@@ -1388,6 +1395,7 @@ async function loadInternationalPayoutReadiness() {
   requestsRoot.replaceChildren(make("div","empty","Loading international withdrawal requests…"));
   gates.replaceChildren();
   const { data, error } = await db.functions.invoke("dcds-international-payout", { body: { action: "readiness" } });
+  if (gates.dataset.requestToken !== requestToken) return;
   if (error || !data?.success) {
     notice.textContent = data?.error || "International payout readiness service is unavailable. No international route is enabled.";
     meta.textContent = "Readiness information unavailable.";
@@ -1439,13 +1447,15 @@ async function loadInternationalPayoutReadiness() {
     serverIpWhitelisted: "DCDS transfer server IP whitelisted",
     destinationWalletsFunded: "Destination-currency wallets funded for transfer fees",
     sandboxVerified: "International sandbox testing completed",
-    webhookConfigured: "Flutterwave webhook secret configured",
-    globalSwitchEnabled: "Global international payout switch enabled"
+    webhookConfigured: "Flutterwave webhook secret configured"
   };
+  const gateFragment = document.createDocumentFragment();
+  gateFragment.appendChild(make("strong","intl-gate-heading","Technical checks · " + technicalChecks.length + " requirements"));
   Object.entries(gateLabels).forEach(([key,label]) => {
     const passed = readiness[key] === true;
-    gates.appendChild(make("span","pill" + (passed ? "" : " pending"),(passed ? "✓ " : "○ ") + label));
+    gateFragment.appendChild(make("span","pill" + (passed ? "" : " pending"),(passed ? "✓ " : "○ ") + label));
   });
+  gates.replaceChildren(gateFragment);
 
   async function routeAction(route,stage,label) {
     if(!window.confirm(label+" for "+route.country_name+" ("+route.currency+")? Only proceed after verifying the matching Flutterwave merchant account and test evidence."))return;
