@@ -849,6 +849,22 @@ function showEnrollment(index,user){
  $('enrollCancel').onclick=()=>{selectedCourseIndex=null;closeModal()};
 }
 
+async function getDCDSPaymentErrorMessage(error){
+ const context=error?.context;
+ let serverMessage='';
+ if(context&&typeof context.clone==='function'){
+  try{
+   const responseBody=await context.clone().json();
+   serverMessage=String(responseBody?.error||'').trim();
+  }catch(_){}
+ }
+ const message=serverMessage||String(error?.message||'Payment could not be started.');
+ if(/checkout is already pending/i.test(message)){
+  return 'A previous checkout for this course is still pending. DCDS has blocked another checkout to protect you from duplicate charges. Return to the earlier Flutterwave payment page if it is still open. If you cannot find it, contact DCDS support so we can verify the earlier attempt before safely reopening payment.';
+ }
+ return message;
+}
+
 async function startCoursePayment(index){
  const btn=$('payNowBtn'),err=$('paymentError');
  const requestedCurrency=window.DCDSGlobalCurrency?.currency||'NGN';
@@ -878,8 +894,13 @@ async function startCoursePayment(index){
   window.location.assign(data.payment_link);
  }catch(error){
   console.error('DCDS payment start error:',error);
-  if(err)err.textContent=error.message||'We could not start payment. Please try again.';
-  btn.disabled=false;btn.textContent='Try payment again';
+  const friendlyMessage=await getDCDSPaymentErrorMessage(error);
+  if(err)err.textContent=friendlyMessage;
+  if(/previous checkout|checkout for this course is still pending/i.test(friendlyMessage)){
+   btn.disabled=true;btn.textContent='Checkout already pending';
+  }else{
+   btn.disabled=false;btn.textContent='Try payment again';
+  }
  }
 }
 
@@ -948,8 +969,13 @@ async function startGeneralCoursePayment(){
   window.location.assign(data.payment_link);
  }catch(error){
   console.error('DCDS General Course payment start error:',error);
-  if(err)err.textContent=error.message||'We could not start payment. Please try again.';
-  btn.disabled=false;btn.textContent='Try payment again';
+  const friendlyMessage=await getDCDSPaymentErrorMessage(error);
+  if(err)err.textContent=friendlyMessage;
+  if(/previous checkout|checkout for this course is still pending/i.test(friendlyMessage)){
+   btn.disabled=true;btn.textContent='Checkout already pending';
+  }else{
+   btn.disabled=false;btn.textContent='Try payment again';
+  }
  }
 }
 
