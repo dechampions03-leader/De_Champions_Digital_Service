@@ -281,6 +281,19 @@ html.dcds-app-loading body>:not(#dcds-launch-screen){visibility:hidden!important
 @media(prefers-reduced-motion:reduce){.dcds-reveal{opacity:1;transform:none;filter:none;animation:none}#dcds-launch-screen{transition:none}}
 </style>
 
+<style id="dcds-fixed-workspace-navigation">
+html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-inset-bottom,0px))!important}
+#dcds-fixed-bottom-nav{position:fixed;z-index:99999;left:50%;bottom:calc(10px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(820px,calc(100% - 18px));display:grid;grid-template-columns:repeat(var(--dcds-nav-count,5),minmax(0,1fr));gap:4px;padding:7px;border:1px solid rgba(255,255,255,.14);border-radius:22px;background:linear-gradient(145deg,rgba(48,20,76,.97),rgba(24,9,42,.97));box-shadow:0 14px 42px rgba(20,7,35,.3),inset 0 1px 0 rgba(255,255,255,.12);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px)}
+#dcds-fixed-bottom-nav[hidden]{display:none!important}
+#dcds-fixed-bottom-nav .dcds-dock-item{min-width:0;min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:6px 2px;border:1px solid transparent;border-radius:15px;background:transparent;color:#e9def5;font:700 9px/1.1 'DM Sans',Arial,sans-serif;letter-spacing:.01em;cursor:pointer;-webkit-tap-highlight-color:transparent;transition:background .18s ease,color .18s ease,transform .18s ease}
+#dcds-fixed-bottom-nav .dcds-dock-item:active{transform:scale(.96)}
+#dcds-fixed-bottom-nav .dcds-dock-item[aria-current="page"]{color:#28143c;background:linear-gradient(135deg,#f1d78c,#d7b45a);border-color:rgba(255,255,255,.35);box-shadow:0 5px 16px rgba(215,180,90,.22)}
+#dcds-fixed-bottom-nav .dcds-dock-icon{font-size:19px;line-height:1.1;font-family:Arial,sans-serif}
+#dcds-fixed-bottom-nav .dcds-dock-label{display:block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+[data-dcds-public-screen][hidden],[data-dcds-student-screen][hidden],[data-dcds-assessment-screen][hidden]{display:none!important}
+@media(min-width:900px){#dcds-fixed-bottom-nav{bottom:14px;padding:8px 10px}#dcds-fixed-bottom-nav .dcds-dock-item{min-height:58px;font-size:10px}}
+@media(prefers-reduced-motion:reduce){#dcds-fixed-bottom-nav .dcds-dock-item{transition:none}}
+</style>
 </head>
 <body>
 <section id="dcds-launch-screen" aria-label="De Champions Digital Service"><div class="dcds-launch-main"><img class="dcds-launch-logo dcds-reveal dcds-reveal-logo" src="./assets/dcds-splash-icon-v4-512.png" alt="DCDS logo" width="512" height="512" fetchpriority="high"><h1 class="dcds-launch-wordmark"><span class="dcds-reveal dcds-reveal-name-one">DE CHAMPIONS</span><span class="dcds-reveal dcds-reveal-name-two">DIGITAL SERVICE</span></h1><p class="dcds-launch-tagline" aria-label="Create, Learn, Innovate, Earn"><span class="dcds-reveal dcds-reveal-create">CREATE</span><span class="dot dcds-reveal dcds-reveal-create" aria-hidden="true">•</span><span class="dcds-reveal dcds-reveal-learn">LEARN</span><span class="dot dcds-reveal dcds-reveal-learn" aria-hidden="true">•</span><span class="dcds-reveal dcds-reveal-innovate">INNOVATE</span><span class="dot dcds-reveal dcds-reveal-innovate" aria-hidden="true">•</span><span class="dcds-reveal dcds-reveal-earn">EARN</span></p></div><div class="dcds-launch-footer dcds-reveal dcds-reveal-footer">De Champions Digital Service</div></section>
@@ -1515,4 +1528,20 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 </style>
 <script src="./assets/dcds-global-currency.js" defer></script>
 
+<script id="dcds-public-five-screen-navigation">
+(()=>{
+ const main=document.querySelector("main");if(!main||document.getElementById("dcds-fixed-bottom-nav"))return;
+ const mapping={home:["#home",".trust-strip",".cta"],courses:["#courses"],services:["#services"],about:["#why","#founder","#how"],reviews:["#studentReviews"]};
+ const labels=[["home","⌂","Home"],["courses","▤","Courses"],["services","✦","Services"],["about","◎","About"],["reviews","☆","Reviews"]],nodes=[];
+ Object.keys(mapping).forEach(key=>mapping[key].forEach(selector=>{const node=main.querySelector(selector);if(node&&!nodes.includes(node)){node.dataset.dcdsPublicScreen=key;nodes.push(node);}}));
+ if(!nodes.length)return;
+ const nav=document.createElement("nav");nav.id="dcds-fixed-bottom-nav";nav.setAttribute("aria-label","DCDS main sections");nav.style.setProperty("--dcds-nav-count","5");
+ labels.forEach(([key,icon,label])=>{const b=document.createElement("button");b.type="button";b.className="dcds-dock-item";b.dataset.screen=key;b.setAttribute("aria-label",label);const i=document.createElement("span");i.className="dcds-dock-icon";i.setAttribute("aria-hidden","true");i.textContent=icon;const t=document.createElement("span");t.className="dcds-dock-label";t.textContent=label;b.append(i,t);nav.appendChild(b);});
+ document.body.appendChild(nav);
+ function show(key,scroll=true){if(!mapping[key])key="home";nodes.forEach(n=>n.hidden=n.dataset.dcdsPublicScreen!==key);nav.querySelectorAll("button[data-screen]").forEach(b=>{if(b.dataset.screen===key)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});if(scroll)window.scrollTo({top:0,behavior:"smooth"});}
+ nav.addEventListener("click",e=>{const b=e.target.closest("button[data-screen]");if(!b)return;show(b.dataset.screen,true);if(history.replaceState)history.replaceState(null,"",location.pathname+location.search);});
+ document.addEventListener("click",e=>{const a=e.target.closest('a[href^="#"]');if(!a)return;const hash=a.getAttribute("href");if(!hash||hash==="#")return;let id;try{id=decodeURIComponent(hash.slice(1));}catch(_){return;}const target=document.getElementById(id);const owner=target&&target.closest("[data-dcds-public-screen]");if(!owner)return;e.preventDefault();show(owner.dataset.dcdsPublicScreen,false);if(history.replaceState)history.replaceState(null,"",hash);requestAnimationFrame(()=>target.scrollIntoView({behavior:"smooth",block:"start"}));});
+ let initial="home";if(location.hash){let id;try{id=decodeURIComponent(location.hash.slice(1));}catch(_){}const target=id&&document.getElementById(id);const owner=target&&target.closest("[data-dcds-public-screen]");if(owner)initial=owner.dataset.dcdsPublicScreen;}show(initial,false);
+})();
+</script>
 </body></html>
