@@ -18,6 +18,7 @@ type PayoutRoute = {
   required_fields: string[];
   optional_fields: string[];
   route_config: JsonObject;
+  internal_notes?: string | null;
 };
 type PayoutRequest = {
   id: string;
@@ -206,7 +207,7 @@ async function getOwnedAmbassador(db: SupabaseClient, userId: string) {
 async function getRoute(db: SupabaseClient, routeId: string, requireEnabled = true): Promise<PayoutRoute> {
   if (!/^[0-9a-f-]{36}$/i.test(routeId)) throw new Error("Select a valid payout corridor.");
   const { data, error } = await db.from("dcds_international_payout_routes")
-    .select("id,route_code,country_code,country_name,currency,status,required_fields,optional_fields,route_config")
+    .select("id,route_code,country_code,country_name,currency,status,required_fields,optional_fields,route_config,internal_notes")
     .eq("id", routeId).maybeSingle();
   if (error) throw error;
   if (!data || (requireEnabled && data.status !== "enabled")) throw new Error("This international payout corridor is not currently enabled.");
