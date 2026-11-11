@@ -280,3 +280,98 @@ begin
   offset greatest(coalesce(p_offset, 0), 0);
 end;
 $function$;
+
+
+create or replace function public.admin_get_student_record(p_student_id uuid)
+returns jsonb
+language plpgsql
+security definer
+set search_path = ''
+as $function$
+declare
+  result jsonb;
+begin
+  if not coalesce(public.is_dcds_admin(), false) then
+    raise exception 'Administrator access required' using errcode='42501';
+  end if;
+
+  select jsonb_build_object(
+    'student', jsonb_build_object(
+      'id',u.id,
+      'email',u.email,
+      'full_name',coalesce(nullif(btrim(u.raw_user_meta_data->>'full_name'),''),nullif(btrim(u.raw_user_meta_data->>'name'),''),'DCDS Student'),
+      'phone',coalesce(nullif(btrim(u.raw_user_meta_data->>'phone'),''),nullif(btrim(u.raw_user_meta_data->>'dcds_phone_e164'),''),nullif(btrim(u.phone),''),''),
+      'created_at',u.created_at,
+      'last_sign_in_at',u.last_sign_in_at,
+      'email_confirmed_at',u.email_confirmed_at,
+      'phone_confirmed_at',u.phone_confirmed_at,
+      'verified_contact_at',coalesce(u.email_confirmed_at,u.phone_confirmed_at),
+      'banned_until',u.banned_until,
+      'user_metadata',u.raw_user_meta_data
+    ),
+    'enrolments',coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id',e.id,'course_id',c.id,'course_title',c.title,'course_price',c.price,
+        'enrolled_at',e.created_at,'enrollment_source',e.enrollment_source
+      ) order by e.created_at desc)
+      from public.enrollments e join public.courses c on c.id=e.course_id where e.user_id=u.id
+    ),'[]'::jsonb),
+    'orders',coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id',o.id,'course_title',c.title,'amount',o.amount,'currency',o.currency,
+        'status',o.status,'tx_ref',o.tx_ref,'created_at',o.created_at
+      ) order by o.created_at desc)
+      from public.orders o join public.courses c on c.id=o.course_id where o.user_id=u.id
+    ),'[]'::jsonb),
+    'payments',coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id',p.id,'order_id',p.order_id,'provider',p.provider,
+        'transaction_id',p.transaction_id,'tx_ref',p.tx_ref,'amount',p.amount,
+        'currency',p.currency,'status',p.status,'created_at',p.created_at
+      ) order by p.created_at desc)
+      from public.payments p where p.user_id=u.id
+    ),'[]'::jsonb),
+    'progress',coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'course_title',c.title,'lesson_title',l.lesson_title,
+        'completed_at',lp.completed_at
+      ) order by lp.completed_at desc)
+      from public.lesson_progress lp
+      join public.courses c on c.id=lp.course_id
+      join public.course_lessons l on l.id=lp.lesson_id
+      where lp.user_id=u.id
+    ),'[]'::jsonb),
+    'certificates',coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id',cert.id,'certificate_number',cert.certificate_number,
+        'course_title',c.title,'status',cert.status,
+        'issued_at',cert.issued_at,'verified_at',cert.verified_at
+      ) order by cert.issued_at desc)
+      from public.certificates cert join public.courses c on c.id=cert.course_id
+      where cert.user_id=u.id
+    ),'[]'::jsonb),
+    'support_tickets',coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'id',t.id,'subject',t.subject,'category',t.category,'message',t.message,
+        'status',t.status,'admin_response',t.admin_response,'created_at',t.created_at,
+        'responded_at',t.responded_at
+      ) order by t.created_at desc)
+      from public.student_support_tickets t where t.user_id=u.id
+    ),'[]'::jsonb),
+    'admin_notes',coalesce((
+      select jsonb_agg(jsonb_build_object('id',n.id,'note',n.note,'created_at',n.created_at)
+      order by n.created_at desc)
+      from public.student_admin_notes n where n.student_id=u.id
+    ),'[]'::jsonb),
+    'audit_log',coalesce((
+      select jsonb_agg(jsonb_build_object('action',a.action,'details',a.details,'created_at',a.created_at)
+      order by a.created_at desc)
+      from public.student_admin_audit a where a.student_id=u.id
+    ),'[]'::jsonb)
+  ) into result
+  from auth.users u where u.id=p_student_id;
+
+  if result is null then raise exception 'Student not found'; end if;
+  return result;
+end;
+$function$;
