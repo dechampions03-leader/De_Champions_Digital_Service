@@ -435,6 +435,26 @@ Deno.serve(async (req: Request) => {
       }
       const identifier = details.account_number || details.iban;
       if (!identifier || identifier.length < 4) return respond({ success: false, error: "A valid account number or IBAN is required." }, 400);
+      if (route.currency === "USD" && !["checking","depository"].includes(String(details.account_type || "").toLowerCase())) {
+        return respond({ success: false, error: "For a USD beneficiary, select checking or depository as the account type." }, 400);
+      }
+      if (route.currency === "GBP") {
+        const accountType = String(details.account_type || "").toLowerCase();
+        if (!["personal","corporate"].includes(accountType)) {
+          return respond({ success: false, error: "For a GBP beneficiary, select personal or corporate as the account type." }, 400);
+        }
+        if (accountType === "personal") {
+          const parts = beneficiaryName.toLowerCase().split(/\\s+/).filter(Boolean);
+          if (!details.first_name || !details.last_name ||
+              String(details.first_name).toLowerCase() !== parts[0] ||
+              String(details.last_name).toLowerCase() !== parts[parts.length - 1]) {
+            return respond({ success: false, error: "For a personal GBP account, first and last names must match the beneficiary name." }, 400);
+          }
+        }
+        if (accountType === "corporate" && !details.beneficiary_merchant_name) {
+          return respond({ success: false, error: "For a corporate GBP account, enter the beneficiary business name." }, 400);
+        }
+      }
 
       const encryptionKey = Deno.env.get("DCDS_PAYOUT_ENCRYPTION_KEY");
       if (!encryptionKey) return respond({ success: false, error: "Secure beneficiary storage is not configured." }, 503);
