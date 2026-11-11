@@ -102,10 +102,38 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
 
     <div id="adminApp" hidden>
 
+        <!-- ADMIN NAVIGATION AND WORKSPACE -->
+    <div class="admin-center-layout" id="adminCenterLayout">
+        <aside class="admin-center-sidebar" id="adminCenterSidebar" aria-label="Admin communications navigation">
+            <div class="admin-center-brand">
+                <div class="admin-center-mark" aria-hidden="true">DC</div>
+                <div class="admin-center-brand-copy"><strong>DCDS</strong><span>ADMIN CENTRE</span></div>
+                <button class="admin-center-collapse" id="adminCenterCollapse" type="button" aria-label="Collapse navigation" aria-expanded="true" title="Collapse navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7"/></svg></button>
+            </div>
+            <div class="admin-center-divider"></div>
+            <p class="admin-center-kicker">COMMUNICATIONS</p>
+            <nav class="admin-center-nav" aria-label="Admin centre sections">
+                <button class="admin-center-nav-item active" type="button" data-admin-view="overview" aria-current="page" title="Overview"><span class="admin-center-nav-icon" aria-hidden="true">⌂</span><span class="admin-center-nav-copy"><strong>Overview</strong><small>Centre summary</small></span><span class="admin-center-active-dot"></span></button>
+                <button class="admin-center-nav-item" type="button" data-admin-view="announcements" title="Announcements"><span class="admin-center-nav-icon" aria-hidden="true">✦</span><span class="admin-center-nav-copy"><strong>Announcements</strong><small>Compose &amp; history</small></span><span class="admin-center-active-dot"></span></button>
+                <button class="admin-center-nav-item" type="button" data-admin-view="notifications" title="Notifications"><span class="admin-center-nav-icon" aria-hidden="true">♧</span><span class="admin-center-nav-copy"><strong>Notifications</strong><small>Student alerts</small></span><span class="admin-center-active-dot"></span></button>
+                <button class="admin-center-nav-item" type="button" data-admin-view="reviews" title="Student reviews"><span class="admin-center-nav-icon" aria-hidden="true">☆</span><span class="admin-center-nav-copy"><strong>Reviews &amp; Ratings</strong><small>Moderate feedback</small></span><span class="admin-center-active-dot"></span></button>
+                <button class="admin-center-nav-item" type="button" data-admin-view="support" title="Support inbox"><span class="admin-center-nav-icon" aria-hidden="true">✉</span><span class="admin-center-nav-copy"><strong>Support Inbox</strong><small>Student requests</small></span><span class="admin-center-active-dot"></span></button>
+            </nav>
+            <div class="admin-center-sidebar-bottom">
+                <div class="admin-center-secure"><span></span><span class="admin-center-label-copy">Authorized administrator area</span></div>
+                <a class="admin-center-student-link" href="student-management.html" title="Open Student Management"><span aria-hidden="true">♙</span><span class="admin-center-student-copy">Student Management</span><b aria-hidden="true">↗</b></a>
+            </div>
+        </aside>
+        <button class="admin-center-backdrop" id="adminCenterBackdrop" type="button" aria-label="Close admin menu"></button>
+        <div class="admin-center-workspace">
+
         <!-- HEADER -->
 
         <header id="adminHeader">
 
+            <button class="admin-center-mobile-menu" id="adminCenterMenuToggle" type="button" aria-controls="adminCenterSidebar" aria-expanded="false" aria-label="Open admin menu">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg><span>Menu</span>
+            </button>
             <div class="brand-section">
 
                 <h1>
@@ -138,7 +166,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
 
         <!-- ADMIN WELCOME SECTION -->
 
-        <section id="welcomeSection">
+        <section id="welcomeSection" data-admin-view-panel="overview">
 
             <h2>
                 Welcome, Administrator 👑
@@ -154,7 +182,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
 
         <!-- DASHBOARD STATISTICS -->
 
-        <section id="statisticsSection">
+        <section id="statisticsSection" data-admin-view-panel="overview">
 
             <div class="stat-card">
 
@@ -185,11 +213,21 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
         </section>
 
 
+        <section class="admin-center-quick-access" data-admin-view-panel="overview" aria-label="Quick access">
+            <div class="admin-center-quick-heading"><div><span>YOUR COMMUNICATION TOOLS</span><h2>Quick access</h2><p>Open the right workspace without searching through a long page.</p></div><span class="admin-center-quick-spark" aria-hidden="true">✦</span></div>
+            <div class="admin-center-shortcut-grid">
+                <button type="button" class="admin-center-shortcut" data-admin-view="announcements"><span class="admin-center-shortcut-icon">✦</span><span><strong>Create announcement</strong><small>Publish updates and ticker messages</small></span><b aria-hidden="true">↗</b></button>
+                <button type="button" class="admin-center-shortcut" data-admin-view="notifications"><span class="admin-center-shortcut-icon">♧</span><span><strong>Notification history</strong><small>Review student bell alerts</small></span><b aria-hidden="true">↗</b></button>
+                <button type="button" class="admin-center-shortcut" data-admin-view="reviews"><span class="admin-center-shortcut-icon">☆</span><span><strong>Student reviews</strong><small>Approve genuine feedback</small></span><b aria-hidden="true">↗</b></button>
+                <button type="button" class="admin-center-shortcut" data-admin-view="support"><span class="admin-center-shortcut-icon">✉</span><span><strong>Support requests</strong><small>Respond and track resolution</small></span><b aria-hidden="true">↗</b></button>
+            </div>
+        </section>
+
         <!-- CREATE ANNOUNCEMENT SECTION -->
 
         <main id="mainContent">
 
-            <section id="createAnnouncementSection">
+            <section id="createAnnouncementSection" data-admin-view-panel="announcements">
 
                 <div class="section-heading">
 
@@ -433,7 +471,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
 
             <!-- ANNOUNCEMENT HISTORY -->
 
-            <section id="historySection">
+            <section id="historySection" data-admin-view-panel="announcements">
 
                 <div class="section-heading">
 
@@ -465,7 +503,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
 
             <!-- NOTIFICATION HISTORY -->
 
-            <section id="notificationHistorySection">
+            <section id="notificationHistorySection" data-admin-view-panel="notifications">
 
                 <div class="section-heading">
 
@@ -490,7 +528,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
   
 
             <!-- DCDS STUDENT REVIEW MODERATION -->
-            <section id="reviewModerationSection">
+            <section id="reviewModerationSection" data-admin-view-panel="reviews">
                 <div class="section-heading">
                     <h2>⭐ Student Reviews & Ratings</h2>
                     <p>Review student feedback and approve genuine submissions before they appear publicly on the DCDS homepage.</p>
@@ -511,7 +549,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
             </section>
 
             <!-- DCDS STUDENT SUPPORT INBOX -->
-            <section id="supportInboxSection">
+            <section id="supportInboxSection" data-admin-view-panel="support">
                 <div class="section-heading">
                     <h2>🎧 Student Support Inbox</h2>
                     <p>Review student requests, respond directly, and track each request through resolution.</p>
@@ -549,7 +587,8 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
             </p>
 
         </footer>
-
+        </div>
+    </div>
     </div>
  <!-- =====================================
      BLOCK 2: PREMIUM CSS DESIGN PART 1
@@ -3197,6 +3236,63 @@ supportStatusFilter.addEventListener("change", loadSupportInbox);
    DCDS ADMIN CENTER — FINAL INITIALIZATION
 ===================================== */
 
+
+/* DCDS Admin Centre navigation — each workspace is shown independently. */
+const ADMIN_CENTRE_VIEWS = {
+    overview: "Overview",
+    announcements: "Announcements",
+    notifications: "Notifications",
+    reviews: "Reviews & Ratings",
+    support: "Support Inbox"
+};
+function closeAdminCentreMenu() {
+    const layout=document.getElementById("adminCenterLayout");
+    const toggle=document.getElementById("adminCenterMenuToggle");
+    if(layout)layout.classList.remove("admin-center-menu-open");
+    if(toggle){toggle.setAttribute("aria-expanded","false");toggle.setAttribute("aria-label","Open admin menu");}
+}
+function setAdminCentreView(view,options={}) {
+    if(!Object.prototype.hasOwnProperty.call(ADMIN_CENTRE_VIEWS,view))return;
+    document.querySelectorAll("[data-admin-view-panel]").forEach(panel=>{
+        const active=panel.dataset.adminViewPanel===view;
+        panel.hidden=!active;
+        panel.setAttribute("aria-hidden",active?"false":"true");
+        if(active){
+            panel.querySelectorAll("[data-dcds-reveal]").forEach(node=>node.classList.add("dcds-visible"));
+            panel.querySelectorAll("[data-dcds-text-reveal]").forEach(node=>node.classList.add("dcds-text-visible"));
+        }
+    });
+    document.querySelectorAll(".admin-center-nav-item[data-admin-view]").forEach(button=>{
+        const active=button.dataset.adminView===view;
+        button.classList.toggle("active",active);
+        if(active)button.setAttribute("aria-current","page");
+        else button.removeAttribute("aria-current");
+    });
+    document.title=ADMIN_CENTRE_VIEWS[view]+" | DCDS Admin Centre";
+    closeAdminCentreMenu();
+    if(options.scroll!==false)window.scrollTo({top:0,behavior:"smooth"});
+}
+document.querySelectorAll("[data-admin-view]").forEach(button=>{
+    button.addEventListener("click",()=>setAdminCentreView(button.dataset.adminView));
+});
+document.getElementById("adminCenterMenuToggle").addEventListener("click",()=>{
+    const layout=document.getElementById("adminCenterLayout");
+    const toggle=document.getElementById("adminCenterMenuToggle");
+    const open=layout.classList.toggle("admin-center-menu-open");
+    toggle.setAttribute("aria-expanded",open?"true":"false");
+    toggle.setAttribute("aria-label",open?"Close admin menu":"Open admin menu");
+});
+document.getElementById("adminCenterBackdrop").addEventListener("click",closeAdminCentreMenu);
+document.getElementById("adminCenterCollapse").addEventListener("click",()=>{
+    const layout=document.getElementById("adminCenterLayout");
+    const button=document.getElementById("adminCenterCollapse");
+    const collapsed=layout.classList.toggle("admin-center-collapsed");
+    button.setAttribute("aria-expanded",collapsed?"false":"true");
+    button.setAttribute("aria-label",collapsed?"Expand navigation":"Collapse navigation");
+    button.title=collapsed?"Expand navigation":"Collapse navigation";
+});
+setAdminCentreView("overview",{scroll:false});
+
 document.addEventListener("DOMContentLoaded", async () => {
     try {
         console.log("DCDS Admin Notification Center starting...");
@@ -3320,5 +3416,97 @@ document.addEventListener("DOMContentLoaded", async () => {
  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start,{once:true});else start();
 })();
 </script>
+
+<style id="dcds-admin-centre-navigation">
+#adminApp{width:100%;max-width:1480px;margin:0 auto}
+.admin-center-layout{display:grid;grid-template-columns:256px minmax(0,1fr);align-items:start;gap:22px}
+.admin-center-workspace{min-width:0}
+.admin-center-sidebar{position:sticky;top:18px;display:flex;flex-direction:column;height:calc(100vh - 36px);min-height:590px;overflow:auto;padding:18px 14px;border:1px solid rgba(255,255,255,.1);border-radius:23px;background:radial-gradient(circle at 8% 0%,rgba(151,92,215,.25),transparent 34%),linear-gradient(165deg,#2a1247 0%,#1b0c2e 60%,#140821 100%);box-shadow:0 18px 48px rgba(35,12,58,.2);color:#fff;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.2) transparent}
+.admin-center-brand{display:flex;align-items:center;gap:11px;padding:3px 4px 15px}
+.admin-center-mark{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;border-radius:14px;background:linear-gradient(145deg,#b77bf0,#7131b5);box-shadow:0 8px 22px rgba(130,70,190,.32);font:900 15px Georgia,serif;letter-spacing:-1px;color:#fff}
+.admin-center-brand-copy{display:grid;gap:3px;min-width:0;flex:1}
+.admin-center-brand-copy strong{font:800 16px Georgia,serif;letter-spacing:.12em;color:#fff}
+.admin-center-brand-copy span{font-size:9px;letter-spacing:.18em;color:#cbb6e4;font-weight:800}
+.admin-center-collapse{display:grid;place-items:center;flex:0 0 31px;width:31px;height:31px;padding:0;border:1px solid rgba(255,255,255,.14);border-radius:9px;background:rgba(255,255,255,.07);color:#e8d8f8;cursor:pointer}
+.admin-center-collapse svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.admin-center-divider{height:1px;background:linear-gradient(90deg,rgba(218,183,255,.28),rgba(218,183,255,0));margin:1px 2px 17px}
+.admin-center-kicker{margin:0 10px 9px;color:#a993c1;font-size:9px;font-weight:900;letter-spacing:.2em}
+.admin-center-nav{display:grid;gap:7px}
+.admin-center-nav-item{position:relative;display:flex;align-items:center;gap:11px;width:100%;min-height:59px;padding:9px 10px;border:1px solid transparent;border-radius:14px;background:transparent;color:#e7d9f4;text-align:left;cursor:pointer;transition:background .2s,border-color .2s,transform .2s,box-shadow .2s}
+.admin-center-nav-item:hover{background:rgba(255,255,255,.075);border-color:rgba(255,255,255,.08);transform:translateX(2px)}
+.admin-center-nav-item.active{background:linear-gradient(112deg,#8745c8 0%,#6426a4 100%);border-color:rgba(226,197,255,.2);color:#fff;box-shadow:0 9px 24px rgba(99,39,157,.34),inset 0 1px 0 rgba(255,255,255,.15)}
+.admin-center-nav-icon{display:grid;place-items:center;flex:0 0 38px;width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.075);color:#d9c4f0;font-size:21px}
+.admin-center-nav-item.active .admin-center-nav-icon{background:rgba(255,255,255,.17);color:#fff}
+.admin-center-nav-copy{display:grid;gap:4px;min-width:0;flex:1}
+.admin-center-nav-copy strong{font-size:12px;font-weight:800;letter-spacing:.01em}
+.admin-center-nav-copy small{font-size:10px;color:#bda9d2;white-space:nowrap}
+.admin-center-nav-item.active .admin-center-nav-copy small{color:#eadcf8}
+.admin-center-active-dot{width:5px;height:5px;border-radius:50%;background:transparent}
+.admin-center-nav-item.active .admin-center-active-dot{background:#f2d58f;box-shadow:0 0 0 4px rgba(242,213,143,.12)}
+.admin-center-sidebar-bottom{display:grid;gap:10px;margin-top:auto;padding-top:18px}
+.admin-center-secure{display:flex;align-items:center;gap:8px;padding:10px 9px;color:#c9b8dc;font-size:10px}
+.admin-center-secure>span:first-child{width:7px;height:7px;border-radius:50%;background:#72d6a0;box-shadow:0 0 0 4px rgba(114,214,160,.12)}
+.admin-center-student-link{display:flex;align-items:center;gap:9px;min-height:43px;padding:10px;border:1px solid rgba(226,197,255,.16);border-radius:12px;background:rgba(255,255,255,.055);color:#f0e6fa;text-decoration:none;font-size:11px;font-weight:800;transition:background .2s,border-color .2s}
+.admin-center-student-link:hover{background:rgba(255,255,255,.12);border-color:rgba(226,197,255,.34)}
+.admin-center-student-link>span:first-child{display:grid;place-items:center;width:23px;height:23px;border-radius:8px;background:rgba(211,174,248,.17);color:#f1d994;font-size:17px}
+.admin-center-student-link>span:nth-child(2){flex:1}
+.admin-center-student-link b{color:#c8b3df}
+.admin-center-mobile-menu{display:none;align-items:center;gap:7px;padding:9px 11px;border:1px solid rgba(212,175,55,.35);border-radius:11px;background:rgba(255,255,255,.07);color:#f5e8ff;font-size:12px;font-weight:800;cursor:pointer}
+.admin-center-mobile-menu svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.admin-center-backdrop{display:none}
+.admin-center-quick-access{margin:0 0 30px;padding:22px;border:1px solid var(--border-color);border-radius:20px;background:linear-gradient(145deg,rgba(255,255,255,.075),rgba(255,255,255,.025));box-shadow:0 12px 30px rgba(0,0,0,.12)}
+.admin-center-quick-heading{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:17px}
+.admin-center-quick-heading>div>span{font-size:9px;font-weight:900;letter-spacing:.18em;color:var(--bright-gold)}
+.admin-center-quick-heading h2{margin:4px 0 5px;color:var(--bright-gold);font-size:20px}
+.admin-center-quick-heading p{color:var(--muted-text);font-size:12px}
+.admin-center-quick-spark{display:grid;place-items:center;flex:0 0 36px;height:36px;border-radius:12px;background:rgba(212,175,55,.12);color:var(--bright-gold);font-size:18px}
+.admin-center-shortcut-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.admin-center-shortcut{display:flex;align-items:center;gap:11px;min-width:0;padding:13px;border:1px solid rgba(212,175,55,.22);border-radius:14px;background:linear-gradient(145deg,rgba(255,255,255,.09),rgba(255,255,255,.035));color:var(--pure-white);text-align:left;cursor:pointer;box-shadow:0 5px 17px rgba(0,0,0,.07);transition:transform .2s,border-color .2s,box-shadow .2s}
+.admin-center-shortcut:hover{transform:translateY(-2px);border-color:rgba(245,215,122,.6);box-shadow:0 10px 24px rgba(0,0,0,.13)}
+.admin-center-shortcut-icon{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border-radius:12px;background:linear-gradient(145deg,rgba(159,104,217,.32),rgba(212,175,55,.13));color:#f5d77a;font-size:19px;font-weight:900}
+.admin-center-shortcut>span:nth-child(2){display:grid;gap:4px;min-width:0;flex:1}
+.admin-center-shortcut strong{font-size:12px}
+.admin-center-shortcut small{color:var(--muted-text);font-size:10px;line-height:1.4}
+.admin-center-shortcut>b{color:var(--bright-gold);font-size:16px}
+.admin-center-workspace>[data-admin-view-panel][hidden],.admin-center-workspace #mainContent>[data-admin-view-panel][hidden]{display:none!important}
+.admin-center-nav-item:focus-visible,.admin-center-shortcut:focus-visible,.admin-center-collapse:focus-visible,.admin-center-mobile-menu:focus-visible,.admin-center-student-link:focus-visible{outline:3px solid #d5b6f3;outline-offset:3px}
+.admin-center-layout.admin-center-collapsed{grid-template-columns:84px minmax(0,1fr)}
+.admin-center-layout.admin-center-collapsed .admin-center-sidebar{padding-left:9px;padding-right:9px}
+.admin-center-layout.admin-center-collapsed .admin-center-brand-copy,.admin-center-layout.admin-center-collapsed .admin-center-kicker,.admin-center-layout.admin-center-collapsed .admin-center-nav-copy,.admin-center-layout.admin-center-collapsed .admin-center-label-copy,.admin-center-layout.admin-center-collapsed .admin-center-student-copy,.admin-center-layout.admin-center-collapsed .admin-center-student-link b{display:none}
+.admin-center-layout.admin-center-collapsed .admin-center-brand{justify-content:center;flex-wrap:wrap}
+.admin-center-layout.admin-center-collapsed .admin-center-collapse{transform:rotate(180deg)}
+.admin-center-layout.admin-center-collapsed .admin-center-nav-item{justify-content:center;padding:9px 5px}
+.admin-center-layout.admin-center-collapsed .admin-center-active-dot{position:absolute;right:4px;top:9px}
+.admin-center-layout.admin-center-collapsed .admin-center-secure{justify-content:center;padding:10px 0}
+.admin-center-layout.admin-center-collapsed .admin-center-student-link{justify-content:center;padding:9px}
+@media(max-width:1050px){.admin-center-layout{grid-template-columns:225px minmax(0,1fr);gap:15px}.admin-center-sidebar{padding-left:11px;padding-right:11px}}
+@media(max-width:820px){
+    body{padding:14px 11px}
+    .admin-center-layout{display:block}
+    .admin-center-sidebar{position:fixed;z-index:1302;left:11px;top:11px;bottom:11px;width:min(300px,calc(100vw - 48px));height:auto;min-height:0;transform:translateX(calc(-100% - 24px));transition:transform .26s cubic-bezier(.2,.75,.25,1);box-shadow:0 24px 70px rgba(17,5,29,.36)}
+    .admin-center-layout.admin-center-menu-open .admin-center-sidebar{transform:translateX(0)}
+    .admin-center-backdrop{position:fixed;inset:0;z-index:1301;display:block;visibility:hidden;opacity:0;pointer-events:none;border:0;background:rgba(20,8,34,.58);transition:opacity .2s,visibility .2s}
+    .admin-center-layout.admin-center-menu-open .admin-center-backdrop{visibility:visible;opacity:1;pointer-events:auto}
+    .admin-center-mobile-menu{display:inline-flex;flex:0 0 auto}
+    .admin-center-collapse{display:none}
+    .admin-center-layout.admin-center-collapsed .admin-center-brand-copy,.admin-center-layout.admin-center-collapsed .admin-center-kicker,.admin-center-layout.admin-center-collapsed .admin-center-nav-copy,.admin-center-layout.admin-center-collapsed .admin-center-label-copy,.admin-center-layout.admin-center-collapsed .admin-center-student-copy,.admin-center-layout.admin-center-collapsed .admin-center-student-link b{display:initial}
+    .admin-center-layout.admin-center-collapsed .admin-center-nav-copy{display:grid}
+    .admin-center-layout.admin-center-collapsed .admin-center-brand{justify-content:flex-start}
+    .admin-center-layout.admin-center-collapsed .admin-center-nav-item{justify-content:flex-start;padding:9px 10px}
+    .admin-center-workspace #adminHeader{gap:12px;padding:17px}
+    .admin-center-workspace #adminHeader .brand-section{flex:1 1 180px}
+    .admin-center-workspace #adminHeader #studentManagementLink{margin-left:auto}
+    .admin-center-shortcut-grid{grid-template-columns:1fr}
+}
+@media(max-width:560px){
+    .admin-center-workspace #adminHeader{align-items:flex-start}
+    .admin-center-mobile-menu{order:0}
+    .admin-center-workspace #adminHeader .brand-section{order:1;flex:1 1 calc(100% - 92px);min-width:150px}
+    .admin-center-workspace #adminHeader #studentManagementLink{order:2;margin:0;flex:1 1 100%;text-align:center}
+    .admin-center-workspace #adminHeader #logoutButton{order:3;flex:1 1 100%}
+    .admin-center-quick-access{padding:17px 14px}
+}
+@media(prefers-reduced-motion:reduce){.admin-center-nav-item,.admin-center-shortcut,.admin-center-sidebar,.admin-center-backdrop{transition:none!important}}
+</style>
 </body>
 </html>
