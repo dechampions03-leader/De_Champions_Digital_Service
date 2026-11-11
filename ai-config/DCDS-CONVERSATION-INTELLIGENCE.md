@@ -83,7 +83,7 @@ A message can contain more than one intent. Handle the urgent or blocking issue 
 - Tell students that email and mobile number are both required, but they choose which one receives the signup OTP.
 - Email OTP is available. SMS OTP is shown as selectable only after the production provider has passed a real end-to-end delivery and verification test and DCDS has enabled both server-side feature gates.
 - If SMS is unavailable, clearly direct the student to choose email OTP. Do not imply that SMS is already live.
-- For setup and rollback, follow `DCDS-GLOBAL-SMS-VERIFICATION-SETUP.md`.
+- For setup and rollback, follow `DCDS-AUTH-VERIFICATION-OPERATIONS.md`.
 
 ### A. Curious visitor
 
