@@ -138,6 +138,42 @@ header { background:#FFFFFF; border-color:#eadff5; box-shadow:0 8px 24px rgba(50
 .payout-warning{padding:11px 13px;border:1px solid #e4c16d;border-radius:10px;background:#fffaf0;color:#654b13;font-size:13px;line-height:1.5;margin:12px 0}
 .payout-events{margin-top:16px}
 
+
+/* International payout readiness — progress-first, responsive admin workspace */
+.intl-readiness-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:15px 0}
+.intl-readiness-stat{min-width:0;padding:15px;border:1px solid #eadff5;border-radius:14px;background:linear-gradient(145deg,#fff,#faf6ff)}
+.intl-readiness-stat span{display:block;color:#756783;font-size:11px;font-weight:700;line-height:1.4}
+.intl-readiness-stat strong{display:block;color:#451078;font-size:25px;margin-top:7px;overflow-wrap:anywhere}
+.intl-global-progress{padding:15px;border:1px solid #eadff5;border-radius:14px;background:#fbf9ff;margin:12px 0 16px}
+.intl-global-progress-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap}
+.intl-global-progress-head strong{color:#451078;font-size:14px}
+.intl-global-progress-head span{color:#756783;font-size:12px}
+.intl-progress-track{height:9px;border-radius:20px;background:#eadff5;overflow:hidden;margin-top:11px}
+.intl-progress-track>span{display:block;height:100%;width:0;border-radius:inherit;background:linear-gradient(90deg,#8d3bdb,#54168e);transition:width .2s ease}
+.intl-global-state{display:inline-flex;align-items:center;margin-top:10px;padding:6px 10px;border-radius:20px;background:#fff1c9;color:#76551a;font-size:11px;font-weight:800}
+.intl-global-state.ready{background:#e7f8ed;color:#17683a}
+.intl-route-tools{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:15px 0}
+.intl-route-tools input,.intl-route-tools select{min-width:0;flex:1 1 190px;padding:11px 12px;border:1px solid #eadff5;border-radius:10px;background:#fff;color:#28183a;font:inherit}
+.intl-route-tools input:focus,.intl-route-tools select:focus{outline:2px solid rgba(118,40,216,.18);border-color:#7628d8}
+.intl-route-result{flex:0 0 auto;color:#756783;font-size:12px}
+.intl-route-card{padding:16px;border:1px solid #eadff5;border-radius:15px;background:#fff;box-shadow:0 7px 22px rgba(50,16,95,.04)}
+.intl-route-card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap}
+.intl-route-card-head strong{font-size:17px;color:#451078;overflow-wrap:anywhere}
+.intl-route-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:14px 0}
+.intl-route-step{min-width:0;padding:10px;border:1px solid #eadff5;border-radius:10px;background:#fbf9ff}
+.intl-route-step.done{border-color:#c9e9d2;background:#f2fbf4}
+.intl-route-step span{display:block;font-size:10px;color:#756783;font-weight:800;line-height:1.35}
+.intl-route-step strong{display:block;margin-top:5px;font-size:11px;color:#76551a;overflow-wrap:anywhere}
+.intl-route-step.done strong{color:#17683a}
+.intl-route-next{padding:10px 12px;border-radius:10px;background:#f8f4fc;color:#5a3479;font-size:12px;line-height:1.5;margin:10px 0}
+.intl-route-evidence{margin-top:12px;border-top:1px solid #eadff5;padding-top:10px}
+.intl-route-evidence summary{cursor:pointer;color:#5d2b89;font-size:12px;font-weight:800}
+.intl-route-evidence p{margin:8px 0 0;color:#756783;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.intl-route-card .detail-actions{margin-top:12px}
+.intl-route-card .btn:disabled{opacity:.58;cursor:not-allowed}
+@media(max-width:850px){.intl-readiness-summary{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:520px){.intl-readiness-stat{padding:12px}.intl-readiness-stat strong{font-size:22px}.intl-route-card{padding:13px}.intl-route-steps{gap:6px}.intl-route-step{padding:8px}.intl-route-step span{font-size:9px}.intl-route-step strong{font-size:10px}.intl-route-tools input,.intl-route-tools select{flex-basis:100%}}
+
 /* DCDS payment operations workspace */
 .payment-ops-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin:15px 0}
 .payment-ops-stats .stat{padding:15px}
@@ -465,11 +501,34 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
     <h3>🌍 International Payout Readiness</h3>
     <p class="intro">Country and currency corridors are tracked here before they can be offered to ambassadors. A corridor stays disabled until DCDS has verified merchant approval, required wallets, IP whitelisting, sandbox testing and a live transfer test. Administrators can review beneficiary details and explicitly submit or reconcile verified requests.</p>
     <div id="internationalPayoutSafetyNotice" class="payout-warning">Checking international payout readiness…</div>
+    <div id="internationalPayoutSummary" class="intl-readiness-summary" aria-live="polite">
+      <article class="intl-readiness-stat"><span>Configured corridors</span><strong>—</strong></article>
+      <article class="intl-readiness-stat"><span>Enabled destinations</span><strong>—</strong></article>
+      <article class="intl-readiness-stat"><span>Corridors fully verified</span><strong>—</strong></article>
+      <article class="intl-readiness-stat"><span>Global checks passed</span><strong>—</strong></article>
+    </div>
+    <div class="intl-global-progress">
+      <div class="intl-global-progress-head"><strong>Global technical readiness</strong><span id="internationalPayoutGlobalMeta">Checking requirements…</span></div>
+      <div class="intl-progress-track" role="progressbar" aria-label="Global technical readiness" aria-valuemin="0" aria-valuemax="9" aria-valuenow="0"><span id="internationalPayoutGlobalBar"></span></div>
+      <span id="internationalPayoutGlobalState" class="intl-global-state">Checking global activation</span>
+    </div>
     <div class="payout-toolbar">
       <button class="btn gold" id="refreshInternationalPayoutsButton" type="button">↻ Refresh International Readiness</button>
       <span id="internationalPayoutAdminMeta" class="detail-notice">Loading route readiness…</span>
     </div>
     <div id="internationalPayoutGates" class="payout-meta" aria-live="polite"></div>
+    <div class="intl-route-tools">
+      <input id="internationalRouteSearch" type="search" placeholder="Find a country or currency…" aria-label="Search international payout corridors">
+      <select id="internationalRouteFilter" aria-label="Filter international payout corridors">
+        <option value="all">All corridors</option>
+        <option value="enabled">Enabled</option>
+        <option value="incomplete">Not enabled</option>
+        <option value="provider">Awaiting provider approval</option>
+        <option value="sandbox">Awaiting sandbox test</option>
+        <option value="live">Awaiting live test</option>
+      </select>
+      <span id="internationalRouteResultMeta" class="intl-route-result">Loading corridors…</span>
+    </div>
     <div id="internationalPayoutRoutes" class="payout-list" aria-live="polite"><div class="empty">Loading country corridors…</div></div>
     <div class="payout-events"><h3>International withdrawal requests</h3><div id="internationalPayoutRequests" class="payout-list" aria-live="polite"><div class="empty">Loading international withdrawal requests…</div></div></div>
   </section>
@@ -1315,6 +1374,14 @@ async function loadInternationalPayoutReadiness() {
   const notice = $("internationalPayoutSafetyNotice");
   const meta = $("internationalPayoutAdminMeta");
   const gates = $("internationalPayoutGates");
+  const summary = $("internationalPayoutSummary");
+  const globalMeta = $("internationalPayoutGlobalMeta");
+  const globalBar = $("internationalPayoutGlobalBar");
+  const globalTrack = globalBar?.parentElement;
+  const globalState = $("internationalPayoutGlobalState");
+  const routeSearch = $("internationalRouteSearch");
+  const routeFilter = $("internationalRouteFilter");
+  const routeResultMeta = $("internationalRouteResultMeta");
   const routesRoot = $("internationalPayoutRoutes");
   const requestsRoot = $("internationalPayoutRequests");
   routesRoot.replaceChildren(make("div","empty","Loading international corridors…"));
@@ -1324,6 +1391,11 @@ async function loadInternationalPayoutReadiness() {
   if (error || !data?.success) {
     notice.textContent = data?.error || "International payout readiness service is unavailable. No international route is enabled.";
     meta.textContent = "Readiness information unavailable.";
+    summary.replaceChildren(make("div","empty","Readiness summary unavailable."));
+    globalMeta.textContent = "Global requirements could not be checked.";
+    globalBar.style.width = "0%";
+    globalState.textContent = "Activation state unavailable — routes remain locked";
+    globalState.classList.remove("ready");
     routesRoot.replaceChildren(make("div","empty","Could not load international route records."));
     requestsRoot.replaceChildren(make("div","empty","Could not load international withdrawal requests."));
     return;
@@ -1333,6 +1405,28 @@ async function loadInternationalPayoutReadiness() {
   const requests = data.requests || [];
   const readiness = data.readiness || {};
   const enabledRoutes = routeRows.filter(route => route.status === "enabled").length;
+  const verifiedRoutes = routeRows.filter(route => route.provider_approved && route.sandbox_verified_at && route.live_verified_at).length;
+  const technicalChecks = Object.entries(readiness).filter(([key]) => key !== "globalSwitchEnabled");
+  const passedTechnicalChecks = technicalChecks.filter(([,passed]) => passed === true).length;
+  const technicalPercent = technicalChecks.length ? Math.round((passedTechnicalChecks / technicalChecks.length) * 100) : 0;
+  summary.replaceChildren();
+  [
+    ["Configured corridors", routeRows.length],
+    ["Enabled destinations", enabledRoutes],
+    ["Corridors fully verified", verifiedRoutes],
+    ["Global checks passed", passedTechnicalChecks + "/" + technicalChecks.length]
+  ].forEach(([label,value]) => {
+    const card=make("article","intl-readiness-stat");
+    card.append(make("span","",label),make("strong","",value));
+    summary.appendChild(card);
+  });
+  globalMeta.textContent = passedTechnicalChecks + "/" + technicalChecks.length + " technical requirements passed";
+  globalBar.style.width = technicalPercent + "%";
+  if(globalTrack)globalTrack.setAttribute("aria-valuenow",String(passedTechnicalChecks));
+  globalState.textContent = readiness.globalSwitchEnabled
+    ? "Global payout switch is ON"
+    : "Global payout switch is OFF — international withdrawals remain locked";
+  globalState.classList.toggle("ready",readiness.globalSwitchEnabled === true && data.ready === true);
   meta.textContent = routeRows.length + " configured corridor(s) · " + enabledRoutes + " enabled · " +
     (data.beneficiaryCount || 0) + " saved beneficiary record(s) · " + requests.length + " international request(s)";
   notice.textContent = data.message + " Never resend a request with an uncertain provider outcome. Use reconciliation or manual investigation.";
@@ -1364,43 +1458,97 @@ async function loadInternationalPayoutReadiness() {
     await loadInternationalPayoutReadiness();
   }
 
-  routesRoot.replaceChildren();
-  if(!routeRows.length)routesRoot.appendChild(make("div","empty","No international corridors are configured."));
-  routeRows.forEach(route => {
-    const card=make("article","payout-card");
-    const head=make("div","payout-card-head");
-    head.append(
-      make("strong","",route.country_name + " · " + route.currency),
-      make("span","pill"+(route.status==="enabled"?"":" pending"),String(route.status||"disabled").replaceAll("_"," ").toUpperCase())
-    );
-    card.appendChild(head);
-    card.appendChild(make("p","",[
-      "Provider approval: "+(route.provider_approved?"confirmed":"not confirmed"),
-      "Sandbox: "+(route.sandbox_verified_at?formatDate(route.sandbox_verified_at):"not verified"),
-      "Live test: "+(route.live_verified_at?formatDate(route.live_verified_at):"not verified")
-    ].join(" · ")));
-    if(route.internal_notes)card.appendChild(make("p","detail-notice","Evidence: "+route.internal_notes));
-    const actions=make("div","detail-actions");
-    const addAction=(label,stage,disabled=false)=>{
-      const btn=makeActionButton(label,async()=>{
-        btn.disabled=true;
-        try{await routeAction(route,stage,label);}finally{btn.disabled=false;}
-      });
-      btn.disabled=disabled;
-      actions.appendChild(btn);
-    };
-    addAction("Record provider approval","provider_approved",route.provider_approved);
-    addAction("Record sandbox pass","sandbox_verified",Boolean(route.sandbox_verified_at));
-    addAction("Record live test","live_verified",Boolean(route.live_verified_at));
-    if(route.status==="enabled"){
-      addAction("Suspend route","suspend",false);
-      addAction("Disable route","disable",false);
-    }else{
-      addAction("Enable verified route","enable",!(data.ready&&data.readiness?.globalSwitchEnabled&&route.provider_approved&&route.sandbox_verified_at&&route.live_verified_at));
+  const renderRoutes = () => {
+    const term=(routeSearch.value||"").trim().toLowerCase();
+    const filter=routeFilter.value||"all";
+    const filtered=routeRows.filter(route=>{
+      const haystack=[route.country_name,route.currency,route.country_code,route.route_code].join(" ").toLowerCase();
+      if(term&&!haystack.includes(term))return false;
+      const providerDone=route.provider_approved===true;
+      const sandboxDone=Boolean(route.sandbox_verified_at);
+      const liveDone=Boolean(route.live_verified_at);
+      if(filter==="enabled")return route.status==="enabled";
+      if(filter==="incomplete")return route.status!=="enabled";
+      if(filter==="provider")return !providerDone;
+      if(filter==="sandbox")return providerDone&&!sandboxDone;
+      if(filter==="live")return providerDone&&sandboxDone&&!liveDone;
+      return true;
+    });
+    routesRoot.replaceChildren();
+    routeResultMeta.textContent="Showing "+filtered.length+" of "+routeRows.length+" corridor(s)";
+    if(!filtered.length){
+      routesRoot.appendChild(make("div","empty",routeRows.length?"No corridors match this search or filter.":"No international corridors are configured."));
+      return;
     }
-    card.appendChild(actions);
-    routesRoot.appendChild(card);
-  });
+    filtered.forEach(route=>{
+      const card=make("article","intl-route-card");
+      const head=make("div","intl-route-card-head");
+      const title=make("strong","",route.country_name+" · "+route.currency);
+      const status=make("span","pill"+(route.status==="enabled"?"":" pending"),String(route.status||"disabled").replaceAll("_"," ").toUpperCase());
+      head.append(title,status);card.appendChild(head);
+      const stages=[
+        {label:"Provider approval",done:route.provider_approved===true,when:route.provider_approved?"Confirmed": "Pending"},
+        {label:"Sandbox test",done:Boolean(route.sandbox_verified_at),when:route.sandbox_verified_at?formatDate(route.sandbox_verified_at):"Pending"},
+        {label:"Live transfer test",done:Boolean(route.live_verified_at),when:route.live_verified_at?formatDate(route.live_verified_at):"Pending"}
+      ];
+      const stepGrid=make("div","intl-route-steps");
+      stages.forEach(stage=>{
+        const step=make("div","intl-route-step"+(stage.done?" done":""));
+        step.append(make("span","",stage.label),make("strong","",(stage.done?"✓ ":"○ ")+stage.when));
+        stepGrid.appendChild(step);
+      });
+      card.appendChild(stepGrid);
+      const routeComplete=stages.every(stage=>stage.done);
+      if(route.status!=="enabled"){
+        const nextStep=!stages[0].done?"provider approval":!stages[1].done?"sandbox testing":!stages[2].done?"a controlled live transfer test":null;
+        let nextMessage;
+        if(nextStep)nextMessage="Next step: record verified evidence for "+nextStep+".";
+        else if(!data.ready)nextMessage="Corridor checks are complete. Global technical requirements are still outstanding.";
+        else if(!readiness.globalSwitchEnabled)nextMessage="Corridor checks are complete. The global payout activation switch is still OFF.";
+        else nextMessage="All checks are complete. This route is eligible for administrator activation.";
+        card.appendChild(make("div","intl-route-next",nextMessage));
+      }
+      if(route.internal_notes)card.appendChild(make("p","detail-notice","Latest note: "+route.internal_notes));
+      const evidence=Array.isArray(route.route_config?.verification_evidence)?route.route_config.verification_evidence:[];
+      if(evidence.length){
+        const details=make("details","intl-route-evidence");
+        details.appendChild(make("summary","","Verification evidence · "+evidence.length+" record(s)"));
+        evidence.slice().reverse().slice(0,5).forEach(item=>{
+          const stageName=String(item.stage||"verification").replaceAll("_"," ");
+          const line=make("p","",stageName+" · "+formatDate(item.recorded_at)+" · "+String(item.evidence_note||"Evidence note unavailable"));
+          details.appendChild(line);
+        });
+        card.appendChild(details);
+      }
+      const actions=make("div","detail-actions");
+      const addAction=(label,stage,disabled=false)=>{
+        const btn=makeActionButton(label,async()=>{
+          btn.disabled=true;
+          try{await routeAction(route,stage,label);}finally{btn.disabled=false;}
+        });
+        btn.disabled=disabled;actions.appendChild(btn);
+      };
+      if(route.status==="enabled"){
+        addAction("Suspend route","suspend");
+        addAction("Disable route","disable");
+      }else if(!route.provider_approved){
+        addAction("Record provider approval","provider_approved");
+      }else if(!route.sandbox_verified_at){
+        addAction("Record sandbox pass","sandbox_verified");
+      }else if(!route.live_verified_at){
+        addAction("Record live test","live_verified");
+      }else if(!data.ready||!readiness.globalSwitchEnabled){
+        addAction("Awaiting global clearance","enable",true);
+      }else{
+        addAction("Enable verified route","enable",false);
+      }
+      if(actions.children.length)card.appendChild(actions);
+      routesRoot.appendChild(card);
+    });
+  };
+  routeSearch.oninput=renderRoutes;
+  routeFilter.onchange=renderRoutes;
+  renderRoutes();
 
   requestsRoot.replaceChildren();
   if(!requests.length)requestsRoot.appendChild(make("div","empty","No international withdrawal requests have been submitted."));
