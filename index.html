@@ -685,11 +685,12 @@ function authScreen(message=''){
  openModal(`${authBrandMarkup()}<h2 id="modalTitle">${signup?'Create your DCDS account':'Welcome back, Champion'}</h2><p class="modal-sub">${signup?'Create your account and start your digital learning journey.':'Log in to continue to your DCDS learning space.'}</p>
  <div class="tabs"><button class="tab ${signup?'':'active'}" type="button" data-mode="login">Log in</button><button class="tab ${signup?'active':''}" type="button" data-mode="signup">Create account</button></div>
  <form id="authForm">${signup?'<label class="field"><span>Full name</span><input id="studentName" name="name" autocomplete="name" maxlength="100" required></label>':''}
- <label class="field"><span>Email address</span><input id="studentEmail" name="email" type="email" autocomplete="email" required></label> <label class="field"><span>Password</span><div class="dcds-password-wrap"><input id="studentPassword" name="password" type="password" minlength="8" autocomplete="${signup?'new-password':'current-password'}" required><button class="dcds-password-toggle" id="toggleStudentPassword" type="button" aria-controls="studentPassword" aria-pressed="false">Show</button></div></label>
+ <label class="field"><span>Email address</span><input id="studentEmail" name="email" type="email" autocomplete="email" required></label>
+ ${signup?'<label class="field"><span>Mobile number</span><input id="studentPhone" name="phone" type="tel" inputmode="tel" autocomplete="tel" maxlength="24" placeholder="+234 801 234 5678" aria-describedby="studentPhoneHelp" required><small id="studentPhoneHelp">Required for every new account. Enter your complete international number, including + and your country calling code.</small></label>':''} <label class="field"><span>Password</span><div class="dcds-password-wrap"><input id="studentPassword" name="password" type="password" minlength="8" autocomplete="${signup?'new-password':'current-password'}" required><button class="dcds-password-toggle" id="toggleStudentPassword" type="button" aria-controls="studentPassword" aria-pressed="false">Show</button></div></label>
  ${signup?'<label class="field dcds-referral-field"><span>Referral code (optional)</span><input id="studentReferralCode" name="referral_code" type="text" inputmode="text" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" pattern="[A-Za-z0-9]{6,16}" value="'+escapeHtml(DCDS_REFERRAL_CODE)+'" placeholder="Enter referral code"><small>Were you invited by a DCDS ambassador? Enter their code here. Referral links also fill this in automatically.</small></label>':''}
  ${signup?'':'<div class="auth-forgot-row"><button id="forgotPasswordBtn" type="button">Forgot password?</button></div>'}
  <p class="form-error" id="authError" role="alert">${escapeHtml(message)}</p><button class="button button-primary" id="authSubmit" type="submit" style="width:100%">${signup?'Create student account':'Log in'}</button></form>
- <p class="modal-note">New accounts must verify their email with a six-digit code before accessing the student portal. Your course catalogue remains available without signing in.</p>`);
+ <p class="modal-note">New accounts require both an email address and an international mobile number. Verify the six-digit code sent to your email before accessing the student portal. Your course catalogue remains available without signing in.</p>`);
  document.querySelectorAll('[data-mode]').forEach(b=>b.addEventListener('click',()=>{authMode=b.dataset.mode;authScreen()}));
  const passwordToggle=$('toggleStudentPassword');
  if(passwordToggle) passwordToggle.addEventListener('click',()=>{
@@ -703,8 +704,16 @@ function authScreen(message=''){
  const forgot=$('forgotPasswordBtn');if(forgot)forgot.addEventListener('click',requestPasswordReset);
 }
 function setAuthError(msg){const el=$('authError');if(el)el.textContent=msg||'';}
+function normalizeDcdsPhone(value){
+ const compact=String(value||'').trim().replace(/[\s().-]/g,'');
+ const international=compact.startsWith('00')?'+'+compact.slice(2):compact;
+ if(!/^\+[1-9]\d{7,14}$/.test(international)){
+  throw new Error('Enter a valid international mobile number with + and your country calling code, for example +2348012345678.');
+ }
+ return international;
+}
 async function submitAuth(e){
- e.preventDefault(); const btn=$('authSubmit'); const email=$('studentEmail').value.trim(); const password=$('studentPassword').value; const name=$('studentName')?.value.trim()||'';
+ e.preventDefault(); const btn=$('authSubmit'); const email=$('studentEmail').value.trim(); const password=$('studentPassword').value; const name=$('studentName')?.value.trim()||''; const phoneInput=authMode==='signup' ? $('studentPhone')?.value : '';
  if(!supabaseClient){setAuthError('The account service could not load. Please open this page with an internet connection and try again.');return;}
  btn.disabled=true;btn.textContent='Please wait…';setAuthError('');
  try{
@@ -712,7 +721,8 @@ async function submitAuth(e){
    if(!name)throw new Error('Please enter your full name.');
    const referralCode=$('studentReferralCode')?.value.trim().toUpperCase()||'';
    if(referralCode&&!/^[A-Z0-9]{6,16}$/.test(referralCode))throw new Error('Referral codes must contain 6–16 letters or numbers.');
-   const signupMetadata={full_name:name};if(referralCode)signupMetadata.dcds_referral_code=referralCode;
+   const phoneE164=normalizeDcdsPhone(phoneInput);
+   const signupMetadata={full_name:name,dcds_phone_e164:phoneE164};if(referralCode)signupMetadata.dcds_referral_code=referralCode;
    const {error}=await supabaseClient.auth.signUp({email,password,options:{data:signupMetadata}});
    if(error){
     if(error.code==='user_already_exists'||/user already registered/i.test(error.message||'')){
