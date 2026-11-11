@@ -118,8 +118,9 @@ function roundMoney(value: number): number {
 
 function safeAmount(value: unknown): number | null {
   const amount = Number(value);
-  if (!Number.isFinite(amount) || amount <= 0 || amount > 100000000) return null;
-  return roundMoney(amount);
+  // Flutterwave's cross-border transfer API documents destination amount as an integer.
+  if (!Number.isSafeInteger(amount) || amount <= 0 || amount > 100000000) return null;
+  return amount;
 }
 
 async function isAdmin(db: SupabaseClient, userId: string): Promise<boolean> {
@@ -466,7 +467,7 @@ Deno.serve(async (req: Request) => {
         return respond({ success: false, error: "Select a DCDS-verified beneficiary for this payout corridor." }, 409);
       }
       const destinationAmount = safeAmount(body.destination_amount);
-      if (!destinationAmount || destinationAmount < 0.01) return respond({ success: false, error: "Enter a valid destination amount." }, 400);
+      if (!destinationAmount || destinationAmount < 1) return respond({ success: false, error: "Enter a whole-number destination amount. Flutterwave's transfer API accepts integer transfer amounts." }, 400);
       const balance = await getUserBalance(db, userId);
       const url = "/transfers/rates?amount=" + encodeURIComponent(String(destinationAmount)) +
         "&destination_currency=" + encodeURIComponent(route.currency) + "&source_currency=NGN";
@@ -495,8 +496,8 @@ Deno.serve(async (req: Request) => {
       if (String((feeSource as JsonObject).fee_type || "").toLowerCase() === "percentage") feeAmount = destinationAmount * feeAmount / 100;
       feeAmount = roundMoney(feeAmount);
 
-      const actualDestinationAmount = roundMoney(Number(destinationData.amount || destinationAmount));
-      if (!Number.isFinite(actualDestinationAmount) || actualDestinationAmount <= 0) return respond({ success: false, error: "Flutterwave returned an invalid destination amount." }, 502);
+      const actualDestinationAmount = Number(destinationData.amount || destinationAmount);
+      if (!Number.isSafeInteger(actualDestinationAmount) || actualDestinationAmount <= 0) return respond({ success: false, error: "Flutterwave returned a non-integer destination amount. No quote was created." }, 502);
       const quoteId = crypto.randomUUID();
       const now = new Date();
       const expiresAt = new Date(now.getTime() + 5 * 60 * 1000).toISOString();
