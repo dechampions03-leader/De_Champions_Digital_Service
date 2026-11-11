@@ -1672,10 +1672,25 @@ initialize().catch(error=>{console.error(error);showError("Unexpected error whil
  if(document.getElementById("dcds-fixed-bottom-nav"))return;
  const items=[["overview","▦","Overview"],["students","♙","Students"],["payments","▣","Payments"],["pricing","◇","Pricing"],["payouts","⇧","Payouts"]],nav=document.createElement("nav");nav.id="dcds-fixed-bottom-nav";nav.setAttribute("aria-label","Student management sections");nav.style.setProperty("--dcds-nav-count","5");
  items.forEach(([key,icon,label])=>{const b=document.createElement("button");b.type="button";b.className="dcds-dock-item";b.dataset.view=key;b.setAttribute("aria-label",label);const i=document.createElement("span");i.className="dcds-dock-icon";i.setAttribute("aria-hidden","true");i.textContent=icon;const t=document.createElement("span");t.className="dcds-dock-label";t.textContent=label;b.append(i,t);nav.appendChild(b);});
- document.body.appendChild(nav);const selector=".admin-nav-item"+'[data-admin-view="';
+ document.body.appendChild(nav);
+ nav.hidden=true;
+ const adminApp=document.getElementById("adminApp");
+ function syncDockVisibility(){
+  nav.hidden=!adminApp||adminApp.hidden||adminApp.hasAttribute("hidden")||adminApp.classList.contains("hidden");
+ }
+ syncDockVisibility();
+ if(adminApp)new MutationObserver(syncDockVisibility).observe(adminApp,{attributes:true,attributeFilter:["hidden","class"]});
+ const selector=".admin-nav-item"+'[data-admin-view="';
  function show(key){const original=document.querySelector(selector+key+'"]');if(original)original.click();nav.querySelectorAll("button[data-view]").forEach(b=>{if(b.dataset.view===key)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});}
  nav.addEventListener("click",e=>{const b=e.target.closest("button[data-view]");if(b)show(b.dataset.view);});
- document.querySelectorAll(".admin-nav-item"+'[data-admin-view]').forEach(original=>original.addEventListener("click",()=>{nav.querySelectorAll("button[data-view]").forEach(b=>{if(b.dataset.view===original.dataset.adminView)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});}));
+ document.addEventListener("click",event=>{
+  const original=event.target.closest("[data-admin-view]");
+  if(!original||original.closest("#dcds-fixed-bottom-nav"))return;
+  nav.querySelectorAll("button[data-view]").forEach(button=>{
+   if(button.dataset.view===original.dataset.adminView)button.setAttribute("aria-current","page");
+   else button.removeAttribute("aria-current");
+  });
+ });
  show("overview");
 })();
 </script>
