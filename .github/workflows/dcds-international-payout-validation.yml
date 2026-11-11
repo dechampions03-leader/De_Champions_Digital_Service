@@ -8,6 +8,7 @@ on:
       - "supabase/functions/dcds-international-payout/**"
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/flutterwave-webhook/**"
+      - "supabase/functions/flutterwave-webhook/**"
       - "student-management.html"
       - "student-dashboard.html"
       - ".github/workflows/dcds-international-payout-validation.yml"
