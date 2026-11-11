@@ -342,8 +342,12 @@ Deno.serve(async (req: Request) => {
       const routeMap = new Map((routes || []).map((route: any) => [route.id, route]));
       const accountMap = new Map((accounts || []).map((account: any) => [account.id, account]));
       return respond({
-        success: true, enabled: readiness.ready, readiness: readiness.checks,
-        ready: readiness.ready, beneficiaryCount: beneficiaryCount || 0,
+        success: true,
+        enabled: readiness.ready && readiness.checks.globalSwitchEnabled,
+        ready: readiness.ready,
+        technical_ready: readiness.ready,
+        readiness: readiness.checks,
+        beneficiaryCount: beneficiaryCount || 0,
         routes: routes || [],
         requests: (requests || []).map((item: any) => ({
           ...item,
