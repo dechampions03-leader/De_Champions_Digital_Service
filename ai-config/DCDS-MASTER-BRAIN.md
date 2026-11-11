@@ -138,6 +138,7 @@ Prepared programme facts:
 - Commission: **₦1,000 NGN** for each qualifying distinct course purchase by a referred student, credited in NGN regardless of the referred student's checkout currency.
 - Minimum withdrawal request: **₦5,000 NGN**.
 - Current payout processing supports verified **Nigerian bank accounts only**. International referral participation does not mean international withdrawal is enabled.
+- International payout foundation work is under controlled development. Until DCDS confirms provider KYC, transfer API activation, server IP whitelisting, destination-currency wallet funding, corridor-specific sandbox tests and a live test, international beneficiary setup, FX quotes, withdrawal requests and transfers are **not available**.
 - Do not promise a payout destination, local currency, exchange rate or international withdrawal until DCDS has enabled and tested that country/currency route in its payment provider account.
 - A student must first successfully purchase at least one DCDS course before referral sharing is activated.
 - Registration through a referral link alone does not earn a reward.
