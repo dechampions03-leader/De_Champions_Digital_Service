@@ -7,6 +7,7 @@ on:
       - "supabase/migrations/**"
       - "supabase/functions/dcds-international-payout/**"
       - "supabase/functions/dcds-international-payout-webhook/**"
+      - "supabase/functions/flutterwave-webhook/**"
       - "student-management.html"
       - "student-dashboard.html"
       - ".github/workflows/dcds-international-payout-validation.yml"
@@ -60,6 +61,7 @@ jobs:
           const branchSql = fs.readFileSync('supabase/migrations/20261111140500_dcds_international_bank_branch_support.sql', 'utf8');
           const fn = fs.readFileSync('supabase/functions/dcds-international-payout/index.ts', 'utf8');
           const webhook = fs.readFileSync('supabase/functions/dcds-international-payout-webhook/index.ts', 'utf8');
+          const combinedWebhook = fs.readFileSync('supabase/functions/flutterwave-webhook/index.ts', 'utf8');
           const admin = fs.readFileSync('student-management.html', 'utf8');
           const student = fs.readFileSync('student-dashboard.html', 'utf8');
 
@@ -78,6 +80,10 @@ jobs:
             ['transfer is locked before provider submission', lockBeforeTransfer],
             ['uncertain provider outcomes do not trigger an automatic resend', /manual_review/.test(fn) && /payoutRequest\.provider_transfer_id/.test(fn)],
             ['webhook validates Flutterwave v3 verif-hash', /verif-hash/.test(webhook) && /constantTimeEqual\(secretHash, signature\)/.test(webhook)],
+            ['combined webhook preserves V3 secret and verifies signatures in constant time', /FLW_WEBHOOK_HASH/.test(combinedWebhook) && /constantTimeEqual\(secretHash, signature\)/.test(combinedWebhook)],
+            ['combined webhook routes transfer events separately from charge processing', /processInternationalTransferWebhook/.test(combinedWebhook) && /event\.startsWith\("transfer\."\)/.test(combinedWebhook) && /transactions\//.test(combinedWebhook)],
+            ['combined webhook verifies transfer status and reconciles only matching DCDS requests', /api\.flutterwave\.com\/v3\/transfers\//.test(combinedWebhook) && /dcds_internal_transition_international_payout/.test(combinedWebhook) && /transfer_reference/.test(combinedWebhook)],
+            ['payout readiness accepts the existing customer-payment webhook secret', /FLW_WEBHOOK_HASH/.test(fn) && /FLW_SECRET_HASH/.test(fn)]
             ['USD/GBP/EUR beneficiary fields follow provider-specific configuration', /beneficiary_country_value/.test(routeSql) && /street_name/.test(routeSql) && /swift_code/.test(routeSql)],
             ['fixed beneficiary country and account-type rules are validated server-side', /fixedBeneficiaryCountry/.test(fn) && /checking","depository/.test(fn) && /first_name/.test(fn)],
             ['bank branch codes are fetched and revalidated when a bank requires them', /branch_lookup_supported/.test(branchSql) && /action === "branches"/.test(fn) && /destination_branch_code/.test(fn)],
