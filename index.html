@@ -969,8 +969,13 @@ async function startGeneralCoursePayment(){
   window.location.assign(data.payment_link);
  }catch(error){
   console.error('DCDS General Course payment start error:',error);
-  if(err)err.textContent=error.message||'We could not start payment. Please try again.';
-  btn.disabled=false;btn.textContent='Try payment again';
+  const friendlyMessage=await getDCDSPaymentErrorMessage(error);
+  if(err)err.textContent=friendlyMessage;
+  if(/previous checkout|checkout for this course is still pending/i.test(friendlyMessage)){
+   btn.disabled=true;btn.textContent='Checkout already pending';
+  }else{
+   btn.disabled=false;btn.textContent='Try payment again';
+  }
  }
 }
 
