@@ -37,7 +37,7 @@
     const converted = Number(amount || 0) * Number(rates[currency] || 1);
     try {
       return new Intl.NumberFormat(navigator.language || "en", {
-        style:"currency", currency, maximumFractionDigits:0
+        style:"currency", currency
       }).format(converted);
     } catch (_) { return currency + " " + numberFormat.format(converted); }
   }
