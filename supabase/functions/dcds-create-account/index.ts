@@ -91,7 +91,7 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: "DCDS verification settings are temporarily unavailable." }, 503);
     }
 
-    const smsEnabled = phoneOtpEnabled(phoneSetting?.setting_value);
+    const smsEnabled = phoneOtpEnabled(phoneSetting?.setting_value) && Deno.env.get("DCDS_SMS_OTP_PROVIDER_READY") === "true";
 
     if (action === "capabilities") {
       return respond({ success: true, phone_otp_enabled: smsEnabled });
@@ -101,7 +101,7 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: "Unsupported account action." }, 400);
     }
 
-    if (!smsEnabled) {
+    // Both the DB feature flag and this server-only readiness secret must be set after the SMS provider is actually configured.\n    if (!smsEnabled) {
       return respond({
         success: false,
         code: "PHONE_OTP_NOT_CONFIGURED",
