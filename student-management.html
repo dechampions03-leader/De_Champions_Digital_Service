@@ -294,15 +294,19 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 @media(prefers-reduced-motion:reduce){#dcds-fixed-bottom-nav .dcds-dock-item{transition:none}}
 .admin-layout{display:block!important;grid-template-columns:minmax(0,1fr)!important;gap:0!important}.admin-sidebar,.admin-nav-backdrop,#adminNavToggle{display:none!important}.admin-workspace{width:100%!important;max-width:none!important;min-width:0!important}#adminApp{padding-bottom:16px!important}</style>
 <style id="dcds-admin-view-visibility-safety">
-/* Admin sections must remain readable when opened from the fixed dock. */
-#adminViewStack>[data-admin-view-panel]:not([hidden]),
-#adminViewStack>[data-admin-view-panel]:not([hidden]) *,
-#adminViewStack>[data-admin-view-panel]:not([hidden])::before,
-#adminViewStack>[data-admin-view-panel]:not([hidden])::after{
- opacity:1!important;visibility:visible!important;transform:none!important;filter:none!important;
- animation:none!important;transition:none!important;will-change:auto!important
-}
+/* Deterministic workspace rendering: no scroll-reveal or entrance-animation dependency. */
+#adminViewStack{display:grid!important;visibility:visible!important;opacity:1!important;min-width:0!important}
 #adminViewStack>[data-admin-view-panel][hidden]{display:none!important}
+#adminViewStack>[data-admin-view-panel]:not([hidden]){
+ visibility:visible!important;opacity:1!important;transform:none!important;filter:none!important;
+ animation:none!important;transition:none!important;content-visibility:visible!important;
+ contain:none!important;max-height:none!important;height:auto!important;pointer-events:auto!important
+}
+#adminViewStack>[data-admin-view-panel]:not([hidden]) *:not([hidden]){
+ visibility:visible!important;opacity:1!important;transform:none!important;filter:none!important;
+ animation:none!important;transition:none!important
+}
+#adminViewStack>.stats[data-admin-view-panel="overview"]:not([hidden]){display:grid!important}
 </style>
 </head>
 <body>
@@ -526,11 +530,37 @@ function closeAdminNavigation(){
   if(toggle)toggle.setAttribute("aria-expanded","false");
 }
 function setAdminView(view,options={}){
-  if(!ADMIN_VIEW_META[view])return;
-  document.querySelectorAll("[data-admin-view-panel]").forEach(panel=>{
+  if(!ADMIN_VIEW_META[view])return false;
+  const stack=$("adminViewStack");
+  if(!stack)return false;
+  const panels=Array.from(stack.children).filter(panel=>panel.hasAttribute("data-admin-view-panel"));
+  const matching=panels.filter(panel=>panel.dataset.adminViewPanel===view);
+  if(!matching.length){
+    console.error("DCDS view has no content panel:",view);
+    return false;
+  }
+  stack.hidden=false;
+  stack.removeAttribute("hidden");
+  panels.forEach(panel=>{
     const active=panel.dataset.adminViewPanel===view;
     panel.hidden=!active;
-    panel.setAttribute("aria-hidden",active?"false":"true");
+    if(active){
+      panel.removeAttribute("hidden");
+      panel.style.removeProperty("display");
+      panel.style.setProperty("visibility","visible","important");
+      panel.style.setProperty("opacity","1","important");
+      panel.style.setProperty("transform","none","important");
+      panel.style.setProperty("filter","none","important");
+      panel.style.setProperty("animation","none","important");
+      panel.style.setProperty("transition","none","important");
+      if(panel.classList.contains("stats"))panel.style.setProperty("display","grid","important");
+      else panel.style.setProperty("display","block","important");
+    }else{
+      panel.setAttribute("hidden","");
+      panel.style.setProperty("display","none","important");
+      panel.setAttribute("aria-hidden","true");
+    }
+    if(active)panel.setAttribute("aria-hidden","false");
   });
   document.querySelectorAll(".admin-nav-item[data-admin-view]").forEach(button=>{
     const active=button.dataset.adminView===view;
@@ -538,10 +568,16 @@ function setAdminView(view,options={}){
     if(active)button.setAttribute("aria-current","page");
     else button.removeAttribute("aria-current");
   });
+  document.querySelectorAll("#dcds-fixed-bottom-nav [data-view]").forEach(button=>{
+    if(button.dataset.view===view)button.setAttribute("aria-current","page");
+    else button.removeAttribute("aria-current");
+  });
   document.title=ADMIN_VIEW_META[view].title+" | DCDS Admin Operations Centre";
   closeAdminNavigation();
   if(options.scroll!==false)window.scrollTo({top:0,behavior:"smooth"});
+  return true;
 }
+window.setAdminView=setAdminView;
 document.querySelectorAll("[data-admin-view]").forEach(button=>{
   button.addEventListener("click",()=>setAdminView(button.dataset.adminView));
 });
@@ -1520,9 +1556,13 @@ initialize().catch(error=>{console.error(error);showError("Unexpected error whil
  if(adminApp)new MutationObserver(syncDockVisibility).observe(adminApp,{attributes:true,attributeFilter:["hidden","class"]});
  const selector=".admin-nav-item"+'[data-admin-view="';
  function show(key){
-  if(typeof window.setAdminView==="function")window.setAdminView(key);
-  else {const original=document.querySelector(selector+key+'"]');if(original)original.click();}
-  nav.querySelectorAll("button[data-view]").forEach(b=>{if(b.dataset.view===key)b.setAttribute("aria-current","page");else b.removeAttribute("aria-current");});
+  if(typeof window.setAdminView!=="function")return;
+  const changed=window.setAdminView(key);
+  if(!changed)return;
+  nav.querySelectorAll("button[data-view]").forEach(b=>{
+   if(b.dataset.view===key)b.setAttribute("aria-current","page");
+   else b.removeAttribute("aria-current");
+  });
 }
  nav.addEventListener("click",e=>{const b=e.target.closest("button[data-view]");if(b)show(b.dataset.view);});
  document.addEventListener("click",event=>{
