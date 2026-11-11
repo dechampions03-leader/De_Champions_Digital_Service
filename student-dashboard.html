@@ -933,17 +933,25 @@ async function loadInternationalPayoutPanel(user) {
       const option=document.createElement('option');option.value='';option.textContent='Loading supported banks…';input.append(option);
     }else if(field==='beneficiary_country'){
       input=document.createElement('select');
-      const countries=[
-        ['AT','Austria'],['BE','Belgium'],['BG','Bulgaria'],['HR','Croatia'],['CY','Cyprus'],
-        ['CZ','Czechia'],['DK','Denmark'],['EE','Estonia'],['FI','Finland'],['FR','France'],
-        ['DE','Germany'],['GR','Greece'],['HU','Hungary'],['IS','Iceland'],['IE','Ireland'],
-        ['IT','Italy'],['LV','Latvia'],['LI','Liechtenstein'],['LT','Lithuania'],['LU','Luxembourg'],
-        ['MT','Malta'],['MC','Monaco'],['NL','Netherlands'],['NO','Norway'],['PL','Poland'],
-        ['PT','Portugal'],['RO','Romania'],['SM','San Marino'],['SK','Slovakia'],['SI','Slovenia'],
-        ['ES','Spain'],['SE','Sweden'],['CH','Switzerland'],['GB','United Kingdom']
-      ];
-      const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Select beneficiary country';input.append(placeholder);
-      countries.forEach(([code,name])=>{const option=document.createElement('option');option.value=code;option.textContent=name;input.append(option);});
+      const config=route.route_config||{};
+      if(route.country_code!=='EU'){
+        const fixedValue=String(config.beneficiary_country_value||route.country_code);
+        const fixedName=fixedValue==='UK'?'United Kingdom':(fixedValue==='US'?'United States':fixedValue);
+        const fixed=document.createElement('option');fixed.value=fixedValue;fixed.textContent=fixedName;input.append(fixed);
+        input.value=fixedValue;
+      }else{
+        const countries=[
+          ['AT','Austria'],['BE','Belgium'],['BG','Bulgaria'],['HR','Croatia'],['CY','Cyprus'],
+          ['CZ','Czechia'],['DK','Denmark'],['EE','Estonia'],['FI','Finland'],['FR','France'],
+          ['DE','Germany'],['GR','Greece'],['HU','Hungary'],['IS','Iceland'],['IE','Ireland'],
+          ['IT','Italy'],['LV','Latvia'],['LI','Liechtenstein'],['LT','Lithuania'],['LU','Luxembourg'],
+          ['MT','Malta'],['MC','Monaco'],['NL','Netherlands'],['NO','Norway'],['PL','Poland'],
+          ['PT','Portugal'],['RO','Romania'],['SM','San Marino'],['SK','Slovakia'],['SI','Slovenia'],
+          ['ES','Spain'],['SE','Sweden'],['CH','Switzerland'],['GB','United Kingdom']
+        ];
+        const placeholder=document.createElement('option');placeholder.value='';placeholder.textContent='Select beneficiary country';input.append(placeholder);
+        countries.forEach(([code,name])=>{const option=document.createElement('option');option.value=code;option.textContent=name;input.append(option);});
+      }
     }else{
       input=document.createElement('input');input.type='text';input.autocomplete='off';input.maxLength=300;
       if(field==='email')input.type='email';
@@ -1151,7 +1159,7 @@ async function loadAmbassadorPanel(user) {
             </form>
             <form id="internationalQuoteForm" class="profile-form">
               <label>Amount to receive
-                <input id="internationalDestinationAmount" type="number" min="0.01" step="0.01" inputmode="decimal" placeholder="Enter destination amount" required>
+                <input id="internationalDestinationAmount" type="number" min="1" step="1" inputmode="numeric" placeholder="Enter whole-number destination amount" required>
               </label>
               <button class="btn primary" id="createInternationalQuote" type="submit">Get live exchange-rate quote</button>
               <div id="internationalQuoteMessage" class="feature-message" role="status" aria-live="polite"></div>
