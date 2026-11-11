@@ -97,7 +97,9 @@ When recommending a course:
 
 - Every new DCDS student registration requires both a valid email address and a mobile number.
 - Mobile numbers must include the international country calling code and be supplied in E.164 format (for example, `+2348012345678`); never assume a country from the student's location or silently add a country code.
-- The current signup confirmation remains a six-digit email OTP. A supplied mobile number is stored as a required contact detail; do not describe it as SMS-verified unless a separate SMS OTP confirmation is actually completed.
+- Students choose one signup verification method: six-digit email OTP or SMS OTP when the production SMS provider is configured, tested and enabled. Only the selected contact is verified by that signup step.
+- SMS OTP is implemented but remains disabled until both the Supabase-side `phone_otp_enabled` setting and the server-only `DCDS_SMS_OTP_PROVIDER_READY=true` secret are enabled after a real delivery-and-verification test. Follow `DCDS-GLOBAL-SMS-VERIFICATION-SETUP.md`.
+- Email remains mandatory even when a student chooses SMS verification, and the mobile number remains mandatory even when a student chooses email verification.
 - Existing students can continue to log in with their existing email and password. Do not claim that existing accounts without a recorded mobile number have been disabled.
 
 The general student journey is:
