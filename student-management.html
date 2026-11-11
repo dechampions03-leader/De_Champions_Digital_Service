@@ -899,7 +899,7 @@ function renderAdminPaymentOrders(rows){
         const tx=document.createElement("input");tx.type="text";tx.inputMode="numeric";tx.placeholder="Flutterwave transaction ID (optional for lookup)";tx.maxLength=30;
         const txField=make("div","payment-field");txField.append(make("label","","Flutterwave transaction ID"),tx);actions.appendChild(txField);
         const verify=paymentActionButton("Verify supplied transaction ID",async()=>{
-          const id=tx.value.trim();if(!/^\\d{1,30}$/.test(id)){alert("Enter the numeric Flutterwave transaction ID, or use the order-reference lookup below.");return;}
+          const id=tx.value.trim();if(!/^[0-9]{1,30}$/.test(id)){alert("Enter the numeric Flutterwave transaction ID, or use the order-reference lookup below.");return;}
           if(!window.confirm("Verify this transaction directly with Flutterwave and approve only if every order detail matches?"))return;
           verify.disabled=true;verify.textContent="Verifying with Flutterwave…";
           try{
