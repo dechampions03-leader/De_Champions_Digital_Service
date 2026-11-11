@@ -427,6 +427,10 @@ Deno.serve(async (req: Request) => {
       const beneficiaryName = cleanText(details.beneficiary_name || body.beneficiary_name, 160);
       if (!beneficiaryName) return respond({ success: false, error: "Enter the beneficiary's full name." }, 400);
       details.beneficiary_name = beneficiaryName;
+      const fixedBeneficiaryCountry = cleanText(route.route_config?.beneficiary_country_value, 8);
+      if (fixedBeneficiaryCountry && details.beneficiary_country !== fixedBeneficiaryCountry) {
+        return respond({ success: false, error: "The beneficiary country does not match this payout corridor." }, 400);
+      }
       if (route.country_code === "EU") {
         const destinationCountry = details.beneficiary_country || String(body.beneficiary_country || "").toUpperCase();
         const sepa = new Set(["AT","BE","BG","HR","CY","CZ","DK","EE","FI","FR","DE","GR","HU","IS","IE","IT","LV","LI","LT","LU","MT","MC","NL","NO","PL","PT","RO","SM","SK","SI","ES","SE","CH","GB"]);
