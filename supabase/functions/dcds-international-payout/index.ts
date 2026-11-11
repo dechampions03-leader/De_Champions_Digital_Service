@@ -71,7 +71,11 @@ function getReadiness() {
     webhookConfigured: Boolean(Deno.env.get("FLW_SECRET_HASH")),
     globalSwitchEnabled: envTrue("DCDS_INTL_PAYOUTS_ENABLED"),
   };
-  return { checks, ready: Object.values(checks).every(Boolean) };
+  // The global payout switch is a separate, final kill switch. Exclude it from
+  // technicalReadiness so admins can record the first controlled live route test
+  // before enabling ambassador access globally.
+  const technicalChecks = Object.entries(checks).filter(([key]) => key !== "globalSwitchEnabled");
+  return { checks, ready: technicalChecks.every(([, value]) => value === true) };
 }
 
 function decodeHex(value: string): ArrayBuffer {
@@ -346,14 +350,16 @@ Deno.serve(async (req: Request) => {
           account: accountMap.get(item.payout_account_id) || null,
           route: routeMap.get((accountMap.get(item.payout_account_id) || {}).route_id) || null,
         })),
-        message: readiness.ready
-          ? "Provider readiness flags are present. Each destination still requires its own approval, sandbox and live verification."
-          : "International withdrawals are disabled. Complete all provider, compliance, wallet funding, encryption, webhook and live-verification gates before enabling any corridor.",
+        message: !readiness.ready
+          ? "International withdrawals are disabled. Complete provider approval, KYC, API access, IP allowlisting, encryption, fee-wallet funding, webhook and sandbox checks first."
+          : !readiness.checks.globalSwitchEnabled
+            ? "Technical and sandbox checks are complete. Record a controlled live-test evidence note against an approved route, then enable the global switch as the final activation step."
+            : "Global technical readiness and the activation switch are on. Each destination still requires its own provider approval, sandbox and live verification before it can be enabled.",
       });
     }
 
     if (action === "routes") {
-      if (!readiness.ready) return respond({ success: true, enabled: false, routes: [], message: "International withdrawals are not enabled yet." });
+      if (!readiness.ready || !readiness.checks.globalSwitchEnabled) return respond({ success: true, enabled: false, routes: [], message: "International withdrawals are not enabled yet. DCDS must complete account checks and explicitly activate the global switch." });
       const { data: routes, error } = await db.from("dcds_international_payout_routes")
         .select("id,route_code,country_code,country_name,currency,payout_method,required_fields,optional_fields,route_config")
         .eq("status", "enabled").order("country_name", { ascending: true });
@@ -389,7 +395,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (action === "banks") {
-      if (!readiness.ready) return respond({ success: false, error: "International withdrawals are not enabled yet." }, 423);
+      if (!readiness.ready || !readiness.checks.globalSwitchEnabled) return respond({ success: false, error: "International withdrawals are not enabled yet." }, 423);
       const route = await getRoute(db, String(body.route_id || ""));
       let country = route.country_code;
       if (route.country_code === "EU") {
@@ -410,7 +416,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (action === "branches") {
-      if (!readiness.ready) return respond({ success: false, error: "International withdrawals are not enabled yet." }, 423);
+      if (!readiness.ready || !readiness.checks.globalSwitchEnabled) return respond({ success: false, error: "International withdrawals are not enabled yet." }, 423);
       const route = await getRoute(db, String(body.route_id || ""));
       if (route.route_config?.branch_lookup_supported !== true) {
         return respond({ success: false, error: "Branch lookup is not configured for this payout corridor." }, 400);
@@ -428,7 +434,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (action === "save_account") {
-      if (!readiness.ready) return respond({ success: false, error: "International beneficiary setup is not enabled yet." }, 423);
+      if (!readiness.ready || !readiness.checks.globalSwitchEnabled) return respond({ success: false, error: "International beneficiary setup is not enabled yet." }, 423);
       await getOwnedAmbassador(db, userId);
       const route = await getRoute(db, String(body.route_id || ""));
       const source = body.beneficiary_data && typeof body.beneficiary_data === "object" && !Array.isArray(body.beneficiary_data)
@@ -502,7 +508,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (action === "create_quote") {
-      if (!readiness.ready) return respond({ success: false, error: "International payouts are not enabled yet." }, 423);
+      if (!readiness.ready || !readiness.checks.globalSwitchEnabled) return respond({ success: false, error: "International payouts are not enabled yet." }, 423);
       await getOwnedAmbassador(db, userId);
       const route = await getRoute(db, String(body.route_id || ""));
       const accountId = String(body.account_id || "");
@@ -565,7 +571,7 @@ Deno.serve(async (req: Request) => {
     }
 
     if (action === "accept_quote") {
-      if (!readiness.ready) return respond({ success: false, error: "International payouts are not enabled yet." }, 423);
+      if (!readiness.ready || !readiness.checks.globalSwitchEnabled) return respond({ success: false, error: "International payouts are not enabled yet." }, 423);
       await getOwnedAmbassador(db, userId);
       const quoteId = String(body.quote_id || "");
       if (!/^[0-9a-f-]{36}$/i.test(quoteId)) return respond({ success: false, error: "Select a valid payout quote." }, 400);
@@ -612,6 +618,15 @@ Deno.serve(async (req: Request) => {
         stage, evidence_note: evidence, actor_user_id: userId, recorded_at: new Date().toISOString(),
       }].slice(-25);
       const priorNote = cleanText(route.internal_notes, 2000);
+      const { data: priorRouteState, error: priorRouteStateError } = await db.from("dcds_international_payout_routes")
+        .select("provider_approved,sandbox_verified_at,live_verified_at").eq("id", route.id).single();
+      if (priorRouteStateError) throw priorRouteStateError;
+      if (stage === "sandbox_verified" && !priorRouteState.provider_approved) {
+        return respond({ success: false, error: "Record provider approval before recording a sandbox pass." }, 409);
+      }
+      if (stage === "live_verified" && (!priorRouteState.provider_approved || !priorRouteState.sandbox_verified_at)) {
+        return respond({ success: false, error: "Record provider approval and sandbox verification before recording a live test." }, 409);
+      }
       const patch: JsonObject = {
         internal_notes: [priorNote, stage + ": " + evidence].filter(Boolean).join("\\n").slice(-2000),
         route_config: { ...(route.route_config || {}), verification_evidence: evidenceHistory },
@@ -626,7 +641,7 @@ Deno.serve(async (req: Request) => {
         const { data: current, error } = await db.from("dcds_international_payout_routes")
           .select("provider_approved,sandbox_verified_at,live_verified_at").eq("id", route.id).single();
         if (error) throw error;
-        if (!readiness.ready || !current.provider_approved || !current.sandbox_verified_at || !current.live_verified_at) {
+        if (!readiness.ready || !readiness.checks.globalSwitchEnabled || !current.provider_approved || !current.sandbox_verified_at || !current.live_verified_at) {
           return respond({ success: false, error: "Provider, compliance, wallet, encryption, webhook, sandbox and live verification gates are not all complete." }, 423);
         }
         patch.status = "enabled";
@@ -717,7 +732,7 @@ Deno.serve(async (req: Request) => {
       if (!request) return respond({ success: false, error: "International withdrawal request not found." }, 404);
       const payoutRequest = request as PayoutRequest;
       if (action === "process") {
-        if (!readiness.ready || body.confirm_send !== true) return respond({ success: false, error: "Confirm the transfer. All provider and live-verification gates must be complete." }, 423);
+        if (!readiness.ready || !readiness.checks.globalSwitchEnabled || body.confirm_send !== true) return respond({ success: false, error: "Confirm the transfer. All provider gates and the final global activation switch must be complete." }, 423);
         if (payoutRequest.status !== "requested" || payoutRequest.provider_transfer_id) return respond({ success: false, error: "Only a new request can be sent. Reconcile any request with a provider ID; never resend it." }, 409);
         const { data: account, error: accountError } = await db.from("dcds_international_payout_accounts")
           .select("id,user_id,route_id,beneficiary_name,beneficiary_data_ciphertext,verification_status,provider_beneficiary_id")
