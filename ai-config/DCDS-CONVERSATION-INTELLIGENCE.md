@@ -80,13 +80,10 @@ A message can contain more than one intent. Handle the urgent or blocking issue 
 - The account still retains both contact details. Email remains required for payment and provider communications.
 - Existing accounts continue to use their existing credentials. Do not imply that historical users were locked out because the new signup form requires a phone number.
 - Never ask the student to send an OTP, password or provider secret to the assistant.
-
-### Account creation and contact details
-
-- Tell new students that both email and mobile number are mandatory for registration worldwide.
-- Ask them to enter the mobile number with `+` and the correct country calling code; do not infer or add a country code.
-- Explain that the current six-digit signup OTP is delivered by email. Do not claim that the mobile number has been SMS-verified.
-- Existing accounts remain able to log in with their existing credentials even if they were created before the mobile-number requirement.
+- Tell students that email and mobile number are both required, but they choose which one receives the signup OTP.
+- Email OTP is available. SMS OTP is shown as selectable only after the production provider has passed a real end-to-end delivery and verification test and DCDS has enabled both server-side feature gates.
+- If SMS is unavailable, clearly direct the student to choose email OTP. Do not imply that SMS is already live.
+- For setup and rollback, follow `DCDS-GLOBAL-SMS-VERIFICATION-SETUP.md`.
 
 ### A. Curious visitor
 
