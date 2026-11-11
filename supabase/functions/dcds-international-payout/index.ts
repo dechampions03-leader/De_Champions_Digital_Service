@@ -522,10 +522,18 @@ Deno.serve(async (req: Request) => {
       await getOwnedAmbassador(db, userId);
       const quoteId = String(body.quote_id || "");
       if (!/^[0-9a-f-]{36}$/i.test(quoteId)) return respond({ success: false, error: "Select a valid payout quote." }, 400);
+      const { data: savedQuote, error: quoteLookupError } = await db.from("dcds_international_payout_quotes")
+        .select("id,status,expires_at").eq("id", quoteId).eq("user_id", userId).maybeSingle();
+      if (quoteLookupError) throw quoteLookupError;
+      if (!savedQuote || savedQuote.status !== "quoted") return respond({ success: false, error: "This FX quote has already been used or is no longer available." }, 409);
+      if (new Date(savedQuote.expires_at).getTime() <= Date.now()) {
+        await db.from("dcds_international_payout_quotes").update({ status: "expired" }).eq("id", quoteId).eq("user_id", userId);
+        return respond({ success: false, error: "This FX quote has expired. Request a fresh quote." }, 410);
+      }
       const { data: request, error } = await db.rpc("dcds_internal_create_international_payout_request", {
         p_user_id: userId, p_quote_id: quoteId, p_payout_account_id: String(body.account_id || ""),
       });
-      if (error) return respond({ success: false, error: cleanText(error.message, 300) || "Your payout request could not be reserved." }, 409);
+      if (error || !request?.success) return respond({ success: false, error: cleanText(error?.message || request?.error, 300) || "Your payout request could not be reserved." }, 409);
       return respond({ success: true, request, message: "Your international withdrawal request has been reserved for DCDS review. No transfer has been sent yet." });
     }
 
