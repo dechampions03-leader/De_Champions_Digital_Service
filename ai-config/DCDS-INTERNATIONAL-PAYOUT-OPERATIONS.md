@@ -63,7 +63,6 @@ The international function is fail-closed. Set each value only after the named c
 - `DCDS_FLW_IP_WHITELISTED=true` — the server's actual outgoing IP is allowed by Flutterwave.
 - `DCDS_FLW_DESTINATION_WALLETS_FUNDED=true` — required transfer-fee wallets are funded.
 - `DCDS_INTL_SANDBOX_VERIFIED=true` — the exact intended corridors/beneficiary fields pass sandbox tests.
-- `DCDS_INTL_LIVE_TRANSFER_VERIFIED=true` — a controlled live transfer was verified against the real provider result.
 - `DCDS_INTL_PAYOUTS_ENABLED=true` — the DCDS operator deliberately enables international payout after all previous conditions have evidence.
 
 The Supabase service-role credential is injected server-side by Supabase and is never placed in HTML, JavaScript delivered to a browser, or GitHub files.
