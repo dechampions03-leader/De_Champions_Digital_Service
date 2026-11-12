@@ -69,7 +69,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    </section>
    <section class="side-card">
     <h2>One shared assistant</h2>
-    <p>Both dashboard entry points use the same protected DCDS AI service. API settings and the knowledge foundation are configured centrally, not separately on each page.</p>
+    <p>The homepage, student dashboard and admin dashboard open the same protected DCDS AI service. The server determines whether a session is a visitor, verified student or authorised administrator; the browser cannot select its own role.</p>
     <div class="notice"><strong>Privacy reminder</strong>Do not enter passwords, OTPs, card details, bank information or private student records. If DCDS configures the Gemini API free tier, submitted content may be used by Google to improve its products. Keep chats to general learning and public DCDS information. Do not submit personal, payment or student-account information.</div>
    </section>
    <section class="side-card">
@@ -84,8 +84,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 <footer>© 2026 De Champions Digital Service.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
 <script>
 (async function(){
- const SUPABASE_URL='https://qxsenflgaweeadvggnyp.supabase.co';
- const SUPABASE_PUBLISHABLE_KEY='sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
+ const SUPABASE_URL='https://tjgsxbmkpvktlqulbktv.supabase.co';
+ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn';
  const loginUrl='index.html?login=required&next='+encodeURIComponent('ai-learning-assistant.html');
  const statusEl=document.getElementById('status');
  const messagesEl=document.getElementById('messages');
@@ -110,10 +110,23 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  try{
   if(!window.supabase?.createClient){location.replace(loginUrl);return;}
   client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
-  const {data:{user},error}=await client.auth.getUser();
-  if(error||!user||!user.email_confirmed_at){location.replace(loginUrl);return;}
-  document.getElementById('accountLabel').textContent='Signed in · Shared DCDS AI';
-  setStatus('Your account is verified. The shared DCDS AI is ready when its server-side provider key is configured.');
+  const {data:{user:existingUser},error}=await client.auth.getUser();
+  if(error) throw error;
+  let user=existingUser;
+  if(!user){
+   const {data,error:visitorError}=await client.auth.signInAnonymously();
+   if(visitorError){
+    document.getElementById('accountLabel').textContent='Sign in or enable visitor access';
+    setStatus('Visitor access is not available in this Development project yet. Sign in with a verified DCDS account, or enable anonymous sign-ins in Supabase Auth settings.',true);
+    form.querySelectorAll('textarea,button').forEach(el=>el.disabled=true);
+    return;
+   }
+   user=visitor.data.user;
+  }
+  if(!user){setStatus('Please sign in to continue.',true);return;}
+  const verified=Boolean(user.email_confirmed_at||user.phone_confirmed_at);
+  document.getElementById('accountLabel').textContent=user.is_anonymous?'Visitor session · role checked securely':'Signed-in session · role checked securely';
+  setStatus(verified?'Your DCDS account is signed in. Student or administrator access is checked securely by the AI service.':'Your visitor session is ready. The AI service will limit this session to public DCDS information.');
  }catch(error){setStatus('We could not verify your account. Please sign in again.',true);return;}
  input.addEventListener('input',()=>{charCount.textContent=input.value.length.toLocaleString()+' / 2,500';});
  input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();form.requestSubmit();}});
@@ -128,7 +141,10 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    const {data,error}=await client.functions.invoke('dcds-ai-chat',{body:{message,history:previousHistory}});
    if(error)throw error;
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
-   conversation.push({role:'model',text:data.answer});addMessage('assistant',data.answer);setStatus('Connected to the shared DCDS AI service.');
+   conversation.push({role:'model',text:data.answer});addMessage('assistant',data.answer);
+   const roleLabels={visitor:'Visitor · Public DCDS Assistant',student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot'};
+   document.getElementById('accountLabel').textContent=roleLabels[data.role]||'Shared DCDS AI';
+   setStatus('Connected to the shared DCDS AI service.');
   }catch(error){
    const messageText=String(error?.message||'').toLowerCase();
    const friendly=messageText.includes('ai_not_configured')||messageText.includes('provider key')?'The shared AI service is built, but its provider API key has not yet been added to secure Supabase secrets. No key should be entered on this page.':messageText.includes('429')||messageText.includes('rate')?'You have reached the short-term message limit. Please wait a moment and try again.':'The AI service is temporarily unavailable. Please try again shortly.';
