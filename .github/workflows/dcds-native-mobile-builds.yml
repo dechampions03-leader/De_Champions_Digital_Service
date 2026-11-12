@@ -21,7 +21,7 @@ permissions:
 
 # Queue newer runs instead of cancelling a valid iOS build on the hosted runner.
 concurrency:
-  group: dcds-native-mobile-builds-\${{ github.ref }}
+  group: dcds-native-mobile-builds-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
@@ -111,7 +111,7 @@ jobs:
           name: dcds-android-debug
           path: |
             mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
-            \${{ runner.temp }}/DCDS-Android-Native-Project.tar.gz
+            ${{ runner.temp }}/DCDS-Android-Native-Project.tar.gz
           if-no-files-found: error
           retention-days: 14
 
@@ -180,7 +180,7 @@ jobs:
         with:
           name: dcds-ios-simulator
           path: |
-            \${{ runner.temp }}/DCDS-iOS-Simulator-App.zip
-            \${{ runner.temp }}/DCDS-iOS-Native-Project.tar.gz
+            ${{ runner.temp }}/DCDS-iOS-Simulator-App.zip
+            ${{ runner.temp }}/DCDS-iOS-Native-Project.tar.gz
           if-no-files-found: error
           retention-days: 14
