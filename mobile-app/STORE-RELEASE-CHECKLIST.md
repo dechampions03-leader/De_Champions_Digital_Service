@@ -42,15 +42,18 @@ Official policies: [Apple App Review Guidelines, section 3.1](https://developer.
 
 ### Privacy and account deletion
 
-- [ ] Publish a public DCDS privacy policy URL and link it inside the app.
-- [ ] Document collection, use, sharing, retention, deletion, and third-party processors (including Supabase, Flutterwave, and any SDK/CDN providers actually used).
+- [x] Add a DCDS privacy notice page and links from the public homepage, student portal and mobile bundle (legal review and production publication still required).
+- [x] Add an external account-deletion request page and an authenticated request/status/cancellation workflow.
+- [x] Add an admin-only deletion review console with a final manual data-handling attestation gate.
+- [x] Keep the deletion-request audit record separate from the Auth user so it can survive login-identity deletion.
+- [ ] Apply the database migration and deploy the account-deletion Edge Function after review.
+- [ ] Review the privacy notice against actual processors, contracts, data retention and applicable legal advice.
 - [ ] Complete Apple's App Privacy disclosures and Google's Data safety form accurately.
-- [ ] Add a readily discoverable in-app account deletion initiation flow.
-- [ ] Publish an external DCDS account deletion request page and enter its URL in Play Console.
-- [ ] Implement deletion processing that removes eligible personal data while preserving records that must legally be retained; document any such retention.
-- [ ] Test the full deletion request and confirmation process end to end.
+- [ ] Configure the account-deletion URL in Play Console and verify the external request route.
+- [ ] Verify and test the required personal-data erasure/anonymisation and legal-retention process, including any files and third-party processors.
+- [ ] Run an end-to-end deletion test using a dedicated test account with related test records; never use a live customer account.
 
-The current repository audit did not find a published privacy policy page or a complete account-deletion flow. These must not be represented as completed until implemented and tested.
+The current implementation is a controlled request/review workflow, not a claim that all related personal data is automatically erased. The final Auth identity deletion is only enabled after an authorised administrator confirms every required record-handling check.
 
 Official references: [Apple privacy requirements](https://developer.apple.com/app-store/review/guidelines/), [App Store Connect privacy details](https://developer.apple.com/help/app-store-connect/manage-app-information/manage-app-privacy), and [Google Play account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111).
 
