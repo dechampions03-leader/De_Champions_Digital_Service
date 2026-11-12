@@ -48,6 +48,33 @@ for (const relativePath of publicFiles) {
       'location.protocol === "https:" && location.hostname !== "localhost"'
     );
 
+    // Reuse the existing DCDS launch screen in index.html. It already animates
+    // the icon, two-line brand name, tagline and footer before revealing the
+    // homepage. Only extend its activation gate in the native bundle so a
+    // Capacitor app receives the same intro as an installed standalone PWA.
+    // No second splash layer is added and the public website source is untouched.
+    if (relativePath === "index.html") {
+      const bootstrapPattern = /<script id="dcds-launch-bootstrap">[\s\S]*?<\/script>/;
+      const bootstrapMarkup = `<script id="dcds-launch-bootstrap">
+(() => {
+  try {
+    const standalone = window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+    const nativePlatform = window.Capacitor?.isNativePlatform?.() === true
+      || (location.hostname === "localhost" && location.protocol !== "https:");
+    if (standalone || nativePlatform) {
+      document.documentElement.classList.add("dcds-app-loading");
+      window.__dcdsLaunchStartedAt = Date.now();
+    }
+  } catch (_) {}
+})();
+</script>`;
+      if (!bootstrapPattern.test(html)) {
+        throw new Error("index.html is missing the existing DCDS launch bootstrap.");
+      }
+      html = html.replace(bootstrapPattern, bootstrapMarkup);
+    }
+
     await writeFile(destinationPath, html, "utf8");
   } else {
     await copyFile(sourcePath, destinationPath);

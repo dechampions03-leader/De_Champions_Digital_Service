@@ -15,12 +15,16 @@ A successful web-bundle check, Android debug build, or iOS Simulator build is no
 - [x] CI concurrency queues new runs rather than cancelling active iOS builds.
 - [x] No Supabase migrations, Edge Function source, or signing secrets copied into the app bundle.
 - [x] Generated Android and iOS native projects reviewed from successful CI artifacts; both use `com.dechampions.dcds`, and both display **De Champions Digital Service**.
+- [x] Official DCDS logo stored as the mobile branding source and applied to Android/iOS app icons and splash artwork during CI builds.
+- [x] Android adaptive icon foreground/background and monochrome launcher resources are generated from the approved logo.
+- [x] iOS 1024x1024 App Store icon asset and splash image set are generated from the approved logo.
+- [x] Native launch sequence configured: white icon-only OS launch, mobile-only DCDS name/tagline introduction, then fade to homepage.
+- [x] AndroidX SplashScreen is installed before the Capacitor WebView; iOS launch storyboard uses correctly scaled portrait assets.
+- [x] The mobile bundle enables the existing DCDS launch bootstrap for Capacitor's native platform; no duplicate splash layer is added and ordinary website visits remain unchanged.
 
 ## Required before physical-device testing
 
-- [ ] Replace the generated Capacitor starter app icons and splash artwork with approved DCDS-branded assets.
-
-- [ ] Create a 1024x1024 app-store icon and complete platform-specific adaptive icon / launch-screen artwork.
+- [ ] Obtain/approve a 1024x1024 master of the DCDS logo for final store artwork; the current public app-icon source is 512x512 and the generated 1024px store asset is upscaled for build validation.
 - [ ] Configure Android release signing and iOS signing/provisioning securely.
 - [ ] Test registration, email/phone verification, login, password recovery, session persistence, and sign-out on real devices.
 - [ ] Test deep links and the Supabase redirect allowlist for the native app.

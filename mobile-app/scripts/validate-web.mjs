@@ -53,6 +53,31 @@ for (const page of requiredPages) {
   }
 }
 
+const mobileHome = await readFile(path.join(outputDirectory, "index.html"), "utf8");
+assert.match(mobileHome, /id="dcds-launch-screen"/, "Native homepage must reuse the existing DCDS launch screen");
+assert.match(mobileHome, /id="dcds-launch-bootstrap"/, "DCDS launch bootstrap must be present");
+assert.ok(
+  mobileHome.includes("window.Capacitor?.isNativePlatform?.() === true"),
+  "Capacitor native launches must activate the existing DCDS brand intro"
+);
+assert.match(mobileHome, /DE CHAMPIONS/);
+assert.match(mobileHome, /DIGITAL SERVICE/);
+assert.match(mobileHome, /CREATE/);
+assert.match(mobileHome, /INNOVATE/);
+assert.match(mobileHome, /minimumVisibleMs=10000/, "Existing DCDS launch timing should be preserved");
+assert.doesNotMatch(mobileHome, /dcds-native-launch-screen/, "Do not create a duplicate native splash overlay");
+assert.doesNotMatch(
+  mobileHome,
+  /dcds-install-invitation|beforeinstallprompt|Install DCDS|Maybe later/i,
+  "The native bundle must not reintroduce the removed install invitation"
+);
+const studentDashboard = await readFile(path.join(outputDirectory, "student-dashboard.html"), "utf8");
+assert.doesNotMatch(
+  studentDashboard,
+  /dcds-install-invitation|beforeinstallprompt|Install DCDS|Maybe later/i,
+  "The student dashboard must not reintroduce the removed install invitation"
+);
+
 const manifest = JSON.parse(
   await readFile(path.join(outputDirectory, "manifest-v4.webmanifest"), "utf8")
 );
