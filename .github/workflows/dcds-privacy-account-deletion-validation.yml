@@ -1,0 +1,118 @@
+name: DCDS privacy and account deletion validation
+
+on:
+  push:
+    branches:
+      - main
+      - feat/dcds-privacy-account-deletion
+    paths:
+      - "privacy-policy.html"
+      - "delete-account.html"
+      - "admin-account-deletions.html"
+      - "student-dashboard.html"
+      - "student-management.html"
+      - "index.html"
+      - "supabase/functions/dcds-account-deletion/**"
+      - "supabase/migrations/*dcds_account_deletion_requests.sql"
+      - "mobile-app/scripts/**"
+      - "mobile-app/STORE-RELEASE-CHECKLIST.md"
+      - ".github/workflows/dcds-privacy-account-deletion-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "privacy-policy.html"
+      - "delete-account.html"
+      - "admin-account-deletions.html"
+      - "student-dashboard.html"
+      - "student-management.html"
+      - "index.html"
+      - "supabase/functions/dcds-account-deletion/**"
+      - "supabase/migrations/*dcds_account_deletion_requests.sql"
+      - "mobile-app/scripts/**"
+      - "mobile-app/STORE-RELEASE-CHECKLIST.md"
+      - ".github/workflows/dcds-privacy-account-deletion-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dcds-privacy-validation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  privacy-and-deletion:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check account deletion Edge Function
+        run: deno check supabase/functions/dcds-account-deletion/index.ts
+
+      - name: Verify privacy pages and native bundle wiring
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          required = [
+              "privacy-policy.html",
+              "delete-account.html",
+              "admin-account-deletions.html",
+              "supabase/functions/dcds-account-deletion/index.ts",
+              "supabase/migrations/20261112110000_dcds_account_deletion_requests.sql",
+              "ai-config/DCDS-ACCOUNT-DELETION-OPERATIONS.md",
+          ]
+          missing = [item for item in required if not Path(item).is_file()]
+          if missing:
+              raise SystemExit("Missing privacy/deletion files: " + ", ".join(missing))
+
+          for page in required[:3]:
+              html = Path(page).read_text(encoding="utf-8")
+              if "<html" not in html.lower() or "</html>" not in html.lower():
+                  raise SystemExit(f"{page} is not a complete HTML document")
+
+          home = Path("index.html").read_text(encoding="utf-8")
+          dashboard = Path("student-dashboard.html").read_text(encoding="utf-8")
+          admin = Path("student-management.html").read_text(encoding="utf-8")
+          builder = Path("mobile-app/scripts/build-web.mjs").read_text(encoding="utf-8")
+          validator = Path("mobile-app/scripts/validate-web.mjs").read_text(encoding="utf-8")
+          for label, source in [
+              ("homepage", home), ("student portal", dashboard),
+              ("admin operations", admin), ("mobile builder", builder),
+              ("mobile validator", validator)
+          ]:
+              if "privacy-policy.html" not in source and label not in ("admin operations",):
+                  raise SystemExit(f"{label} does not expose/include the privacy policy")
+          if "delete-account.html" not in home or "delete-account.html" not in dashboard:
+              raise SystemExit("Public/student deletion links are missing")
+          if "admin-account-deletions.html" not in admin:
+              raise SystemExit("Admin deletion review link is missing")
+          for page in ("privacy-policy.html", "delete-account.html", "admin-account-deletions.html"):
+              if page not in builder or page not in validator:
+                  raise SystemExit(f"{page} is missing from mobile build/validation allowlists")
+
+          migration = Path("supabase/migrations/20261112110000_dcds_account_deletion_requests.sql").read_text(encoding="utf-8")
+          function = Path("supabase/functions/dcds-account-deletion/index.ts").read_text(encoding="utf-8")
+          if "ENABLE ROW LEVEL SECURITY" not in migration.upper() or "TO SERVICE_ROLE" not in migration.upper():
+              raise SystemExit("Deletion request table is missing service-role/RLS restrictions")
+          if "dcds_admins" not in function or "approved_for_deletion" not in function:
+              raise SystemExit("Deletion workflow is missing the admin/approval gate")
+          for required_phrase in ("personal_data_reviewed", "learning_records_handled",
+                                  "financial_audit_records_retained_as_required", "storage_and_third_party_reviewed"):
+              if required_phrase not in function:
+                  raise SystemExit("Missing final deletion attestation: " + required_phrase)
+          if "deleteUser" not in function or "completion_checklist" not in function:
+              raise SystemExit("Auth deletion must remain behind completion attestations")
+          print("PASS: privacy and deletion pages exist and are linked.")
+          print("PASS: all public/student/admin routes are included in the mobile bundle and validator.")
+          print("PASS: request data is RLS-protected and service-role mediated.")
+          print("PASS: admin approval and all final deletion attestations are required.")
+          PY

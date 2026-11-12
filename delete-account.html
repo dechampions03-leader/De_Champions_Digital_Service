@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ffffff">
+<meta name="description" content="Request deletion of your De Champions Digital Service account and personal information.">
+<link rel="manifest" href="./manifest-v4.webmanifest"><link rel="icon" href="./assets/dcds-splash-icon-v4-192.png" type="image/png" sizes="192x192">
+<title>Account Deletion | DCDS</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--purple:#7628d8;--deep:#21083f;--ink:#28183a;--muted:#756783;--line:#eadff5;--red:#a61b1b}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fbf9ff,#f1e8fb);font:15px/1.65 Arial,sans-serif;color:var(--ink)}
+header{background:#fff;border-bottom:1px solid var(--line);padding:16px 20px}.nav{width:min(900px,100%);margin:auto;display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap}
+.brand{color:var(--deep);font-weight:900;letter-spacing:.08em;font-size:13px}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.18em;margin-top:5px}
+a{color:#6128b8;font-weight:700}.nav a{background:#f1e5ff;border-radius:10px;padding:9px 12px;text-decoration:none;color:var(--deep);font-size:12px}
+main{width:min(760px,calc(100% - 28px));margin:28px auto 55px}
+.hero{background:linear-gradient(125deg,#21083f,#54168e 68%,#7628d8);padding:27px;border-radius:22px;color:white}.kicker{font-weight:900;letter-spacing:.18em;color:#f3d98e;font-size:10px}.hero h1{font-size:clamp(27px,5vw,38px);margin:10px 0}.hero p{color:#eadcf8;margin:0}
+.card{margin-top:18px;background:#fff;border:1px solid var(--line);border-radius:18px;padding:24px;box-shadow:0 8px 24px #32105f0a}
+h2{color:var(--deep);font-size:20px;margin:0 0 12px}p{margin:8px 0 13px;color:var(--muted)}
+.notice{padding:13px;border-radius:12px;background:#fffaf0;border:1px solid #ead9a8;color:#5f4b21;font-size:13px;margin:12px 0}
+label{display:block;font-size:13px;font-weight:800;color:var(--deep);margin:13px 0 6px}
+input,textarea{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;font:inherit;color:var(--ink);background:#fff}
+textarea{min-height:88px;resize:vertical}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:12px;color:var(--muted);font-weight:500}.check input{width:auto;margin-top:4px}
+button{border:0;border-radius:11px;padding:13px 17px;background:linear-gradient(110deg,#8d3bdb,#54168e);color:white;font-weight:800;cursor:pointer;margin-top:15px}
+button.secondary{background:#f1e5ff;color:var(--deep);border:1px solid var(--line)}button:disabled{opacity:.5;cursor:not-allowed}
+#message{font-size:13px;line-height:1.6;margin-top:12px;white-space:pre-wrap}#message.error{color:var(--red)}#message.success{color:#17683a}
+.request{border:1px solid var(--line);border-radius:12px;padding:14px;margin:12px 0;background:#fff} .status{display:inline-block;background:#f1e5ff;color:#54168e;border-radius:30px;padding:5px 9px;font-size:10px;font-weight:900;text-transform:uppercase}
+small{color:var(--muted)}.hidden{display:none!important}footer{text-align:center;padding:24px;color:var(--muted);font-size:12px}
+</style>
+</head>
+<body>
+<header><nav class="nav"><div class="brand">DCDS · DE CHAMPIONS DIGITAL SERVICE<small>CREATE • LEARN • INNOVATE • EARN.</small></div><a href="index.html">Back to DCDS</a></nav></header>
+<main>
+<section class="hero"><span class="kicker">YOUR DATA · YOUR CHOICE</span><h1>Request account deletion</h1><p>This page lets you submit an account-deletion request for De Champions Digital Service without needing to install the app.</p></section>
+<section class="card">
+<h2>Before you submit</h2>
+<p>We will verify that you control the signed-in account. DCDS will review personal data connected to your account and handle any information that must be retained for payment, payout, security or legal audit purposes. Account deletion is not completed automatically when this request is submitted.</p>
+<div class="notice"><strong>Important:</strong> deletion removes access to your student account. Any transaction or payout records that DCDS is required or permitted to retain may be kept in a restricted form. Do not submit this request if you only want to sign out or change your email address.</div>
+<div id="signedOut" class="hidden">
+<p>Sign in to the DCDS account you want to delete, then return to this page.</p>
+<a href="index.html?login=required&next=delete-account.html">Go to DCDS sign in</a>
+</div>
+<div id="requestArea" class="hidden">
+<p id="accountLabel"></p>
+<div id="activeRequest" aria-live="polite"></div>
+<form id="deleteForm">
+<label for="confirmationPhrase">Type DELETE MY ACCOUNT to confirm</label>
+<input id="confirmationPhrase" name="confirmationPhrase" autocomplete="off" required maxlength="40" placeholder="DELETE MY ACCOUNT">
+<label for="requestNote">Additional information (optional)</label>
+<textarea id="requestNote" name="requestNote" maxlength="1000" placeholder="Add any details that may help DCDS review your request. Do not enter passwords or verification codes."></textarea>
+<label class="check"><input id="understood" type="checkbox" required><span>I understand that the request starts a review and that account access may be removed after DCDS completes the personal-data and records review.</span></label>
+<button id="submitRequest" type="submit">Submit deletion request</button>
+</form>
+</div>
+<div id="message" role="status" aria-live="polite"></div>
+</section>
+<footer>© 2026 De Champions Digital Service · <a href="privacy-policy.html">Privacy Policy</a> · <a href="mailto:dechampions82@gmail.com">Privacy Support</a></footer>
+</main>
+<script>
+(() => {
+ const SUPABASE_URL = "https://qxsenflgaweeadvggnyp.supabase.co";
+ const SUPABASE_KEY = "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+ const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ const signedOut = document.getElementById("signedOut");
+ const requestArea = document.getElementById("requestArea");
+ const message = document.getElementById("message");
+ const active = document.getElementById("activeRequest");
+ const form = document.getElementById("deleteForm");
+ let sessionUser = null;
+
+ function status(text, type="") { message.textContent=text; message.className=type; }
+ function escapeHtml(value) { return String(value ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+ async function invoke(body) {
+   const {data,error}=await client.functions.invoke("dcds-account-deletion",{body});
+   if(error) throw new Error("The privacy service could not be reached. Please refresh and try again, or contact DCDS support.");
+   if(!data?.success) throw new Error(data?.error || "The request could not be completed.");
+   return data;
+ }
+ async function loadRequests() {
+   const data=await invoke({action:"status"});
+   active.innerHTML="";
+   const requests=data.requests || [];
+   if(!requests.length) {
+     active.innerHTML='<p>No account-deletion request has been submitted for this account.</p>';
+     form.classList.remove("hidden");
+     return;
+   }
+   requests.forEach(request=>{
+     const card=document.createElement("div");
+     card.className="request";
+     card.innerHTML='<span class="status">'+escapeHtml(request.status.replaceAll("_"," "))+'</span>'+
+       '<p><strong>Request reference:</strong> '+escapeHtml(request.id)+'</p>'+
+       '<small>Submitted: '+escapeHtml(new Date(request.requested_at).toLocaleString())+'</small>'+
+       (request.review_note?'<p><strong>DCDS update:</strong> '+escapeHtml(request.review_note)+'</p>':'');
+     if(request.status==="pending") {
+       const cancel=document.createElement("button");
+       cancel.type="button";cancel.className="secondary";cancel.textContent="Cancel request";
+       cancel.addEventListener("click",async()=>{
+         if(!confirm("Cancel this pending account-deletion request?")) return;
+         cancel.disabled=true;
+         try { await invoke({action:"cancel",request_id:request.id}); status("Your pending request was cancelled.","success"); await loadRequests(); }
+         catch(error){status(error.message,"error");cancel.disabled=false;}
+       });
+       card.appendChild(cancel);
+     }
+     active.appendChild(card);
+   });
+   const canSubmit=requests.every(r=>!["pending","in_review","action_required","approved_for_deletion"].includes(r.status));
+   form.classList.toggle("hidden",!canSubmit);
+ }
+ async function init() {
+   const {data,error}=await client.auth.getSession();
+   sessionUser=data?.session?.user || null;
+   if(error) throw error;
+   if(!sessionUser) {signedOut.classList.remove("hidden");requestArea.classList.add("hidden");return;}
+   signedOut.classList.add("hidden");requestArea.classList.remove("hidden");
+   document.getElementById("accountLabel").textContent="Signed in as "+(sessionUser.email || sessionUser.phone || "your DCDS account");
+   await loadRequests();
+ }
+ form.addEventListener("submit",async event=>{
+   event.preventDefault();
+   const button=document.getElementById("submitRequest");
+   if(document.getElementById("confirmationPhrase").value.trim()!=="DELETE MY ACCOUNT") {
+     status("Type DELETE MY ACCOUNT exactly to confirm.","error");return;
+   }
+   if(!document.getElementById("understood").checked) return;
+   button.disabled=true;button.textContent="Submitting…";status("");
+   try {
+     await invoke({
+       action:"create_request",
+       confirmation_phrase:document.getElementById("confirmationPhrase").value.trim(),
+       request_note:document.getElementById("requestNote").value
+     });
+     form.reset();status("Your request has been submitted. Keep the reference shown below and check this page for updates.","success");
+     await loadRequests();
+   } catch(error) {status(error.message,"error");}
+   finally {button.disabled=false;button.textContent="Submit deletion request";}
+ });
+ client.auth.onAuthStateChange((_event,session)=>{sessionUser=session?.user||null;init().catch(error=>status(error.message,"error"));});
+ init().catch(error=>status(error.message,"error"));
+})();
+</script>
+</body>
+</html>
