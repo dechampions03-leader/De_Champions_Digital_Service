@@ -34,7 +34,7 @@ It does not copy Supabase migrations, Edge Function source, secrets, or reposito
 
 ## Native build automation
 
-The workflow `.github/workflows/dcds-native-mobile-builds.yml` creates a dependency lockfile in a preparation job and passes that same lockfile to both native jobs. Android and iOS therefore install the same resolved npm dependency tree in a given workflow run using `npm ci`.
+The workflow `.github/workflows/dcds-native-mobile-builds.yml` creates and commits `mobile-app/package-lock.json` to the PR source branch on its first run when the file is missing. Both native jobs then check out that updated branch and use `npm ci` against the committed lockfile. This pins the exact npm dependency tree across subsequent workflow runs and both platforms.
 
 The workflow runs on changes to the mobile app or workflow, and can also be started manually. It queues runs rather than cancelling an active iOS build.
 
