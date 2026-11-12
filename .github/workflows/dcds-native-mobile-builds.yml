@@ -80,7 +80,7 @@ jobs:
 
   ios-simulator:
     name: Generate iOS project and compile simulator build
-    runs-on: macos-latest
+    runs-on: macos-26
     defaults:
       run:
         working-directory: mobile-app
@@ -104,6 +104,9 @@ jobs:
 
       - name: Sync DCDS web assets to iOS
         run: npx cap sync ios
+
+      - name: Confirm Xcode toolchain
+        run: xcodebuild -version
 
       - name: Compile iOS Simulator app (no signing)
         run: |
