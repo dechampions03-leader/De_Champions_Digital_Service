@@ -1,24 +1,25 @@
 # DCDS mobile store release checklist
 
-This is the release gate for Google Play and Apple App Store. A successful Capacitor web-bundle check is not equivalent to store approval.
+A successful web-bundle check, Android debug build, or iOS Simulator build is not equivalent to store approval or physical-device readiness.
 
 ## Configured in this repository
 
 - [x] Separate Capacitor project folder; existing website files stay at the repository root.
-- [x] Proposed app name and reverse-domain application identifier.
+- [x] Proposed app name and reverse-domain application identifier (availability still unconfirmed).
 - [x] Dedicated generated web asset directory and explicit public-file allowlist.
-- [x] Existing DCDS page routes and images included in the mobile bundle.
+- [x] Existing DCDS page routes, privacy notice, account-deletion pages, and images included in the mobile bundle.
 - [x] PWA service-worker registration guarded from the local native WebView.
 - [x] Automated static validation for page presence, HTML structure, manifest, and icon dimensions.
-- [x] CI workflow to build and validate the web bundle.
+- [x] CI workflow configured to generate Android and iOS projects and compile an Android debug APK plus iOS Simulator app.
+- [x] CI passes the same generated npm lockfile to both native build jobs.
+- [x] CI concurrency queues new runs rather than cancelling active iOS builds.
 - [x] No Supabase migrations, Edge Function source, or signing secrets copied into the app bundle.
 
-## Required before native device testing
+## Required before physical-device testing
 
-- [ ] Install Node.js 22+, Android Studio/Android SDK, and (on macOS) Xcode 26+.
-- [ ] Generate and review Android and iOS native projects.
+- [ ] Review generated Android and iOS native projects and confirm final package/bundle identifiers.
 - [ ] Create a 1024x1024 app-store icon and complete platform-specific adaptive icon / launch-screen artwork.
-- [ ] Configure Android package signing and iOS signing/provisioning securely.
+- [ ] Configure Android release signing and iOS signing/provisioning securely.
 - [ ] Test registration, email/phone verification, login, password recovery, session persistence, and sign-out on real devices.
 - [ ] Test deep links and the Supabase redirect allowlist for the native app.
 - [ ] Test Flutterwave checkout hand-off and payment return; confirm the server verifies each transaction before access is granted.
@@ -29,7 +30,7 @@ This is the release gate for Google Play and Apple App Store. A successful Capac
 
 ### Digital course payments
 
-DCDS sells digital courses and learning access. Do not expose the website's Flutterwave checkout as the purchase path for digital course access in a store-distributed native build unless the applicable store rules and an approved regional/program exception permit it.
+DCDS sells digital courses and learning access. Do not expose the website's Flutterwave checkout as the purchase path for digital course access in a store-distributed native build unless applicable store rules and an approved regional/program exception permit it.
 
 - [ ] Integrate and test Google Play Billing for new digital course purchases on Google Play, unless DCDS qualifies for and enrolls in an applicable alternative billing program.
 - [ ] Integrate and test Apple In-App Purchase / StoreKit for new digital course purchases on the iOS App Store, unless an applicable entitlement or exception is approved.
@@ -50,7 +51,7 @@ Official policies: [Apple App Review Guidelines, section 3.1](https://developer.
 - [ ] Review the privacy notice against actual processors, contracts, data retention and applicable legal advice.
 - [ ] Complete Apple's App Privacy disclosures and Google's Data safety form accurately.
 - [ ] Configure the account-deletion URL in Play Console and verify the external request route.
-- [ ] Verify and test the required personal-data erasure/anonymisation and legal-retention process, including any files and third-party processors.
+- [ ] Verify and test the required personal-data erasure/anonymisation and legal-retention process, including files and third-party processors.
 - [ ] Run an end-to-end deletion test using a dedicated test account with related test records; never use a live customer account.
 
 The current implementation is a controlled request/review workflow, not a claim that all related personal data is automatically erased. The final Auth identity deletion is only enabled after an authorised administrator confirms every required record-handling check.
@@ -62,10 +63,10 @@ Official references: [Apple privacy requirements](https://developer.apple.com/ap
 - [ ] Add app-specific mobile value beyond a website wrapper (for example, robust deep links, native notifications, and tested platform navigation).
 - [ ] Provide Apple review with a working demo account or fully featured demo mode and keep the backend available during review.
 - [ ] Prepare accurate store name, description, support contact, privacy policy, screenshots, age/content rating, and store artwork.
-- [ ] Complete Google Play Data safety and target API declarations using the current requirements at submission time.
+- [ ] Complete Google Play Data safety and target API declarations using current requirements at submission time.
 - [ ] Complete Apple App Privacy, export compliance, age rating, and app review notes.
 - [ ] Register and verify the publisher-owned Google Play Console and Apple Developer accounts.
-- [ ] Upload signed release builds to internal/closed testing first and resolve all findings before production submission.
+- [ ] Upload signed release builds to internal/closed testing first and resolve findings before production submission.
 
 ## Windows / Microsoft Store release track
 
@@ -82,8 +83,8 @@ Official guide: [Publish a PWA to the Microsoft Store](https://learn.microsoft.c
 
 ## Not completed by the repository scaffold
 
-- Native Android/iOS projects have not yet been generated.
-- No Android or iOS binary has been compiled, installed on a device, signed, or submitted.
-- No store accounts, product catalog, billing agreements, privacy policy, account-deletion workflow, signing certificates, or provisioning profiles have been created.
+- No signed Android App Bundle or iOS device archive has been produced.
+- No physical Android/iPhone install or end-to-end mobile flow test has been completed.
+- No store accounts, product catalog, billing agreements, signing certificates, or provisioning profiles have been configured.
 - No real mobile Flutterwave or store-billing payment has been tested.
 - Store approval cannot be guaranteed; the platform owner must complete account verification, policy declarations, testing, and review responses.
