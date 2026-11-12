@@ -1,0 +1,32 @@
+# Node and generated web bundle
+node_modules/
+www/
+
+# Local environment and signing credentials
+.env
+.env.*
+!.env.example
+*.keystore
+*.jks
+*.p12
+*.mobileprovision
+*.cer
+*.p8
+
+# Android local build state (keep native project source tracked)
+android/.gradle/
+android/local.properties/
+android/build/
+android/app/build/
+
+# iOS local build state (keep native project source tracked)
+ios/Pods/
+ios/build/
+ios/DerivedData/
+ios/**/*.xcuserstate
+ios/**/xcuserdata/
+
+# OS/editor noise
+.DS_Store
+.idea/
+.vscode/
