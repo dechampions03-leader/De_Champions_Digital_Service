@@ -7,6 +7,8 @@ Run from mobile-app after npx cap add:
 """
 from __future__ import annotations
 
+import base64
+import io
 import json
 import sys
 from pathlib import Path
@@ -14,7 +16,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
-LOGO_PATH = ROOT / "branding" / "dcds-logo.png"
+LOGO_PATH = ROOT / "branding" / "dcds-logo.png.base64"
 
 ANDROID_DENSITIES = {
     "mdpi": (48, 108), "hdpi": (72, 162), "xhdpi": (96, 216),
@@ -33,7 +35,9 @@ ANDROID_SPLASH_LAND = {
 def load_logo() -> Image.Image:
     if not LOGO_PATH.is_file():
         raise FileNotFoundError(f"Official DCDS logo not found: {LOGO_PATH}")
-    logo = Image.open(LOGO_PATH).convert("RGBA")
+    encoded = "".join(LOGO_PATH.read_text(encoding="ascii").split())
+    logo_bytes = base64.b64decode(encoded, validate=True)
+    logo = Image.open(io.BytesIO(logo_bytes)).convert("RGBA")
     if logo.width != logo.height or logo.width < 64:
         raise ValueError("The DCDS logo must be a square PNG at least 64x64 pixels.")
     return logo
