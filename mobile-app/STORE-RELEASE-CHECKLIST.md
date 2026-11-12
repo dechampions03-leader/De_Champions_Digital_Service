@@ -14,10 +14,12 @@ A successful web-bundle check, Android debug build, or iOS Simulator build is no
 - [x] CI commits the generated npm lockfile to the source branch and both native jobs install from that committed lockfile using `npm ci`.
 - [x] CI concurrency queues new runs rather than cancelling active iOS builds.
 - [x] No Supabase migrations, Edge Function source, or signing secrets copied into the app bundle.
+- [x] Generated Android and iOS native projects reviewed from successful CI artifacts; both use `com.dechampions.dcds`, and both display **De Champions Digital Service**.
 
 ## Required before physical-device testing
 
-- [ ] Review generated Android and iOS native projects and confirm final package/bundle identifiers.
+- [ ] Replace the generated Capacitor starter app icons and splash artwork with approved DCDS-branded assets.
+
 - [ ] Create a 1024x1024 app-store icon and complete platform-specific adaptive icon / launch-screen artwork.
 - [ ] Configure Android release signing and iOS signing/provisioning securely.
 - [ ] Test registration, email/phone verification, login, password recovery, session persistence, and sign-out on real devices.
