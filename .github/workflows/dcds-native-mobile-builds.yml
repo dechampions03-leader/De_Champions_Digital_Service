@@ -1,0 +1,186 @@
+name: DCDS native mobile build checks
+
+on:
+  push:
+    branches:
+      - main
+      - feat/dcds-native-build-pipeline-v2
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/dcds-native-mobile-builds.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/dcds-native-mobile-builds.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Queue newer runs instead of cancelling a valid iOS build on the hosted runner.
+concurrency:
+  group: dcds-native-mobile-builds-\${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-dependencies:
+    name: Resolve and lock Capacitor dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Resolve dependencies and create lockfile
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Upload shared dependency lockfile
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-mobile-package-lock
+          path: mobile-app/package-lock.json
+          if-no-files-found: error
+          retention-days: 14
+
+  android-debug:
+    name: Generate Android project and compile debug APK
+    needs: prepare-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Download shared dependency lockfile
+        uses: actions/download-artifact@v4
+        with:
+          name: dcds-mobile-package-lock
+          path: mobile-app
+
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build and validate DCDS web bundle
+        run: npm run build
+
+      - name: Generate Android native project
+        run: npx cap add android
+
+      - name: Sync DCDS web assets to Android
+        run: npx cap sync android
+
+      - name: Compile Android debug APK
+        working-directory: mobile-app/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Package Android native project source
+        run: |
+          tar -czf "$RUNNER_TEMP/DCDS-Android-Native-Project.tar.gz" \
+            --exclude='android/.gradle' \
+            --exclude='android/build' \
+            --exclude='android/app/build' \
+            android
+
+      - name: Upload Android debug APK and native project
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-android-debug
+          path: |
+            mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
+            \${{ runner.temp }}/DCDS-Android-Native-Project.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+  ios-simulator:
+    name: Generate iOS project and compile simulator build
+    # Xcode 27 is GA on GitHub-hosted Apple Silicon runners as of 15 Oct 2026.
+    runs-on: xcode-27
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Download shared dependency lockfile
+        uses: actions/download-artifact@v4
+        with:
+          name: dcds-mobile-package-lock
+          path: mobile-app
+
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build and validate DCDS web bundle
+        run: npm run build
+
+      - name: Generate iOS native project
+        run: npx cap add ios
+
+      - name: Sync DCDS web assets to iOS
+        run: npx cap sync ios
+
+      - name: Confirm Apple toolchain and simulator availability
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available
+
+      - name: Compile iOS Simulator app without signing
+        run: |
+          xcodebuild \
+            -project ios/App/App.xcodeproj \
+            -scheme App \
+            -configuration Debug \
+            -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath "$RUNNER_TEMP/DCDS-iOS-DerivedData" \
+            CODE_SIGNING_ALLOWED=NO \
+            build
+
+      - name: Package iOS Simulator app and native project source
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent \
+            "$RUNNER_TEMP/DCDS-iOS-DerivedData/Build/Products/Debug-iphonesimulator/App.app" \
+            "$RUNNER_TEMP/DCDS-iOS-Simulator-App.zip"
+          tar -czf "$RUNNER_TEMP/DCDS-iOS-Native-Project.tar.gz" \
+            --exclude='ios/build' \
+            ios
+
+      - name: Upload iOS Simulator build and native project
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-ios-simulator
+          path: |
+            \${{ runner.temp }}/DCDS-iOS-Simulator-App.zip
+            \${{ runner.temp }}/DCDS-iOS-Native-Project.tar.gz
+          if-no-files-found: error
+          retention-days: 14
