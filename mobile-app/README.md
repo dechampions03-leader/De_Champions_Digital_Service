@@ -14,8 +14,8 @@ This folder adds a separate Capacitor 8 packaging layer for De Champions Digital
 
 - Node.js 22 or newer
 - npm
-- Android builds: Android Studio and an Android SDK
-- iOS builds: macOS, Xcode 26 or newer, and Xcode Command Line Tools
+- Android builds: Android Studio 2025.2.1 or newer and Android SDK Platform 24 or newer
+- iOS builds: macOS, Xcode 26 or newer, Xcode Command Line Tools, and iOS 15+ deployment support
 
 Capacitor 8 platform requirements are described in the official [environment setup guide](https://capacitorjs.com/docs/getting-started/environment-setup).
 
