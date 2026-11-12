@@ -240,6 +240,16 @@ Deno.serve(async (req: Request) => {
           return respond(req, { success: false, error: "Complete every data-handling attestation before deleting the Auth identity.", missing_checklist_items: missing }, 400);
         }
 
+        // Protect privileged DCDS operator identities from this student deletion flow.
+        // Admin offboarding requires a separate owner-controlled process.
+        const [{ data: dcdsAdmin }, { data: legacyAdmin }] = await Promise.all([
+          service.from("dcds_admins").select("user_id").eq("user_id", request.user_id).maybeSingle(),
+          service.from("admin_users").select("user_id").eq("user_id", request.user_id).maybeSingle(),
+        ]);
+        if (dcdsAdmin || legacyAdmin) {
+          return respond(req, { success: false, error: "Administrator accounts cannot be deleted through the student request workflow. Use the separate owner-controlled administrator offboarding process." }, 409);
+        }
+
         // Do not automate destructive deletion of public records. The authorised
         // administrator must first verify that personal data has been erased or
         // anonymised and that records with a legal/audit need have been retained.
