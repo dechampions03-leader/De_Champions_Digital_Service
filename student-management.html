@@ -1191,7 +1191,7 @@ function renderAdminPaymentOrders(rows){
             if(error||!data?.success)throw new Error(await paymentFunctionError(error,data));
             alert(data.message||"Flutterwave payment verified and student enrolled.");
             await Promise.all([loadAdminPaymentOps(),loadStudents()]);
-          }catch(error){alert(error.message||"Payment verification failed.");}
+          }catch(error){alert(error.message||"Payment verification failed.");await loadAdminPaymentOps().catch(()=>{});}
           finally{verify.disabled=false;verify.textContent="Verify supplied transaction ID";}
         });
         const lookup=paymentActionButton("Find payment by DCDS order reference",async()=>{
@@ -1202,7 +1202,7 @@ function renderAdminPaymentOrders(rows){
             if(error||!data?.success)throw new Error(await paymentFunctionError(error,data));
             alert(data.message||"Flutterwave payment verified and student enrolled.");
             await Promise.all([loadAdminPaymentOps(),loadStudents()]);
-          }catch(error){alert(error.message||"No successful payment was found. The order has not been approved.");}
+          }catch(error){alert(error.message||"No successful payment was found. The order has not been approved.");await loadAdminPaymentOps().catch(()=>{});}
           finally{lookup.disabled=false;lookup.textContent="Find payment by DCDS order reference";}
         },"btn ghost");
         actions.append(verify,lookup);
