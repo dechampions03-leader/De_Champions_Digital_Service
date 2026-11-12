@@ -54,7 +54,7 @@ for (const relativePath of publicFiles) {
     // Capacitor app receives the same intro as an installed standalone PWA.
     // No second splash layer is added and the public website source is untouched.
     if (relativePath === "index.html") {
-      const bootstrapPattern = /<script id="dcds-launch-bootstrap">[\\s\\S]*?<\\/script>/;
+      const bootstrapPattern = /<script id="dcds-launch-bootstrap">[\s\S]*?<\/script>/;
       const bootstrapMarkup = `<script id="dcds-launch-bootstrap">
 (() => {
   try {
