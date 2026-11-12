@@ -95,10 +95,10 @@ for (const relativePath of publicFiles) {
   window.setTimeout(dismiss, 6500);
 })();
 </script>`;
-      if (!html.includes("</head>") || !/<body\\b[^>]*>/i.test(html)) {
+      if (!html.includes("</head>") || !/<body\b[^>]*>/i.test(html)) {
         throw new Error("Cannot inject the DCDS native opening screen: index.html is missing head/body.");
       }
-      html = html.replace("</head>", launchStyles + "\\n</head>");
+      html = html.replace("</head>", launchStyles + "\n</head>");
       html = html.replace(/<body\\b[^>]*>/i, (openingBody) => openingBody + launchMarkup);
     }
 
