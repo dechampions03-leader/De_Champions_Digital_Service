@@ -101,7 +101,7 @@ jobs:
 
           migration = Path("supabase/migrations/20261112110000_dcds_account_deletion_requests.sql").read_text(encoding="utf-8")
           function = Path("supabase/functions/dcds-account-deletion/index.ts").read_text(encoding="utf-8")
-          if "ENABLE ROW LEVEL SECURITY" not in migration or "TO service_role" not in migration:
+          if "ENABLE ROW LEVEL SECURITY" not in migration.upper() or "TO SERVICE_ROLE" not in migration.upper():
               raise SystemExit("Deletion request table is missing service-role/RLS restrictions")
           if "dcds_admins" not in function or "approved_for_deletion" not in function:
               raise SystemExit("Deletion workflow is missing the admin/approval gate")
