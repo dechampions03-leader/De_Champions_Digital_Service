@@ -55,12 +55,12 @@ for (const page of requiredPages) {
 
 const mobileHome = await readFile(path.join(outputDirectory, "index.html"), "utf8");
 assert.match(mobileHome, /id="dcds-native-launch-screen"/, "Native homepage must include the DCDS launch intro");
-assert.match(mobileHome, /dcds-splash-icon-v4-512\\.png/, "Native intro must use the 512px DCDS icon");
+assert.match(mobileHome, /dcds-splash-icon-v4-512\.png/, "Native intro must use the 512px DCDS icon");
 assert.match(mobileHome, /DE CHAMPIONS/);
 assert.match(mobileHome, /DIGITAL SERVICE/);
 assert.match(mobileHome, /CREATE &bull; LEARN &bull; INNOVATE &bull; EARN/);
 assert.match(mobileHome, /dcds-native-launch-screen-controller/);
-assert.match(mobileHome, /setTimeout\\(dismiss, 6500\\)/, "Native launch intro must have a bounded dismissal fallback");
+assert.match(mobileHome, /setTimeout\(dismiss, 6500\)/, "Native launch intro must have a bounded dismissal fallback");
 assert.doesNotMatch(
   mobileHome,
   /dcds-install-invitation|beforeinstallprompt|Install DCDS|Maybe later/i,
