@@ -16,7 +16,7 @@ from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter
 
 ROOT = Path(__file__).resolve().parents[1]
-LOGO_PATH = ROOT / "branding" / "dcds-logo.png.base64"
+LOGO_PARTS = sorted((ROOT / "branding").glob("dcds-logo.webp.base64.part-*"))
 
 ANDROID_DENSITIES = {
     "mdpi": (48, 108), "hdpi": (72, 162), "xhdpi": (96, 216),
@@ -33,9 +33,9 @@ ANDROID_SPLASH_LAND = {
 
 
 def load_logo() -> Image.Image:
-    if not LOGO_PATH.is_file():
-        raise FileNotFoundError(f"Official DCDS logo not found: {LOGO_PATH}")
-    encoded = "".join(LOGO_PATH.read_text(encoding="ascii").split())
+    if len(LOGO_PARTS) != 3:
+        raise FileNotFoundError("Official DCDS logo source parts are missing from mobile-app/branding.")
+    encoded = "".join(part.read_text(encoding="ascii").strip() for part in LOGO_PARTS)
     logo_bytes = base64.b64decode(encoded, validate=True)
     logo = Image.open(io.BytesIO(logo_bytes)).convert("RGBA")
     if logo.width != logo.height or logo.width < 64:
