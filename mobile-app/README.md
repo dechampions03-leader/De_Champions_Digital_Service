@@ -34,13 +34,11 @@ It does not copy Supabase migrations, Edge Function source, secrets, or reposito
 
 ## Native app opening experience
 
-The native app opens in three deliberate stages, following the supplied DCDS reference:
+The supplied DCDS opening sequence was already implemented on the homepage: a white screen with the DCDS icon, an animated two-line brand name, the **CREATE • LEARN • INNOVATE • EARN** tagline, and the footer brand line, followed by the homepage.
 
-1. The operating system shows a clean white launch screen with the large purple DCDS app icon.
-2. As the Capacitor WebView becomes ready, a mobile-bundle-only brand introduction shows the smaller icon, **DE CHAMPIONS / DIGITAL SERVICE**, the **CREATE • LEARN • INNOVATE • EARN** tagline, and the small footer brand line.
-3. The intro fades away to the existing DCDS homepage.
+The native build reuses that single source-of-truth launch screen. The generated mobile bundle extends the existing launch bootstrap so it recognises Capacitor's native platform as well as an installed standalone PWA. This avoids a second overlay or duplicate brand sequence. The native OS launch screen first shows the large DCDS icon on white; the existing animated introduction then runs and fades into the homepage.
 
-The intro is injected only into the generated `mobile-app/www/index.html` by `scripts/build-web.mjs`. The production website source is not modified and does not show this launch overlay. It is dismissed after the page load event, with a bounded fallback so a slow third-party request cannot trap the learner on the splash screen.
+Only the generated `mobile-app/www/index.html` receives the native-platform activation condition. The repository's root website is not modified by the mobile packaging script, and ordinary browser visitors are not forced through the app-opening sequence or an install/skip prompt.
 
 ## Official app branding
 
