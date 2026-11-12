@@ -1,0 +1,52 @@
+name: DCDS Capacitor foundation validation
+
+on:
+  push:
+    branches:
+      - feat/dcds-capacitor-mobile-foundation
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/dcds-capacitor-foundation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/dcds-capacitor-foundation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dcds-capacitor-foundation-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate-mobile-web-bundle:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile-app/package.json
+
+      - name: Install Capacitor dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Build the DCDS mobile web bundle
+        run: npm run build:web
+
+      - name: Validate Capacitor configuration and web assets
+        run: npm run validate:web
+
+      - name: Confirm Capacitor CLI is available
+        run: npx cap --version
