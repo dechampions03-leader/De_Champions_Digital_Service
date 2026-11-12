@@ -22,24 +22,32 @@ ANDROID_DENSITIES = {
     "mdpi": (48, 108), "hdpi": (72, 162), "xhdpi": (96, 216),
     "xxhdpi": (144, 324), "xxxhdpi": (192, 432),
 }
+# White, portrait first frame; the mobile-only HTML intro adds the brand text.
 ANDROID_SPLASH_PORT = {
-    "mdpi": (320, 480), "hdpi": (480, 800), "xhdpi": (720, 1280),
-    "xxhdpi": (960, 1600), "xxxhdpi": (1280, 1920),
+    "mdpi": (384, 832), "hdpi": (576, 1248), "xhdpi": (768, 1664),
+    "xxhdpi": (1152, 2496), "xxxhdpi": (1536, 3328),
 }
 ANDROID_SPLASH_LAND = {
-    "mdpi": (480, 320), "hdpi": (800, 480), "xhdpi": (1280, 720),
-    "xxhdpi": (1600, 960), "xxxhdpi": (1920, 1280),
+    "mdpi": (480, 320), "hdpi": (720, 480), "xhdpi": (960, 640),
+    "xxhdpi": (1440, 960), "xxxhdpi": (1920, 1280),
 }
 
 
 def load_logo() -> Image.Image:
-    if len(LOGO_PARTS) != 3:
-        raise FileNotFoundError("Official DCDS logo source parts are missing from mobile-app/branding.")
-    encoded = "".join(part.read_text(encoding="ascii").strip() for part in LOGO_PARTS)
-    logo_bytes = base64.b64decode(encoded, validate=True)
-    logo = Image.open(io.BytesIO(logo_bytes)).convert("RGBA")
+    # Prefer the existing 512px public app icon used in the supplied reference.
+    high_resolution_icon = ROOT / "www" / "assets" / "dcds-splash-icon-v4-512.png"
+    if high_resolution_icon.is_file():
+        logo = Image.open(high_resolution_icon).convert("RGBA")
+    else:
+        if len(LOGO_PARTS) != 3:
+            raise FileNotFoundError(
+                "DCDS logo source is missing: build the web bundle first or restore the branding source parts."
+            )
+        encoded = "".join(part.read_text(encoding="ascii").strip() for part in LOGO_PARTS)
+        logo_bytes = base64.b64decode(encoded, validate=True)
+        logo = Image.open(io.BytesIO(logo_bytes)).convert("RGBA")
     if logo.width != logo.height or logo.width < 64:
-        raise ValueError("The DCDS logo must be a square PNG at least 64x64 pixels.")
+        raise ValueError("The DCDS logo must be a square image at least 64x64 pixels.")
     return logo
 
 
@@ -65,28 +73,13 @@ def adaptive_foreground(logo: Image.Image, size: int) -> Image.Image:
 
 
 def splash_image(logo: Image.Image, size: tuple[int, int]) -> Image.Image:
+    """Create the first native launch frame: white canvas with a large DCDS icon."""
     width, height = size
-    top, bottom = (20, 0, 38), (47, 0, 83)
-    bg = Image.new("RGB", size)
-    draw = ImageDraw.Draw(bg)
-    for y in range(height):
-        t = y / max(1, height - 1)
-        color = tuple(round(top[i] * (1 - t) + bottom[i] * t) for i in range(3))
-        draw.line((0, y, width, y), fill=color)
-
-    glow_width = max(1, round(min(width, height) * 0.70))
-    glow = Image.new("RGBA", size, (0, 0, 0, 0))
-    gd = ImageDraw.Draw(glow)
-    cx, cy = width // 2, height // 2
-    gd.ellipse((cx - glow_width // 2, cy - glow_width // 2,
-                cx + glow_width // 2, cy + glow_width // 2),
-               fill=(132, 0, 205, 65))
-    glow = glow.filter(ImageFilter.GaussianBlur(max(1, round(min(width, height) * 0.14))))
-    result = Image.alpha_composite(bg.convert("RGBA"), glow)
-    mark_size = round(min(width, height) * 0.46)
+    canvas = Image.new("RGBA", size, (255, 255, 255, 255))
+    mark_size = round(width * 0.66)
     mark = logo.resize((mark_size, mark_size), Image.Resampling.LANCZOS)
-    result.alpha_composite(mark, ((width - mark_size) // 2, (height - mark_size) // 2))
-    return result.convert("RGB")
+    canvas.alpha_composite(mark, ((width - mark_size) // 2, (height - mark_size) // 2))
+    return canvas.convert("RGB")
 
 
 def apply_android(logo: Image.Image) -> None:
@@ -147,7 +140,33 @@ def apply_android(logo: Image.Image) -> None:
         folder = res / f"drawable-land-{density}"
         folder.mkdir(parents=True, exist_ok=True)
         splash_image(logo, dimensions).save(folder / "splash.png", optimize=True)
-    splash_image(logo, (480, 320)).save(res / "drawable" / "splash.png", optimize=True)
+    splash_image(logo, (384, 832)).save(res / "drawable" / "splash.png", optimize=True)
+
+    # AndroidX / Android 12 launch contract: white background plus app icon.
+    (res / "values" / "dcds_launch_background.xml").write_text(
+        '<?xml version="1.0" encoding="utf-8"?>\n'
+        '<resources><color name="dcds_launch_background">#FFFFFF</color></resources>\n',
+        encoding="utf-8"
+    )
+    styles_path = res / "values" / "styles.xml"
+    styles = styles_path.read_text(encoding="utf-8")
+    launch_style = (
+        '<style name="AppTheme.NoActionBarLaunch" parent="Theme.SplashScreen">\n'
+        '        <item name="windowSplashScreenBackground">@color/dcds_launch_background</item>\n'
+        '        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>\n'
+        '        <item name="windowSplashScreenAnimationDuration">250</item>\n'
+        '        <item name="postSplashScreenTheme">@style/AppTheme.NoActionBar</item>\n'
+        '    </style>'
+    )
+    updated_styles, replacements = __import__("re").subn(
+        r'<style name="AppTheme\.NoActionBarLaunch" parent="Theme\.SplashScreen">[\s\S]*?</style>',
+        launch_style,
+        styles,
+        count=1
+    )
+    if replacements != 1:
+        raise ValueError("Could not locate Capacitor's AppTheme.NoActionBarLaunch style.")
+    styles_path.write_text(updated_styles, encoding="utf-8")
 
 
 def apply_ios(logo: Image.Image) -> None:
@@ -166,20 +185,35 @@ def apply_ios(logo: Image.Image) -> None:
         "info": {"author": "xcode", "version": 1}
     }, indent=2) + "\n", encoding="utf-8")
 
+    # Correct 1x/2x/3x portrait assets for the iOS launch storyboard.
     splashset = assets / "Splash.imageset"
     splashset.mkdir(parents=True, exist_ok=True)
-    artwork = splash_image(logo, (2732, 2732))
-    for filename in ["splash-2732x2732-2.png", "splash-2732x2732-1.png",
-                     "splash-2732x2732.png"]:
-        artwork.save(splashset / filename, optimize=True)
+    splash_specs = [
+        ("Splash-1x.png", (390, 844), "1x"),
+        ("Splash-2x.png", (780, 1688), "2x"),
+        ("Splash-3x.png", (1170, 2532), "3x"),
+    ]
+    image_entries = []
+    for filename, dimensions, scale in splash_specs:
+        splash_image(logo, dimensions).save(splashset / filename, optimize=True)
+        image_entries.append({
+            "idiom": "universal", "filename": filename, "scale": scale
+        })
     (splashset / "Contents.json").write_text(json.dumps({
-        "images": [
-            {"idiom": "universal", "filename": "splash-2732x2732-2.png", "scale": "1x"},
-            {"idiom": "universal", "filename": "splash-2732x2732-1.png", "scale": "2x"},
-            {"idiom": "universal", "filename": "splash-2732x2732.png", "scale": "3x"}
-        ],
+        "images": image_entries,
         "info": {"version": 1, "author": "xcode"}
     }, indent=2) + "\n", encoding="utf-8")
+
+    storyboard = ROOT / "ios" / "App" / "App" / "Base.lproj" / "LaunchScreen.storyboard"
+    if not storyboard.is_file():
+        raise FileNotFoundError("iOS LaunchScreen.storyboard is missing from the generated project.")
+    storyboard_text = storyboard.read_text(encoding="utf-8")
+    if 'contentMode="scaleAspectFill"' not in storyboard_text:
+        raise ValueError("Expected Capacitor launch-screen image view to use scaleAspectFill.")
+    storyboard.write_text(
+        storyboard_text.replace('contentMode="scaleAspectFill"', 'contentMode="scaleAspectFit"', 1),
+        encoding="utf-8"
+    )
 
 
 def main() -> None:
