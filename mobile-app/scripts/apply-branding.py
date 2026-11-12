@@ -240,10 +240,16 @@ def apply_ios(logo: Image.Image) -> None:
     storyboard_text = storyboard.read_text(encoding="utf-8")
     if 'contentMode="scaleAspectFill"' not in storyboard_text:
         raise ValueError("Expected Capacitor launch-screen image view to use scaleAspectFill.")
-    storyboard.write_text(
-        storyboard_text.replace('contentMode="scaleAspectFill"', 'contentMode="scaleAspectFit"', 1),
-        encoding="utf-8"
+    storyboard_text = storyboard_text.replace(
+        'contentMode="scaleAspectFill"', 'contentMode="scaleAspectFit"', 1
     )
+    old_image_metadata = '<image name="Splash" width="1366" height="1366"/>'
+    if old_image_metadata not in storyboard_text:
+        raise ValueError("Unexpected Splash image metadata in the generated iOS storyboard.")
+    storyboard_text = storyboard_text.replace(
+        old_image_metadata, '<image name="Splash" width="390" height="844"/>', 1
+    )
+    storyboard.write_text(storyboard_text, encoding="utf-8")
 
 
 def main() -> None:
