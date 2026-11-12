@@ -33,8 +33,10 @@ Do not run `supabase db push` until remote migration history is reconciled; the 
 
 ## Visitor-access prerequisite
 - Supabase anonymous sign-ins must be enabled in DCDS-Development for visitor sessions.
-- Configure CAPTCHA / abuse protection before public launch.
+- The current page calls `signInAnonymously()`, but it does not yet render a CAPTCHA widget or pass a CAPTCHA token. Do not enable Supabase Auth CAPTCHA for this visitor flow until the DCDS frontend has integrated and tested a provider widget/token (Cloudflare Turnstile or hCaptcha).
+- For any public visitor launch, implement the widget and pass its token in the Supabase Auth sign-up options, then enable CAPTCHA protection in Supabase Auth → Bot and Abuse Protection.
 - If anonymous sign-in is disabled or blocked, the page displays a clear fallback and verified students can still sign in.
+- Supabase's anonymous sign-in endpoint is rate-limited per IP; CAPTCHA and application-level abuse controls are important because visitor users can create fresh anonymous identities.
 
 ## Deployment order
 1. Review this branch and preserve the AI implementation through a pull request.
