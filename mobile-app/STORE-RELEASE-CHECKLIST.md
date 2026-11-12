@@ -11,7 +11,7 @@ A successful web-bundle check, Android debug build, or iOS Simulator build is no
 - [x] PWA service-worker registration guarded from the local native WebView.
 - [x] Automated static validation for page presence, HTML structure, manifest, and icon dimensions.
 - [x] CI workflow configured to generate Android and iOS projects and compile an Android debug APK plus iOS Simulator app.
-- [x] CI passes the same generated npm lockfile to both native build jobs.
+- [x] CI commits the generated npm lockfile to the source branch and both native jobs install from that committed lockfile using `npm ci`.
 - [x] CI concurrency queues new runs rather than cancelling active iOS builds.
 - [x] No Supabase migrations, Edge Function source, or signing secrets copied into the app bundle.
 
