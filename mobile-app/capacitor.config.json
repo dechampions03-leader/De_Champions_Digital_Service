@@ -1,0 +1,11 @@
+{
+  "appId": "com.dechampions.dcds",
+  "appName": "De Champions Digital Service",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "ios": {
+    "contentInset": "automatic"
+  }
+}
