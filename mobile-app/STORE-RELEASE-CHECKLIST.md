@@ -1,24 +1,24 @@
 # DCDS mobile store release checklist
 
-This is the release gate for Google Play and Apple App Store. A successful Capacitor web-bundle check is not equivalent to store approval.
+This is the release gate for Google Play and Apple App Store. A successful web-bundle or simulator/debug build is not equivalent to store approval.
 
 ## Configured in this repository
 
 - [x] Separate Capacitor project folder; existing website files stay at the repository root.
-- [x] Proposed app name and reverse-domain application identifier.
+- [x] Proposed app name and reverse-domain application identifier (availability still unconfirmed).
 - [x] Dedicated generated web asset directory and explicit public-file allowlist.
 - [x] Existing DCDS page routes and images included in the mobile bundle.
 - [x] PWA service-worker registration guarded from the local native WebView.
 - [x] Automated static validation for page presence, HTML structure, manifest, and icon dimensions.
 - [x] CI workflow to build and validate the web bundle.
+- [x] Native CI workflow configured to generate Android/iOS projects and build Android debug + iOS Simulator artifacts (execution result must be checked on the PR).
 - [x] No Supabase migrations, Edge Function source, or signing secrets copied into the app bundle.
 
-## Required before native device testing
+## Required before physical-device testing
 
-- [ ] Install Node.js 22+, Android Studio/Android SDK, and (on macOS) Xcode 26+.
-- [ ] Generate and review Android and iOS native projects.
+- [ ] Review the generated Android and iOS native projects and confirm final package/bundle identifiers.
 - [ ] Create a 1024x1024 app-store icon and complete platform-specific adaptive icon / launch-screen artwork.
-- [ ] Configure Android package signing and iOS signing/provisioning securely.
+- [ ] Configure Android release signing and iOS signing/provisioning securely.
 - [ ] Test registration, email/phone verification, login, password recovery, session persistence, and sign-out on real devices.
 - [ ] Test deep links and the Supabase redirect allowlist for the native app.
 - [ ] Test Flutterwave checkout hand-off and payment return; confirm the server verifies each transaction before access is granted.
@@ -50,7 +50,7 @@ Official policies: [Apple App Review Guidelines, section 3.1](https://developer.
 - [ ] Implement deletion processing that removes eligible personal data while preserving records that must legally be retained; document any such retention.
 - [ ] Test the full deletion request and confirmation process end to end.
 
-The current repository audit did not find a published privacy policy page or a complete account-deletion flow. These must not be represented as completed until implemented and tested.
+The repository audit did not establish a complete, published privacy policy or end-to-end account-deletion flow. These must not be represented as completed until implemented and tested.
 
 Official references: [Apple privacy requirements](https://developer.apple.com/app-store/review/guidelines/), [App Store Connect privacy details](https://developer.apple.com/help/app-store-connect/manage-app-information/manage-app-privacy), and [Google Play account deletion requirements](https://support.google.com/googleplay/android-developer/answer/13327111).
 
@@ -79,8 +79,9 @@ Official guide: [Publish a PWA to the Microsoft Store](https://learn.microsoft.c
 
 ## Not completed by the repository scaffold
 
-- Native Android/iOS projects have not yet been generated.
-- No Android or iOS binary has been compiled, installed on a device, signed, or submitted.
-- No store accounts, product catalog, billing agreements, privacy policy, account-deletion workflow, signing certificates, or provisioning profiles have been created.
+- No signed Android App Bundle or iOS device archive has been produced.
+- No physical Android/iPhone install or end-to-end mobile flow test has been completed.
+- No store accounts, product catalog, billing agreements, complete privacy policy, account-deletion workflow, signing certificates, or provisioning profiles have been configured.
 - No real mobile Flutterwave or store-billing payment has been tested.
+- The Android debug build and iOS Simulator build are engineering checks only, not release candidates.
 - Store approval cannot be guaranteed; the platform owner must complete account verification, policy declarations, testing, and review responses.
