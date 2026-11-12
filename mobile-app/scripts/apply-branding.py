@@ -159,7 +159,7 @@ def apply_android(logo: Image.Image) -> None:
         '    </style>'
     )
     updated_styles, replacements = __import__("re").subn(
-        r'<style name="AppTheme\.NoActionBarLaunch" parent="Theme\.SplashScreen">[\s\S]*?</style>',
+        r'<style name="AppTheme[.]NoActionBarLaunch" parent="Theme[.]SplashScreen">(?s:.*?)</style>',
         launch_style,
         styles,
         count=1
