@@ -1308,13 +1308,13 @@ function renderAdminPaymentEvents(events){
   if(!events.length){root.appendChild(make("div","empty","No payment review events have been recorded yet."));return;}
   const table=make("table","detail-table");
   const thead=document.createElement("thead"),head=document.createElement("tr");
-  ["Activity","Administrator","Order","Details","Date"].forEach(v=>head.appendChild(make("th","",v)));
+  ["Activity","Actor","Order","Details","Date"].forEach(v=>head.appendChild(make("th","",v)));
   thead.appendChild(head);
   const body=document.createElement("tbody");
   events.forEach(event=>{
     const row=document.createElement("tr");
     [
-      event.event_type,event.actor_email||"DCDS admin",String(event.order_id||"").slice(0,8)+"…",
+      event.event_type,event.actor_email||"DCDS system",String(event.order_id||"").slice(0,8)+"…",
       JSON.stringify(event.details||{}),formatDate(event.created_at)
     ].forEach(v=>row.appendChild(make("td","",v)));
     body.appendChild(row);
