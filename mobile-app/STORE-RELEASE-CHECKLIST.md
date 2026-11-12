@@ -18,6 +18,9 @@ A successful web-bundle check, Android debug build, or iOS Simulator build is no
 - [x] Official DCDS logo stored as the mobile branding source and applied to Android/iOS app icons and splash artwork during CI builds.
 - [x] Android adaptive icon foreground/background and monochrome launcher resources are generated from the approved logo.
 - [x] iOS 1024x1024 App Store icon asset and splash image set are generated from the approved logo.
+- [x] Native launch sequence configured: white icon-only OS launch, mobile-only DCDS name/tagline introduction, then fade to homepage.
+- [x] AndroidX SplashScreen is installed before the Capacitor WebView; iOS launch storyboard uses correctly scaled portrait assets.
+- [x] Native introduction is injected only into the Capacitor web bundle; the public website and its install-free homepage remain separate.
 
 ## Required before physical-device testing
 
