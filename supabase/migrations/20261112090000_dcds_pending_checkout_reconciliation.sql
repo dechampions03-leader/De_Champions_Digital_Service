@@ -21,15 +21,14 @@ ALTER TABLE public.dcds_payment_review_events
     'receipt_rejected',
     'manual_payment_approved',
     'flutterwave_payment_verified',
-    'checkout_session_expired',
     'flutterwave_reconciliation_checked',
     'pending_checkout_released'
   ]::text[]));
 
--- A retry can expire an old DCDS checkout only when DCDS recorded its provider
--- expiry and there is no successful/pending payment or purchase enrollment.
--- A legacy pending order with checkout_expires_at IS NULL continues to block
--- checkout until it is reconciled by an administrator.
+-- Store provider expiry on new orders, but never mark an order failed based only
+-- on the local clock. A delayed successful provider transaction must be checked
+-- with Flutterwave before an administrator releases any pending checkout.
+-- Legacy pending orders with checkout_expires_at IS NULL remain blocked too.
 DROP FUNCTION IF EXISTS public.dcds_create_checkout_order(uuid,uuid,text,text);
 
 CREATE FUNCTION public.dcds_create_checkout_order(
@@ -50,7 +49,6 @@ DECLARE
   v_existing_enrolment uuid;
   v_pending_order uuid;
   v_order public.orders%rowtype;
-  v_expired_order record;
   v_currency text := upper(coalesce(nullif(trim(p_currency), ''), 'NGN'));
   v_amount numeric(14,2);
   v_checkout_expires_at timestamptz := coalesce(p_checkout_expires_at, now() + interval '60 minutes');
@@ -74,40 +72,6 @@ BEGIN
 
   -- Expire only DCDS-managed sessions whose recorded provider expiry has passed.
   -- Payments still pending/successful and enrolments tied to an order prevent expiry.
-  FOR v_expired_order IN
-    UPDATE public.orders o
-    SET status = 'failed', updated_at = now()
-    WHERE o.user_id = p_user_id
-      AND o.course_id = p_course_id
-      AND o.status = 'pending'
-      AND o.checkout_expires_at IS NOT NULL
-      AND o.checkout_expires_at <= now()
-      AND NOT EXISTS (
-        SELECT 1 FROM public.payments p
-        WHERE p.order_id = o.id AND p.status IN ('pending','successful')
-      )
-      AND NOT EXISTS (
-        SELECT 1 FROM public.enrollments e WHERE e.order_id = o.id
-      )
-    RETURNING o.id, o.tx_ref, o.amount, o.currency, o.checkout_expires_at
-  LOOP
-    INSERT INTO public.dcds_payment_review_events(
-      order_id, actor_user_id, event_type, details
-    ) VALUES (
-      v_expired_order.id,
-      p_user_id,
-      'checkout_session_expired',
-      pg_catalog.jsonb_build_object(
-        'reason', 'recorded_flutterwave_checkout_expiry_elapsed',
-        'tx_ref', v_expired_order.tx_ref,
-        'amount', v_expired_order.amount,
-        'currency', v_expired_order.currency,
-        'checkout_expires_at', v_expired_order.checkout_expires_at,
-        'trigger', 'student_checkout_retry'
-      )
-    );
-  END LOOP;
-
   SELECT id INTO v_existing_enrolment
   FROM public.enrollments
   WHERE user_id = p_user_id AND course_id = p_course_id
