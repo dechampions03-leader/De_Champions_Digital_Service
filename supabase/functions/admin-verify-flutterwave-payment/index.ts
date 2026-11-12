@@ -76,6 +76,36 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: "This order is not eligible for payment verification." }, 409);
     }
 
+    const action = String(body.action ?? "verify");
+    if (action === "release_pending") {
+      const confirmationNote = String(body.admin_confirmation_note ?? "").trim();
+      if (confirmationNote.length < 20) {
+        return respond({ success: false, error: "Add at least 20 characters explaining how you confirmed the hosted payment link is closed." }, 400);
+      }
+      const confirmLinkDisabled = body.confirm_link_disabled === true;
+      const { data: released, error: releaseError } = await supabase.rpc("admin_release_pending_flutterwave_checkout", {
+        p_order_id: order.id,
+        p_admin_user_id: authData.user.id,
+        p_admin_confirmation_note: confirmationNote,
+        p_confirm_link_disabled: confirmLinkDisabled,
+      });
+      if (releaseError || !released?.success) {
+        return respond({
+          success: false,
+          error: releaseError?.message || "The pending checkout could not be safely released.",
+        }, 409);
+      }
+      return respond({
+        success: true,
+        message: "The unpaid checkout was released. The student can now start a fresh checkout.",
+        order_id: order.id,
+        status: "failed",
+      });
+    }
+    if (action !== "verify") {
+      return respond({ success: false, error: "Unsupported payment reconciliation action." }, 400);
+    }
+
     const verificationUrl = transactionId
       ? `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transactionId)}/verify`
       : `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(String(order.tx_ref))}`;
@@ -88,30 +118,98 @@ Deno.serve(async (req: Request) => {
     });
     const verification = await verificationResponse.json();
     const payment = verification?.data;
+
+    const recordReconciliationCheck = async (
+      outcome: string,
+      providerStatus: string | null,
+      transaction: Record<string, unknown> | null,
+      providerMessage: string,
+    ) => {
+      const { error: auditError } = await supabase.from("dcds_payment_review_events").insert({
+        order_id: order.id,
+        actor_user_id: authData.user.id,
+        event_type: "flutterwave_reconciliation_checked",
+        details: {
+          outcome,
+          provider_status: providerStatus,
+          transaction_id: transaction?.id == null ? null : String(transaction.id).slice(0, 40),
+          provider_reference: transaction?.tx_ref == null ? null : String(transaction.tx_ref).slice(0, 120),
+          provider_amount: transaction?.amount == null ? null : Number(transaction.amount),
+          provider_currency: transaction?.currency == null ? null : String(transaction.currency).toUpperCase().slice(0, 3),
+          provider_http_status: verificationResponse.status,
+          provider_message: providerMessage.slice(0, 240),
+          checked_at: new Date().toISOString(),
+          lookup_method: transactionId ? "transaction_id" : "dcds_order_reference",
+        },
+      });
+      if (auditError) {
+        console.error("DCDS payment reconciliation audit write failed:", auditError.message);
+        return false;
+      }
+      return true;
+    };
+
     if (!verificationResponse.ok || verification?.status !== "success" || !payment) {
+      const providerMessage = String(verification?.message ?? "");
+      const referenceNotFound = !transactionId &&
+        [400, 404].includes(verificationResponse.status) &&
+        String(verification?.status ?? "").toLowerCase() === "error" &&
+        /no transaction|transaction.*not found|not found.*transaction/i.test(providerMessage);
+      const outcome = referenceNotFound ? "not_found" : "unconfirmed";
+      const audited = await recordReconciliationCheck(
+        outcome,
+        String(verification?.status ?? "unknown").toLowerCase(),
+        null,
+        providerMessage || "Flutterwave did not return a verifiable transaction.",
+      );
+      if (!audited) {
+        return respond({ success: false, error: "Flutterwave was checked, but DCDS could not save the reconciliation evidence. The order remains unchanged." }, 500);
+      }
       return respond({
         success: false,
-        error: transactionId
-          ? "Flutterwave could not find or verify that transaction ID. No payment has been approved."
-          : "Flutterwave could not find a transaction for this DCDS order reference. No payment has been approved; the order remains pending.",
-      }, 404);
+        outcome,
+        order_unchanged: true,
+        error: referenceNotFound
+          ? "Flutterwave returned no transaction for this DCDS reference. The order remains pending. Check the hosted link in Flutterwave before releasing it."
+          : "Flutterwave could not confirm the transaction. The order remains pending and must not be released yet.",
+      }, referenceNotFound ? 404 : 502);
     }
 
     const verifiedTransactionId = String(payment.id ?? transactionId).trim();
-    if (!/^\d{1,30}$/.test(verifiedTransactionId)) {
-      return respond({ success: false, error: "Flutterwave did not return a valid transaction ID. No payment has been approved." }, 409);
-    }
+    const providerStatus = String(payment.status ?? "").toLowerCase();
     const amountMatches = Number(payment.amount) === Number(order.amount);
     const currencyMatches = String(payment.currency ?? "").toUpperCase() === String(order.currency).toUpperCase();
     const referenceMatches = String(payment.tx_ref ?? "") === String(order.tx_ref ?? "");
     const idMatches = !transactionId || verifiedTransactionId === transactionId;
-    if (
-      String(payment.status ?? "").toLowerCase() !== "successful" ||
-      !amountMatches || !currencyMatches || !referenceMatches || !idMatches
-    ) {
+    const validTransactionId = /^\d{1,30}$/.test(verifiedTransactionId);
+    const detailsMatch = amountMatches && currencyMatches && referenceMatches && idMatches && validTransactionId;
+
+    if (providerStatus !== "successful" || !detailsMatch) {
+      const terminalFailure = ["failed", "cancelled"].includes(providerStatus) && detailsMatch;
+      const outcome = terminalFailure
+        ? "failed"
+        : ["pending", "processing", "initiated"].includes(providerStatus) && detailsMatch
+          ? "processing"
+          : "mismatch";
+      const audited = await recordReconciliationCheck(
+        outcome,
+        providerStatus || "unknown",
+        payment as Record<string, unknown>,
+        String(verification?.message ?? ""),
+      );
+      if (!audited) {
+        return respond({ success: false, error: "Flutterwave returned a result, but DCDS could not save the reconciliation evidence. The order remains unchanged." }, 500);
+      }
       return respond({
         success: false,
-        error: "The Flutterwave transaction is not successful or its amount, currency, reference or transaction ID does not match this DCDS order.",
+        outcome,
+        provider_status: providerStatus || "unknown",
+        order_unchanged: true,
+        error: terminalFailure
+          ? "Flutterwave reports this transaction as failed. The order remains pending until its hosted payment link has expired or been disabled."
+          : outcome === "processing"
+            ? "Flutterwave reports that this transaction is still processing. Keep the order pending and check again later."
+            : "The provider transaction did not match the DCDS order exactly. The order remains pending for manual investigation.",
       }, 409);
     }
 

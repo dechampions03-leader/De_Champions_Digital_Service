@@ -62,13 +62,15 @@ Deno.serve(async (req: Request) => {
     }
 
     // The database selects the authoritative active regional price and creates
-    // the order atomically. The browser never supplies a payment amount.
+    // the order with its expiry atomically. The browser never supplies a payment amount.
     const txRef = `DCDS-${crypto.randomUUID()}`;
+    const checkoutExpiresAt = new Date(Date.now() + 60 * 60 * 1000);
     const { data: checkout, error: checkoutError } = await supabase.rpc("dcds_create_checkout_order", {
       p_user_id: user.id,
       p_course_id: courseId,
       p_tx_ref: txRef,
       p_currency: requestedCurrency,
+      p_checkout_expires_at: checkoutExpiresAt.toISOString(),
     });
 
     if (checkoutError || !checkout) {
@@ -90,6 +92,11 @@ Deno.serve(async (req: Request) => {
         amount: Number(checkout.amount),
         currency: checkout.currency || "NGN",
         redirect_url: `${siteUrl}/payment-return.html`,
+        configuration: {
+          session_duration: 60,
+          max_retry_attempt: 3,
+        },
+        link_expiration: checkoutExpiresAt.toISOString(),
         customer: {
           email: user.email,
           name: user.user_metadata?.full_name || user.email,
