@@ -78,7 +78,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
 
-          migration = Path("supabase/migrations/20261112090000_dcds_pending_checkout_reconciliation.sql").read_text(encoding="utf-8")
+          migration = Path("supabase/migrations/20261112081327_dcds_pending_checkout_reconciliation.sql").read_text(encoding="utf-8")
           create_payment = Path("supabase/functions/create-payment/index.ts").read_text(encoding="utf-8")
           admin_verify = Path("supabase/functions/admin-verify-flutterwave-payment/index.ts").read_text(encoding="utf-8")
           admin_page = Path("student-management.html").read_text(encoding="utf-8")
