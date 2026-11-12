@@ -1,0 +1,31 @@
+{
+  "name": "dcds-mobile-app",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Capacitor mobile application shell for De Champions Digital Service",
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "scripts": {
+    "build:web": "node scripts/build-web.mjs",
+    "validate:web": "node scripts/validate-web.mjs",
+    "build": "npm run build:web && npm run validate:web",
+    "sync": "npm run build:web && cap sync",
+    "platform:add:android": "cap add android",
+    "platform:add:ios": "cap add ios",
+    "android:sync": "npm run build:web && cap sync android",
+    "ios:sync": "npm run build:web && cap sync ios",
+    "android:open": "cap open android",
+    "ios:open": "cap open ios",
+    "doctor": "cap doctor"
+  },
+  "dependencies": {
+    "@capacitor/android": "^8.0.0",
+    "@capacitor/core": "^8.0.0",
+    "@capacitor/ios": "^8.0.0"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^8.0.0"
+  }
+}
