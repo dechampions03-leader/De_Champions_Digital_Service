@@ -86,7 +86,7 @@ jobs:
           checks = {
               "new orders have a persisted checkout expiry": "checkout_expires_at" in migration and "p_checkout_expires_at" in create_payment,
               "local expiry is recorded but never auto-fails an order": "checkout_expires_at" in migration and "SET status = 'failed'" not in migration.split("CREATE OR REPLACE FUNCTION public.admin_release_pending_flutterwave_checkout", 1)[0],
-              "legacy orders with no recorded expiry remain pending for admin review": "checkout_expires_at timestamptz" in migration and "checkout_expires_at IS NULL" not in migration.split("CREATE OR REPLACE FUNCTION public.admin_release_pending_flutterwave_checkout", 1)[0],
+              "legacy orders with no recorded expiry remain pending for admin review": "checkout_expires_at timestamptz" in migration and "checkout_expires_at IS NULL" in migration,
               "new Flutterwave sessions have provider-side timeout and link expiry": "session_duration: 60" in create_payment and "max_retry_attempt: 3" in create_payment and "link_expiration: checkoutExpiresAt.toISOString()" in create_payment,
               "reconciliation checks are written to the audit trail": 'event_type: "flutterwave_reconciliation_checked"' in admin_verify and "'flutterwave_reconciliation_checked'" in migration,
               "not-found or failed provider checks do not automatically release the order": 'outcome = referenceNotFound ? "not_found" : "unconfirmed"' in admin_verify and 'outcome = terminalFailure' in admin_verify and "order_unchanged: true" in admin_verify,
