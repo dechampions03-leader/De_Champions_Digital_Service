@@ -60,19 +60,27 @@ jobs:
         working-directory: mobile-app/android
         run: ./gradlew assembleDebug --no-daemon
 
+      - name: Package Android native project source
+        run: |
+          tar -czf "$RUNNER_TEMP/DCDS-Android-Native-Project.tar.gz" \
+            --exclude='android/.gradle' \
+            --exclude='android/build' \
+            --exclude='android/app/build' \
+            android
+
       - name: Upload Android debug APK and native project
         uses: actions/upload-artifact@v4
         with:
           name: dcds-android-debug
           path: |
             mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
-            mobile-app/android/
+            ${{ runner.temp }}/DCDS-Android-Native-Project.tar.gz
           if-no-files-found: error
           retention-days: 14
 
   ios-simulator:
     name: Generate iOS project and compile simulator build
-    runs-on: macos-15
+    runs-on: macos-latest
     defaults:
       run:
         working-directory: mobile-app
@@ -104,25 +112,25 @@ jobs:
             -scheme App \
             -configuration Debug \
             -destination 'generic/platform=iOS Simulator' \
-            -derivedDataPath ios/build/DerivedData \
+            -derivedDataPath "$RUNNER_TEMP/DCDS-iOS-DerivedData" \
             CODE_SIGNING_ALLOWED=NO \
             build
 
-      - name: Package iOS project and simulator app
+      - name: Package iOS simulator app and native project source
         run: |
           ditto -c -k --sequesterRsrc --keepParent \
-            ios/build/DerivedData/Build/Products/Debug-iphonesimulator/App.app \
-            ios/build/DCDS-iOS-Simulator-App.zip
-          ditto -c -k --sequesterRsrc --keepParent \
-            ios \
-            ios/build/DCDS-iOS-Native-Project.zip
+            "$RUNNER_TEMP/DCDS-iOS-DerivedData/Build/Products/Debug-iphonesimulator/App.app" \
+            "$RUNNER_TEMP/DCDS-iOS-Simulator-App.zip"
+          tar -czf "$RUNNER_TEMP/DCDS-iOS-Native-Project.tar.gz" \
+            --exclude='ios/build' \
+            ios
 
       - name: Upload iOS simulator build and native project
         uses: actions/upload-artifact@v4
         with:
           name: dcds-ios-simulator
           path: |
-            mobile-app/ios/build/DCDS-iOS-Simulator-App.zip
-            mobile-app/ios/build/DCDS-iOS-Native-Project.zip
+            ${{ runner.temp }}/DCDS-iOS-Simulator-App.zip
+            ${{ runner.temp }}/DCDS-iOS-Native-Project.tar.gz
           if-no-files-found: error
           retention-days: 14
