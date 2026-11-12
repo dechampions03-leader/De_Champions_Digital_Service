@@ -70,6 +70,9 @@ jobs:
           repository: ${{ github.repository }}
           run-id: "42821231297"
           path: baseline-artifact
+          # Flatten the single downloaded artifact so the SQL file is at
+          # baseline-artifact/dcds-production-complete-baseline.sql.
+          merge-multiple: true
 
       - name: Validate and prepare development-only SQL
         shell: bash
