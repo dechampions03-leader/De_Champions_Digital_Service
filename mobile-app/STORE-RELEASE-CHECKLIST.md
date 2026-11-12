@@ -24,7 +24,7 @@ A successful web-bundle check, Android debug build, or iOS Simulator build is no
 
 ## Required before physical-device testing
 
-- [ ] Obtain/approve a high-resolution master of the DCDS logo for final store artwork; the supplied source image is 192x192 and is currently upscaled for native build assets.
+- [ ] Obtain/approve a 1024x1024 master of the DCDS logo for final store artwork; the current public app-icon source is 512x512 and the generated 1024px store asset is upscaled for build validation.
 - [ ] Configure Android release signing and iOS signing/provisioning securely.
 - [ ] Test registration, email/phone verification, login, password recovery, session persistence, and sign-out on real devices.
 - [ ] Test deep links and the Supabase redirect allowlist for the native app.
