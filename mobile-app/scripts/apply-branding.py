@@ -142,6 +142,36 @@ def apply_android(logo: Image.Image) -> None:
         splash_image(logo, dimensions).save(folder / "splash.png", optimize=True)
     splash_image(logo, (384, 832)).save(res / "drawable" / "splash.png", optimize=True)
 
+    # AndroidX splash support must be installed before BridgeActivity creates
+    # the WebView. Capacitor includes core-splashscreen in its Android project.
+    main_activity = ROOT / "android" / "app" / "src" / "main" / "java" / "com" / "dechampions" / "dcds" / "MainActivity.java"
+    if not main_activity.is_file():
+        raise FileNotFoundError("Generated Capacitor MainActivity.java is missing.")
+    main_source = main_activity.read_text(encoding="utf-8")
+    if "SplashScreen.installSplashScreen(this)" not in main_source:
+        main_source = main_source.replace(
+            "import android.os.Bundle;\\n",
+            "import android.os.Bundle;\\n"
+        ) if "import android.os.Bundle;" in main_source else main_source.replace(
+            "package com.dechampions.dcds;\\n",
+            "package com.dechampions.dcds;\\n\\nimport android.os.Bundle;\\n"
+        )
+        main_source = main_source.replace(
+            "import com.getcapacitor.BridgeActivity;\\n",
+            "import androidx.core.splashscreen.SplashScreen;\\nimport com.getcapacitor.BridgeActivity;\\n"
+        )
+        empty_activity = "public class MainActivity extends BridgeActivity {}"
+        splash_activity = """public class MainActivity extends BridgeActivity {
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        SplashScreen.installSplashScreen(this);
+        super.onCreate(savedInstanceState);
+    }
+}"""
+        if empty_activity not in main_source:
+            raise ValueError("Unexpected generated MainActivity.java structure; refusing to patch it blindly.")
+        main_activity.write_text(main_source.replace(empty_activity, splash_activity, 1), encoding="utf-8")
+
     # AndroidX / Android 12 launch contract: white background plus app icon.
     (res / "values" / "dcds_launch_background.xml").write_text(
         '<?xml version="1.0" encoding="utf-8"?>\n'
