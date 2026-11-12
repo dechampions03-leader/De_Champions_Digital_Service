@@ -12,6 +12,7 @@ on:
 permissions:
   actions: read
   contents: write
+  pull-requests: write
 
 concurrency:
   group: dcds-development-baseline-restore
@@ -126,29 +127,73 @@ jobs:
           print("Baseline validated. The development restore will omit only the superuser-only ensure_rls event trigger.")
           PY
 
-      - name: Confirm the development schema is empty and ready
+      - name: Confirm development baseline state
+        id: baseline_state
         env:
           DCDS_DEVELOPMENT_DB_URL: ${{ secrets.DCDS_DEVELOPMENT_DB_URL }}
         shell: bash
         run: |
           set -euo pipefail
-          counts="$(psql "${DCDS_DEVELOPMENT_DB_URL}" -X -v ON_ERROR_STOP=1 -At -F '|' -c "
-            SELECT
-              (SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE'),
-              (SELECT count(*) FROM information_schema.routines WHERE specific_schema='public' AND routine_type='FUNCTION'),
-              (SELECT count(*) FROM pg_policies WHERE schemaname='public'),
-              (SELECT count(*) FROM pg_event_trigger WHERE evtname='ensure_rls'),
-              (SELECT count(*) FROM pg_trigger t JOIN pg_class c ON c.oid=t.tgrelid JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='auth' AND c.relname='users' AND t.tgname='dcds_capture_referral_after_signup' AND NOT t.tgisinternal);
+          # Refuse to proceed if any existing public table contains user data.
+          psql "${DCDS_DEVELOPMENT_DB_URL}" -X -v ON_ERROR_STOP=1 <<'SQL'
+          DO $check$
+          DECLARE
+            r record;
+            v_rows bigint;
+          BEGIN
+            FOR r IN
+              SELECT schemaname, tablename FROM pg_tables WHERE schemaname='public'
+            LOOP
+              EXECUTE format('SELECT count(*) FROM %I.%I', r.schemaname, r.tablename) INTO v_rows;
+              IF v_rows <> 0 THEN
+                RAISE EXCEPTION 'Refusing baseline operation: data exists in %.%', r.schemaname, r.tablename;
+              END IF;
+            END LOOP;
+          END
+          $check$;
+          SQL
+
+          state="$(psql "${DCDS_DEVELOPMENT_DB_URL}" -X -v ON_ERROR_STOP=1 -At -c "
+            WITH c AS (
+              SELECT
+                (SELECT count(*) FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE') AS tables,
+                (SELECT count(*) FROM information_schema.routines WHERE specific_schema='public' AND routine_type='FUNCTION') AS functions,
+                (SELECT count(*) FROM pg_policies WHERE schemaname='public') AS policies,
+                (SELECT count(DISTINCT t.tgname) FROM pg_trigger t JOIN pg_class cl ON cl.oid=t.tgrelid JOIN pg_namespace n ON n.oid=cl.relnamespace WHERE n.nspname='public' AND NOT t.tgisinternal) AS public_triggers,
+                (SELECT count(*) FROM pg_class cl JOIN pg_namespace n ON n.oid=cl.relnamespace WHERE n.nspname='public' AND cl.relkind IN ('r','p') AND cl.relrowsecurity) AS rls_tables,
+                (SELECT count(*) FROM pg_trigger t JOIN pg_class cl ON cl.oid=t.tgrelid JOIN pg_namespace n ON n.oid=cl.relnamespace WHERE n.nspname='auth' AND cl.relname='users' AND t.tgname='dcds_capture_referral_after_signup' AND NOT t.tgisinternal) AS referral_trigger,
+                (SELECT count(*) FROM pg_event_trigger WHERE evtname='ensure_rls') AS ensure_rls,
+                (SELECT count(*) FROM pg_class cl JOIN pg_namespace n ON n.oid=cl.relnamespace CROSS JOIN (VALUES ('anon'::regrole),('authenticated'::regrole)) roles(role_oid) CROSS JOIN (VALUES ('TRUNCATE'),('TRIGGER'),('MAINTAIN'),('REFERENCES')) p(privilege_name) WHERE n.nspname='public' AND cl.relkind IN ('r','p') AND has_table_privilege(roles.role_oid,cl.oid,p.privilege_name)) AS privileged_grants,
+                (SELECT count(*) FROM pg_default_acl d CROSS JOIN LATERAL aclexplode(d.defaclacl) x WHERE d.defaclrole='postgres'::regrole AND d.defaclnamespace='public'::regnamespace AND d.defaclobjtype='r' AND x.grantee IN ('anon'::regrole,'authenticated'::regrole) AND x.privilege_type IN ('TRUNCATE','TRIGGER','MAINTAIN','REFERENCES')) AS default_privileges
+            )
+            SELECT CASE
+              WHEN tables=0 AND functions=0 AND policies=0 AND public_triggers=0
+                AND rls_tables=0 AND referral_trigger=0 AND ensure_rls=0
+                AND privileged_grants=0 AND default_privileges=0 THEN 'empty'
+              WHEN tables=34 AND functions=26 AND policies=59 AND public_triggers=7
+                AND rls_tables=34 AND referral_trigger=1 AND ensure_rls=0
+                AND privileged_grants=0 AND default_privileges=0 THEN 'restored'
+              ELSE 'unsafe'
+            END
+            FROM c;
           ")"
-          IFS='|' read -r tables functions policies ensure_rls referral_trigger <<< "${counts}"
-          if [[ "${tables}" != "0" || "${functions}" != "0" || "${policies}" != "0" || "${ensure_rls}" != "0" || "${referral_trigger}" != "0" ]]; then
-            echo "Refusing restore: DCDS-Development is not an empty baseline target."
-            echo "Observed public tables/functions/policies/ensure_rls/referral-trigger: ${counts}"
-            exit 1
-          fi
-          echo "DCDS-Development is empty and ready."
+          case "${state}" in
+            empty)
+              echo "restore_required=true" >> "${GITHUB_OUTPUT}"
+              echo "DCDS-Development is empty and ready for the schema-only baseline."
+              ;;
+            restored)
+              echo "restore_required=false" >> "${GITHUB_OUTPUT}"
+              echo "DCDS-Development already matches the verified empty baseline; schema application will be skipped."
+              ;;
+            *)
+              echo "Refusing operation: DCDS-Development is neither empty nor the verified baseline."
+              exit 1
+              ;;
+          esac
 
       - name: Apply the schema-only baseline atomically
+        if: ${{ steps.baseline_state.outputs.restore_required == 'true' }}
         env:
           DCDS_DEVELOPMENT_DB_URL: ${{ secrets.DCDS_DEVELOPMENT_DB_URL }}
         shell: bash
@@ -157,6 +202,7 @@ jobs:
           psql "${DCDS_DEVELOPMENT_DB_URL}" -X -v ON_ERROR_STOP=1 --single-transaction -f dcds-development-baseline.sql
 
       - name: Verify restored schema, RLS, triggers, ACLs and empty data
+        if: ${{ success() }}
         env:
           DCDS_DEVELOPMENT_DB_URL: ${{ secrets.DCDS_DEVELOPMENT_DB_URL }}
         shell: bash
@@ -246,18 +292,35 @@ jobs:
             (SELECT count(*) FROM pg_event_trigger WHERE evtname='ensure_rls') AS ensure_rls_event_trigger;
           SQL
 
-      - name: Preserve the verified baseline in the repository
+      - name: Preserve the verified baseline through a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
         shell: bash
         run: |
           set -euo pipefail
           mkdir -p supabase/baseline
           cp baseline-artifact/dcds-production-complete-baseline.sql supabase/baseline/dcds-production-complete-baseline.sql
+          BRANCH="automation/dcds-verified-schema-baseline-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT}"
+          git switch -c "${BRANCH}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add supabase/baseline/dcds-production-complete-baseline.sql
           if git diff --cached --quiet; then
-            echo "Canonical baseline is already committed."
-          else
-            git commit -m "Preserve verified DCDS production schema baseline"
-            git push
+            echo "Canonical baseline is already present; no pull request is needed."
+            exit 0
           fi
+          git commit -m "Preserve verified DCDS production schema baseline"
+          git push --set-upstream origin "${BRANCH}"
+          gh pr create \
+            --repo "${GITHUB_REPOSITORY}" \
+            --base main \
+            --head "${BRANCH}" \
+            --title "Preserve verified DCDS schema baseline" \
+            --body "## Summary
+          - Adds the verified schema-only baseline used to restore DCDS-Development.
+          - Contains database structure and policies, not production customer rows.
+          - The development schema restore and its post-restore verification completed successfully before this preservation step.
+
+          ## Safety
+          - This pull request only preserves the baseline SQL file.
+          - No production database, payment, payout, or customer data is changed."
