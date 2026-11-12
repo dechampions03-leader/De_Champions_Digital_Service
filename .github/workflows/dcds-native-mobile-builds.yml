@@ -1,0 +1,181 @@
+name: DCDS native mobile build checks
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/dcds-native-mobile-builds.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "mobile-app/**"
+      - ".github/workflows/dcds-native-mobile-builds.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Queue newer runs instead of cancelling a valid iOS build on the hosted runner.
+concurrency:
+  group: dcds-native-mobile-builds-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  prepare-dependencies:
+    name: Create and commit the npm dependency lockfile
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout the source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Resolve exact dependency versions
+        working-directory: mobile-app
+        run: npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+
+      - name: Commit the lockfile to the source branch when first generated
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          TARGET_BRANCH="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+          if [[ "$GITHUB_EVENT_NAME" == "pull_request" || "$GITHUB_EVENT_NAME" == "workflow_dispatch" ]]; then
+            if ! gh api "repos/$GITHUB_REPOSITORY/contents/mobile-app/package-lock.json?ref=$TARGET_BRANCH" >/dev/null 2>&1; then
+              CONTENT="$(base64 -w 0 mobile-app/package-lock.json)"
+              gh api --method PUT "repos/$GITHUB_REPOSITORY/contents/mobile-app/package-lock.json"                 -f message="chore(mobile): lock Capacitor npm dependencies"                 -f branch="$TARGET_BRANCH"                 -f content="$CONTENT" >/dev/null
+              echo "Committed the generated npm lockfile to $TARGET_BRANCH."
+            else
+              echo "The source branch already contains its npm lockfile."
+            fi
+          fi
+
+  android-debug:
+    name: Generate Android project and compile debug APK
+    needs: prepare-dependencies
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - name: Checkout the updated source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile-app/package-lock.json
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Confirm lockfile is present
+        run: test -s package-lock.json
+
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build and validate DCDS web bundle
+        run: npm run build
+
+      - name: Generate Android native project
+        run: npx cap add android
+
+      - name: Sync DCDS web assets to Android
+        run: npx cap sync android
+
+      - name: Compile Android debug APK
+        working-directory: mobile-app/android
+        run: ./gradlew assembleDebug --no-daemon
+
+      - name: Package Android native project source
+        run: tar -czf "$RUNNER_TEMP/DCDS-Android-Native-Project.tar.gz" --exclude='android/.gradle' --exclude='android/build' --exclude='android/app/build' android
+
+      - name: Upload Android debug APK and native project
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-android-debug
+          path: |
+            mobile-app/android/app/build/outputs/apk/debug/app-debug.apk
+            ${{ runner.temp }}/DCDS-Android-Native-Project.tar.gz
+          if-no-files-found: error
+          retention-days: 14
+
+  ios-simulator:
+    name: Generate iOS project and compile simulator build
+    # Xcode 27 is generally available on GitHub-hosted Apple Silicon runners.
+    runs-on: xcode-27
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: mobile-app
+    steps:
+      - name: Checkout the updated source branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: mobile-app/package-lock.json
+
+      - name: Confirm lockfile is present
+        run: test -s package-lock.json
+
+      - name: Install exact locked dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build and validate DCDS web bundle
+        run: npm run build
+
+      - name: Generate iOS native project
+        run: npx cap add ios
+
+      - name: Sync DCDS web assets to iOS
+        run: npx cap sync ios
+
+      - name: Confirm Apple toolchain and simulator availability
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available
+
+      - name: Compile iOS Simulator app without signing
+        run: xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug -destination 'generic/platform=iOS Simulator' -derivedDataPath "$RUNNER_TEMP/DCDS-iOS-DerivedData" CODE_SIGNING_ALLOWED=NO build
+
+      - name: Package iOS Simulator app and native project source
+        run: |
+          ditto -c -k --sequesterRsrc --keepParent "$RUNNER_TEMP/DCDS-iOS-DerivedData/Build/Products/Debug-iphonesimulator/App.app" "$RUNNER_TEMP/DCDS-iOS-Simulator-App.zip"
+          tar -czf "$RUNNER_TEMP/DCDS-iOS-Native-Project.tar.gz" --exclude='ios/build' ios
+
+      - name: Upload iOS Simulator build and native project
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-ios-simulator
+          path: |
+            ${{ runner.temp }}/DCDS-iOS-Simulator-App.zip
+            ${{ runner.temp }}/DCDS-iOS-Native-Project.tar.gz
+          if-no-files-found: error
+          retention-days: 14
