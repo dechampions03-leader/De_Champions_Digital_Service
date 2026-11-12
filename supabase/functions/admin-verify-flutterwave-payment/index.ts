@@ -76,6 +76,36 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: "This order is not eligible for payment verification." }, 409);
     }
 
+    const action = String(body.action ?? "verify");
+    if (action === "release_pending") {
+      const confirmationNote = String(body.admin_confirmation_note ?? "").trim();
+      if (confirmationNote.length < 20) {
+        return respond({ success: false, error: "Add at least 20 characters explaining how you confirmed the hosted payment link is closed." }, 400);
+      }
+      const confirmLinkDisabled = body.confirm_link_disabled === true;
+      const { data: released, error: releaseError } = await supabase.rpc("admin_release_pending_flutterwave_checkout", {
+        p_order_id: order.id,
+        p_admin_user_id: authData.user.id,
+        p_admin_confirmation_note: confirmationNote,
+        p_confirm_link_disabled: confirmLinkDisabled,
+      });
+      if (releaseError || !released?.success) {
+        return respond({
+          success: false,
+          error: releaseError?.message || "The pending checkout could not be safely released.",
+        }, 409);
+      }
+      return respond({
+        success: true,
+        message: "The unpaid checkout was released. The student can now start a fresh checkout.",
+        order_id: order.id,
+        status: "failed",
+      });
+    }
+    if (action !== "verify") {
+      return respond({ success: false, error: "Unsupported payment reconciliation action." }, 400);
+    }
+
     const verificationUrl = transactionId
       ? `https://api.flutterwave.com/v3/transactions/${encodeURIComponent(transactionId)}/verify`
       : `https://api.flutterwave.com/v3/transactions/verify_by_reference?tx_ref=${encodeURIComponent(String(order.tx_ref))}`;
