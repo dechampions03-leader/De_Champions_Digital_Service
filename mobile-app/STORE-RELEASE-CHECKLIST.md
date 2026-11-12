@@ -20,7 +20,7 @@ A successful web-bundle check, Android debug build, or iOS Simulator build is no
 - [x] iOS 1024x1024 App Store icon asset and splash image set are generated from the approved logo.
 - [x] Native launch sequence configured: white icon-only OS launch, mobile-only DCDS name/tagline introduction, then fade to homepage.
 - [x] AndroidX SplashScreen is installed before the Capacitor WebView; iOS launch storyboard uses correctly scaled portrait assets.
-- [x] Native introduction is injected only into the Capacitor web bundle; the public website and its install-free homepage remain separate.
+- [x] The mobile bundle enables the existing DCDS launch bootstrap for Capacitor's native platform; no duplicate splash layer is added and ordinary website visits remain unchanged.
 
 ## Required before physical-device testing
 
