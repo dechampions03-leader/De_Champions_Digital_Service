@@ -103,7 +103,7 @@ Deno.serve(async (request: Request) => {
   const verifiedContact = Boolean(user.email_confirmed_at || user.phone_confirmed_at);
   let role: "visitor" | "student" | "admin" = anonymous || !verifiedContact ? "visitor" : "student";
 
-  if (!anonymous) {
+  if (!anonymous && verifiedContact) {
     const { data: isAdmin, error: adminCheckError } = await userClient.rpc("is_dcds_admin");
     if (adminCheckError) {
       console.error("DCDS AI admin-role check failed:", adminCheckError.message);
