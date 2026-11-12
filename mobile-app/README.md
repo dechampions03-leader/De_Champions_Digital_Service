@@ -32,11 +32,24 @@ The build script copies an explicit allowlist of public DCDS pages, including th
 
 It does not copy Supabase migrations, Edge Function source, secrets, or repository administration files. It also prevents the website service worker from registering inside the local Capacitor WebView; the production website files remain unchanged.
 
+## Official app branding
+
+`branding/dcds-logo.png` is the approved DCDS logo source. After `npx cap add android` or `npx cap add ios`, apply platform assets with:
+
+```bash
+python -m pip install Pillow==11.3.0
+python scripts/apply-branding.py android
+# or
+python scripts/apply-branding.py ios
+```
+
+The script preserves the logo artwork and produces the required launcher/app icon sizes, Android adaptive icon resources, and platform splash images. It modifies only the generated native project folders.
+
 ## Native build automation
 
 The workflow `.github/workflows/dcds-native-mobile-builds.yml` creates and commits `mobile-app/package-lock.json` to the PR source branch on its first run when the file is missing. Both native jobs then check out that updated branch and use `npm ci` against the committed lockfile. This pins the exact npm dependency tree across subsequent workflow runs and both platforms.
 
-The workflow runs on changes to the mobile app or workflow, and can also be started manually. It queues runs rather than cancelling an active iOS build.
+The workflow runs on changes to the mobile app or workflow, and can also be started manually. It queues runs rather than cancelling an active iOS build. After generating each native project, it applies the official source logo from `branding/dcds-logo.png` to platform icons and splash artwork using the pinned Pillow image tool.
 
 Successful runs publish short-lived artifacts:
 
