@@ -1098,6 +1098,7 @@ function renderAdminPaymentOrders(rows){
     [
       "Amount: "+formatPaymentMoney(order.amount,order.currency),
       "Placed: "+formatDate(order.order_created_at),
+      "Checkout expiry: "+(order.checkout_expires_at?formatDate(order.checkout_expires_at):"Not recorded — legacy checkout"),
       "Channel: "+(order.payment_channel||"Not recorded"),
       "Receipt reference: "+(order.bank_reference||"—")
     ].forEach(v=>info.appendChild(make("span","",v)));
@@ -1205,6 +1206,54 @@ function renderAdminPaymentOrders(rows){
           finally{lookup.disabled=false;lookup.textContent="Find payment by DCDS order reference";}
         },"btn ghost");
         actions.append(verify,lookup);
+
+        const releasePanel=make("section","payment-subpanel");
+        releasePanel.appendChild(make("h4","","Release a confirmed unpaid checkout"));
+        const expiryRecorded=!!order.checkout_expires_at;
+        releasePanel.appendChild(make("p","payment-muted",expiryRecorded
+          ?"This checkout has a recorded Flutterwave expiry. DCDS still requires a fresh provider-reference check before release."
+          :"This is a legacy checkout without a recorded expiry. Run the provider check first, then disable the old hosted payment link in Flutterwave before requesting release."));
+        const linkDisabledWrap=make("label","payment-confirm-line");
+        const linkDisabled=document.createElement("input");linkDisabled.type="checkbox";
+        linkDisabledWrap.append(linkDisabled,document.createTextNode("I checked Flutterwave and confirmed this hosted payment link is disabled/inactive, with no successful or processing payment."));
+        releasePanel.appendChild(linkDisabledWrap);
+        const releaseNote=document.createElement("textarea");
+        releaseNote.placeholder="Reconciliation note: record where and how you checked the Flutterwave link and transaction reference (minimum 20 characters).";
+        releaseNote.maxLength=500;
+        const releaseNoteField=make("div","payment-field");
+        releaseNoteField.append(make("label","","Administrator reconciliation note"),releaseNote);
+        releasePanel.appendChild(releaseNoteField);
+        const release=paymentActionButton("Release checkout as unpaid",async()=>{
+          const linkExpired=!!order.checkout_expires_at&&new Date(order.checkout_expires_at).getTime()<=Date.now();
+          if(!linkExpired&&!linkDisabled.checked){
+            alert("Confirm that the hosted checkout link has been disabled or is inactive in Flutterwave before releasing this legacy/active order.");
+            return;
+          }
+          if(releaseNote.value.trim().length<20){
+            alert("Add at least 20 characters explaining how you confirmed the checkout is closed and unpaid.");
+            releaseNote.focus();return;
+          }
+          if(!window.confirm("Release this order as failed? The student will be able to create a new checkout. Continue only after the latest Flutterwave reference check found no successful payment and the old checkout link is expired or disabled."))return;
+          release.disabled=true;release.textContent="Checking release safeguards…";
+          try{
+            const {data,error}=await db.functions.invoke("admin-verify-flutterwave-payment",{
+              body:{
+                action:"release_pending",
+                order_id:order.order_id,
+                confirm_link_disabled:linkDisabled.checked,
+                admin_confirmation_note:releaseNote.value.trim()
+              }
+            });
+            if(error||!data?.success)throw new Error(await paymentFunctionError(error,data));
+            alert(data.message||"The unpaid checkout was released and the student can retry.");
+            await loadAdminPaymentOps();
+          }catch(error){
+            alert(error.message||"The checkout could not be safely released.");
+            await loadAdminPaymentOps().catch(()=>{});
+          }finally{release.disabled=false;release.textContent="Release checkout as unpaid";}
+        },"btn ghost");
+        releasePanel.appendChild(release);
+        actions.appendChild(releasePanel);
       }else{
         actions.appendChild(make("h4","","Direct bank-transfer approval"));
         actions.appendChild(make("p","payment-muted","This order has no Flutterwave checkout link. Manual approval is allowed only after the funds have cleared into the DCDS account and the receipt amount and currency match exactly."));
