@@ -150,15 +150,15 @@ def apply_android(logo: Image.Image) -> None:
     main_source = main_activity.read_text(encoding="utf-8")
     if "SplashScreen.installSplashScreen(this)" not in main_source:
         main_source = main_source.replace(
-            "import android.os.Bundle;\\n",
-            "import android.os.Bundle;\\n"
+            "import android.os.Bundle;\n",
+            "import android.os.Bundle;\n"
         ) if "import android.os.Bundle;" in main_source else main_source.replace(
-            "package com.dechampions.dcds;\\n",
-            "package com.dechampions.dcds;\\n\\nimport android.os.Bundle;\\n"
+            "package com.dechampions.dcds;\n",
+            "package com.dechampions.dcds;\n\nimport android.os.Bundle;\n"
         )
         main_source = main_source.replace(
-            "import com.getcapacitor.BridgeActivity;\\n",
-            "import androidx.core.splashscreen.SplashScreen;\\nimport com.getcapacitor.BridgeActivity;\\n"
+            "import com.getcapacitor.BridgeActivity;\n",
+            "import androidx.core.splashscreen.SplashScreen;\nimport com.getcapacitor.BridgeActivity;\n"
         )
         empty_activity = "public class MainActivity extends BridgeActivity {}"
         splash_activity = """public class MainActivity extends BridgeActivity {
