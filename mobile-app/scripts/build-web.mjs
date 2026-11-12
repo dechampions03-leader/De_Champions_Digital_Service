@@ -99,7 +99,7 @@ for (const relativePath of publicFiles) {
         throw new Error("Cannot inject the DCDS native opening screen: index.html is missing head/body.");
       }
       html = html.replace("</head>", launchStyles + "\n</head>");
-      html = html.replace(/<body\\b[^>]*>/i, (openingBody) => openingBody + launchMarkup);
+      html = html.replace(/<body\b[^>]*>/i, (openingBody) => openingBody + launchMarkup);
     }
 
     await writeFile(destinationPath, html, "utf8");
