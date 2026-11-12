@@ -64,6 +64,19 @@ Official references: [Apple privacy requirements](https://developer.apple.com/ap
 - [ ] Register and verify the publisher-owned Google Play Console and Apple Developer accounts.
 - [ ] Upload signed release builds to internal/closed testing first and resolve all findings before production submission.
 
+## Windows / Microsoft Store release track
+
+The Windows route uses the existing production PWA through PWABuilder and Microsoft Partner Center; it is not a Capacitor native platform.
+
+- [x] Root website has a PWA manifest, HTTPS service-worker registration, and DCDS app icons.
+- [ ] Run the production HTTPS URL through PWABuilder and resolve all reported action items.
+- [ ] Enroll the publisher's Microsoft account in the Windows Developer Program and reserve the DCDS app name in Partner Center.
+- [ ] Generate the Windows package with the exact Partner Center Package ID, Publisher display name, and Publisher ID.
+- [ ] Install and test the packaged app on supported Windows versions, including sign-in, navigation, external payment hand-off, and updates.
+- [ ] Submit the package and required store listing materials to Partner Center and pass Microsoft certification.
+
+Official guide: [Publish a PWA to the Microsoft Store](https://learn.microsoft.com/en-us/microsoft-edge/progressive-web-apps/how-to/microsoft-store).
+
 ## Not completed by the repository scaffold
 
 - Native Android/iOS projects have not yet been generated.
