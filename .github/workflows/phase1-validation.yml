@@ -19,6 +19,7 @@ on:
       - main
     paths:
       - "supabase/functions/create-payment/**"
+      - "supabase/functions/admin-verify-flutterwave-payment/**"
       - "supabase/functions/dcds-process-payout/**"
       - "supabase/functions/dcds-international-payout/**"
       - "supabase/functions/dcds-international-payout-webhook/**"
@@ -70,6 +71,38 @@ jobs:
           grep -q "admin_approve_manual_bank_payment" supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
           grep -q "dcds-payment-receipts" supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
           grep -q "verify_by_reference" supabase/functions/admin-verify-flutterwave-payment/index.ts
+
+      - name: Verify pending checkout reconciliation safeguards
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          migration = Path("supabase/migrations/20261112090000_dcds_pending_checkout_reconciliation.sql").read_text(encoding="utf-8")
+          create_payment = Path("supabase/functions/create-payment/index.ts").read_text(encoding="utf-8")
+          admin_verify = Path("supabase/functions/admin-verify-flutterwave-payment/index.ts").read_text(encoding="utf-8")
+          admin_page = Path("student-management.html").read_text(encoding="utf-8")
+
+          checks = {
+              "new orders have a persisted checkout expiry": "checkout_expires_at" in migration and "p_checkout_expires_at" in create_payment,
+              "expired orders are only closed when no pending/successful payment exists": "p.status IN ('pending','successful')" in migration and "o.checkout_expires_at <= now()" in migration,
+              "legacy orders with no recorded expiry are not auto-expired": "o.checkout_expires_at IS NOT NULL" in migration,
+              "new Flutterwave sessions have provider-side timeout and link expiry": "session_duration: 60" in create_payment and "max_retry_attempt: 3" in create_payment and "link_expiration: checkoutExpiresAt.toISOString()" in create_payment,
+              "reconciliation checks are written to the audit trail": 'event_type: "flutterwave_reconciliation_checked"' in admin_verify and "'flutterwave_reconciliation_checked'" in migration,
+              "not-found or failed provider checks do not automatically release the order": 'outcome = referenceNotFound ? "not_found" : "unconfirmed"' in admin_verify and 'outcome = terminalFailure' in admin_verify and "order_unchanged: true" in admin_verify,
+              "release requires a recent provider check and a closed/expired link": "interval '2 hours'" in migration and "p_confirm_link_disabled" in migration and "v_link_expired" in migration,
+              "release is blocked when a non-failed payment or linked enrolment exists": "p.status <> 'failed'" in migration and "e.order_id = p_order_id" in migration,
+              "release creates an auditable administrator event": "'pending_checkout_released'" in migration and "administrator_confirmation_note" in migration,
+              "admin UI exposes the guarded release action": 'action:"release_pending"' in admin_page and "Release checkout as unpaid" in admin_page,
+              "new checkout-order RPC remains service-role only": "REVOKE ALL ON FUNCTION public.dcds_create_checkout_order(uuid,uuid,text,text,timestamptz)" in migration and "TO service_role" in migration,
+          }
+
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} pending-checkout reconciliation checks failed.")
+          PY
 
       - name: Require RLS on every new public table
         shell: bash
