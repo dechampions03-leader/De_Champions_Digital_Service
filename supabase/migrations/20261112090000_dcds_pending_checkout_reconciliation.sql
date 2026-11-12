@@ -214,13 +214,13 @@ BEGIN
   FROM public.dcds_payment_review_events e
   WHERE e.order_id = p_order_id
     AND e.event_type = 'flutterwave_reconciliation_checked'
-    AND e.details ->> 'outcome' IN ('not_found','failed')
-    AND e.created_at >= now() - interval '2 hours'
   ORDER BY e.created_at DESC
   LIMIT 1;
 
-  IF NOT FOUND THEN
-    RAISE EXCEPTION 'Run a fresh Flutterwave reference check first. Only a confirmed not-found or failed result can proceed.'
+  IF NOT FOUND
+     OR v_check.created_at < now() - interval '2 hours'
+     OR v_check.details ->> 'outcome' NOT IN ('not_found','failed') THEN
+    RAISE EXCEPTION 'Run a fresh Flutterwave reference check first. The latest result must confirm not-found or failed.'
       USING errcode = 'P0001';
   END IF;
 
