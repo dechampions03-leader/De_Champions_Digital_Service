@@ -3,6 +3,7 @@ name: DCDS Capacitor foundation validation
 on:
   push:
     branches:
+      - main
       - feat/dcds-capacitor-mobile-foundation
     paths:
       - "mobile-app/**"
