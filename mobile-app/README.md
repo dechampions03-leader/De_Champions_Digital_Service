@@ -32,9 +32,19 @@ The build script copies an explicit allowlist of public DCDS pages, including th
 
 It does not copy Supabase migrations, Edge Function source, secrets, or repository administration files. It also prevents the website service worker from registering inside the local Capacitor WebView; the production website files remain unchanged.
 
+## Native app opening experience
+
+The native app opens in three deliberate stages, following the supplied DCDS reference:
+
+1. The operating system shows a clean white launch screen with the large purple DCDS app icon.
+2. As the Capacitor WebView becomes ready, a mobile-bundle-only brand introduction shows the smaller icon, **DE CHAMPIONS / DIGITAL SERVICE**, the **CREATE • LEARN • INNOVATE • EARN** tagline, and the small footer brand line.
+3. The intro fades away to the existing DCDS homepage.
+
+The intro is injected only into the generated `mobile-app/www/index.html` by `scripts/build-web.mjs`. The production website source is not modified and does not show this launch overlay. It is dismissed after the page load event, with a bounded fallback so a slow third-party request cannot trap the learner on the splash screen.
+
 ## Official app branding
 
-`branding/dcds-logo.webp.base64.part-*` is the approved DCDS logo source. After `npx cap add android` or `npx cap add ios`, apply platform assets with:
+The script prefers the existing 512px DCDS app icon copied into `www/assets/dcds-splash-icon-v4-512.png`; the three `branding/dcds-logo.webp.base64.part-*` files are a fallback source. Build and sync the web bundle first, then generate native assets after `npx cap add android` or `npx cap add ios`:
 
 ```bash
 python -m pip install Pillow==11.3.0
@@ -43,13 +53,13 @@ python scripts/apply-branding.py android
 python scripts/apply-branding.py ios
 ```
 
-The script preserves the logo artwork and produces the required launcher/app icon sizes, Android adaptive icon resources, and platform splash images. It modifies only the generated native project folders.
+The script preserves the logo artwork and produces launcher/app icon sizes, Android adaptive icon resources, a white AndroidX launch theme with `SplashScreen.installSplashScreen()` wired before Capacitor's WebView, and correctly scaled portrait iOS launch assets. The iOS launch storyboard uses aspect-fit so the artwork is not cropped. It modifies only generated native project folders.
 
 ## Native build automation
 
 The workflow `.github/workflows/dcds-native-mobile-builds.yml` creates and commits `mobile-app/package-lock.json` to the PR source branch on its first run when the file is missing. Both native jobs then check out that updated branch and use `npm ci` against the committed lockfile. This pins the exact npm dependency tree across subsequent workflow runs and both platforms.
 
-The workflow runs on changes to the mobile app or workflow, and can also be started manually. It queues runs rather than cancelling an active iOS build. After generating each native project, it applies the official source logo from `branding/dcds-logo.webp.base64.part-*` to platform icons and splash artwork using the pinned Pillow image tool.
+The workflow runs on changes to the mobile app or workflow, and can also be started manually. It queues runs rather than cancelling an active iOS build. After generating each native project, it applies the current 512px DCDS app icon to platform icons and the native white launch screen using the pinned Pillow image tool.
 
 Successful runs publish short-lived artifacts:
 
