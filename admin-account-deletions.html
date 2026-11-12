@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ffffff">
+<title>Account Deletion Review | DCDS Admin</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--purple:#7628d8;--deep:#21083f;--ink:#28183a;--muted:#756783;--line:#eadff5;--red:#a61b1b}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fbf9ff,#f1e8fb);font:14px/1.6 Arial,sans-serif;color:var(--ink)}
+main{width:min(1100px,calc(100% - 28px));margin:28px auto 60px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;background:#fff;border:1px solid var(--line);border-radius:17px;padding:17px 20px}
+.brand{font-weight:900;color:var(--deep);letter-spacing:.08em}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.18em;margin-top:4px}
+a{color:#6128b8;font-weight:700}.button{border:1px solid var(--line);border-radius:10px;padding:10px 13px;background:#f1e5ff;color:var(--deep);text-decoration:none;font-size:12px}
+h1{font-size:clamp(25px,5vw,36px);color:var(--deep);margin:25px 0 5px}p{color:var(--muted)}
+.warning{padding:13px 15px;border:1px solid #ead9a8;background:#fffaf0;color:#5f4b21;border-radius:12px;font-size:13px;margin:15px 0}
+.list{display:grid;gap:14px;margin-top:20px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:18px;box-shadow:0 8px 24px #32105f0a}
+.top{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;align-items:flex-start}.status{display:inline-flex;padding:5px 9px;border-radius:30px;background:#f1e5ff;color:#54168e;font-size:10px;font-weight:900;text-transform:uppercase}
+.meta{font-size:12px;color:var(--muted);overflow-wrap:anywhere}.body{margin:12px 0}.review{display:grid;gap:10px;margin-top:15px;padding-top:14px;border-top:1px solid var(--line)}
+label{display:block;font-size:12px;font-weight:800;color:var(--deep)}select,textarea{width:100%;border:1px solid var(--line);border-radius:10px;padding:11px;font:inherit}textarea{min-height:80px;resize:vertical}
+.checks{display:grid;gap:8px;background:#faf7ff;border:1px solid var(--line);padding:12px;border-radius:12px}
+.check{display:flex;gap:9px;align-items:flex-start;font-size:12px;color:var(--ink);font-weight:600}.check input{margin-top:4px}
+button{border:0;border-radius:10px;padding:11px 15px;background:linear-gradient(110deg,#8d3bdb,#54168e);color:#fff;font-weight:800;cursor:pointer}
+button:disabled{opacity:.5;cursor:not-allowed}
+#message{white-space:pre-wrap;color:var(--muted);font-size:13px;margin:14px 0}.error{color:var(--red)!important}.success{color:#17683a!important}
+.hidden{display:none!important}.empty{padding:25px;text-align:center;border:1px dashed #d9c8e8;border-radius:13px;color:var(--muted)}
+</style>
+</head>
+<body><main>
+<header><div class="brand">DCDS · ADMIN OPERATIONS CENTRE<small>ACCOUNT PRIVACY & DELETION REVIEW</small></div><div><a class="button" href="student-management.html">Student Management</a> <a class="button" href="index.html">Website</a></div></header>
+<h1>Account deletion review</h1>
+<p>Review and process user requests. Every stage is authenticated and recorded. The final step deletes the Supabase Auth identity only after the required personal-data and record-retention checks have been attested.</p>
+<div class="warning"><strong>Important:</strong> Do not mark a request complete until related personal information has been erased or anonymised, course and certificate records have been handled, financial/audit records have been reviewed for lawful retention, and external storage/processors have been checked. This page does not automatically erase public database records.</div>
+<div id="message" role="status" aria-live="polite">Checking administrator access…</div>
+<section id="reviewList" class="list" aria-live="polite"></section>
+</main>
+<script>
+(() => {
+ const SUPABASE_URL="https://qxsenflgaweeadvggnyp.supabase.co";
+ const SUPABASE_KEY="sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+ const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ const message=document.getElementById("message"),list=document.getElementById("reviewList");
+ const required=[
+  ["personal_data_reviewed","Personal information in DCDS records has been erased or anonymised where no longer needed."],
+  ["learning_records_handled","Learning, assignment, quiz, certificate and user-generated records have been reviewed and handled."],
+  ["financial_audit_records_retained_as_required","Payment, referral, reward, payout and audit records that must be retained have been reviewed and restricted."],
+  ["storage_and_third_party_reviewed","Related files, storage locations and applicable service-provider records have been reviewed."]
+ ];
+ function msg(value,type=""){message.textContent=value;message.className=type;}
+ function esc(value){return String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+ async function call(body){
+  const {data,error}=await db.functions.invoke("dcds-account-deletion",{body});
+  if(error) throw new Error("The privacy workflow could not be reached. Check deployment and try again.");
+  if(!data?.success) throw new Error(data?.error||"The operation could not be completed.");
+  return data;
+ }
+ function makeCard(request){
+  const card=document.createElement("article");card.className="card";
+  card.innerHTML='<div class="top"><div><span class="status">'+esc(request.status.replaceAll("_"," "))+'</span><p class="meta">Request '+esc(request.id)+'</p><p class="meta">User ID: '+esc(request.user_id)+'</p><p class="meta">Contact: '+esc(request.email_at_request||"Not available")+'</p><p class="meta">Submitted: '+esc(new Date(request.requested_at).toLocaleString())+'</p></div></div>'+
+    '<div class="body"><strong>Request note</strong><p>'+esc(request.request_note||"No additional note provided.")+'</p>'+(request.review_note?'<strong>Latest review note</strong><p>'+esc(request.review_note)+'</p>':'')+'</div>';
+  if(["completed","cancelled","rejected"].includes(request.status)){list.appendChild(card);return;}
+  const area=document.createElement("div");area.className="review";
+  const select=document.createElement("select");
+  const choices=request.status==="pending"?["in_review","action_required","rejected"]:
+    request.status==="action_required"?["in_review","action_required","rejected"]:
+    request.status==="in_review"?["action_required","approved_for_deletion","rejected"]:
+    request.status==="approved_for_deletion"?["completed"]:["in_review"];
+  choices.forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=v.replaceAll("_"," ");select.appendChild(o);});
+  const noteLabel=document.createElement("label");noteLabel.textContent="Administrator review / evidence note";
+  const note=document.createElement("textarea");note.maxLength=1000;note.placeholder="Record the checks performed, any missing data or the reason for the status change.";
+  area.append(noteLabel,note);
+  if(request.status==="approved_for_deletion"){
+    const checks=document.createElement("div");checks.className="checks";
+    const title=document.createElement("strong");title.textContent="Required completion attestations";
+    checks.appendChild(title);
+    required.forEach(([key,label])=>{
+      const row=document.createElement("label");row.className="check";
+      const input=document.createElement("input");input.type="checkbox";input.dataset.check=key;
+      const span=document.createElement("span");span.textContent=label;
+      row.append(input,span);checks.appendChild(row);
+    });
+    area.appendChild(checks);
+  }
+  const save=document.createElement("button");save.type="button";save.textContent="Save review step";
+  save.addEventListener("click",async()=>{
+   const status=select.value;
+   const reviewNote=note.value.trim();
+   if(!reviewNote){msg("Add an evidence note before saving.","error");return;}
+   const payload={action:"admin_update",request_id:request.id,status,review_note:reviewNote};
+   if(status==="completed"){
+    const checklist={};
+    area.querySelectorAll("[data-check]").forEach(input=>checklist[input.dataset.check]=input.checked);
+    if(!required.every(([key])=>checklist[key])){msg("Complete all four attestations before the final deletion step.","error");return;}
+    if(!confirm("Final confirmation: delete this user's Supabase Auth identity now? The related records must already have been handled."))return;
+    payload.completion_checklist=checklist;
+   }
+   save.disabled=true;save.textContent="Saving…";
+   try{await call(payload);msg("The deletion request was updated.","success");await load();}
+   catch(error){msg(error.message,"error");save.disabled=false;save.textContent="Save review step";}
+  });
+  area.append(select,save);card.appendChild(area);list.appendChild(card);
+ }
+ async function load(){
+  msg("Loading deletion requests…");
+  const data=await call({action:"admin_list"});list.innerHTML="";
+  if(!data.requests?.length){list.innerHTML='<div class="empty">There are no account-deletion requests.</div>';msg("Administrator access confirmed.","success");return;}
+  data.requests.forEach(makeCard);msg(data.requests.length+" request(s) loaded. Showing the latest 100.","success");
+ }
+ async function init(){
+  const {data,error}=await db.auth.getSession();if(error)throw error;
+  if(!data.session){window.location.replace("index.html?login=required&next=admin-account-deletions.html");return;}
+  const {data:isAdmin,error:adminError}=await db.rpc("is_dcds_admin");
+  if(adminError||isAdmin!==true){msg("Administrator access required.","error");return;}
+  await load();
+ }
+ init().catch(error=>msg(error.message||"Could not load deletion requests.","error"));
+})();
+</script>
+</body></html>
