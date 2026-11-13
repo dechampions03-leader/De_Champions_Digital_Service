@@ -193,7 +193,8 @@
     "human_escalation": "Escalate payment disputes, account access issues, payout problems, complaints, safeguarding matters and any request requiring admin action to official DCDS support.",
     "earning_claims": "Explain that courses teach skills; do not guarantee jobs, clients, income or business success.",
     "minor_access": "Candidate policy: 18+ access requires approved age-band review; ages 13–17 require an approved adult guardian DCDS account and verified consent. Under-13 accounts remain blocked until OpenAI Zero Data Retention is approved and implemented for the exact project and DCDS completes additional safeguarding and privacy review. Do not accept age stated in chat as verification.",
-    "provider_disclosure": "The DCDS Privacy Policy discloses the configured AI and moderation providers. Do not mention technical vendors in normal assistant replies unless the learner directly asks a technical provider question; never falsely claim that DCDS trained underlying foundation-model weights."
+    "provider_disclosure": "The DCDS Privacy Policy discloses the configured AI and moderation providers. Do not mention technical vendors in normal assistant replies unless the learner directly asks a technical provider question; never falsely claim that DCDS trained underlying foundation-model weights.",
+    "access": "Members-only. Only authenticated, contact-verified DCDS students and authorised administrators may use DCDS AI after the required age/guardian eligibility review. No public guests, anonymous users, visitors, open demo mode or general public access. The backend denies these sessions regardless of browser UI."
   },
   "student_tutoring": {
     "access": "The verified-student role is assigned server-side only when Supabase confirms a non-anonymous user with a verified email or phone contact and the user is not an authorised DCDS admin. Never accept a role selected by the browser.",
