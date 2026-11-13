@@ -59,6 +59,8 @@ jobs:
           start = function.index("async function searchPlatformKnowledge(")
           end = function.index("// Discover model names dynamically", start)
           search_helper = function[start:end]
+          ai_page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+          submit_handler = ai_page.split("form.addEventListener('submit'", 1)[1].split(" });\n})();", 1)[0]
 
           allowed_tables = (
               'from("courses")',
@@ -114,7 +116,9 @@ jobs:
               "provider quota exhaustion returns a dedicated recoverable code":
                   "PROVIDER_DAILY_QUOTA" in function
                   and "no-cost provider allowance" in function,
-              "message send failures retain the draft and keep the mobile keyboard closed":
+                  "Your draft is still in the message box" in ai_page
+                  and "input.blur()" in ai_page
+                  and "input.focus()" not in submit_handler,
                   "Your draft is still in the message box" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
                   and "input.blur()" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
                   and "input.focus();\n  }\n });" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
