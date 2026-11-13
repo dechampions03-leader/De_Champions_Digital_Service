@@ -200,7 +200,7 @@ async function listAvailableGeminiModels(apiKey: string): Promise<string[] | nul
   }
 }
 
-function wantsExternalWebSearch(message: string, role: "student" | "admin"): boolean {
+function wantsExternalWebSearch(message: string, role: "student" | "admin" | "guest"): boolean {
   if (role !== "student" && role !== "guest") return false;
   if (/\b(password|otp|one[- ]time code|payment status|bank details|payout status|my enrolment|my enrollment|my grades|my progress|my certificate|my account)\b/i.test(message)) return false;
   // DCDS operational facts should use live DCDS records, never generic web pages.
