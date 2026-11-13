@@ -215,18 +215,12 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  const ageBandSelect=document.getElementById('aiAgeBand');
  const eligibilityGuidance=document.getElementById('aiEligibilityGuidance');
  const requestEligibilityButton=document.getElementById('requestAiEligibility');
- const eligibilityPanel=document.getElementById('aiEligibilityPanel');
- const eligibilityMessage=document.getElementById('aiEligibilityMessage');
- const ageBandSelect=document.getElementById('aiAgeBand');
- const eligibilityGuidance=document.getElementById('aiEligibilityGuidance');
- const requestEligibilityButton=document.getElementById('requestAiEligibility');
  const conversation=[];
  let client=null;
  let currentUser=null;
  let isPersistentStudent=false;
  let activeConversationId=null;
  let turnstileWidgetId=null;
- input.disabled=true;sendButton.disabled=true;document.getElementById('newChat').disabled=true;
  input.disabled=true;sendButton.disabled=true;document.getElementById('newChat').disabled=true;
  let knownCourseResources=[];
  let knownEnrolledCourseSlugs=new Set();
@@ -350,62 +344,6 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   });
   if(actions.childElementCount)wrapper.appendChild(actions);
  }
- function setChatEnabled(enabled){
-  input.disabled=!enabled;sendButton.disabled=!enabled;document.getElementById('newChat').disabled=!enabled;
-  if(!enabled){studentTools.hidden=true;historyPanel.hidden=true;memoryPanel.hidden=true;}
- }
- function explainAgeChoice(){
-  eligibilityGuidance.textContent=ageBandSelect.value==='18_plus'
-   ?'Adults must complete DCDS age verification before AI access can be approved.'
-   :ageBandSelect.value==='13_17'
-    ?'A parent or legal guardian must provide verifiable consent. DCDS will review it before AI access can be approved.'
-    :'Under-13 access is not enabled yet. DCDS must first complete additional child-safety safeguards and obtain the required Zero Data Retention arrangement.';
- }
- async function loadAiEligibility(){
-  eligibilityPanel.hidden=true;setChatEnabled(false);
-  const {data,error}=await client.from('dcds_ai_access_eligibility').select('age_band,access_status,guardian_consent_status').eq('user_id',currentUser.id).maybeSingle();
-  if(error){
-   eligibilityPanel.hidden=false;requestEligibilityButton.hidden=true;
-   eligibilityMessage.textContent='DCDS could not confirm your AI access eligibility. The assistant remains locked until this check succeeds.';
-   eligibilityGuidance.textContent='Please refresh later or contact DCDS support. No chat message will be sent while access is unverified.';
-   setStatus('AI access eligibility could not be checked. Your assistant remains protected.',true);return false;
-  }
-  if(!data){
-   ageBandSelect.disabled=false;requestEligibilityButton.hidden=false;ageBandSelect.value='18_plus';explainAgeChoice();
-   eligibilityMessage.textContent='Before using DCDS AI, choose your age group. DCDS stores only the age band, not your full date of birth. AI processing does not begin until review is complete.';
-   eligibilityPanel.hidden=false;setStatus('Please complete the DCDS AI access review first.');return false;
-  }
-  ageBandSelect.value=data.age_band;ageBandSelect.disabled=true;requestEligibilityButton.hidden=true;
-  const adult=data.age_band==='18_plus'&&data.access_status==='approved'&&data.guardian_consent_status==='not_required';
-  const teen=data.age_band==='13_17'&&data.access_status==='approved'&&data.guardian_consent_status==='verified';
-  if(adult||teen){eligibilityPanel.hidden=true;setChatEnabled(true);return true;}
-  eligibilityPanel.hidden=false;
-  if(data.age_band==='under_13'){
-   eligibilityMessage.textContent='DCDS has recorded an under-13 access request, but this age group is not enabled yet.';
-   eligibilityGuidance.textContent='No AI processing is permitted for this account at this stage. DCDS must complete additional child-safety and Zero Data Retention requirements before approval.';
-  }else if(data.age_band==='13_17'&&data.guardian_consent_status!=='verified'){
-   eligibilityMessage.textContent='Parent or guardian consent verification is still required. AI access remains locked until DCDS confirms it.';
-   eligibilityGuidance.textContent='Ask your parent or legal guardian to complete the official DCDS consent review through support. Do not send identity documents or private family information in the chat.';
-  }else if(data.access_status==='pending'){
-   eligibilityMessage.textContent='Your age eligibility request is awaiting DCDS review. AI access remains locked until the review is complete.';
-   eligibilityGuidance.textContent='Contact DCDS support if you need help with verification.';
-  }else{
-   eligibilityMessage.textContent='DCDS AI access has not been approved for this account.';
-   eligibilityGuidance.textContent='Contact DCDS support if you believe this status is incorrect.';
-  }
-  setStatus('DCDS AI is not yet enabled for this account.',true);return false;
- }
- async function submitAiEligibilityRequest(){
-  const selected=ageBandSelect.value;if(!['18_plus','13_17','under_13'].includes(selected))return;
-  requestEligibilityButton.disabled=true;requestEligibilityButton.textContent='Submitting…';
-  const {error}=await client.from('dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:selected});
-  if(error)setStatus('Your access review request could not be submitted. Refresh or contact DCDS support.',true);
-  else setStatus('Your request has been recorded. DCDS AI will remain locked until eligibility and required consent checks are completed.');
-  await loadAiEligibility();requestEligibilityButton.disabled=false;requestEligibilityButton.textContent='Submit access review request';
- }
- ageBandSelect.addEventListener('change',explainAgeChoice);
- requestEligibilityButton.addEventListener('click',submitAiEligibilityRequest);
-
  function setChatEnabled(enabled){
   input.disabled=!enabled;sendButton.disabled=!enabled;document.getElementById('newChat').disabled=!enabled;
   if(!enabled){studentTools.hidden=true;historyPanel.hidden=true;memoryPanel.hidden=true;}
