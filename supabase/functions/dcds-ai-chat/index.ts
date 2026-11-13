@@ -252,7 +252,7 @@ function wantsExternalWebSearch(message: string, role: "student" | "admin"): boo
   return /\b(search the web|search online|look online|on the internet|latest news|recent news|recent developments|this week|up[- ]to[- ]date|newest version|latest version)\b/i.test(message);
 }
 
-const sexualisedMinorPattern = /\b(?:child|children|minor|underage|schoolboy|schoolgirl|young teen|teenager)\b[\s\S]{0,100}\b(?:nude|naked|sexual|sexually explicit|porn|pornographic|sext|erotic|fetish)\b/i;
+const suspectedChildExploitationPattern = /\b(?:csam|child sexual abuse material|child exploitation material|sexual abuse image of a child|(?:nude|naked|sexual|explicit) (?:photo|image|video) of (?:a )?(?:child|minor|underage|teen)|(?:child|children|minor|underage|schoolboy|schoolgirl|teen(?:ager)?|(?:1[0-7])[- ]?(?:year[- ]?old|yo|y\/o)|under[- ]?18)\b[\s\S]{0,160}\b(?:nude|naked|sexual|sexually explicit|porn|pornographic|sext|erotic|fetish|groom(?:ing)?|exploit(?:ation)?|sextort(?:ion)?|abuse)\b)/i;
 
 function isHighRiskModerationCategory(categories: Record<string, unknown>): boolean {
   const highRisk = ["sexual", "sexual/minors", "self-harm/instructions", "self-harm/intent", "violence/graphic", "harassment/threatening", "hate/threatening", "illicit", "illicit/violent"];
@@ -408,7 +408,7 @@ Deno.serve(async (request: Request) => {
   }
 
   const rateLimit = role === "student" ? 5 : 8;
-  const dailyRateLimit = role === "student" ? 60 : 120;
+  const dailyRateLimit = role === "student" ? 20 : 60;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
     p_daily_limit: dailyRateLimit,
@@ -549,6 +549,7 @@ ${roleGuidance}
 CORE IDENTITY AND BEHAVIOUR
 - Follow the DCDS Master Brain, Conversation Intelligence, Teaching Engine, Response Playbook and structured knowledge supplied below.
 - Write in a natural, polished GPT-style voice: direct, clear, readable and appropriately warm. Answer the actual question first. Use short paragraphs and headings only when they improve navigation. Avoid repetitive greetings, generic filler, unnecessary disclaimers, excessive emojis and long introductions. For simple questions, keep the answer short. For complex lessons or when the learner requests depth, provide the full practical detail.
+- When you mention a valuable DCDS course, enrolled lesson/material, public service, announcement, dashboard, support route or policy page, name it clearly. The DCDS interface adds relevant native action buttons below your reply. Never invent a URL, write fake button markup, or claim a button exists when the server did not supply a matching resource.
 - AI identity and brand loyalty: You are DCDS AI, the official assistant of De Champions Digital Service. DCDS designs your identity, curates your knowledge, shapes your teaching approach, connects your approved platform information and continually reviews and improves your behaviour. When asked who created you, say that you were built and are continually shaped by De Champions Digital Service. Do not volunteer API vendors, model providers, infrastructure names or implementation details. Never claim DCDS trained the underlying foundation-model weights. If a user directly asks a technical question about the underlying model or provider, answer accurately and briefly without confusing the provider with DCDS or its founder.
 - When a short or grammatically ambiguous question could reasonably mean different things, do not guess a full workflow. Give a brief acknowledgement and ask one direct clarification. Preserve the user's likely intent where the surrounding context makes it clear.
 - Use Nigerian naira for DCDS prices. Do not invent prices, discounts, course inclusions, schedules, official syllabi, certificates, grades, employment or income guarantees.
@@ -589,7 +590,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
 
   // Safety-screen before generation. Known/suspected sexual content involving minors
   // is blocked locally and is never forwarded to an external classifier or model.
-  if (sexualisedMinorPattern.test(message)) {
+  if (suspectedChildExploitationPattern.test(message)) {
     return json({ success: true, answer: "I can’t help create or discuss sexual content involving anyone under 18. If this relates to a real person who may be at risk, tell a trusted adult and use the appropriate child-protection or emergency support route.", role, conversation_id: null, history_saved: false, learning_memory_updated: false, resources: [] });
   }
 
@@ -613,7 +614,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
         model,
         instructions: systemInstruction,
         input: userPrompt,
-        max_output_tokens: 1800,
+        max_output_tokens: 1600,
         store: false,
         ...(shouldUseGoogleSearch ? { tools: [{ type: "web_search" }] } : {}),
       }),
