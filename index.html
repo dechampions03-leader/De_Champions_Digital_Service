@@ -1052,7 +1052,7 @@ function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;',
 function getDcdsAnnouncementHeading(line,index,lines){
  const trimmed=String(line??'').trim();
  if(!trimmed)return null;
- const markdown=trimmed.match(/^#{1,3}\\s+(.+)$/)||trimmed.match(/^\\*\\*(.+)\\*\\*$/);
+ const markdown=trimmed.match(/^#{1,3}\s+(.+)$/)||trimmed.match(/^\*\*(.+)\*\*$/);
  if(markdown)return markdown[1].trim();
  const previous=index>0?String(lines[index-1]??'').trim():'';
  const shortStandalone=trimmed.length<=72
@@ -1062,13 +1062,13 @@ function getDcdsAnnouncementHeading(line,index,lines){
  return shortStandalone?trimmed:null;
 }
 function formatDcdsAnnouncementMessageHtml(message){
- const lines=String(message??'').split(/\\r?\\n/);
+ const lines=String(message??'').split(/\r?\n/);
  return lines.map((line,index)=>{
   const heading=getDcdsAnnouncementHeading(line,index,lines);
   return heading
    ?'<strong class="dcds-announcement-message-heading">'+escapeHtml(heading)+'</strong>'
    :escapeHtml(line);
- }).join('\\n');
+ }).join('\n');
 }
 function appendDcdsTickerMessage(target,message){
  const lines=String(message??'').split(/\\r?\\n/);
