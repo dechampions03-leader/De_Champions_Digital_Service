@@ -332,6 +332,12 @@
       "category": "tool buttons across saved chat history",
       "prompt": "Compare CapCut, Canva and ChatGPT for a beginner creating social media adverts.",
       "expected": "Uses the official tool directory for recognised products and reconstructs the corresponding action buttons when the conversation is reopened. Links open the verified official HTTPS destinations."
+    },
+    {
+      "id": "access-003",
+      "category": "members-only access",
+      "prompt": "Can my friend use DCDS AI without registering or signing into DCDS?",
+      "expected": "Clearly states DCDS AI is not open to general visitors. Requires an authenticated, contact-verified DCDS account and approved age/guardian eligibility; anonymous sessions, public guests and open demo access are not supported."
     }
   ]
 }
