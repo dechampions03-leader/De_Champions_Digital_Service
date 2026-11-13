@@ -8,7 +8,7 @@ DROP FUNCTION IF EXISTS public.dcds_consume_ai_request(integer);
 
 CREATE FUNCTION public.dcds_consume_ai_request(
   p_limit integer DEFAULT 10,
-  p_daily_limit integer DEFAULT 60
+  p_daily_limit integer DEFAULT 20
 )
 RETURNS boolean
 LANGUAGE plpgsql
@@ -18,7 +18,7 @@ AS $function$
 DECLARE
   v_user_id uuid := auth.uid();
   v_minute_limit integer := least(greatest(coalesce(p_limit, 10), 1), 30);
-  v_daily_limit integer := least(greatest(coalesce(p_daily_limit, 60), 1), 500);
+  v_daily_limit integer := least(greatest(coalesce(p_daily_limit, 20), 1), 500);
   v_minute_count integer;
   v_daily_count integer;
   v_now timestamptz := pg_catalog.clock_timestamp();
