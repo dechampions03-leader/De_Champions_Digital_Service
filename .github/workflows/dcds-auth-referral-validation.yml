@@ -6,6 +6,8 @@ on:
       - fix/dcds-six-box-otp-global-referrals
     paths:
       - "index.html"
+      - "ai-learning-assistant.html"
+      - "ai-config/captcha-public-config.js"
       - "student-dashboard.html"
       - "student-management.html"
       - "learn.html"
@@ -54,7 +56,7 @@ jobs:
           import subprocess
           import tempfile
 
-          files = ["index.html", "student-dashboard.html", "student-management.html", "learn.html", "general-course.html"]
+          files = ["index.html", "ai-learning-assistant.html", "student-dashboard.html", "student-management.html", "learn.html", "general-course.html"]
           checked = 0
           with tempfile.TemporaryDirectory() as tmp:
               for html_file in files:
@@ -92,6 +94,8 @@ jobs:
           signup_migration = Path("supabase/migrations/20261111151500_dcds_require_global_signup_mobile.sql").read_text(encoding="utf-8")
           dual_migration = Path("supabase/migrations/20261111162500_dcds_dual_channel_signup_verification.sql").read_text(encoding="utf-8")
           phone_signup_function = Path("supabase/functions/dcds-create-account/index.ts").read_text(encoding="utf-8")
+          ai_page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+          captcha_config = Path("ai-config/captcha-public-config.js").read_text(encoding="utf-8")
 
           required_page = [
               "grid-template-columns:repeat(6,minmax(0,1fr))",
@@ -111,7 +115,7 @@ jobs:
               "supabaseClient.auth.signUp({email,password,options:{data:signupMetadata,captchaToken}})",
               "supabaseClient.auth.signInWithPassword(credentials,captchaToken?{captchaToken}:undefined)",
               "supabaseClient.auth.resetPasswordForEmail(email,{redirectTo,captchaToken})",
-              "supabaseClient.auth.resend({type:'signup',email:pendingVerificationEmail,options:{captchaToken}})",
+              "supabaseClient.auth.resend({type:'signup',email:pendingVerificationEmail})",
               "dcdsCaptchaMarkup()",
               "pendingVerificationMethod==='sms'",
               "id=\"studentReferralCode\"",
@@ -124,6 +128,20 @@ jobs:
           for item in required_page:
               if item not in page:
                   raise SystemExit(f"index.html missing required auth/referral behavior: {item}")
+
+          required_ai = [
+              "client.auth.signInAnonymously({options:{captchaToken}})",
+              "authProtectionEnabled!==true",
+              "dcds-ai-chat",
+              "turnstile.render",
+          ]
+          for item in required_ai:
+              if item not in ai_page:
+                  raise SystemExit(f"ai-learning-assistant.html missing visitor protection behavior: {item}")
+          if 'siteKey: ""' not in captcha_config or "authProtectionEnabled: false" not in captcha_config:
+              raise SystemExit("Public CAPTCHA config must remain safely disabled until both keys are configured.")
+          if "GEMINI_API_KEY" in ai_page or "GEMINI_API_KEY" in page:
+              raise SystemExit("Gemini API key must never appear in browser source.")
           if "dcds_phone_e164" not in signup_migration:
               raise SystemExit("Signup migration is missing the required phone metadata validation.")
           if "create table if not exists public.dcds_student_contact_numbers" not in signup_migration.lower():
