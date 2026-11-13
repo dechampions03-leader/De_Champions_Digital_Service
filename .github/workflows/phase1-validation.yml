@@ -26,6 +26,7 @@ on:
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/functions/dcds-ai-chat/**"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
 
