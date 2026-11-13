@@ -906,6 +906,7 @@ async function submitAuth(e){
    await afterAuthentication(data.user);
   }
  }catch(err){
+  if(dcdsCaptchaEnabled() && document.getElementById('dcdsAuthCaptcha')) resetDcdsCaptcha();
   setAuthError(err.message||'Unable to complete account request. Please try again.');
   if(btn){btn.disabled=false;btn.textContent=authMode==='signup'?'Create student account':'Log in';}
  }
@@ -973,7 +974,7 @@ function showSignupOtpScreen(method,recipient,message){
   '<form id="otpVerifyForm"><label class="field"><span>Six-digit verification code</span><div class="dcds-otp-box" role="group" aria-label="Six-digit verification code">'+
   Array.from({length:6},(_,i)=>'<input class="dcds-otp-digit" type="text" inputmode="numeric" autocomplete="'+(i===0?'one-time-code':'off')+'" maxlength="'+(i===0?6:1)+'" pattern="'+(i===0?'[0-9]{1,6}':'[0-9]')+'" aria-label="Digit '+(i+1)+' of 6" required>').join('')+
   '</div></label><p class="form-error" id="otpError" role="alert"></p><button class="button button-primary" id="verifyOtpBtn" type="submit" style="width:100%">Verify '+(isSms?'mobile number':'email')+'</button></form>'+
-  ${dcdsCaptchaEnabled()?'<div class="dcds-auth-captcha" id="dcdsAuthCaptcha" aria-label="Security verification"></div>':''}+
+  (dcdsCaptchaEnabled()?'<div class="dcds-auth-captcha" id="dcdsAuthCaptcha" aria-label="Security verification"></div>':'')+
   '<div class="dcds-otp-actions"><span id="otpCountdown">Resend available in 60s</span><button class="dcds-text-button" id="resendOtpBtn" type="button" disabled>Resend code</button></div>'+
   '<p class="modal-note">Enter the code delivered to your selected contact method. Keep your password and verification code private. If you already have an account, log in instead of creating another one.</p>');
  setupOtpInputs();
@@ -984,9 +985,13 @@ function showSignupOtpScreen(method,recipient,message){
   btn.disabled=true;if(err){err.textContent='';err.className='form-error';}
   let captchaToken;
   try{captchaToken=getDcdsCaptchaToken();}catch(error){if(err){err.textContent=error.message;err.className='form-error error';}btn.disabled=false;return;}
-  const {error}=await resendSignupOtp(captchaToken);
+  let resendError=null;
+  try{
+   const response=await resendSignupOtp(captchaToken);
+   resendError=response.error||null;
+  }catch(requestError){resendError=requestError;}
   resetDcdsCaptcha();
-  if(error){if(err){err.textContent=error.message||'Could not resend the code. Please try again.';err.className='form-error error';}btn.disabled=false;return;}
+  if(resendError){if(err){err.textContent=resendError.message||'Could not resend the code. Please try again.';err.className='form-error error';}btn.disabled=false;return;}
   if(err){err.textContent='A new verification code has been requested.';err.className='form-error success';}
   startOtpCountdown(60);
  });
