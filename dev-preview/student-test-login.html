@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#35105f">
+<title>DCDS Development · Verified Student Test</title>
+<script src="ai-config/captcha-public-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7628d8;--deep:#21083f;--ink:#28183a;--muted:#776b83;--line:#eadff2}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:22px;background:radial-gradient(circle at 8% 0,#f0e4ff,transparent 36%),linear-gradient(160deg,#fbf9ff,#f4edfc);font-family:'DM Sans',sans-serif;color:var(--ink);display:grid;place-items:center}
+main{width:min(520px,100%);background:white;border:1px solid var(--line);border-radius:24px;padding:clamp(22px,5vw,38px);box-shadow:0 22px 60px #3d155018}
+.brand{font-size:11px;font-weight:900;letter-spacing:.14em;color:#542080}.tag{display:inline-flex;margin-top:24px;padding:7px 11px;border-radius:99px;background:#f2e9fc;color:#6827a8;font-weight:900;font-size:10px;letter-spacing:.13em}
+h1{font:700 clamp(28px,6vw,38px)/1.12 'Playfair Display',serif;color:#35105f;margin:14px 0 9px}p{font-size:13px;color:var(--muted);line-height:1.65}
+.notice{margin:18px 0;padding:14px;border:1px solid #efdca8;border-radius:13px;background:#fff9e9;color:#664f20;font-size:12px;line-height:1.6}
+label{display:block;font-size:12px;font-weight:800;color:#4a315f;margin:15px 0 7px}
+input{width:100%;border:1px solid #e4d8ef;border-radius:12px;padding:13px;font:14px 'DM Sans',sans-serif;color:var(--ink);outline:none}
+input:focus{border-color:#9b78d1;box-shadow:0 0 0 3px #6128b814}
+button{width:100%;border:0;border-radius:13px;padding:14px 18px;background:linear-gradient(120deg,#542080,#7628d8);color:white;font-size:14px;font-weight:900;margin-top:17px;cursor:pointer}
+button:disabled{opacity:.55;cursor:not-allowed}
+#captcha{margin-top:15px;min-height:65px;display:flex;justify-content:center}
+.status{display:none;margin-top:14px;padding:12px;border-radius:11px;background:#f3edfb;color:#633c86;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+.status.error{display:block;background:#fff1f0;color:#a2352c}.status.ok{display:block;background:#eef9f1;color:#21643a}
+.links{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px}
+a{color:#6827a8;font-weight:800;font-size:11px;text-decoration:none}
+small{display:block;color:#91849d;font-size:10px;line-height:1.6;margin-top:20px}
+</style>
+</head>
+<body>
+<main>
+<div class="brand">DE CHAMPIONS DIGITAL SERVICE</div>
+<div class="tag">DEVELOPMENT · VERIFIED STUDENT TEST</div>
+<h1>Continue as a test student.</h1>
+<p>Sign in with a dedicated, verified test account created in <strong>DCDS-Development</strong>. Supabase verifies the account; the AI service—not this page—decides whether the session is a visitor, student or administrator.</p>
+<div class="notice"><strong>Use a test account only.</strong> Do not enter a real customer's credentials or an administrator account. This page does not create accounts, reset passwords or change any account data.</div>
+<form id="loginForm" novalidate>
+<label for="email">Development test email</label>
+<input id="email" name="email" type="email" autocomplete="username" autocapitalize="none" spellcheck="false" required maxlength="254" placeholder="your-test-account@example.com">
+<label for="password">Test account password</label>
+<input id="password" name="password" type="password" autocomplete="current-password" required maxlength="128" placeholder="Enter the test account password">
+<div id="captcha" aria-label="Cloudflare security verification"></div>
+<button id="signIn" type="submit">Verify and open student tutor →</button>
+</form>
+<div class="status" id="status" role="status" aria-live="polite"></div>
+<div class="links"><a href="./index.html">← Development preview home</a><a href="./ai-learning-assistant.html">Open visitor AI test</a></div>
+<small>Development testing only. Authentication is performed by Supabase Auth with Cloudflare Turnstile. Your password is sent directly to Supabase Auth over HTTPS and is never written to this page, URL, logs or DCDS chat history.</small>
+</main>
+<script>
+(async function(){
+  const SUPABASE_URL="https://tjgsxbmkpvktlqulbktv.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY="sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
+  const form=document.getElementById('loginForm');
+  const emailEl=document.getElementById('email');
+  const passwordEl=document.getElementById('password');
+  const button=document.getElementById('signIn');
+  const status=document.getElementById('status');
+  const captcha=document.getElementById('captcha');
+  let client,widgetId=null,captchaToken=null;
+  function setStatus(message,kind='error'){
+    status.textContent=message;
+    status.className='status '+kind;
+  }
+  function loadTurnstile(){
+    if(window.turnstile)return Promise.resolve();
+    return new Promise((resolve,reject)=>{
+      const script=document.createElement('script');
+      script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+      script.async=true;script.defer=true;
+      script.onload=()=>window.turnstile?resolve():reject(new Error('Cloudflare verification did not initialise.'));
+      script.onerror=()=>reject(new Error('Cloudflare verification could not load.'));
+      document.head.appendChild(script);
+    });
+  }
+  async function renderCaptcha(){
+    const config=window.DCDS_CAPTCHA_CONFIG||{};
+    if(config.provider!=='turnstile'||config.authProtectionEnabled!==true||typeof config.siteKey!=='string'||!config.siteKey.trim()){
+      throw new Error('Development CAPTCHA configuration is incomplete.');
+    }
+    await loadTurnstile();
+    captcha.replaceChildren();
+    captchaToken=null;
+    widgetId=window.turnstile.render(captcha,{
+      sitekey:config.siteKey.trim(),theme:'light',action:'dcds_auth',
+      callback:token=>{captchaToken=token;},
+      'expired-callback':()=>{captchaToken=null;setStatus('The security check expired. Complete it again.','error');},
+      'error-callback':()=>{captchaToken=null;setStatus('Cloudflare verification failed. Refresh this page and try again.','error');}
+    });
+  }
+  try{
+    if(!window.supabase?.createClient)throw new Error('Supabase browser library did not load.');
+    client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+      auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+    });
+    await renderCaptcha();
+  }catch(error){
+    setStatus(error.message||'The test sign-in page could not initialise.','error');
+    button.disabled=true;
+    return;
+  }
+  form.addEventListener('submit',async event=>{
+    event.preventDefault();
+    status.className='status';
+    const email=emailEl.value.trim().toLowerCase();
+    const password=passwordEl.value;
+    if(!email||!password){setStatus('Enter the Development test email and password.');return;}
+    if(!captchaToken){setStatus('Complete the Cloudflare security check before signing in.');return;}
+    button.disabled=true;button.textContent='Verifying test student…';
+    try{
+      const {data,error}=await client.auth.signInWithPassword({email,password,options:{captchaToken}});
+      if(error)throw error;
+      if(!data?.user)throw new Error('Supabase did not return an authenticated user.');
+      const user=data.user;
+      if(user.is_anonymous===true||!(user.email_confirmed_at||user.phone_confirmed_at)){
+        await client.auth.signOut();
+        throw new Error('This test account must be a non-anonymous account with a confirmed email or phone contact.');
+      }
+      const {data:isAdmin,error:adminError}=await client.rpc('is_dcds_admin');
+      if(adminError)throw new Error('The server-side role check could not be completed. Please try again.');
+      if(isAdmin===true){
+        await client.auth.signOut();
+        throw new Error('Administrator accounts cannot be used for the student tutor test. Use a dedicated non-admin Development test account.');
+      }
+      passwordEl.value='';
+      setStatus('Verified Development test student. Opening the DCDS learning tutor…','ok');
+      window.location.assign('./ai-learning-assistant.html?student_test=1');
+    }catch(error){
+      try{await client.auth.signOut();}catch(_){}
+      passwordEl.value='';
+      try{if(widgetId!==null)window.turnstile.reset(widgetId);}catch(_){}
+      captchaToken=null;button.disabled=false;button.textContent='Verify and open student tutor →';
+      setStatus(error?.message||'Test sign-in failed. Check the credentials and try again.','error');
+    }
+  });
+})();
+</script>
+</body>
+</html>

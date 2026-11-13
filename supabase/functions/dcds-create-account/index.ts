@@ -49,6 +49,52 @@ function phoneOtpEnabled(value: unknown): boolean {
   return value === true || value === "true";
 }
 
+async function verifyDcdsTurnstileToken(token: string, req: Request): Promise<{ ok: boolean; status: number; error?: string }> {
+  const secret = Deno.env.get("DCDS_TURNSTILE_SECRET_KEY");
+  if (!secret) {
+    return { ok: false, status: 503, error: "DCDS security verification is not configured for mobile signup." };
+  }
+  if (!token || token.length > 4096) {
+    return { ok: false, status: 400, error: "Complete the security check and try again." };
+  }
+
+  const form = new FormData();
+  form.append("secret", secret);
+  form.append("response", token);
+  const ip = req.headers.get("cf-connecting-ip")
+    || req.headers.get("x-real-ip")
+    || req.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
+  if (ip) form.append("remoteip", ip);
+
+  try {
+    const response = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      body: form,
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!response.ok) {
+      console.error("DCDS Turnstile verification endpoint returned", response.status);
+      return { ok: false, status: 502, error: "Security verification is temporarily unavailable. Please try again." };
+    }
+
+    const result = await response.json();
+    const allowedHostnames = (Deno.env.get("DCDS_TURNSTILE_HOSTNAMES") || "dechampions03-leader.github.io")
+      .split(",").map((value) => value.trim().toLowerCase()).filter(Boolean);
+    const hostname = typeof result.hostname === "string" ? result.hostname.toLowerCase() : "";
+    if (
+      result.success !== true
+      || result.action !== "dcds_auth"
+      || !allowedHostnames.includes(hostname)
+    ) {
+      return { ok: false, status: 403, error: "The security check could not be verified. Please complete it again." };
+    }
+    return { ok: true, status: 200 };
+  } catch (error) {
+    console.error("DCDS Turnstile verification failed:", error instanceof Error ? error.message : "Unknown error");
+    return { ok: false, status: 502, error: "Security verification is temporarily unavailable. Please try again." };
+  }
+}
+
 Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
   if (req.method !== "POST") return respond({ success: false, error: "Method not allowed." }, 405);
@@ -108,6 +154,11 @@ Deno.serve(async (req: Request) => {
         code: "PHONE_OTP_NOT_CONFIGURED",
         error: "Mobile verification is not enabled yet. Please choose email verification for now.",
       }, 503);
+    }
+
+    const captchaResult = await verifyDcdsTurnstileToken(String(body.captcha_token ?? ""), req);
+    if (!captchaResult.ok) {
+      return respond({ success: false, error: captchaResult.error || "Complete the security check and try again." }, captchaResult.status);
     }
 
     const email = normalizeEmail(body.email);
