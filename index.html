@@ -136,7 +136,7 @@
 .live-pill{font-size:9px;font-weight:900;letter-spacing:.1em;color:#f8dfa0}
 .notification-item{display:flex;gap:12px;padding:15px 17px;border-bottom:1px solid #f0eaf6}
 .notification-icon{width:35px;height:35px;flex:0 0 35px;display:grid;place-items:center;border-radius:11px;background:#f2e8ff;font-size:17px}
-.notification-item strong{font:800 12px 'DM Sans',sans-serif;color:#45206d}.notification-item p{margin:5px 0;color:#6e627a;font-size:11px;line-height:1.55}.notification-item small{color:#9868bd;font-size:9px;font-weight:800;letter-spacing:.04em}
+.notification-item strong{font:800 12px 'DM Sans',sans-serif;color:#45206d}.notification-item p{margin:5px 0;color:#6e627a;font-size:11px;line-height:1.55}.notification-item small{color:#9868bd;font-size:9px;font-weight:800;letter-spacing:.04em}.notification-ai-link{text-decoration:none;color:inherit}
 .notification-foot{text-align:center;padding:12px;color:#78549a;background:#fbf8ff;font:800 9px 'DM Sans',sans-serif;letter-spacing:.13em}.notification-foot b{color:#c29b45}
 .mobile-menu-trigger{display:none}
 .mobile-nav-panel{position:absolute;top:calc(100% + 1px);left:0;right:0;z-index:70;padding:12px 18px 18px;background:#fff;border-bottom:1px solid #e8def1;box-shadow:0 18px 35px #24103920}
@@ -313,7 +313,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
    <section class="notification-panel" id="notificationPanel" hidden aria-label="Student announcements">
     <div class="notification-head"><div><strong>What's New at DCDS</strong><small>Updates for signed-in students</small></div><span class="live-pill">● LIVE</span></div>
         <article class="notification-item"><span class="notification-icon">✦</span><div><strong>Welcome to DCDS</strong><p>Explore digital skills, creative services and learning opportunities with De Champions Digital Service.</p><small>Public announcement</small></div></article>
-    <article class="notification-item"><span class="notification-icon">🤖</span><div><strong>AI Chatbot Assistant — Coming Soon</strong><p>Your smart DCDS assistant is on the way to help visitors find information, explore courses and get support.</p><small>Coming soon</small></div></article>
+    <a class="notification-item notification-ai-link" href="ai-learning-assistant.html?source=main-dashboard"><span class="notification-icon">🤖</span><div><strong>DCDS AI Learning Assistant</strong><p>Open the DCDS AI learning companion. Access is currently available to verified students and authorised administrators.</p><small>STUDENT ACCESS · LIVE ↗</small></div></a>
     <article class="notification-item"><span class="notification-icon">📱</span><div><strong>DCDS Mobile App — Coming Soon</strong><p>A dedicated app experience is in development. Learn, access updates and stay connected with DCDS on the go.</p><small>Coming soon</small></div></article>
     <div class="notification-foot">CREATE <b>•</b> LEARN <b>•</b> INNOVATE <b>•</b> EARN</div>
    </section>
@@ -325,7 +325,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
  <nav class="mobile-nav-panel" id="mobileNavPanel" aria-label="Mobile navigation" hidden>
   <a class="mobile-dashboard-link" href="student-dashboard.html"><span aria-hidden="true">▦</span><span>MY DASHBOARD <small style="display:block;color:#79658f;font-size:10px;font-weight:650">Your personal learning space</small></span><span style="margin-left:auto">→</span></a>
   <a href="#courses">Courses <span>→</span></a><a href="#services">Our Services <span>→</span></a><a href="#why">Why DCDS <span>→</span></a><a href="#founder">Founder <span>→</span></a><a href="#how">How it works <span>→</span></a>
-  <div class="mobile-coming"><span>🤖</span><div><strong>AI Chatbot Assistant</strong><small>Coming Soon</small></div></div>
+  <a class="mobile-coming" href="ai-learning-assistant.html?source=main-dashboard" style="text-decoration:none"><span>🤖</span><div><strong>DCDS AI Learning Assistant</strong><small>Student access · Live</small></div></a>
   <div class="mobile-coming"><span>📱</span><div><strong>DCDS Mobile App</strong><small>Coming Soon</small></div></div>
  </nav>
 </div></header>
