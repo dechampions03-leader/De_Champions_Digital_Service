@@ -54,7 +54,7 @@ jobs:
               "AI chat page points to Production Supabase": production_url in files["ai"],
               "Admin review page points to Production Supabase": production_url in files["review"],
               "No Development project URL is embedded in published pages": all(development_ref not in value for value in files.values()),
-              "Public guest entry is visible and visitor mode cannot display private student tools": "guestAccessPanel" in files["ai"] and "studentTools.hidden=true" in files["ai"] and "Visitor chats are temporary" in files["ai"],
+              "Public guest entry is visible and visitor mode cannot display private student tools": "guestAccessPanel" in files["ai"] and "studentTools.hidden=true" in files["ai"] and "visitor chats are temporary" in files["ai"],
               "AI access review form is present": "dcds_ai_access_eligibility" in files["ai"] and "aiEligibilityPanel" in files["ai"],
               "Admin access review screen is noindex": "noindex" in files["review"].lower() and "nofollow" in files["review"].lower(),
               "Admin Centre links to the access review screen": 'href="dcds-ai-access-review.html"' in files["admin"],
