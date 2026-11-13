@@ -13,6 +13,9 @@ on:
       - "privacy-policy.html"
       - "index.html"
       - "ai-config/captcha-public-config.js"
+      - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/migrations/20261113160000_dcds_ai_global_age_access_controls.sql"
+      - "supabase/migrations/20261113160210_dcds_ai_age_policy_autoapproval_guard.sql"
       - ".github/workflows/dcds-ai-pages-sync-validation.yml"
 
 permissions:
@@ -39,6 +42,8 @@ jobs:
               "home": Path("index.html").read_text(encoding="utf-8"),
               "captcha": Path("ai-config/captcha-public-config.js").read_text(encoding="utf-8"),
               "student-management": Path("student-management.html").read_text(encoding="utf-8"),
+              "edge": Path("supabase/functions/dcds-ai-chat/index.ts").read_text(encoding="utf-8"),
+              "age-policy-migration": Path("supabase/migrations/20261113160000_dcds_ai_global_age_access_controls.sql").read_text(encoding="utf-8"),
           }
           production_url = "https://qxsenflgaweeadvggnyp.supabase.co"
           development_ref = "tjgsxbmkpvktlqulbktv"
@@ -56,7 +61,12 @@ jobs:
               "Main login page loads the Turnstile public configuration": 'src="ai-config/captcha-public-config.js"' in files["home"],
               "Turnstile UI and token validation hooks are present": "dcdsCaptchaMarkup" in files["home"] and "getDcdsCaptchaToken" in files["home"],
               "Turnstile widget is visible when enabled": 'appearance:"always"' in files["home"],
-              "Supabase signup, login and reset receive CAPTCHA tokens": "captchaToken" in files["home"] and "signInWithPassword(credentials,captchaToken?{captchaToken}:undefined)" in files["home"] and "resetPasswordForEmail(email,{redirectTo,...(captchaToken?{captchaToken}:{})})" in files["home"],
+              "Supabase signup, login and reset receive CAPTCHA tokens": "captchaToken" in files["home"] and "signInWithPassword(signInCredentials)" in files["home"] and "options:{captchaToken}" in files["home"] and "resetPasswordForEmail(email,{redirectTo,...(captchaToken?{captchaToken}:{})})" in files["home"],
+              "Turnstile login waits for and reads a completed widget token": "turnstile.getResponse(dcdsAuthTurnstileWidgetId)" in files["home"] and "Cloudflare is still verifying" in files["home"],
+              "Administrator AI access bypasses student eligibility review": "if(isAdmin)" in files["ai"] and "setChatEnabled(true)" in files["ai"],
+              "Global AI age controls exist in the admin dashboard": "aiTeenAccessToggle" in files["student-management"] and "aiAdultAccessToggle" in files["student-management"],
+              "Global adult and teen policy is enforced server-side": "dcds_ai_access_settings" in files["edge"] and "eligibility.guardian_consent_status === \"verified\"" in files["edge"] and "role === \"student\"" in files["edge"],
+              "Age policy database migration is present": "create table if not exists public.dcds_ai_access_settings" in files["age-policy-migration"],
               "Production CAPTCHA activation is enabled after Supabase Auth secret is configured": 'authProtectionEnabled: true' in files["captcha"],
               "Privacy notice identifies the Gemini provider": "Google Gemini API" in files["privacy"],
               "Privacy notice warns about free-tier human review": "human reviewers" in files["privacy"].lower(),
