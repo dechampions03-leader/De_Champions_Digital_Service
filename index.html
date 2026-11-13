@@ -1057,7 +1057,7 @@ function getDcdsAnnouncementHeading(line,index,lines){
  const previous=index>0?String(lines[index-1]??'').trim():'';
  const shortStandalone=trimmed.length<=72
   && !/[.!?;:]$/.test(trimmed)
-  && !/^(?:[-*•]|\\d+[.)])\\s/.test(trimmed)
+  && !/^(?:[-*•]|\d+[.)])\s/.test(trimmed)
   && (index===0||!previous);
  return shortStandalone?trimmed:null;
 }
