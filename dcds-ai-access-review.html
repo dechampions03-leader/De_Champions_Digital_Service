@@ -1,0 +1,120 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#35105f"><title>DCDS AI Access Review</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--purple:#7628d8;--deep:#21083f;--ink:#28183a;--muted:#756783;--line:#eadff5}
+*{box-sizing:border-box}body{margin:0;background:linear-gradient(145deg,#fbf9ff,#f1e8fb);color:var(--ink);font:14px/1.6 'DM Sans',Arial,sans-serif}
+main{width:min(1100px,calc(100% - 28px));margin:25px auto 60px}
+header{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:17px 19px;background:#fff;border:1px solid var(--line);border-radius:17px}
+.brand{font-weight:900;color:var(--deep);letter-spacing:.1em}.brand small{display:block;color:var(--muted);font-size:10px;letter-spacing:.16em}
+nav{display:flex;gap:8px;flex-wrap:wrap}nav a{padding:8px 11px;border:1px solid var(--line);border-radius:9px;color:#5b258e;text-decoration:none;font-weight:800;font-size:11px}
+h1{margin:26px 0 5px;color:var(--deep);font-size:clamp(25px,5vw,36px)}.lead{max-width:850px;color:var(--muted);font-size:13px}
+.notice{margin:15px 0;padding:13px 15px;border:1px solid #ead9a8;background:#fffaf0;color:#5f4b21;border-radius:12px;font-size:12px;line-height:1.6}
+.status{margin:14px 0;color:#6f5a83;font-size:12px}.status.error{color:#aa2b2b}.status.success{color:#17683a}
+.controls{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:15px 0}.controls button{border:0;border-radius:10px;padding:10px 14px;background:linear-gradient(110deg,#8d3bdb,#54168e);color:white;font-weight:800;cursor:pointer}
+.controls select{border:1px solid var(--line);border-radius:9px;padding:9px;background:#fff;color:var(--ink)}
+.list{display:grid;gap:13px}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:17px;box-shadow:0 8px 24px #32105f08}
+.card-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap}.badge{display:inline-flex;padding:5px 9px;border-radius:30px;background:#f1e5ff;color:#54168e;font-size:10px;font-weight:900;text-transform:uppercase}
+.meta{font-size:11px;color:var(--muted);overflow-wrap:anywhere}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px;margin-top:13px}
+label{display:block;color:#4d286e;font-size:11px;font-weight:800;margin-bottom:5px}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:10px;background:#fff;color:var(--ink);font:12px Arial,sans-serif}
+textarea{min-height:70px;resize:vertical}.checkrow{display:flex;align-items:flex-start;gap:8px;padding:10px;border-radius:10px;background:#faf6ff;border:1px solid var(--line);font-size:11px;color:#654d7e}
+.checkrow input{width:auto;margin:3px 0 0}.checkrow span{font-weight:600}
+.actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:12px}.actions button{border:0;border-radius:9px;padding:10px 13px;background:linear-gradient(110deg,#8d3bdb,#54168e);color:white;font-weight:800;font-size:11px;cursor:pointer}
+.actions button:disabled{opacity:.5;cursor:not-allowed}.empty{padding:25px;text-align:center;border:1px dashed #d9c8e8;border-radius:13px;color:var(--muted)}
+@media(max-width:560px){main{width:calc(100% - 20px);margin-top:12px}.card{padding:13px}}
+</style></head>
+<body><main>
+<header><div class="brand">DCDS · ADMIN OPERATIONS<small>AI AGE & GUARDIAN ELIGIBILITY REVIEW</small></div>
+<nav><a href="admin-account-deletions.html">Privacy Review</a><a href="admin-notifications.html">Admin Centre</a><a href="index.html">Website</a></nav></header>
+<h1>DCDS AI access review</h1>
+<p class="lead">Review age-band requests and verify adult guardian consent where required. Access is enforced by the Edge Function; changing a screen or browser value cannot unlock the assistant.</p>
+<div class="notice"><strong>Important safeguards:</strong> Store age bands only, not full dates of birth or identity-document images. Approve ages 13–17 only after a separately verified adult guardian account and documented consent are confirmed. Under-13 accounts remain blocked until DCDS has an approved Zero Data Retention arrangement and the additional child-safety requirements are complete. Never place identity numbers or private family details in review notes.</div>
+<div id="status" class="status" role="status" aria-live="polite">Checking administrator access…</div>
+<div class="controls"><select id="statusFilter" aria-label="Filter requests"><option value="all">All requests</option><option value="pending">Pending review</option><option value="approved">Approved</option><option value="blocked">Blocked</option><option value="rejected">Rejected</option></select><button id="refresh" type="button">Refresh requests</button></div>
+<section id="requestList" class="list" aria-live="polite"></section>
+</main>
+<script>
+(async()=>{
+ const URL="https://qxsenflgaweeadvggnyp.supabase.co";
+ const KEY="sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+ const db=window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+ const status=document.getElementById("status"),list=document.getElementById("requestList"),filter=document.getElementById("statusFilter");
+ let adminUser=null,rows=[];
+ function msg(value,type=""){status.textContent=value;status.className="status "+type;}
+ function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));}
+ async function guardianIsApprovedAdult(id){
+  const {data,error}=await db.rpc("dcds_ai_guardian_is_approved_adult",{p_guardian_user_id:id});
+  if(error)throw new Error("Guardian account check failed. Confirm that the eligibility migration is deployed.");
+  return data===true;
+ }
+ function render(row){
+  const card=document.createElement("article");card.className="card";
+  const teen=row.age_band==="13_17",under13=row.age_band==="under_13",adult=row.age_band==="18_plus";
+  const options=under13?'<option value="blocked">blocked</option>':'<option value="pending">pending</option><option value="approved">approved</option><option value="rejected">rejected</option>';
+  const guardian=row.guardian_user_id||"",reference=row.guardian_consent_reference||"";
+  card.innerHTML='<div class="card-head"><div><span class="badge">'+esc(row.access_status.replaceAll("_"," "))+'</span><p class="meta">Account: '+esc(row.user_id)+'</p><p class="meta">Age band: '+esc(row.age_band.replaceAll("_"," "))+'</p><p class="meta">Guardian consent: '+esc(row.guardian_consent_status.replaceAll("_"," "))+'</p><p class="meta">Submitted: '+esc(new Date(row.created_at).toLocaleString())+'</p></div><span class="meta">'+(row.reviewed_at?'Reviewed '+esc(new Date(row.reviewed_at).toLocaleString()):'Awaiting review')+'</span></div>'+
+  (row.review_note?'<p class="meta">Previous review note: '+esc(row.review_note)+'</p>':'')+
+  '<div class="grid"><div><label>Access decision</label><select class="decision">'+options+'</select></div>'+
+  '<label class="checkrow"><input class="age-verified" type="checkbox"><span>I completed DCDS age assurance for this account.</span></label>'+
+  (teen?'<div><label>Verified adult guardian account UUID</label><input class="guardian-id" maxlength="36" value="'+esc(guardian)+'" placeholder="Guardian DCDS account UUID"></div><div><label>Internal guardian-consent evidence reference</label><input class="consent-ref" maxlength="120" value="'+esc(reference)+'" placeholder="DCDS evidence reference"></div><label class="checkrow"><input class="guardian-verified" type="checkbox"><span>I verified this guardian’s consent through the official DCDS process.</span></label>':'')+
+  (under13?'<div class="checkrow">Under-13 access is blocked. This page cannot approve it; DCDS needs the approved ZDR and separate child-safety release first.</div>':'')+
+  '<div><label>Administrator review note</label><textarea class="review-note" maxlength="500" placeholder="Record the checks completed, without storing identity numbers or sensitive family details.">'+esc(row.review_note||"")+'</textarea></div></div>';
+  const decision=card.querySelector(".decision");decision.value=under13?"blocked":row.access_status;
+  if(under13)decision.disabled=true;
+  const ageCheck=card.querySelector(".age-verified"),guardianCheck=card.querySelector(".guardian-verified"),guardianId=card.querySelector(".guardian-id"),consentRef=card.querySelector(".consent-ref"),note=card.querySelector(".review-note");
+  const actions=document.createElement("div");actions.className="actions";
+  const save=document.createElement("button");save.type="button";save.textContent="Save review";
+  save.addEventListener("click",async()=>{
+   save.disabled=true;save.textContent="Saving…";
+   try{
+    const d=decision.value,noteValue=note.value.trim();
+    if(noteValue.length<8)throw new Error("Add a brief, non-sensitive review note (at least 8 characters).");
+    const update={reviewed_by:adminUser.id,reviewed_at:new Date().toISOString(),review_note:noteValue.slice(0,500)};
+    if(adult){
+     if(d==="approved"&&!ageCheck.checked)throw new Error("Complete the DCDS age review before approving this account.");
+     update.access_status=d;update.guardian_consent_status="not_required";
+     update.guardian_user_id=null;update.guardian_consent_reference=null;update.guardian_consent_at=null;
+    }else if(teen){
+     if(d==="approved"){
+      if(!ageCheck.checked||!guardianCheck.checked)throw new Error("Verify both age and guardian consent before approval.");
+      if(!guardianId.value.trim()||!consentRef.value.trim())throw new Error("Enter the adult guardian account UUID and internal consent reference.");
+      if(!(await guardianIsApprovedAdult(guardianId.value.trim())))throw new Error("The nominated guardian must have a separately approved adult DCDS account.");
+      update.access_status="approved";update.guardian_consent_status="verified";
+      update.guardian_user_id=guardianId.value.trim();update.guardian_consent_reference=consentRef.value.trim();
+      update.guardian_consent_at=new Date().toISOString();
+     }else{
+      update.access_status=d;update.guardian_consent_status=d==="rejected"?"rejected":"pending";
+      update.guardian_user_id=null;update.guardian_consent_reference=null;update.guardian_consent_at=null;
+     }
+    }else{
+     update.access_status="blocked";update.guardian_consent_status="pending";
+     update.guardian_user_id=null;update.guardian_consent_reference=null;update.guardian_consent_at=null;
+    }
+    const {error}=await db.from("dcds_ai_access_eligibility").update(update).eq("user_id",row.user_id);
+    if(error)throw new Error("Could not save the review. Check your admin privileges and database migration.");
+    msg("Eligibility review updated.","success");await load();
+   }catch(error){msg(error.message||"Review failed.","error");save.disabled=false;save.textContent="Save review";}
+  });
+  actions.append(save);card.append(actions);return card;
+ }
+ async function load(){
+  list.replaceChildren();msg("Loading eligibility requests…");
+  const {data,error}=await db.from("dcds_ai_access_eligibility").select("user_id,age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_reference,guardian_consent_at,created_at,reviewed_at,review_note").order("created_at",{ascending:false}).limit(200);
+  if(error){msg("Could not load requests. Confirm the migration and administrator permissions.","error");return;}
+  rows=data||[];const wanted=filter.value,visible=rows.filter(r=>wanted==="all"||r.access_status===wanted);
+  if(!visible.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="No access review requests match this filter.";list.append(empty);}
+  else visible.forEach(r=>list.append(render(r)));
+  msg(visible.length+" access review request(s) displayed.","success");
+ }
+ document.getElementById("refresh").addEventListener("click",load);
+ filter.addEventListener("change",load);
+ const {data:{session},error:sessionError}=await db.auth.getSession();
+ if(sessionError||!session?.user){msg("Please sign in with an authorised DCDS administrator account.","error");return;}
+ const {data:isAdmin,error:adminError}=await db.rpc("is_dcds_admin");
+ if(adminError||isAdmin!==true){msg("Access denied. This page is for authorised DCDS administrators only.","error");return;}
+ adminUser=session.user;await load();
+})();
+</script></body></html>
