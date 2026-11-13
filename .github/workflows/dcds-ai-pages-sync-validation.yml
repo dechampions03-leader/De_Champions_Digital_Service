@@ -9,6 +9,7 @@ on:
       - "dcds-ai-access-review.html"
       - "admin-notifications.html"
       - "student-dashboard.html"
+      - "student-management.html"
       - "privacy-policy.html"
       - "index.html"
       - ".github/workflows/dcds-ai-pages-sync-validation.yml"
@@ -35,6 +36,7 @@ jobs:
               "dashboard": Path("student-dashboard.html").read_text(encoding="utf-8"),
               "privacy": Path("privacy-policy.html").read_text(encoding="utf-8"),
               "home": Path("index.html").read_text(encoding="utf-8"),
+              "student-management": Path("student-management.html").read_text(encoding="utf-8"),
           }
           production_url = "https://qxsenflgaweeadvggnyp.supabase.co"
           development_ref = "tjgsxbmkpvktlqulbktv"
@@ -47,6 +49,7 @@ jobs:
               "Admin access review screen is noindex": "noindex" in files["review"].lower() and "nofollow" in files["review"].lower(),
               "Admin Centre links to the access review screen": 'href="dcds-ai-access-review.html"' in files["admin"],
               "Student dashboard links to DCDS AI": 'href="ai-learning-assistant.html?source=student-dashboard"' in files["dashboard"],
+              "Admin dashboard links directly to AI Access Review": 'href="dcds-ai-access-review.html"' in files["student-management"] and "is_dcds_admin" in files["student-management"],
               "Homepage retains its public AI entry point": "ai-learning-assistant.html" in files["home"],
               "Privacy notice identifies the Gemini provider": "Google Gemini API" in files["privacy"],
               "Privacy notice warns about free-tier human review": "human reviewers" in files["privacy"].lower(),
