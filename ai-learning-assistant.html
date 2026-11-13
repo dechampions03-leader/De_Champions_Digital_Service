@@ -403,7 +403,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    channel.addEventListener('close',()=>{clearTimeout(timer);reject(new Error('The natural voice connection closed before playback started.'));},{once:true});
   });
  }
- async async function speakText(text,button){
+ async function speakText(text,button){
   const spoken=String(text||'').replace(/\s+/g,' ').trim();
   if(!spoken)return;
   if(activeSpeechButton===button){
