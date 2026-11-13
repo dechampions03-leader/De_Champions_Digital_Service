@@ -175,6 +175,10 @@ jobs:
               "under-13 remains blocked unless ZDR gate is explicitly set":
                   "DCDS_AI_UNDER_13_ZDR_ENABLED" in function
                   and "approvedUnder13" in function,
+              "teen AI access remains disabled until a separate youth-safety release":
+                  'Deno.env.get("DCDS_AI_TEENS_ENABLED") === "true"' in function
+                  and "const TEEN_AI_ACCESS_ENABLED = false;" in page
+                  and "DCDS AI access for ages 13–17 is not enabled yet." in page,
               "eligibility gate runs before provider generation":
                   function.index('from("dcds_ai_access_eligibility")') < function.index('https://api.openai.com/v1/responses'),
               "per-minute and daily caps are explicit":
@@ -233,7 +237,7 @@ jobs:
               "memory-001", "memory-002", "memory-003", "memory-004", "memory-005",
               "identity-002", "clarification-002", "voice-001", "voice-002",
               "resource-001", "resource-002", "resource-003", "resource-004", "resource-005", "access-003",
-              "age-001", "age-002", "age-003", "age-004",
+              "age-001", "age-002", "age-003", "age-004", "age-005",
               "safety-001", "safety-002", "safety-003", "provider-001",
               "cost-001", "privacy-002",
           }
