@@ -32,6 +32,28 @@ main{max-width:1160px;margin:0 auto;padding:26px 18px 50px}.hero{position:relati
 footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;padding:22px 10px 6px}footer strong{display:block;color:#6c348e;letter-spacing:.17em;margin-top:7px}
 @media(max-width:850px){.layout{grid-template-columns:1fr}.side-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.side-card{margin:0}}
 @media(max-width:580px){.top{padding:14px}.brand{font-size:9px}.top a{font-size:10px}.top-actions{gap:8px}main{padding:18px 12px 38px}.hero{border-radius:19px}.messages{height:54vh;min-height:320px;padding:13px}.bubble{max-width:90%;font-size:12px}.side-column{grid-template-columns:1fr}.send{padding:13px}.composer{padding:10px}}
+
+.chat-tools{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line);background:#fcf9ff}
+.chat-tools[hidden],.history-panel[hidden],.memory-panel[hidden]{display:none}
+.tool-btn{border:1px solid #e2d2f1;border-radius:999px;background:#fff;color:#5c258e;padding:8px 13px;font:800 11px 'DM Sans',sans-serif;cursor:pointer}
+.history-panel,.memory-panel{padding:13px 15px;border-bottom:1px solid var(--line);background:#fdfaff}
+.panel-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px;color:#42146e;font-size:12px;font-weight:800}
+.panel-action{border:0;background:transparent;color:#8b3e55;font:700 10px 'DM Sans',sans-serif;cursor:pointer}
+.conversation-list{display:grid;gap:7px;max-height:240px;overflow:auto}
+.history-item{display:flex;align-items:center;gap:8px;padding:8px 9px;border:1px solid #eadff2;border-radius:11px;background:#fff}
+.history-open{flex:1;min-width:0;border:0;background:transparent;color:#42215e;text-align:left;cursor:pointer;font:12px 'DM Sans',sans-serif}
+.history-open strong,.history-open small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.history-open small{margin-top:4px;color:#93869f;font-size:9px}
+.history-delete{border:1px solid #f0dfe5;border-radius:8px;padding:6px 8px;background:#fff;color:#9b4054;font:700 10px 'DM Sans',sans-serif;cursor:pointer}
+.empty-state{margin:6px 2px;color:#897b95;font-size:11px;line-height:1.6}
+.memory-panel label{display:block;margin-bottom:7px;color:#63437d;font-size:11px;font-weight:700}
+.memory-panel textarea{display:block;width:100%;min-height:78px;resize:vertical;border:1px solid #e3d6ef;border-radius:11px;padding:10px;font:12px/1.6 'DM Sans',sans-serif;color:var(--ink)}
+.memory-help{display:block;margin-top:6px;color:#93869f;font-size:9px;line-height:1.5}
+.memory-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px}
+.memory-actions div{display:flex;gap:7px}
+.memory-actions button{border:1px solid #e2d2f1;border-radius:9px;padding:8px 10px;background:#fff;color:#5c258e;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
+.memory-actions button.primary{border-color:#6b2aa7;background:#6827a4;color:#fff}
+
 </style>
 </head>
 <body>
@@ -43,7 +65,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  <section class="hero">
   <div class="eyebrow">ONE BRAIN · ONE KNOWLEDGE BASE · ONE AI SERVICE</div>
   <h1>Your DCDS AI Learning Assistant.</h1>
-  <p>The same DCDS assistant is opened from the main website and your student dashboard. It shares one central brain, one knowledge source and one secure AI connection. Your conversation stays in this page session.</p>
+  <p>The same DCDS assistant is opened from the main website and your student dashboard. Verified students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note. Visitor conversations remain temporary.</p>
   <div class="shared-pill">✦ SHARED DCDS AI EXPERIENCE</div>
  </section>
  <div class="layout">
@@ -52,6 +74,22 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="assistant-mark"><div class="assistant-icon">🤖</div><div><strong>DCDS AI Companion</strong><small id="accountLabel">Verifying your student account…</small></div></div>
     <button class="new-chat" id="newChat" type="button">＋ New chat</button>
    </div>
+      <div class="chat-tools" id="studentTools" hidden>
+    <button class="tool-btn" id="historyToggle" type="button">◷ Conversation history</button>
+    <button class="tool-btn" id="memoryToggle" type="button">✦ Learning memory</button>
+   </div>
+   <section class="history-panel" id="historyPanel" hidden aria-label="Saved DCDS AI conversations">
+    <div class="panel-heading"><span>Your saved conversations</span><button class="panel-action" id="clearAllConversations" type="button">Delete all</button></div>
+    <div class="conversation-list" id="conversationList"><p class="empty-state">Loading your conversations…</p></div>
+    <small class="memory-help">Only verified accounts can save chats. Each conversation is private to its owner. Delete a chat to remove its messages.</small>
+   </section>
+   <section class="memory-panel" id="memoryPanel" hidden aria-label="Saved learning memory">
+    <div class="panel-heading"><span>Your learning memory</span></div>
+    <label for="learningMemoryInput">What should DCDS AI remember when you start a fresh chat?</label>
+    <textarea id="learningMemoryInput" maxlength="1200" rows="3" placeholder="For example: I am a beginner in graphic design, I use an Android phone, and I prefer step-by-step explanations with practical exercises."></textarea>
+    <small class="memory-help">This note is optional, editable and used to personalise new student chats. Do not save passwords, OTPs, payment details or private account information. Maximum 1,200 characters.</small>
+    <div class="memory-actions"><button id="clearLearningMemory" type="button">Clear memory</button><div><button class="primary" id="saveLearningMemory" type="button">Save memory</button></div></div>
+   </section>
    <div class="messages" id="messages" role="log" aria-live="polite">
     <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, explore the DCDS catalogue and find the right support route. What would you like to work on today?</div></div></div>
    </div>
@@ -79,7 +117,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    <section class="side-card">
     <h2>One shared assistant</h2>
     <p>The homepage, student dashboard and admin dashboard open the same protected DCDS AI service. The server determines whether a session is a visitor, verified student or authorised administrator; the browser cannot select its own role.</p>
-    <div class="notice"><strong>Privacy reminder</strong>Do not enter passwords, OTPs, card details, bank information or private student records. If DCDS configures the Gemini API free tier, submitted content may be used by Google to improve its products. Keep chats to general learning and public DCDS information. Do not submit personal, payment or student-account information.</div>
+    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Visitor chats remain temporary. Do not enter passwords, OTPs, card details, bank information or private student records. If DCDS uses the Gemini API free tier, submitted content may be used by Google to improve its products. Keep chats to general learning and public DCDS information.</div>
    </section>
    <section class="side-card">
     <h2>Need human support?</h2>
@@ -95,7 +133,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 (async function(){
  const SUPABASE_URL='https://tjgsxbmkpvktlqulbktv.supabase.co';
  const SUPABASE_PUBLISHABLE_KEY='sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn';
- const loginUrl='index.html?login=required&next='+encodeURIComponent('ai-learning-assistant.html');
+ const loginUrl='index.html';
  const statusEl=document.getElementById('status');
  const messagesEl=document.getElementById('messages');
  const form=document.getElementById('chatForm');
@@ -106,15 +144,34 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  const captchaPanel=document.getElementById('visitorCaptcha');
  const captchaHint=document.getElementById('captchaHint');
  const captchaWidget=document.getElementById('turnstileWidget');
+ const studentTools=document.getElementById('studentTools');
+ const historyPanel=document.getElementById('historyPanel');
+ const historyList=document.getElementById('conversationList');
+ const memoryPanel=document.getElementById('memoryPanel');
+ const memoryInput=document.getElementById('learningMemoryInput');
  const conversation=[];
- let client;
+ let client=null;
+ let currentUser=null;
+ let isPersistentStudent=false;
+ let activeConversationId=null;
  let turnstileWidgetId=null;
- function setStatus(message,isError=false){statusEl.textContent=message;statusEl.classList.toggle('error',isError);}
+
+ const welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, explore the DCDS catalogue and find the right support route. What would you like to work on today?";
+
+ function setStatus(message,isError=false){
+  statusEl.textContent=message;
+  statusEl.classList.toggle('error',isError);
+ }
  function loadTurnstile(){
   if(window.turnstile)return Promise.resolve();
   return new Promise((resolve,reject)=>{
    let script=document.getElementById('dcds-turnstile-script');
-   if(!script){script=document.createElement('script');script.id='dcds-turnstile-script';script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';script.async=true;script.defer=true;}
+   if(!script){
+    script=document.createElement('script');
+    script.id='dcds-turnstile-script';
+    script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
+    script.async=true;script.defer=true;
+   }
    script.addEventListener('load',()=>window.turnstile?resolve():reject(new Error('Turnstile did not initialise.')),{once:true});
    script.addEventListener('error',()=>reject(new Error('The security verification service could not load.')),{once:true});
    if(!script.isConnected)document.head.appendChild(script);
@@ -139,8 +196,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    captchaHint.textContent='Complete the check below to continue.';
    try{
     turnstileWidgetId=window.turnstile.render(captchaWidget,{
-     sitekey:siteKey,
-     theme:'light',action:'dcds_auth',
+     sitekey:siteKey,theme:'light',action:'dcds_auth',
      callback:token=>finish(resolve,token),
      'error-callback':()=>finish(reject,new Error('The security check failed to load. Please refresh and try again.')),
      'expired-callback':()=>{captchaHint.textContent='The security check expired. Please complete it again.';}
@@ -149,28 +205,181 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   });
  }
  function addMessage(role,text){
-  const row=document.createElement('div');row.className='message '+(role==='user'?'user':'assistant');
-  const wrap=document.createElement('div');const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;wrap.appendChild(bubble);
-  row.appendChild(wrap);messagesEl.appendChild(row);messagesEl.scrollTop=messagesEl.scrollHeight;
+  const row=document.createElement('div');
+  row.className='message '+(role==='user'?'user':'assistant');
+  const wrap=document.createElement('div');
+  const bubble=document.createElement('div');
+  bubble.className='bubble';
+  bubble.textContent=String(text??'');
+  wrap.appendChild(bubble);
+  row.appendChild(wrap);
+  messagesEl.appendChild(row);
+  messagesEl.scrollTop=messagesEl.scrollHeight;
  }
  function resetChat(){
-  conversation.length=0;messagesEl.replaceChildren();
-  addMessage('assistant',"Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, explore the DCDS catalogue and find the right support route. What would you like to work on today?");
+  activeConversationId=null;
+  conversation.length=0;
+  messagesEl.replaceChildren();
+  addMessage('assistant',welcomeMessage);
+  historyPanel.hidden=true;
+  memoryPanel.hidden=true;
   input.focus();
  }
+ function closePanels(){
+  historyPanel.hidden=true;
+  memoryPanel.hidden=true;
+ }
+ function historyDate(value){
+  const date=new Date(value);
+  return Number.isNaN(date.getTime())?'':date.toLocaleString();
+ }
+ async function loadConversationList(){
+  if(!isPersistentStudent)return;
+  const {data,error}=await client
+   .from('dcds_ai_conversations')
+   .select('id,title,last_message_at')
+   .order('last_message_at',{ascending:false})
+   .limit(30);
+  if(error){
+   console.error('DCDS saved conversation list could not load:',error.message);
+   historyList.replaceChildren();
+   const note=document.createElement('p');note.className='empty-state';
+   note.textContent='Saved conversations are temporarily unavailable. Your chat access is unchanged.';
+   historyList.appendChild(note);
+   return;
+  }
+  historyList.replaceChildren();
+  if(!data?.length){
+   const empty=document.createElement('p');empty.className='empty-state';
+   empty.textContent='No saved conversations yet. Start chatting and your first conversation will appear here.';
+   historyList.appendChild(empty);
+   return;
+  }
+  for(const item of data){
+   const row=document.createElement('div');row.className='history-item';
+   const open=document.createElement('button');open.type='button';open.className='history-open';
+   const title=document.createElement('strong');title.textContent=item.title||'DCDS conversation';
+   const date=document.createElement('small');date.textContent=historyDate(item.last_message_at);
+   open.append(title,date);
+   open.addEventListener('click',()=>openConversation(item.id));
+   const remove=document.createElement('button');remove.type='button';remove.className='history-delete';
+   remove.textContent='Delete';remove.setAttribute('aria-label','Delete conversation '+(item.title||''));
+   remove.addEventListener('click',()=>deleteConversation(item.id));
+   row.append(open,remove);
+   historyList.appendChild(row);
+  }
+ }
+ async function openConversation(id){
+  if(!isPersistentStudent)return;
+  setStatus('Opening your saved conversation…');
+  const {data:owned,error:ownedError}=await client
+   .from('dcds_ai_conversations').select('id,title').eq('id',id).maybeSingle();
+  if(ownedError||!owned){
+   setStatus('This saved conversation could not be opened.',true);
+   return;
+  }
+  const {data:rows,error}=await client
+   .from('dcds_ai_messages')
+   .select('role,content,created_at')
+   .eq('conversation_id',id)
+   .order('created_at',{ascending:true})
+   .limit(250);
+  if(error){
+   setStatus('Your saved messages could not be loaded. Please try again.',true);
+   return;
+  }
+  activeConversationId=id;
+  conversation.length=0;
+  messagesEl.replaceChildren();
+  if(!rows?.length)addMessage('assistant',welcomeMessage);
+  for(const row of rows||[]){
+   const role=row.role==='user'?'user':'model';
+   conversation.push({role,text:row.content});
+   addMessage(role==='user'?'user':'assistant',row.content);
+  }
+  closePanels();
+  setStatus('Reopened: '+(owned.title||'Saved conversation')+'. You can continue where you left off.');
+  input.focus();
+ }
+ async function deleteConversation(id){
+  if(!isPersistentStudent||!window.confirm('Delete this conversation and all its messages? This cannot be undone.'))return;
+  const {error}=await client.from('dcds_ai_conversations').delete().eq('id',id);
+  if(error){
+   setStatus('The conversation could not be deleted. Please try again.',true);
+   return;
+  }
+  if(activeConversationId===id)resetChat();
+  await loadConversationList();
+  setStatus('Conversation deleted.');
+ }
+ async function clearAllConversations(){
+  if(!isPersistentStudent||!window.confirm('Delete all your saved DCDS AI conversations? Your separate learning-memory note will remain. This cannot be undone.'))return;
+  const {error}=await client.from('dcds_ai_conversations').delete().eq('user_id',currentUser.id);
+  if(error){
+   setStatus('Your saved conversations could not be cleared.',true);
+   return;
+  }
+  resetChat();
+  await loadConversationList();
+  setStatus('All saved conversations have been deleted. Your learning-memory note was kept.');
+ }
+ async function loadLearningMemory(){
+  if(!isPersistentStudent)return;
+  const {data,error}=await client
+   .from('dcds_ai_student_memory')
+   .select('learning_context')
+   .eq('user_id',currentUser.id)
+   .maybeSingle();
+  if(error){
+   console.error('DCDS learning memory could not load:',error.message);
+   setStatus('Your learning memory could not be loaded. Saved conversations remain available.',true);
+   return;
+  }
+  memoryInput.value=data?.learning_context||'';
+ }
+ async function saveLearningMemory(){
+  if(!isPersistentStudent)return;
+  const value=memoryInput.value.trim();
+  if(value.length>1200){
+   setStatus('Learning memory must be 1,200 characters or fewer.',true);
+   return;
+  }
+  if(!value){
+   const {error}=await client.from('dcds_ai_student_memory').delete().eq('user_id',currentUser.id);
+   if(error){setStatus('Your learning memory could not be cleared.',true);return;}
+   setStatus('Your saved learning memory is now empty.');
+   return;
+  }
+  const {error}=await client.from('dcds_ai_student_memory').upsert(
+   {user_id:currentUser.id,learning_context:value},
+   {onConflict:'user_id'}
+  );
+  if(error){setStatus('Your learning memory could not be saved. Please try again.',true);return;}
+  setStatus('Learning memory saved. New chats can use this context.');
+ }
+ async function clearLearningMemory(){
+  if(!isPersistentStudent||!window.confirm('Clear your saved learning-memory note? Conversation history will remain.'))return;
+  const {error}=await client.from('dcds_ai_student_memory').delete().eq('user_id',currentUser.id);
+  if(error){setStatus('Your learning memory could not be cleared.',true);return;}
+  memoryInput.value='';
+  setStatus('Your saved learning-memory note has been cleared.');
+ }
+
  try{
   if(!window.supabase?.createClient){location.replace(loginUrl);return;}
-  client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+  client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+   auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+  });
   const {data:{session},error}=await client.auth.getSession();
-  if(error) throw error;
-  let user=session?.user??null;
-  if(!user){
+  if(error)throw error;
+  currentUser=session?.user??null;
+  if(!currentUser){
    try{
     const captchaToken=await getVisitorCaptchaToken();
     const {data:visitor,error:visitorError}=await client.auth.signInAnonymously({options:{captchaToken}});
     if(visitorError)throw visitorError;
-    user=visitor?.user??null;
-    if(!user)throw new Error('Visitor sign-in did not return a user.');
+    currentUser=visitor?.user??null;
+    if(!currentUser)throw new Error('Visitor sign-in did not return a user.');
     captchaPanel.hidden=true;
    }catch(visitorError){
     const reason=String(visitorError?.message||'');
@@ -186,33 +395,105 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     if(turnstileWidgetId!==null&&window.turnstile){try{window.turnstile.reset(turnstileWidgetId);}catch(_){}}
    }
   }
-  if(!user){setStatus('Please sign in to continue.',true);return;}
-  const verified=Boolean(user.email_confirmed_at||user.phone_confirmed_at);
-  document.getElementById('accountLabel').textContent=user.is_anonymous?'Visitor session · role checked securely':'Signed-in session · role checked securely';
-  setStatus(verified?'Your DCDS account is signed in. Student or administrator access is checked securely by the AI service.':'Your visitor session is ready. The AI service will limit this session to public DCDS information.');
- }catch(error){setStatus('We could not verify your account. Please sign in again.',true);return;}
+  if(!currentUser){setStatus('Please sign in to continue.',true);return;}
+
+  const verified=Boolean(currentUser.email_confirmed_at||currentUser.phone_confirmed_at);
+  let isAdmin=false;
+  let adminCheckAvailable=false;
+  if(!currentUser.is_anonymous&&verified){
+   const {data,error:adminError}=await client.rpc('is_dcds_admin');
+   if(!adminError){isAdmin=data===true;adminCheckAvailable=true;}
+  }
+  isPersistentStudent=!currentUser.is_anonymous&&verified&&adminCheckAvailable&&!isAdmin;
+  if(isPersistentStudent){
+   document.getElementById('accountLabel').textContent='Student · Learning Assistant';
+   studentTools.hidden=false;
+   await Promise.all([loadConversationList(),loadLearningMemory()]);
+   setStatus('Verified student session. Your saved conversations are private to this account. Visitor chats are temporary.');
+  }else if(isAdmin){
+   document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
+   setStatus('Administrator session verified. This assistant remains read-only and does not change account or payment records.');
+  }else{
+   document.getElementById('accountLabel').textContent=currentUser.is_anonymous?'Visitor session · role checked securely':'Signed-in session · role checked securely';
+   setStatus('Your visitor session is ready. Only public DCDS information is available in this mode.');
+  }
+ }catch(error){
+  setStatus('We could not verify your account. Please sign in again.',true);
+  return;
+ }
+
  input.addEventListener('input',()=>{charCount.textContent=input.value.length.toLocaleString()+' / 2,500';});
- input.addEventListener('keydown',event=>{if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();form.requestSubmit();}});
+ input.addEventListener('keydown',event=>{
+  if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();form.requestSubmit();}
+ });
  document.getElementById('newChat').addEventListener('click',resetChat);
+ document.getElementById('historyToggle').addEventListener('click',()=>{
+  if(!isPersistentStudent)return;
+  historyPanel.hidden=!historyPanel.hidden;
+  memoryPanel.hidden=true;
+  if(!historyPanel.hidden)loadConversationList();
+ });
+ document.getElementById('memoryToggle').addEventListener('click',()=>{
+  if(!isPersistentStudent)return;
+  memoryPanel.hidden=!memoryPanel.hidden;
+  historyPanel.hidden=true;
+  if(!memoryPanel.hidden)memoryInput.focus();
+ });
+ document.getElementById('clearAllConversations').addEventListener('click',clearAllConversations);
+ document.getElementById('saveLearningMemory').addEventListener('click',saveLearningMemory);
+ document.getElementById('clearLearningMemory').addEventListener('click',clearLearningMemory);
+
  form.addEventListener('submit',async event=>{
   event.preventDefault();
-  const message=input.value.trim();if(!message||sendButton.disabled)return;
+  const message=input.value.trim();
+  if(!message||sendButton.disabled)return;
   const previousHistory=conversation.slice(-10).map(item=>({role:item.role,text:item.text}));
-  conversation.push({role:'user',text:message});addMessage('user',message);
-  input.value='';charCount.textContent='0 / 2,500';sendButton.disabled=true;input.disabled=true;typing.hidden=false;setStatus('DCDS AI is preparing your answer…');
+  conversation.push({role:'user',text:message});
+  addMessage('user',message);
+  input.value='';charCount.textContent='0 / 2,500';
+  sendButton.disabled=true;input.disabled=true;typing.hidden=false;
+  setStatus('DCDS AI is preparing your answer…');
+  const requestBody={message,history:previousHistory};
+  if(activeConversationId)requestBody.conversation_id=activeConversationId;
   try{
-   const {data,error}=await client.functions.invoke('dcds-ai-chat',{body:{message,history:previousHistory}});
+   const {data,error}=await client.functions.invoke('dcds-ai-chat',{body:requestBody});
    if(error)throw error;
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
-   conversation.push({role:'model',text:data.answer});addMessage('assistant',data.answer);
+   conversation.push({role:'model',text:data.answer});
+   addMessage('assistant',data.answer);
    const roleLabels={visitor:'Visitor · Public DCDS Assistant',student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot'};
    document.getElementById('accountLabel').textContent=roleLabels[data.role]||'Shared DCDS AI';
-   setStatus('Connected to the shared DCDS AI service.');
+   if(data.role==='student'&&data.history_saved&&data.conversation_id){
+    activeConversationId=data.conversation_id;
+    await loadConversationList();
+    setStatus('Connected. This conversation has been saved to your private DCDS chat history.');
+   }else if(data.role==='student'){
+    setStatus('Your answer is ready, but this turn could not be added to saved history. Please keep this page open and try again later.',true);
+   }else{
+    setStatus('Connected to the shared DCDS AI service. Visitor and administrator chats are temporary.');
+   }
   }catch(error){
    const messageText=String(error?.message||'').toLowerCase();
-   const friendly=messageText.includes('ai_not_configured')||messageText.includes('provider key')?'The shared AI service is built, but its provider API key has not yet been added to secure Supabase secrets. No key should be entered on this page.':messageText.includes('429')||messageText.includes('rate')?'You have reached the short-term message limit. Please wait a moment and try again.':'The AI service is temporarily unavailable. Please try again shortly.';
-   addMessage('assistant',friendly);setStatus(friendly,true);
-  }finally{typing.hidden=true;sendButton.disabled=false;input.disabled=false;input.focus();}
+   let serverMessage='';
+   try{
+    const response=error?.context;
+    if(response&&typeof response.json==='function'){
+     const payload=await response.json();
+     if(typeof payload?.error==='string')serverMessage=payload.error;
+    }
+   }catch(_){}
+   const friendly=serverMessage||(
+    messageText.includes('ai_not_configured')||messageText.includes('provider key')
+     ?'The shared AI service is built, but its provider API key has not yet been added to secure Supabase secrets. No key should be entered on this page.'
+     :messageText.includes('429')||messageText.includes('rate')
+      ?'DCDS AI has reached a request limit. Please wait before trying again.'
+      :'The AI service is temporarily unavailable. Please try again shortly.'
+   );
+   addMessage('assistant',friendly);
+   setStatus(friendly,true);
+  }finally{
+   typing.hidden=true;sendButton.disabled=false;input.disabled=false;input.focus();
+  }
  });
 })();
 </script>
