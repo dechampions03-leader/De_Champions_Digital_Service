@@ -663,8 +663,9 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
    conversation.push({role:'model',text:data.answer});
    addMessage('assistant',data.answer,Array.isArray(data.resources)?data.resources:inferResourceActions(data.answer));
-   const roleLabels={visitor:'Visitor · Public DCDS Assistant',student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot'};
-   document.getElementById('accountLabel').textContent=roleLabels[data.role]||'Shared DCDS AI';
+   const roleLabels={student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot'};
+   if(!roleLabels[data.role])throw new Error('This DCDS AI access role is not permitted.');
+   document.getElementById('accountLabel').textContent=roleLabels[data.role];
    if(data.role==='student'&&data.history_saved&&data.conversation_id){
     activeConversationId=data.conversation_id;
     await loadConversationList();
