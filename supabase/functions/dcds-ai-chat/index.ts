@@ -181,30 +181,93 @@ ${knowledge}`;
   const priorContext = priorUserContext(body.history);
   const userPrompt = priorContext + message;
 
-  let providerResponse: Response;
-  try {
-    providerResponse = await fetch(
-      "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(model) + ":generateContent",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
-        body: JSON.stringify({
-          systemInstruction: { parts: [{ text: systemInstruction }] },
-          contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-          generationConfig: { temperature: 0.65, maxOutputTokens: 1200 },
-        }),
-        signal: AbortSignal.timeout(30000),
-      },
-    );
-  } catch (error) {
-    console.error("DCDS AI provider request failed:", error);
-    return json({ success: false, error: "The AI provider could not be reached. Please try again." }, 502);
+  // Gemini can return 503 during temporary model-capacity spikes. Retry the
+  // configured primary once, then use a separately supported stable fallback.
+  // Do not retry or silently switch models on 400/401/403/429: those indicate
+  // request, credential, or quota issues that model switching will not solve.
+  const fallbackModel = "gemini-3.5-flash-lite";
+  const modelCandidates = model === fallbackModel ? [model] : [model, fallbackModel];
+  let providerResponse: Response | null = null;
+  let resolvedModel = model;
+  let lastProviderStatus = 503;
+
+  for (const candidate of modelCandidates) {
+    const attempts = candidate === model ? 2 : 1;
+    for (let attempt = 0; attempt < attempts; attempt++) {
+      try {
+        const response = await fetch(
+          "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(candidate) + ":generateContent",
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
+            body: JSON.stringify({
+              systemInstruction: { parts: [{ text: systemInstruction }] },
+              contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+              generationConfig: { temperature: 0.65, maxOutputTokens: 1200 },
+            }),
+            signal: AbortSignal.timeout(20000),
+          },
+        );
+
+        if (response.ok) {
+          providerResponse = response;
+          resolvedModel = candidate;
+          break;
+        }
+
+        const providerError = await response.text();
+        lastProviderStatus = response.status;
+        console.error(
+          "DCDS AI provider returned",
+          candidate,
+          response.status,
+          providerError.slice(0, 800),
+        );
+
+        if (response.status === 429) {
+          return json({
+            success: false,
+            error: "The DCDS AI provider has reached its current request limit. Please wait a little and try again.",
+          }, 429);
+        }
+
+        if (response.status === 401 || response.status === 403) {
+          return json({
+            success: false,
+            error: "The DCDS AI provider credentials need attention. Please contact DCDS support.",
+          }, 503);
+        }
+
+        if (response.status !== 500 && response.status !== 503) {
+          return json({
+            success: false,
+            error: "The DCDS AI could not process this request. Please try again later.",
+          }, 502);
+        }
+
+        if (attempt + 1 < attempts) {
+          await new Promise((resolve) => setTimeout(resolve, 750 * (attempt + 1)));
+        }
+      } catch (error) {
+        lastProviderStatus = 502;
+        console.error("DCDS AI provider request failed for", candidate, error);
+        if (attempt + 1 < attempts) {
+          await new Promise((resolve) => setTimeout(resolve, 750 * (attempt + 1)));
+        }
+      }
+    }
+
+    if (providerResponse) break;
+    if (candidate !== model) break;
+    console.warn("DCDS AI primary model unavailable; trying stable fallback model.");
   }
 
-  if (!providerResponse.ok) {
-    const providerError = await providerResponse.text();
-    console.error("DCDS AI provider returned", providerResponse.status, providerError.slice(0, 800));
-    return json({ success: false, error: "The AI provider is temporarily unavailable. Please try again later." }, 502);
+  if (!providerResponse) {
+    console.error("DCDS AI primary and fallback models are unavailable.", { lastProviderStatus });
+    return json({
+      success: false,
+      error: "DCDS AI is temporarily at capacity. Please try again shortly.",
+    }, 503);
   }
 
   const result = await providerResponse.json();
@@ -218,5 +281,5 @@ ${knowledge}`;
     return json({ success: false, error: "The AI did not return a response. Please rephrase your question." }, 502);
   }
 
-  return json({ success: true, answer, model, role });
+  return json({ success: true, answer, model: resolvedModel, role });
 });
