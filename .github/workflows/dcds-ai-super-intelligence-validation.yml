@@ -126,7 +126,7 @@ jobs:
               "voice dictation remains available through browser speech recognition":
                   "SpeechRecognition" in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
               "spoken replies use OpenAI Realtime rather than browser text-to-speech":
-                  "dcds-ai-speech-token" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  "dcds-ai-speech-session" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
                   and "speechSynthesis" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
               "OpenAI voice sessions use server-mediated WebRTC SDP exchange":
                   "https://api.openai.com/v1/realtime/calls" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
