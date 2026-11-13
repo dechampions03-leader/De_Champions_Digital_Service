@@ -12,6 +12,7 @@ on:
       - "student-management.html"
       - "privacy-policy.html"
       - "index.html"
+      - "ai-config/captcha-public-config.js"
       - ".github/workflows/dcds-ai-pages-sync-validation.yml"
 
 permissions:
@@ -36,6 +37,7 @@ jobs:
               "dashboard": Path("student-dashboard.html").read_text(encoding="utf-8"),
               "privacy": Path("privacy-policy.html").read_text(encoding="utf-8"),
               "home": Path("index.html").read_text(encoding="utf-8"),
+              "captcha": Path("ai-config/captcha-public-config.js").read_text(encoding="utf-8"),
               "student-management": Path("student-management.html").read_text(encoding="utf-8"),
           }
           production_url = "https://qxsenflgaweeadvggnyp.supabase.co"
@@ -51,6 +53,11 @@ jobs:
               "Student dashboard links to DCDS AI": 'href="ai-learning-assistant.html?source=student-dashboard"' in files["dashboard"],
               "Admin dashboard links directly to AI Access Review": 'href="dcds-ai-access-review.html"' in files["student-management"] and "is_dcds_admin" in files["student-management"],
               "Homepage retains its public AI entry point": "ai-learning-assistant.html" in files["home"],
+              "Main login page loads the Turnstile public configuration": 'src="ai-config/captcha-public-config.js"' in files["home"],
+              "Turnstile UI and token validation hooks are present": "dcdsCaptchaMarkup" in files["home"] and "getDcdsCaptchaToken" in files["home"],
+              "Turnstile widget is visible when enabled": 'appearance:"always"' in files["home"],
+              "Supabase signup, login and reset receive CAPTCHA tokens": "captchaToken" in files["home"] and "signInWithPassword(credentials,captchaToken?{captchaToken}:undefined)" in files["home"] and "resetPasswordForEmail(email,{redirectTo,...(captchaToken?{captchaToken}:{})})" in files["home"],
+              "Production CAPTCHA stays disabled until Supabase Auth secret is configured": 'authProtectionEnabled: false' in files["captcha"],
               "Privacy notice identifies the Gemini provider": "Google Gemini API" in files["privacy"],
               "Privacy notice warns about free-tier human review": "human reviewers" in files["privacy"].lower(),
               "Teen access remains disabled and under-13 blocked": "13–17" in files["privacy"] and "Under-13 AI access remains blocked" in files["privacy"],
@@ -61,7 +68,7 @@ jobs:
           if failures:
               raise SystemExit(f"{len(failures)} GitHub Pages release checks failed.")
 
-          for page_name in ("ai-learning-assistant.html", "dcds-ai-access-review.html"):
+          for page_name in ("index.html", "ai-learning-assistant.html", "dcds-ai-access-review.html"):
               html = Path(page_name).read_text(encoding="utf-8")
               scripts = re.findall(r"<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)</script>", html, re.I)
               if not scripts:
