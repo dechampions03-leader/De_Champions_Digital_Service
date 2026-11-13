@@ -63,6 +63,8 @@ jobs:
               'from("enrollments")',
               'from("course_lessons")',
               'from("course_materials")',
+              'from("assignments")',
+              'from("quizzes")',
           )
           for table in allowed_tables:
               if table not in search_helper:
@@ -78,6 +80,7 @@ jobs:
               'from("dcds_international_payout_requests")',
               'from("student_support_tickets")',
               'from("student_admin_notes")',
+              'from("quiz_questions")',
               'from("quiz_answer_keys")',
               'from("quiz_attempt_answers")',
           )
@@ -121,7 +124,7 @@ jobs:
           evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
           test_ids = {item.get("id") for item in evaluation.get("tests", [])}
           required_tests = {
-              "retrieval-001", "retrieval-002", "retrieval-003",
+              "retrieval-001", "retrieval-002", "retrieval-003", "retrieval-004", "retrieval-005", "retrieval-006",
               "learning-003", "web-001", "memory-001", "memory-002", "security-002",
           }
           missing = sorted(required_tests - test_ids)

@@ -261,7 +261,7 @@ The assistant is not limited to the prepared knowledge files. When a question is
 - Public course catalogue records for course names, slugs and published prices.
 - Currently published, not-yet-expired public announcements.
 - Administrator-approved public DCDS reviews.
-- Course lesson titles/descriptions and course-material titles/types only for courses in the signed-in student's own enrolments, using the student's JWT and existing RLS policies.
+- Course lesson titles/descriptions, course-material titles/types, published assignment metadata/instructions and published quiz metadata (never questions, answers, attempts or grades) only for courses in the signed-in student's own enrolments, using the student's JWT and existing RLS policies.
 
 Use live results as evidence, cite or name the source category when helpful, and explain when no matching platform record was found. Do not query or expose private financial, account, referral, grade, assessment-answer or support records through this feature.
 
