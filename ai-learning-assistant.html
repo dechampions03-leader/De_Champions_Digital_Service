@@ -486,7 +486,6 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   });
   if(/\bdcds general course\b/i.test(value))resources.push({label:'Open General Course',href:'general-course.html',kind:'course'});
   if(/\b(course catalogue|course catalog|browse courses|dcds courses)\b/i.test(value))resources.push({label:'Browse DCDS Courses',href:'index.html#courses',kind:'course'});
-  knownCourseResources.forEach(course=>{if(value.includes(course.title.toLowerCase())){const enrolled=knownEnrolledCourseSlugs.has(course.slug);resources.push({label:(enrolled?'Continue ':'Explore ')+course.title,href:enrolled?'learn.html?course='+encodeURIComponent(course.slug):'index.html#course-'+course.slug,kind:'course'});}});
   if(/\b(ambassador|referral|rewards|commission)\b/i.test(value))resources.push({label:'Open Ambassador & Rewards',href:'student-dashboard.html#ambassadorPanel',kind:'dashboard'});
   if(/\b(student dashboard|dashboard)\b/i.test(value))resources.push({label:'Open Student Dashboard',href:'student-dashboard.html',kind:'dashboard'});
   if(/\b(dcds support|contact support|support team|payment dispute|account access issue)\b/i.test(value))resources.push({label:'Contact DCDS Support',href:'https://wa.me/2348109146285',kind:'support'});
