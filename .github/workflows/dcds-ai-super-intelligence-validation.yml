@@ -147,8 +147,8 @@ jobs:
                   'return json({ success: true, sdp: answerSdp, voice: "marin" })' in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
                   and "client_secret" not in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
                   and "data.client_secret" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
-              "The browser connects to DCDS instead of calling OpenAI directly":
-                  "dcds-ai-speech-session" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+              "The public AI page does not invoke the dormant paid speech endpoint":
+                  "dcds-ai-speech-session" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
                   and "api.openai.com" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
               "natural voice tests are present":
                   "voice-002" in Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8")
