@@ -1,3 +1,5 @@
+// Production Gemini-backed runtime for DCDS AI.
+// Uses the existing Production Supabase Gemini secret and age-eligibility controls.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -39,6 +41,42 @@ async function loadKnowledge(): Promise<string> {
   return value;
 }
 
+// Conservative local guard for common identifiers, credentials and sensitive topics.
+// It is not a guarantee that all personal data can be detected; the UI and policy
+// also instruct learners not to submit personal, sensitive or confidential data.
+const restrictedPersonalDataPattern = /(?:[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|https?:\/\/|\+?\d[\d ()-]{7,}\d|\b(?:password|passcode|otp|one[- ]time code|card number|cvv|bank account|account number|bvn|nin|passport|home address|date of birth|\bdob\b|my name is|i live at|my phone|my email|medical record|diagnos(?:is|ed|tic)|medication|pregnan\w*|mental health|hiv|aids|religion|church|mosque|politic\w*|sexual orientation|criminal record|salary|income|debt)\b)/i;
+const thirdPartyPersonalContextPattern = /\b(?:my|our)\s+(?:child|son|daughter|wife|husband|spouse|partner|parent|mother|father|friend|relative|colleague|boss|employee|customer|client|patient|student|family|sibling|brother|sister|teacher|doctor|lawyer)\b/i;
+function containsRestrictedPersonalData(value: string): boolean {
+  return restrictedPersonalDataPattern.test(value) || thirdPartyPersonalContextPattern.test(value);
+}
+
+const safeLearningPreferencePattern = /^(?:step[- ]by[- ]step(?: explanations?)?|plain[- ]language explanations?|simple explanations?|detailed explanations?|short explanations?|visual explanations?|practical examples?|hands[- ]on exercises?|guided practice|project[- ]based learning|quizzes?|checklists?|real[- ]world examples?)$/i;
+function extractExplicitLearningPreference(message: string): string | null {
+  if (message.length > 2500 || containsRestrictedPersonalData(message)) return null;
+  const patterns: Array<{ pattern: RegExp; label: string; preferenceOnly?: boolean }> = [
+    { pattern: /\bI(?:'m| am) (?:a )?(beginner|intermediate|advanced) (?:in|at|with) ([^.!?\n]{2,70})/i, label: "Experience level" },
+    { pattern: /\bI prefer ([^.!?\n]{2,90})/i, label: "Learning preference", preferenceOnly: true },
+    { pattern: /\bMy learning goal is ([^.!?\n]{2,90})/i, label: "Learning goal" },
+    { pattern: /\bI(?:'m| am) learning ([^.!?\n]{2,80})/i, label: "Current learning topic" },
+    { pattern: /\bI use (?:an? )?(Android|iPhone|iPad|Windows|Mac|Linux)\b/i, label: "Device or platform" },
+  ];
+  for (const item of patterns) {
+    const match = message.match(item.pattern);
+    if (!match) continue;
+    const detail = match.slice(1).filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
+    if (!detail || detail.length > 110) continue;
+    if (item.preferenceOnly && !safeLearningPreferencePattern.test(detail)) continue;
+    return item.label + ": " + detail;
+  }
+  return null;
+}
+function mergeLearningContext(existing: string, candidate: string): string {
+  const current = existing.trim();
+  if (current.toLowerCase().includes(candidate.toLowerCase())) return current.slice(0, 1200);
+  const combined = [current, candidate].filter(Boolean).join("\n");
+  return combined.length <= 1200 ? combined : current;
+}
+
 function priorConversationContext(value: unknown): string {
   if (!Array.isArray(value)) return "";
   const excerpts = value.slice(-10).flatMap((item) => {
@@ -46,7 +84,7 @@ function priorConversationContext(value: unknown): string {
     const row = item as Record<string, unknown>;
     if ((row.role !== "user" && row.role !== "model") || typeof row.text !== "string") return [];
     const clean = row.text.trim().slice(0, 1000);
-    if (!clean) return [];
+    if (!clean || containsRestrictedPersonalData(clean)) return [];
     const speaker = row.role === "user" ? "Learner" : "Assistant";
     return [speaker + ": " + clean];
   });
@@ -104,18 +142,23 @@ Deno.serve(async (request: Request) => {
     return json({ success: false, error: "Please enter a message between 1 and 2,500 characters." }, 400);
   }
 
-  // Role is derived only from the verified Supabase user and the existing
-  // server-side is_dcds_admin() function. Never accept a browser-supplied role.
+  if (containsRestrictedPersonalData(message)) {
+    return json({
+      success: false,
+      code: "DCDS_AI_PRIVATE_DATA_NOT_ALLOWED",
+      error: "For privacy, do not send names, contact details, credentials, financial information, sensitive personal details or private information about another person to DCDS AI. Remove those details and ask a general learning question instead.",
+    }, 400);
+  }
+
+  // DCDS AI is members-only. Reject anonymous or unverified accounts,
+  // and never trust age, role or guardian values supplied by the browser.
   const anonymous = user.is_anonymous === true;
   const verifiedContact = Boolean(user.email_confirmed_at || user.phone_confirmed_at);
-
-  // Stage 1 is a controlled release for verified DCDS accounts only.
-  // Visitor access remains disabled until Production CAPTCHA and abuse limits
-  // have been separately qualified. Enforce this on the server, not just UI.
   if (anonymous || !verifiedContact) {
     return json({
       success: false,
-      error: "DCDS AI is currently available to verified DCDS students and administrators. Please sign in with a verified account.",
+      code: "DCDS_VERIFIED_ACCOUNT_REQUIRED",
+      error: "DCDS AI is available only to signed-in, contact-verified DCDS accounts.",
     }, 403);
   }
 
@@ -127,9 +170,95 @@ Deno.serve(async (request: Request) => {
   }
   if (isAdmin === true) role = "admin";
 
+  // Check server-side eligibility before quota consumption, saved history/memory
+  // reads, or any request to Gemini. A page-level lock is not authorization.
+  const { data: aiEligibility, error: eligibilityError } = await userClient
+    .from("dcds_ai_access_eligibility")
+    .select("age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_at,guardian_consent_reference")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (eligibilityError) {
+    console.error("DCDS AI eligibility check failed:", eligibilityError.message);
+    return json({
+      success: false,
+      code: "AI_ELIGIBILITY_UNAVAILABLE",
+      error: "DCDS AI access verification is temporarily unavailable. Please try again later.",
+    }, 503);
+  }
+
+  const approvedAdult = aiEligibility?.age_band === "18_plus"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "not_required";
+
+  let approvedAdultGuardian = false;
+  const guardianUserId = typeof aiEligibility?.guardian_user_id === "string"
+    ? aiEligibility.guardian_user_id
+    : null;
+
+  if (guardianUserId && aiEligibility?.guardian_consent_status === "verified") {
+    const { data: guardianIsAdult, error: guardianError } = await userClient.rpc(
+      "dcds_ai_guardian_is_approved_adult",
+      { p_guardian_user_id: guardianUserId },
+    );
+    if (guardianError) {
+      console.error("DCDS AI guardian eligibility check failed:", guardianError.message);
+      return json({
+        success: false,
+        code: "AI_GUARDIAN_CHECK_UNAVAILABLE",
+        error: "DCDS parent/guardian verification is temporarily unavailable.",
+      }, 503);
+    }
+    approvedAdultGuardian = guardianIsAdult === true;
+  }
+
+  const guardianConsentVerified = Boolean(
+    approvedAdultGuardian
+    && aiEligibility?.guardian_consent_at
+    && aiEligibility?.guardian_consent_reference
+  );
+
+  // Youth access remains off by default until DCDS approves its separate safeguards.
+  const teenAccessEnabled = Deno.env.get("DCDS_AI_TEENS_ENABLED") === "true";
+  const approvedTeen = teenAccessEnabled
+    && aiEligibility?.age_band === "13_17"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "verified"
+    && guardianConsentVerified;
+
+  const under13ZdrEnabled = Deno.env.get("DCDS_AI_UNDER_13_ZDR_ENABLED") === "true";
+  const approvedUnder13 = under13ZdrEnabled
+    && aiEligibility?.age_band === "under_13"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "verified"
+    && guardianConsentVerified;
+
+  if (!(approvedAdult || approvedTeen || approvedUnder13)) {
+    const under13 = aiEligibility?.age_band === "under_13";
+    return json({
+      success: false,
+      code: "AI_ACCESS_REVIEW_REQUIRED",
+      error: under13
+        ? "DCDS AI is not available for under-13 accounts until additional child-safety and Zero Data Retention requirements are approved."
+        : aiEligibility?.age_band === "13_17" && !teenAccessEnabled
+          ? "DCDS AI access for ages 13–17 is not enabled yet. Additional youth-safety, disclosure, monitoring and escalation reviews must be completed first."
+          : "DCDS AI access is awaiting an authorised age and, where required, parent/guardian consent review.",
+    }, 403);
+  }
+
+  // Check provider configuration before consuming a learner's allowance.
+  if (!geminiApiKey) {
+    return json({
+      success: false,
+      error: "The DCDS AI service is being prepared. Please try again later or contact DCDS support.",
+    }, 503);
+  }
+
   const rateLimit = role === "student" ? 10 : 15;
+  const dailyRateLimit = role === "student" ? 20 : 60;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
+    p_daily_limit: dailyRateLimit,
   });
   if (quotaError) {
     console.error("DCDS AI quota check failed:", quotaError.message);
@@ -137,13 +266,6 @@ Deno.serve(async (request: Request) => {
   }
   if (allowed !== true) {
     return json({ success: false, error: "Message limit reached. Please wait one minute and try again." }, 429);
-  }
-
-  if (!geminiApiKey) {
-    return json({
-      success: false,
-      error: "AI_NOT_CONFIGURED: the Gemini provider key has not yet been configured in Production Supabase secrets.",
-    }, 503);
   }
 
   let knowledge: string;
@@ -159,6 +281,7 @@ Deno.serve(async (request: Request) => {
   let requestedConversationId: string | null = null;
   let priorContext = "";
   let savedLearningContext = "";
+  let autoLearningEnabled = false;
 
   if (role === "student") {
     const rawConversationId = typeof body.conversation_id === "string"
@@ -205,14 +328,16 @@ Deno.serve(async (request: Request) => {
 
     const { data: memoryRow, error: memoryError } = await userClient
       .from("dcds_ai_student_memory")
-      .select("learning_context")
+      .select("learning_context,auto_learning_enabled")
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (memoryError) {
       console.error("DCDS AI student memory lookup failed:", memoryError.message);
     } else if (typeof memoryRow?.learning_context === "string") {
-      savedLearningContext = memoryRow.learning_context.trim().slice(0, 1200);
+      const candidateMemory = memoryRow.learning_context.trim().slice(0, 1200);
+      savedLearningContext = containsRestrictedPersonalData(candidateMemory) ? "" : candidateMemory;
+      autoLearningEnabled = memoryRow?.auto_learning_enabled === true;
     }
   } else {
     // Visitor/admin chats remain page-session only.
@@ -265,6 +390,7 @@ CORE IDENTITY AND BEHAVIOUR
 - Follow the DCDS Master Brain, Conversation Intelligence, Teaching Engine, Response Playbook and structured knowledge supplied below.
 - Use a professional, warm, respectful, encouraging and practical voice. Use clear English; explain unfamiliar terms simply.
 - Use Nigerian naira for DCDS prices. Do not invent prices, discounts, course inclusions, schedules, official syllabi, certificates, grades, employment or income guarantees.
+- Do not request, repeat or retain personal, sensitive, confidential or financial information. If the learner asks to share it, direct them to remove identifiers and use official secure DCDS support for account-specific matters.
 - Clearly distinguish proposed curriculum themes from official published lessons and materials.
 - If approved sources do not confirm an answer, say so and guide the person to official DCDS support.
 - Never claim to have checked an account, payment, enrolment, certificate, assignment, referral, reward or payout. This assistant has no account-data or action tools.
@@ -346,6 +472,12 @@ ${knowledge}${savedMemoryInstruction}`;
               systemInstruction: { parts: [{ text: systemInstruction }] },
               contents: [{ role: "user", parts: [{ text: userPrompt }] }],
               generationConfig: { temperature: 0.65, maxOutputTokens: 1200 },
+              safetySettings: [
+                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+              ],
             }),
             signal: AbortSignal.timeout(12000),
           },
@@ -532,6 +664,21 @@ ${knowledge}${savedMemoryInstruction}`;
       if (touchConversationError) throw touchConversationError;
       persistedConversationId = targetConversationId;
       historySaved = true;
+      if (autoLearningEnabled) {
+        const preference = extractExplicitLearningPreference(message);
+        if (preference) {
+          const merged = mergeLearningContext(savedLearningContext, preference);
+          const { error: memorySaveError } = await userClient
+            .from("dcds_ai_student_memory")
+            .upsert({
+              user_id: user.id,
+              learning_context: merged,
+              auto_learning_enabled: true,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: "user_id" });
+          if (memorySaveError) console.warn("DCDS opt-in learning preference could not be saved:", memorySaveError.message);
+        }
+      }
     } catch (error) {
       console.error("DCDS AI conversation persistence failed:", error);
     }
