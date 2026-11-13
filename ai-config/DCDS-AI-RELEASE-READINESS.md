@@ -4,6 +4,16 @@
 **Candidate:** `feature/dcds-ai-private-learning-memory` / PR #59  
 **Current Production:** Supabase `dcds-ai-chat` remains the previous deployed release. This candidate is not merged or deployed.
 
+## Budget-constrained release decision — 13 November 2026
+
+- DCDS has declined a billable Supabase development branch. **Do not create a Supabase subscription branch or another paid project.**
+- Use the already-existing Supabase organisation's Free-plan `DCDS-Development` project (`tjgsxbmkpvktlqulbktv`) for candidate database checks. The four candidate migrations listed below have been applied and schema/policy checks run there only.
+- Production remains unchanged: the live `dcds-ai-chat` function is still version 4; no Production migration, provider secret, merge or deployment was performed.
+- DCDS is not adding an `OPENAI_API_KEY` at this time. OpenAI API usage is billed separately from ChatGPT and is not covered by a ChatGPT Go subscription. This candidate currently requires OpenAI Responses and Moderation APIs, so it cannot be published as written without a funded API project.
+- Keep PR #59 as a draft. A no-cost candidate route may retain the existing Gemini integration, but the generation and moderation design must be reviewed and tested as one safety system before changing this PR. The current free Gemini terms have different data-use conditions; the live DCDS privacy notice already warns that free-tier Gemini content may be used to improve Google's products. Do not send confidential, sensitive or financial information to an unpaid provider tier.
+- Do not describe the candidate as production-ready until the Cloudflare Pages preview error is fixed and the no-cost provider path has been tested end-to-end.
+
+
 ## Candidate scope
 
 - OpenAI Responses API generation, default model `gpt-6-astra`, and server-only `OPENAI_API_KEY`.
@@ -48,6 +58,7 @@ Apply and verify all of these additive migrations in the target environment:
 1. `20261113110000_dcds_ai_opt_in_learning_memory.sql` — automatic learning flag, default OFF.
 2. `20261113120000_dcds_ai_age_guardian_eligibility.sql` — age bands, consent audit reference, RLS and approved-adult guardian check.
 3. `20261113123000_dcds_ai_daily_usage_budget.sql` — rolling minute plus daily request counts and function.
+4. `20261113133000_dcds_ai_eligibility_review_policy_scope.sql` — separates administrator UPDATE/DELETE permissions from user SELECT/initial INSERT policies.
 
 Do not deploy the candidate Edge Function until its schema, functions, RLS and admin review UI exist.
 
@@ -55,7 +66,7 @@ Do not deploy the candidate Edge Function until its schema, functions, RLS and a
 
 1. Configure provider secrets and provider-side budget/usage alerts.
 2. Obtain and record the DCDS provider, privacy and child-safety approval.
-3. Apply the three migrations in Development; inspect RLS and SQL advisor results.
+3. Apply the four migrations in the existing DCDS-Development Free project; inspect RLS and SQL advisor results. Do not create a billable Supabase branch.
 4. Merge PR #59 only after approval and all CI checks pass.
 5. Deploy the matching Edge Function and page together. Keep visitor access disabled.
 6. Start with a small controlled cohort: DCDS administrators and adult test students first. Validate the provider response, source citations, buttons, history, memory and quota behaviour.
