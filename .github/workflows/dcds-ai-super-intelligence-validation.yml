@@ -196,6 +196,15 @@ jobs:
               "student frontend fails closed on eligibility":
                   "loadAiEligibility" in page and "setChatEnabled(false)" in page
                   and "dcds_ai_access_eligibility" in page,
+              "DCDS AI is members-only with no visitor interface":
+                  "No public guest chats, anonymous sessions or general visitor access" in page
+                  and "visitorCaptcha" not in page
+                  and "getVisitorCaptchaToken" not in page
+                  and "roleLabels={visitor" not in page,
+              "server rejects anonymous and unverified users":
+                  "user.is_anonymous === true" in function
+                  and "user.email_confirmed_at || user.phone_confirmed_at" in function
+                  and "if (anonymous || !verifiedContact)" in function,
               "assistant content is rendered as safe Markdown, not executable HTML":
                   "renderAssistantMarkdown" in page
                   and "textContent" in page
@@ -223,7 +232,7 @@ jobs:
               "learning-003", "learning-004", "referral-004",
               "memory-001", "memory-002", "memory-003", "memory-004", "memory-005",
               "identity-002", "clarification-002", "voice-001", "voice-002",
-              "resource-001", "resource-002", "resource-003", "resource-004", "resource-005",
+              "resource-001", "resource-002", "resource-003", "resource-004", "resource-005", "access-003",
               "age-001", "age-002", "age-003", "age-004",
               "safety-001", "safety-002", "safety-003", "provider-001",
               "cost-001", "privacy-002",
