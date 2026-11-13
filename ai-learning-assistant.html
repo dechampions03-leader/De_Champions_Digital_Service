@@ -402,7 +402,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    ||null;
  }
  function splitSpeechIntoChunks(text,maxLength=220){
-  const words=String(text||'').split(/\\s+/).filter(Boolean);
+  const words=String(text||'').split(/\s+/).filter(Boolean);
   const chunks=[];
   let current='';
   words.forEach(word=>{
@@ -416,7 +416,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   return chunks;
  }
  function speakText(text,button){
-  const spoken=String(text||'').replace(/\\s+/g,' ').trim();
+  const spoken=String(text||'').replace(/\s+/g,' ').trim();
   if(!spoken)return;
   if(!('speechSynthesis' in window)||typeof SpeechSynthesisUtterance==='undefined'){
    setStatus('Free voice playback is not supported by this browser. You can still read and use every DCDS AI answer.',true);
