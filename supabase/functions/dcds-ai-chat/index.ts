@@ -472,242 +472,117 @@ ${platformSearch.context}${savedMemoryInstruction}`;
 
 
 
-  // Discover currently supported models and skip stale IDs before requesting them.
-  const discoveredModels = await listAvailableGeminiModels(geminiApiKey);
-  const configuredCandidates = discoveredModels
-    ? [
-      ...(discoveredModels.includes(model) ? [model] : []),
-      ...MODEL_PREFERENCE.filter((candidate) => discoveredModels.includes(candidate)),
-      ...discoveredModels.filter((candidate) => !MODEL_PREFERENCE.includes(candidate)),
-    ]
-    : [...new Set([model, ...STATIC_DOCUMENTED_MODELS])];
-  const modelCandidates = [...new Set(configuredCandidates)].filter(
-    (candidate) => (providerModelCooldowns.get(candidate) ?? 0) <= Date.now(),
-  );
-  if (!modelCandidates.length) {
-    return json({
-      success: false,
-      error: "DCDS AI's verified model pool is temporarily cooling down after provider limits. Please try again shortly.",
-    }, 503);
+  // Safety-screen before generation. Known/suspected sexual content involving minors
+  // is blocked locally and is never forwarded to an external classifier or model.
+  if (sexualisedMinorPattern.test(message)) {
+    return json({ success: true, answer: "I can’t help create or discuss sexual content involving anyone under 18. If this relates to a real person who may be at risk, tell a trusted adult and use the appropriate child-protection or emergency support route.", role, conversation_id: null, history_saved: false, learning_memory_updated: false, resources: [] });
   }
 
-  function getRetryDelayMs(message: string, details: unknown[]): number | null {
-    const retryInfo = details.find((detail) => {
-      if (!detail || typeof detail !== "object") return false;
-      const type = (detail as Record<string, unknown>)["@type"];
-      return typeof type === "string" && type.includes("RetryInfo");
-    }) as Record<string, unknown> | undefined;
-
-    const retryDelay = retryInfo?.retryDelay;
-    if (typeof retryDelay === "string") {
-      const seconds = retryDelay.match(/^(\d+(?:\.\d+)?)s$/);
-      if (seconds) return Math.ceil(Number(seconds[1]) * 1000);
-    }
-
-    const match = message.match(
-      /retry in\s+(?:(\d+(?:\.\d+)?)h)?\s*(?:(\d+(?:\.\d+)?)m)?\s*(?:(\d+(?:\.\d+)?)s)?/i,
-    );
-    if (!match) return null;
-    const milliseconds =
-      (Number(match[1] ?? 0) * 60 * 60 * 1000)
-      + (Number(match[2] ?? 0) * 60 * 1000)
-      + (Number(match[3] ?? 0) * 1000);
-    return milliseconds > 0 ? Math.ceil(milliseconds) : null;
+  let inputModeration: { flagged: boolean; categories: Record<string, unknown> };
+  try {
+    inputModeration = await moderateDcdsText(openAiApiKey, message);
+  } catch (error) {
+    console.error("DCDS input safety check unavailable:", error);
+    return json({ success: false, error: "The DCDS safety check is temporarily unavailable. Please try again shortly." }, 503);
+  }
+  if (isHighRiskModerationCategory(inputModeration.categories)) {
+    return json({ success: true, answer: "I can help with safe, age-appropriate learning, but I can’t provide instructions or material that could harm a learner or another person. If someone is in immediate danger, contact a trusted adult and local emergency support now.", role, conversation_id: null, history_saved: false, learning_memory_updated: false, resources: [] });
   }
 
-  let providerResponse: Response | null = null;
-  let resolvedModel = model;
-  let lastProviderStatus = 503;
-  const dailyQuotaModels: string[] = [];
-  const unavailableModels: string[] = [];
-
-  const generationDeadline = Date.now() + 36_000;
-  let attemptedModels = 0;
-  const maxModelAttempts = 6;
-  const orderedCandidates = shouldUseGoogleSearch
-    ? [
-      ...modelCandidates.filter((candidate) => GOOGLE_SEARCH_MODELS.has(candidate)),
-      ...modelCandidates.filter((candidate) => !GOOGLE_SEARCH_MODELS.has(candidate)),
-    ]
-    : modelCandidates;
-
-  for (const candidate of orderedCandidates) {
-    if (attemptedModels >= maxModelAttempts || Date.now() >= generationDeadline) break;
-    attemptedModels++;
-    const attempts = 1;
-
-    for (let attempt = 0; attempt < attempts; attempt++) {
-      let response: Response;
-      try {
-        response = await fetch(
-          "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(candidate) + ":generateContent",
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
-            body: JSON.stringify({
-              systemInstruction: { parts: [{ text: systemInstruction }] },
-              contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-              generationConfig: { temperature: 0.65, maxOutputTokens: 2200 },
-              ...(shouldUseGoogleSearch && GOOGLE_SEARCH_MODELS.has(candidate)
-                ? { tools: [{ google_search: {} }] }
-                : {}),
-            }),
-            signal: AbortSignal.timeout(Math.max(1000, Math.min(16000, generationDeadline - Date.now()))),
-          },
-        );
-      } catch (error) {
-        lastProviderStatus = 502;
-        unavailableModels.push(candidate);
-        providerModelCooldowns.set(candidate, Date.now() + 30_000);
-        console.error("DCDS AI provider request failed for", candidate, error);
-        if (attempt + 1 < attempts) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          continue;
-        }
-        break;
-      }
-
-      if (response.ok) {
-        providerResponse = response;
-        resolvedModel = candidate;
-        providerModelCooldowns.delete(candidate);
-        break;
-      }
-
-      const providerError = await response.text();
-      let providerPayload: Record<string, unknown> = {};
-      try {
-        const parsed = JSON.parse(providerError);
-        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-          providerPayload = parsed as Record<string, unknown>;
-        }
-      } catch {
-        // Preserve safe generic handling when the provider returns non-JSON.
-      }
-
-      const providerErrorBody = providerPayload.error && typeof providerPayload.error === "object"
-        ? providerPayload.error as Record<string, unknown>
-        : {};
-      const providerMessage = typeof providerErrorBody.message === "string"
-        ? providerErrorBody.message
-        : providerError.slice(0, 500);
-      const providerDetails = Array.isArray(providerErrorBody.details)
-        ? providerErrorBody.details
-        : [];
-      const quotaDescription = providerDetails.map((detail) => {
-        if (!detail || typeof detail !== "object") return "";
-        const row = detail as Record<string, unknown>;
-        return [row.description, row.quotaId, row.quotaMetric].filter(
-          (value) => typeof value === "string",
-        ).join(" ");
-      }).join(" ");
-      const quotaText = providerMessage + " " + quotaDescription;
-      const isDailyQuota = /requests per day|daily.{0,30}quota|GenerateRequestsPerDayPerProject/i.test(quotaText);
-
-      lastProviderStatus = response.status;
-      console.error("DCDS AI provider returned", candidate, response.status, providerError.slice(0, 800));
-
-      if (response.status === 429 && isDailyQuota) {
-        // Honour Google's RetryInfo / human-readable retry hint. If neither is
-        // supplied, use a conservative 30-minute local cooldown.
-        const retryMs = getRetryDelayMs(providerMessage, providerDetails) ?? 30 * 60 * 1000;
-        const boundedRetryMs = Math.min(Math.max(retryMs, 60_000), 24 * 60 * 60 * 1000);
-        providerModelCooldowns.set(candidate, Date.now() + boundedRetryMs);
-        dailyQuotaModels.push(candidate);
-        console.warn("DCDS AI model daily quota exhausted; moving to next model.", {
-          model: candidate,
-          retryAfterMs: boundedRetryMs,
-        });
-        break;
-      }
-
-      if (response.status === 429) {
-        // Quotas can be model-specific. Cool this model and try the next one.
-        const retryMs = getRetryDelayMs(providerMessage, providerDetails);
-        const cooldownMs = isDailyQuota
-          ? Math.min(Math.max(retryMs ?? 30 * 60 * 1000, 60_000), 24 * 60 * 60 * 1000)
-          : Math.min(Math.max(retryMs ?? 30_000, 15_000), 5 * 60 * 1000);
-        providerModelCooldowns.set(candidate, Date.now() + cooldownMs);
-        if (isDailyQuota) dailyQuotaModels.push(candidate);
-        else unavailableModels.push(candidate);
-        console.warn("DCDS AI model rate-limited; trying the next model.", {
-          model: candidate,
-          dailyQuota: isDailyQuota,
-          retryAfterMs: cooldownMs,
-        });
-        break;
-      }
-
-      if (response.status === 401 || response.status === 403) {
-        return json({
-          success: false,
-          error: "The DCDS AI provider credentials need attention. Please contact DCDS support.",
-        }, 503);
-      }
-
-      if (
-        response.status === 408 || response.status === 404
-        || response.status === 500 || response.status === 502
-        || response.status === 503 || response.status === 504
-      ) {
-        unavailableModels.push(candidate);
-        providerModelCooldowns.set(candidate, Date.now() + 20_000);
-        console.warn("DCDS AI model temporarily unavailable; trying the next model.", {
-          model: candidate,
-          status: response.status,
-        });
-        break;
-      }
-
-      return json({
-        success: false,
-        error: "The DCDS AI could not process this request. Please try again later.",
-      }, 502);
-    }
-
-    if (providerResponse) break;
-  }
-
-  if (!providerResponse) {
-    console.error("DCDS AI model pool unavailable.", {
-      lastProviderStatus,
-      dailyQuotaModels,
-      unavailableModels,
+  let providerResponse: Response;
+  try {
+    providerResponse = await fetch("https://api.openai.com/v1/responses", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": "Bearer " + openAiApiKey },
+      body: JSON.stringify({
+        model,
+        instructions: systemInstruction,
+        input: userPrompt,
+        max_output_tokens: 2200,
+        store: false,
+        ...(shouldUseGoogleSearch ? { tools: [{ type: "web_search" }] } : {}),
+      }),
+      signal: AbortSignal.timeout(30000),
     });
-    const error = dailyQuotaModels.length > 0
-      ? "DCDS AI has reached a provider quota or capacity limit. We checked the available fallback models, but they are not currently responding. Please try again later."
-      : "DCDS AI is temporarily at capacity. Please try again shortly.";
-    return json({ success: false, error }, 503);
+  } catch (error) {
+    console.error("DCDS AI generation request failed:", error);
+    return json({ success: false, error: "DCDS AI is temporarily unavailable. Please try again shortly." }, 503);
+  }
+
+  if (!providerResponse.ok) {
+    const providerError = await providerResponse.text();
+    console.error("DCDS AI generation returned HTTP", providerResponse.status, providerError.slice(0, 500));
+    if (providerResponse.status === 401 || providerResponse.status === 403) {
+      return json({ success: false, error: "The DCDS AI service is being checked. Please contact DCDS support if this continues." }, 503);
+    }
+    if (providerResponse.status === 429) {
+      return json({ success: false, error: "DCDS AI is receiving too many requests right now. Please wait a moment and try again." }, 429);
+    }
+    return json({ success: false, error: "DCDS AI could not complete this response. Please try again shortly." }, 502);
   }
 
   const result = await providerResponse.json();
-  const generatedAnswer = result?.candidates?.[0]?.content?.parts
-    ?.map((part: { text?: string }) => typeof part.text === "string" ? part.text : "")
-    .join("")
+  const outputItems = Array.isArray(result?.output) ? result.output : [];
+  const generatedAnswer = outputItems
+    .filter((item: Record<string, unknown>) => item.type === "message")
+    .flatMap((item: Record<string, unknown>) => Array.isArray(item.content) ? item.content : [])
+    .filter((part: Record<string, unknown>) => part.type === "output_text" && typeof part.text === "string")
+    .map((part: Record<string, unknown>) => String(part.text))
+    .join("\n")
     .trim();
 
   if (!generatedAnswer) {
-    console.error("DCDS AI provider returned no text candidate.");
-    return json({ success: false, error: "The AI did not return a response. Please rephrase your question." }, 502);
+    console.error("DCDS AI returned no text output.");
+    return json({ success: false, error: "DCDS AI did not return a response. Please rephrase your question." }, 502);
   }
 
-  const groundingChunks = result?.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
-  const webSources = Array.isArray(groundingChunks)
-    ? groundingChunks.map((chunk: Record<string, unknown>) => {
-      const web = chunk.web as Record<string, unknown> | undefined;
-      return {
-        title: typeof web?.title === "string" ? web.title.slice(0, 180) : "Web source",
-        uri: typeof web?.uri === "string" ? web.uri : "",
-      };
-    }).filter((source: { title: string; uri: string }) => source.uri.startsWith("https://")).slice(0, 5)
-    : [];
-  const sourceLines = [
-    ...platformSearch.sources.slice(0, 6).map((source, index) => `[DCDS-${index + 1}] ${source.kind}: ${source.title}`),
-    ...webSources.map((source: { title: string; uri: string }, index: number) => `[WEB-${index + 1}] ${source.title} — ${source.uri}`),
-  ];
-  const answer = sourceLines.length
-    ? generatedAnswer + "\n\nSources checked:\n" + sourceLines.join("\n")
+  let outputModeration: { flagged: boolean; categories: Record<string, unknown> };
+  try {
+    outputModeration = await moderateDcdsText(openAiApiKey, generatedAnswer);
+  } catch (error) {
+    console.error("DCDS output safety check unavailable:", error);
+    return json({ success: false, error: "DCDS is checking the safety of this response. Please try again shortly." }, 503);
+  }
+  const safeGeneratedAnswer = outputModeration.flagged
+    ? "I can’t provide that response as written. I can still help with safe, age-appropriate learning, practical digital skills and general explanations."
     : generatedAnswer;
+
+  const webSources: Array<{ title: string; uri: string }> = [];
+  for (const item of outputItems) {
+    if (item.type !== "message" || !Array.isArray(item.content)) continue;
+    for (const part of item.content) {
+      if (!Array.isArray(part.annotations)) continue;
+      for (const annotation of part.annotations) {
+        const citation = annotation?.url_citation ?? annotation;
+        const uri = typeof citation?.url === "string" ? citation.url : "";
+        if (uri.startsWith("https://")) webSources.push({ title: typeof citation.title === "string" ? citation.title.slice(0, 180) : "Web source", uri });
+      }
+    }
+  }
+  const uniqueWebSources = [...new Map(webSources.map((source) => [source.uri, source])).values()].slice(0, 6);
+  const sourceLines = [
+    ...platformSearch.sources.slice(0, 6).map((source, index) => "[DCDS-" + (index + 1) + "] " + source.kind + ": " + source.title),
+    ...uniqueWebSources.map((source, index) => "[WEB-" + (index + 1) + "] " + source.title + " — " + source.uri),
+  ];
+  const answer = sourceLines.length ? safeGeneratedAnswer + "\n\nSources checked:\n" + sourceLines.join("\n") : safeGeneratedAnswer;
+
+  const mentionedCourses = (platformSearch.courseCatalog ?? []).filter((course) => course.title && answer.toLowerCase().includes(course.title.toLowerCase()));
+  const resources: Array<{ label: string; href: string; kind: string }> = [];
+  for (const course of mentionedCourses.slice(0, 6)) {
+    const enrolled = platformSearch.enrolledCourseSlugs?.includes(course.slug) === true;
+    resources.push({
+      label: enrolled ? "Continue " + course.title : "Explore " + course.title,
+      href: enrolled ? "learn.html?course=" + encodeURIComponent(course.slug) : "index.html#course-" + encodeURIComponent(course.slug),
+      kind: "course",
+    });
+  }
+  if (/\bDCDS General Course\b/i.test(answer)) resources.push({ label: "Open General Course", href: "general-course.html", kind: "course" });
+  if (/\b(?:ambassador|referral|rewards|commission|reward balance)\b/i.test(answer)) resources.push({ label: "Open Ambassador & Rewards", href: "student-dashboard.html#ambassadorPanel", kind: "dashboard" });
+  if (/\b(?:student dashboard|dashboard)\b/i.test(answer)) resources.push({ label: "Open Student Dashboard", href: "student-dashboard.html", kind: "dashboard" });
+  if (/\b(?:DCDS support|human support|contact support|support team)\b/i.test(answer)) resources.push({ label: "Contact DCDS Support", href: "https://wa.me/2348109146285", kind: "support" });
+  if (/\b(?:DCDS AI|learning assistant)\b/i.test(answer)) resources.push({ label: "Open DCDS AI", href: "ai-learning-assistant.html", kind: "assistant" });
+  for (const source of uniqueWebSources) resources.push({ label: "Read: " + source.title, href: source.uri, kind: "source" });
+  const uniqueResources = [...new Map(resources.map((resource) => [resource.href, resource])).values()].slice(0, 10);
 
   let learningMemoryUpdated = false;
   if (role === "student" && autoLearningEnabled) {
@@ -796,10 +671,10 @@ ${platformSearch.context}${savedMemoryInstruction}`;
   return json({
     success: true,
     answer,
-    model: resolvedModel,
     role,
     conversation_id: persistedConversationId,
     history_saved: historySaved,
     learning_memory_updated: learningMemoryUpdated,
+    resources: uniqueResources,
   });
 });
