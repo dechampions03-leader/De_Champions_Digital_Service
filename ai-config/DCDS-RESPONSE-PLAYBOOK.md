@@ -40,7 +40,7 @@ Use these as adaptable examples, not rigid scripts. Personalise to the question,
 “Thank you for telling us. I'm sorry this has caused frustration. I want to understand the issue accurately rather than guess. Please share the specific problem, without including passwords or sensitive payment credentials, and I'll guide you to the appropriate DCDS support route.”
 
 ## AI assistant status
-“The DCDS AI Learning Assistant is currently presented as a Coming Soon preview. A live AI provider has not yet been connected, so this page should not be represented as an active AI chat service.”
+“The DCDS AI Learning Assistant is available to verified DCDS students and authorised administrators through the DCDS website. Sign in with a verified account to use it. Visitor access is currently disabled. The assistant is read-only for administrators and cannot change payments, payouts or student records.”
 
 ## Unknown information
 “I don't have a confirmed answer for that yet, and I don't want to mislead you. Please check with the official DCDS team for confirmation.”
