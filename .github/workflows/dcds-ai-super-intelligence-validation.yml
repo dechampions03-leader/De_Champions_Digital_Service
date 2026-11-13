@@ -152,14 +152,18 @@ jobs:
                   'https://api.openai.com/v1/responses' in function
                   and 'const model = Deno.env.get("DCDS_AI_MODEL") || "gpt-6-astra";' in function
                   and 'store: false' in function,
-              "Moderation API runs before and after generation":
+              "Moderation API screens the full learner context before and after generation":
                   'https://api.openai.com/v1/moderations' in function
                   and "omni-moderation-latest" in function
-                  and function.index("moderateDcdsText(openAiApiKey, message)") < function.index("https://api.openai.com/v1/responses")
+                  and function.index("moderateDcdsText(openAiApiKey, userPrompt)") < function.index("https://api.openai.com/v1/responses")
                   and function.index("moderateDcdsText(openAiApiKey, generatedAnswer)") > function.index("https://api.openai.com/v1/responses"),
-              "suspected child exploitation is intercepted locally before Moderation API":
+              "missing provider secret fails before consuming user quota":
+                  function.index('if (!openAiApiKey)') < function.index('rpc("dcds_consume_ai_request"'),
+              "suspected child exploitation is intercepted locally across current and saved learner context":
                   "suspectedChildExploitationPattern" in function
-                  and function.index("suspectedChildExploitationPattern.test(message)") < function.index("moderateDcdsText(openAiApiKey, message)"),
+                  and "suspectedChildExploitationPattern.test(message)" in function
+                  and "suspectedChildExploitationPattern.test(userPrompt)" in function
+                  and function.index("suspectedChildExploitationPattern.test(userPrompt)") < function.index("moderateDcdsText(openAiApiKey, userPrompt)"),
               "moderation fails closed for both input and output":
                   "DCDS input safety check unavailable" in function
                   and "DCDS output safety check unavailable" in function
@@ -238,7 +242,7 @@ jobs:
               "identity-002", "clarification-002", "voice-001", "voice-002",
               "resource-001", "resource-002", "resource-003", "resource-004", "resource-005", "access-003",
               "age-001", "age-002", "age-003", "age-004", "age-005",
-              "safety-001", "safety-002", "safety-003", "provider-001",
+              "safety-001", "safety-002", "safety-003", "safety-004", "provider-001",
               "cost-001", "privacy-002",
           }
           missing = sorted(required_tests - test_ids)
