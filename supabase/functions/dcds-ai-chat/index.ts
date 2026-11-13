@@ -740,11 +740,14 @@ ${platformSearch.context}${savedMemoryInstruction}`;
   if (/\b(?:approved review|student reviews|testimonials)\b/i.test(answer)) resources.push({ label: "Read Student Reviews", href: "index.html#studentReviews", kind: "resource" });
   if (/\b(?:privacy policy|data privacy)\b/i.test(answer)) resources.push({ label: "Read DCDS Privacy Policy", href: "privacy-policy.html", kind: "resource" });
   for (const tool of DCDS_DIGITAL_TOOL_RESOURCES) {
-    if (tool.aliases.some((alias) => new RegExp("\\b" + alias.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\  for (const source of uniqueWebSources) resources.push({ label: "Read: " + source.title, href: source.uri, kind: "source" });") + "\\b", "i").test(answer))) {
+    const lowerAnswer = answer.toLowerCase();
+    if (tool.aliases.some((alias) => lowerAnswer.includes(alias))) {
       resources.push({ label: "Open " + tool.name, href: tool.href, kind: "tool" });
     }
   }
-  for (const source of uniqueWebSources) resources.push({ label: "Read: " + source.title, href: source.uri, kind: "source" });
+  for (const source of uniqueWebSources) {
+    resources.push({ label: "Read: " + source.title, href: source.uri, kind: "source" });
+  }
   const uniqueResources = [...new Map(resources.map((resource) => [resource.href, resource])).values()].slice(0, 10);
 
   let learningMemoryUpdated = false;
