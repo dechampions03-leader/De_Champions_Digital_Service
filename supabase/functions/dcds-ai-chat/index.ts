@@ -699,7 +699,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
   for (const item of (platformSearch.enrolledLessonResources ?? [])) {
     if (item.title && answer.toLowerCase().includes(item.title.toLowerCase())) {
       resources.push({
-        label: (item.kind === "lesson" ? "Open lesson: " : "Open material: ") + item.title,
+        label: "Open " + item.courseTitle + " learning space",
         href: "learn.html?course=" + encodeURIComponent(item.slug),
         kind: "course",
       });
