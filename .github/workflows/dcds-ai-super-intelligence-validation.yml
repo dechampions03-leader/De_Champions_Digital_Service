@@ -16,6 +16,7 @@ on:
     branches:
       - main
       - feature/dcds-super-intelligence
+      - feature/dcds-ai-private-learning-memory
     paths:
       - "supabase/functions/dcds-ai-chat/**"
       - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
@@ -118,8 +119,15 @@ jobs:
                   "autoLearningEnabled" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
                   and "auto_learning_enabled === true" in function
                   and "DEFAULT false" in Path("supabase/migrations/20261113110000_dcds_ai_opt_in_learning_memory.sql").read_text(encoding="utf-8"),
-              "automatic learning rejects sensitive-data patterns":
-                  "password|passcode|otp|one[- ]time code|bank|account number|card|cvv|pin|api key" in function,
+              "automatic learning rejects sensitive-data and third-party context":
+                  "sensitiveTopicPattern" in function
+                  and "thirdPartyContextPattern" in function
+                  and "contactOrIdentifierPattern" in function
+                  and "safeLearningPreferencePattern" in function,
+              "substantial project lessons have sufficient response budget":
+                  "maxOutputTokens: 2200" in function
+                  and "Math.min(16000" in function
+                  and "complete every deliverable" in function,
           }
           failures = [name for name, passed in invariants.items() if not passed]
           for name, passed in invariants.items():
@@ -131,8 +139,8 @@ jobs:
           evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
           test_ids = {item.get("id") for item in evaluation.get("tests", [])}
           required_tests = {
-              "retrieval-001", "retrieval-002", "retrieval-003", "memory-003", "memory-004",
-              "learning-003", "web-001", "memory-001", "memory-002", "security-002",
+              "retrieval-001", "retrieval-002", "retrieval-003", "memory-003", "memory-004", "memory-005",
+              "learning-003", "learning-004", "referral-004", "web-001", "memory-001", "memory-002", "security-002",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
