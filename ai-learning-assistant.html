@@ -315,45 +315,51 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     :'Under-13 access is not enabled yet. DCDS must first complete additional child-safety safeguards and obtain the required Zero Data Retention arrangement.';
  }
  // Keep 13–17 chat access closed until the separate DCDS youth-safety release is approved.
- const TEEN_AI_ACCESS_ENABLED = false;
- async function loadAiEligibility(){
-  eligibilityPanel.hidden=true;setChatEnabled(false);
-  const {data,error}=await client.from('dcds_ai_access_eligibility').select('age_band,access_status,guardian_consent_status').eq('user_id',currentUser.id).maybeSingle();
-  if(error){
-   eligibilityPanel.hidden=false;requestEligibilityButton.hidden=true;
-   eligibilityMessage.textContent='DCDS could not confirm your AI access eligibility. The assistant remains locked until this check succeeds.';
-   eligibilityGuidance.textContent='Please refresh later or contact DCDS support. No chat message will be sent while access is unverified.';
-   setStatus('AI access eligibility could not be checked. Your assistant remains protected.',true);return false;
+   async function loadAiEligibility(){
+   eligibilityPanel.hidden=true;setChatEnabled(false);
+   const [policyResult,eligibilityResult]=await Promise.all([
+    client.from('dcds_ai_access_settings').select('adult_access_enabled,teen_access_enabled').eq('id',1).maybeSingle(),
+    client.from('dcds_ai_access_eligibility').select('age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_reference,guardian_consent_at').eq('user_id',currentUser.id).maybeSingle()
+   ]);
+   if(policyResult.error||!policyResult.data||eligibilityResult.error){
+    eligibilityPanel.hidden=false;requestEligibilityButton.hidden=true;
+    eligibilityMessage.textContent='DCDS could not confirm the current age-access policy or your eligibility record. The assistant remains locked until both checks succeed.';
+    eligibilityGuidance.textContent='Please refresh later or contact DCDS support. No chat message will be sent while access is unverified.';
+    setStatus('AI access policy could not be checked. Your assistant remains protected.',true);return false;
+   }
+   const policy=policyResult.data,data=eligibilityResult.data;
+   if(!data){
+    ageBandSelect.disabled=false;requestEligibilityButton.hidden=false;ageBandSelect.value='18_plus';explainAgeChoice();
+    eligibilityMessage.textContent='Before using DCDS AI, choose your age group. DCDS stores only the age band, not your full date of birth. AI processing does not begin until the applicable access policy is enabled and required review is complete.';
+    eligibilityPanel.hidden=false;setStatus('Please complete the DCDS AI access review first.');return false;
+   }
+   ageBandSelect.value=data.age_band;ageBandSelect.disabled=true;requestEligibilityButton.hidden=true;
+   const adult=policy.adult_access_enabled===true&&data.age_band==='18_plus'&&data.access_status==='approved'&&data.guardian_consent_status==='not_required';
+   const teen=policy.teen_access_enabled===true&&data.age_band==='13_17'&&data.access_status==='approved'&&data.guardian_consent_status==='verified'&&Boolean(data.guardian_user_id&&data.guardian_consent_reference&&data.guardian_consent_at);
+   if(adult||teen){eligibilityPanel.hidden=true;setChatEnabled(true);return true;}
+   eligibilityPanel.hidden=false;
+   if(data.age_band==='under_13'){
+    eligibilityMessage.textContent='DCDS has recorded an under-13 access request, but this age group is not enabled.';
+    eligibilityGuidance.textContent='No AI processing is permitted for this account. Under-13 access remains blocked.';
+   }else if(data.age_band==='13_17'&&data.guardian_consent_status!=='verified'){
+    eligibilityMessage.textContent='Parent or guardian consent verification is still required. AI access remains locked until DCDS confirms it.';
+    eligibilityGuidance.textContent='Ask your parent or legal guardian to complete the official DCDS consent review. Do not send identity documents or private family information in the chat.';
+   }else if(data.age_band==='13_17'&&policy.teen_access_enabled!==true){
+    eligibilityMessage.textContent='DCDS has not globally enabled AI access for ages 13–17 yet.';
+    eligibilityGuidance.textContent='Even after individual guardian consent is verified, teen access remains closed until an administrator enables the 13–17 age group.';
+   }else if(data.age_band==='18_plus'&&policy.adult_access_enabled!==true){
+    eligibilityMessage.textContent='DCDS adult AI access is currently disabled by the administrator.';
+    eligibilityGuidance.textContent='The administrator can enable 18+ access from the AI Age Access Controls in the DCDS administration dashboard.';
+   }else if(data.access_status==='pending'){
+    eligibilityMessage.textContent='Your age eligibility request is awaiting DCDS review. AI access remains locked until the review is complete.';
+    eligibilityGuidance.textContent='Contact DCDS support if you need help with verification.';
+   }else{
+    eligibilityMessage.textContent='DCDS AI access has not been approved for this account.';
+    eligibilityGuidance.textContent='Contact DCDS support if you believe this status is incorrect.';
+   }
+   setStatus('DCDS AI is not yet enabled for this account.',true);return false;
   }
-  if(!data){
-   ageBandSelect.disabled=false;requestEligibilityButton.hidden=false;ageBandSelect.value='18_plus';explainAgeChoice();
-   eligibilityMessage.textContent='Before using DCDS AI, choose your age group. DCDS stores only the age band, not your full date of birth. AI processing does not begin until review is complete.';
-   eligibilityPanel.hidden=false;setStatus('Please complete the DCDS AI access review first.');return false;
-  }
-  ageBandSelect.value=data.age_band;ageBandSelect.disabled=true;requestEligibilityButton.hidden=true;
-  const adult=data.age_band==='18_plus'&&data.access_status==='approved'&&data.guardian_consent_status==='not_required';
-  const teen=TEEN_AI_ACCESS_ENABLED&&data.age_band==='13_17'&&data.access_status==='approved'&&data.guardian_consent_status==='verified';
-  if(adult||teen){eligibilityPanel.hidden=true;setChatEnabled(true);return true;}
-  eligibilityPanel.hidden=false;
-  if(data.age_band==='under_13'){
-   eligibilityMessage.textContent='DCDS has recorded an under-13 access request, but this age group is not enabled yet.';
-   eligibilityGuidance.textContent='No AI processing is permitted for this account at this stage. DCDS must complete additional child-safety and Zero Data Retention requirements before approval.';
-  }else if(data.age_band==='13_17'&&data.guardian_consent_status!=='verified'){
-   eligibilityMessage.textContent='Parent or guardian consent verification is still required. AI access remains locked until DCDS confirms it.';
-   eligibilityGuidance.textContent='Ask your parent or legal guardian to complete the official DCDS consent review through support. Do not send identity documents or private family information in the chat.';
-  }else if(data.age_band==='13_17'&&!TEEN_AI_ACCESS_ENABLED){
-   eligibilityMessage.textContent='DCDS AI access for ages 13–17 is not enabled yet.';
-   eligibilityGuidance.textContent='DCDS must complete additional youth-safety, age-appropriate disclosure, monitoring and escalation reviews before this age group can use AI chat. Your account remains protected while that review is pending.';
-  }else if(data.access_status==='pending'){
-   eligibilityMessage.textContent='Your age eligibility request is awaiting DCDS review. AI access remains locked until the review is complete.';
-   eligibilityGuidance.textContent='Contact DCDS support if you need help with verification.';
-  }else{
-   eligibilityMessage.textContent='DCDS AI access has not been approved for this account.';
-   eligibilityGuidance.textContent='Contact DCDS support if you believe this status is incorrect.';
-  }
-  setStatus('DCDS AI is not yet enabled for this account.',true);return false;
- }
- async function submitAiEligibilityRequest(){
+async function submitAiEligibilityRequest(){
   const selected=ageBandSelect.value;if(!['18_plus','13_17','under_13'].includes(selected))return;
   requestEligibilityButton.disabled=true;requestEligibilityButton.textContent='Submitting…';
   const {error}=await client.from('dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:selected});
@@ -600,20 +606,23 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   }
    const isAdmin=adminData===true;
    isPersistentStudent=!isAdmin;
-   const accessApproved=await loadAiEligibility();
-   if(!accessApproved){
-    document.getElementById('accountLabel').textContent=isAdmin?'Administrator · Access review required':'Student · Access review required';
-    return;
-   }
-   await loadResourceIndex();
-   if(isPersistentStudent){
+   if(isAdmin){
+    // Administrators are authorised by the server-side admin registry, not by student age-review records.
+    setChatEnabled(true);
+    await loadResourceIndex();
+    document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
+    setStatus('Administrator session verified. This assistant remains read-only and does not change account or payment records.');
+   }else{
+    const accessApproved=await loadAiEligibility();
+    if(!accessApproved){
+     document.getElementById('accountLabel').textContent='Student · Access review required';
+     return;
+    }
+    await loadResourceIndex();
     document.getElementById('accountLabel').textContent='Student · Learning Assistant';
     studentTools.hidden=false;
     await Promise.all([loadConversationList(),loadLearningMemory()]);
     setStatus('DCDS AI access approved. Your saved conversations are private to this account.');
-   }else{
-    document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
-    setStatus('Administrator session verified. This assistant remains read-only and does not change account or payment records.');
    }
  }catch(error){
   setStatus('We could not verify your account. Please sign in again.',true);
