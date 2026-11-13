@@ -1,12 +1,11 @@
-/* Public CAPTCHA configuration for DCDS.
- * The public site key is safe to expose in the browser.
- * Keep protection disabled in this shared homepage bundle while it points
- * to the Production Supabase project. Enable only in a Development-only
- * test build, or after a separately approved Production CAPTCHA rollout.
- * Never put a Turnstile secret or GEMINI_API_KEY in this file.
+/* Public CAPTCHA configuration for DCDS Development preview.
+ * The site key is public. Supabase Development stores the matching Turnstile
+ * secret in its Auth CAPTCHA settings; never expose that secret here.
+ * Production's separate branch retains its own disabled setting until a
+ * separately approved Production CAPTCHA rollout.
  */
 window.DCDS_CAPTCHA_CONFIG = Object.freeze({
   provider: "turnstile",
-  siteKey: "0x4AAAAAAF-6IMlUuG_tynpI",
-  authProtectionEnabled: false
+  siteKey: "0x4AAAAAAF-6IMlUuG_tynpI0",
+  authProtectionEnabled: true
 });
