@@ -178,6 +178,9 @@
 .dcds-announcement-full-message{white-space:pre-wrap;overflow-wrap:anywhere;color:#51465f;font-size:15px;line-height:1.8;margin:14px 0 4px}
 .dcds-announcement-date{display:block;margin-top:16px;color:#9877b8;font-size:11px;font-weight:750;letter-spacing:.04em}
 .dcds-ticker-entry strong{color:#ffe6a1;font-weight:900}
+.dcds-ticker-subheading{color:#e2c5ff;font-weight:900;text-shadow:0 0 10px #b889ed30}
+.dcds-ticker-message{color:#fff}
+.dcds-announcement-message-heading{display:block;color:#6c2aa3;font-weight:900;font-size:1.02em;line-height:1.5;margin:12px 0 3px}
 .dcds-ticker-separator{color:#e8c66e;font-size:15px}
 .dcds-announcement-ticker:hover .dcds-ticker-track,.dcds-announcement-ticker:focus-within .dcds-ticker-track{animation-play-state:paused}
 @keyframes dcdsTickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
@@ -612,14 +615,15 @@ let dcdsTickerRefreshTimer=null;
     entry.setAttribute('aria-label',`Read full announcement: ${item.title||'DCDS Announcement'}`);
     entry.addEventListener('click',()=>{
      const fullTitle=escapeHtml(item.title||'DCDS Announcement');
-     const fullMessage=escapeHtml(item.message||'There is no additional message for this announcement.');
+     const fullMessage=formatDcdsAnnouncementMessageHtml(item.message||'There is no additional message for this announcement.');
      const dateText=item.created_at?new Date(item.created_at).toLocaleString():'DCDS Update';
            openModal(`<h2 id="modalTitle">${fullTitle}</h2><p class="modal-sub">Full announcement from De Champions Digital Service</p><div class="dcds-announcement-full-message">${fullMessage}</div><small class="dcds-announcement-date">${escapeHtml(dateText)}</small>`);
     });
     const title=document.createElement('strong');
     title.textContent=item.title||'DCDS Announcement';
     const message=document.createElement('span');
-    message.textContent=item.message||'';
+    message.className='dcds-ticker-message';
+     appendDcdsTickerMessage(message,item.message||'');
     entry.append(title);
     if(item.message)entry.append(document.createTextNode(' — '),message);
     const sep=document.createElement('span');
@@ -1045,6 +1049,45 @@ function showPasswordRecoveryScreen(){
  });
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function getDcdsAnnouncementHeading(line,index,lines){
+ const trimmed=String(line??'').trim();
+ if(!trimmed)return null;
+ const markdown=trimmed.match(/^#{1,3}\\s+(.+)$/)||trimmed.match(/^\\*\\*(.+)\\*\\*$/);
+ if(markdown)return markdown[1].trim();
+ const previous=index>0?String(lines[index-1]??'').trim():'';
+ const shortStandalone=trimmed.length<=72
+  && !/[.!?;:]$/.test(trimmed)
+  && !/^(?:[-*•]|\\d+[.)])\\s/.test(trimmed)
+  && (index===0||!previous);
+ return shortStandalone?trimmed:null;
+}
+function formatDcdsAnnouncementMessageHtml(message){
+ const lines=String(message??'').split(/\\r?\\n/);
+ return lines.map((line,index)=>{
+  const heading=getDcdsAnnouncementHeading(line,index,lines);
+  return heading
+   ?'<strong class="dcds-announcement-message-heading">'+escapeHtml(heading)+'</strong>'
+   :escapeHtml(line);
+ }).join('\\n');
+}
+function appendDcdsTickerMessage(target,message){
+ const lines=String(message??'').split(/\\r?\\n/);
+ let hasContent=false;
+ lines.forEach((line,index)=>{
+  if(!line.trim())return;
+  if(hasContent)target.append(document.createTextNode(' · '));
+  const heading=getDcdsAnnouncementHeading(line,index,lines);
+  if(heading){
+   const accent=document.createElement('strong');
+   accent.className='dcds-ticker-subheading';
+   accent.textContent=heading;
+   target.append(accent);
+  }else{
+   target.append(document.createTextNode(line.trim()));
+  }
+  hasContent=true;
+ });
+}
 async function afterAuthentication(user){
  if(!hasDcdsVerifiedContact(user)){
   const method=user?.user_metadata?.dcds_signup_verification_method==='sms'?'sms':'email';
