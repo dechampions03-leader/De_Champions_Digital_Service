@@ -125,11 +125,13 @@ async function searchPlatformKnowledge(
   sources: DcdsKnowledgeSource[];
   courseCatalog: Array<{ id: string; title: string; slug: string }>;
   enrolledCourseSlugs: string[];
+  enrolledLessonResources: Array<{ title: string; courseTitle: string; slug: string; kind: "lesson" | "material" }>;
 }> {
   const tokens = searchTokens(query);
   const sources: DcdsKnowledgeSource[] = [];
   const courseCatalog: Array<{ id: string; title: string; slug: string }> = [];
   const enrolledCourseIds = new Set<string>();
+  const enrolledLessonResources: Array<{ title: string; courseTitle: string; slug: string; kind: "lesson" | "material" }> = [];
   const addRows = (kind: string, rows: Record<string, unknown>[], titleField: string, contentFields: string[]) => {
     for (const row of rows) {
       const title = typeof row[titleField] === "string" ? String(row[titleField]).trim() : kind;
@@ -204,10 +206,29 @@ async function searchPlatformKnowledge(
           client.from("course_materials").select("course_id,material_title,material_type")
             .in("course_id", enrolledIds).or(buildSearchFilter(["material_title", "material_type"], tokens)).limit(8),
         ]);
+        const courseById = new Map(courseCatalog.map((course) => [course.id, course]));
         if (lessonResult.error) console.warn("DCDS AI enrolled lesson search unavailable:", lessonResult.error.message);
-        else addRows("Enrolled course lesson", lessonResult.data ?? [], "lesson_title", ["lesson_number", "lesson_description"]);
+        else {
+          const lessonRows = (lessonResult.data ?? []) as Array<Record<string, unknown>>;
+          addRows("Enrolled course lesson", lessonRows, "lesson_title", ["lesson_number", "lesson_description"]);
+          for (const row of lessonRows) {
+            const course = courseById.get(String(row.course_id ?? ""));
+            if (course && typeof row.lesson_title === "string") {
+              enrolledLessonResources.push({ title: row.lesson_title, courseTitle: course.title, slug: course.slug, kind: "lesson" });
+            }
+          }
+        }
         if (materialResult.error) console.warn("DCDS AI enrolled material search unavailable:", materialResult.error.message);
-        else addRows("Enrolled course material", materialResult.data ?? [], "material_title", ["material_type"]);
+        else {
+          const materialRows = (materialResult.data ?? []) as Array<Record<string, unknown>>;
+          addRows("Enrolled course material", materialRows, "material_title", ["material_type"]);
+          for (const row of materialRows) {
+            const course = courseById.get(String(row.course_id ?? ""));
+            if (course && typeof row.material_title === "string") {
+              enrolledLessonResources.push({ title: row.material_title, courseTitle: course.title, slug: course.slug, kind: "material" });
+            }
+          }
+        }
       }
     }
   }
@@ -221,7 +242,7 @@ async function searchPlatformKnowledge(
   const enrolledCourseSlugs = courseCatalog
     .filter((course) => enrolledCourseIds.has(course.id))
     .map((course) => course.slug);
-  return { context, sources: boundedSources, courseCatalog, enrolledCourseSlugs };
+  return { context, sources: boundedSources, courseCatalog, enrolledCourseSlugs, enrolledLessonResources };
 }
 
 function wantsExternalWebSearch(message: string, role: "student" | "admin"): boolean {
