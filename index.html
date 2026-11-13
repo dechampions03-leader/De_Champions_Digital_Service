@@ -717,10 +717,10 @@ function loadDcdsTurnstile(){
    script.id="dcds-turnstile-api";
    script.src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
    script.async=true;script.defer=true;
-   document.head.appendChild(script);
   }
   script.addEventListener("load",()=>window.turnstile?.render?resolve():reject(new Error("Cloudflare security verification did not initialise.")),{once:true});
   script.addEventListener("error",()=>reject(new Error("Cloudflare security verification could not load. Please try again.")),{once:true});
+  if(!script.isConnected)document.head.appendChild(script);
  });
  return dcdsTurnstileLoader;
 }
