@@ -406,7 +406,11 @@ Deno.serve(async (request: Request) => {
     && aiEligibility?.guardian_consent_at
     && aiEligibility?.guardian_consent_reference
   );
-  const approvedTeen = aiEligibility?.age_band === "13_17"
+  // Teen access stays off until DCDS completes the separate under-18 safeguards,
+  // age-appropriate disclosure, monitoring and escalation review.
+  const teenAccessEnabled = Deno.env.get("DCDS_AI_TEENS_ENABLED") === "true";
+  const approvedTeen = teenAccessEnabled
+    && aiEligibility?.age_band === "13_17"
     && aiEligibility.access_status === "approved"
     && aiEligibility.guardian_consent_status === "verified"
     && guardianConsentVerified;
@@ -427,7 +431,9 @@ Deno.serve(async (request: Request) => {
       code: "AI_ACCESS_REVIEW_REQUIRED",
       error: under13
         ? "DCDS AI is not yet available for under-13 accounts. We must first complete additional child-safety, guardian-consent and Zero Data Retention requirements."
-        : "DCDS AI access is awaiting age and, where required, parent/guardian consent verification. Please follow the DCDS access-review instructions on this page.",
+        : aiEligibility?.age_band === "13_17" && !teenAccessEnabled
+          ? "DCDS AI access for ages 13–17 is not enabled yet. Additional youth-safety, disclosure, monitoring and escalation reviews must be completed first."
+          : "DCDS AI access is awaiting age and, where required, parent/guardian consent verification. Please follow the DCDS access-review instructions on this page.",
     }, 403);
   }
 
