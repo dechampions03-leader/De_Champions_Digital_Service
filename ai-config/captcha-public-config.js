@@ -1,10 +1,11 @@
 /* Public CAPTCHA configuration for DCDS.
- * Set the Cloudflare Turnstile site key only after the matching secret has
- * been saved in Supabase Authentication > Bot and Abuse Protection.
+ * The site key is public. Keep authProtectionEnabled false until the matching
+ * Turnstile secret is saved in Supabase Auth Bot and Abuse Protection and the
+ * DCDS account-creation Edge Function secret is configured.
  * Never put a Turnstile secret or GEMINI_API_KEY in this file.
  */
 window.DCDS_CAPTCHA_CONFIG = Object.freeze({
   provider: "turnstile",
-  siteKey: "",
+  siteKey: "0x4AAAAAAF-6IMlUuG_tynpI",
   authProtectionEnabled: false
 });
