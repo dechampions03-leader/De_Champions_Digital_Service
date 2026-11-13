@@ -216,7 +216,7 @@ The existing Production `dcds-ai-chat` Edge Function remains the previously depl
 
 The candidate release requires an approved OpenAI API project and server-only `OPENAI_API_KEY`, age-band review, verified adult guardian consent for ages 13–17, 20-request student daily budget plus five requests per minute, and output moderation. Under-13 access remains blocked until OpenAI has approved Zero Data Retention for the project and DCDS has completed the additional child-safety and privacy review. The `store: false` Responses setting does not by itself enable Zero Data Retention.
 
-Administrators can review the minimal age-band and guardian-consent records through `dcds-ai-access-review.html`; the screen is restricted to authorised administrators. It cannot approve under-13 access. The assistant cannot read private student records or execute payments, payouts, enrolment changes or other admin actions. Anonymous and unverified access remains disabled.
+Administrators can review the minimal age-band and guardian-consent records through `dcds-ai-access-review.html`; the screen is restricted to authorised administrators. It cannot approve under-13 access. The assistant cannot read private student records or execute payments, payouts, enrolment changes or other admin actions. Anonymous, guest, visitor and unverified access is prohibited. DCDS AI is a members-only service and must never be opened as a public guest chat.
 
 - Describe only the environment and role behaviour that has actually been tested.
 - Do not claim that the verified-student tutor trial has passed before the dedicated account test succeeds.
