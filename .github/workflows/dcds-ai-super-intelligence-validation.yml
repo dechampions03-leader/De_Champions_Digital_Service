@@ -1,0 +1,133 @@
+name: DCDS Super Intelligence validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/dcds-ai-chat/**"
+      - "ai-learning-assistant.html"
+      - "dcds-ai-knowledge-base.json"
+      - "ai-config/**"
+      - ".github/workflows/dcds-ai-super-intelligence-validation.yml"
+  push:
+    branches:
+      - main
+      - feature/dcds-super-intelligence
+    paths:
+      - "supabase/functions/dcds-ai-chat/**"
+      - "ai-learning-assistant.html"
+      - "dcds-ai-knowledge-base.json"
+      - "ai-config/**"
+      - ".github/workflows/dcds-ai-super-intelligence-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dcds-super-intelligence-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check DCDS AI Edge Function
+        run: deno check supabase/functions/dcds-ai-chat/index.ts
+
+      - name: Validate live retrieval, privacy boundaries and evaluation coverage
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import json
+          from pathlib import Path
+
+          function_path = Path("supabase/functions/dcds-ai-chat/index.ts")
+          function = function_path.read_text(encoding="utf-8")
+          start = function.index("async function searchPlatformKnowledge(")
+          end = function.index("// Discover model names dynamically", start)
+          search_helper = function[start:end]
+
+          allowed_tables = (
+              'from("courses")',
+              'from("public_announcements")',
+              'from("dcds_reviews")',
+              'from("enrollments")',
+              'from("course_lessons")',
+              'from("course_materials")',
+          )
+          for table in allowed_tables:
+              if table not in search_helper:
+                  raise SystemExit(f"Live retrieval helper is missing approved source: {table}")
+
+          forbidden_tables = (
+              'from("payments")',
+              'from("orders")',
+              'from("profiles")',
+              'from("dcds_referrals")',
+              'from("dcds_reward_ledger")',
+              'from("dcds_payout_requests")',
+              'from("dcds_international_payout_requests")',
+              'from("student_support_tickets")',
+              'from("student_admin_notes")',
+              'from("quiz_answer_keys")',
+              'from("quiz_attempt_answers")',
+          )
+          for table in forbidden_tables:
+              if table in search_helper:
+                  raise SystemExit(f"Disallowed private/financial retrieval source found: {table}")
+
+          invariants = {
+              "student lesson retrieval is scoped to the student's own enrollments":
+                  '.from("enrollments").select("course_id").eq("user_id", userId)' in search_helper
+                  and '.in("course_id", courseIds)' in search_helper,
+              "announcements are published and time-scoped":
+                  '.eq("status", "published")' in search_helper
+                  and '.lte("starts_at", now)' in search_helper
+                  and "currentAnnouncements" in search_helper,
+              "reviews are approval-filtered":
+                  '.eq("is_approved", true)' in search_helper,
+              "Gemini model catalogue is discovered dynamically":
+                  "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100" in function
+                  and "supportedGenerationMethods" in function,
+              "Google Search is opt-in/freshness-triggered":
+                  "wantsExternalWebSearch(message, role)" in function
+                  and "google_search: {}" in function,
+              "grounded source links are returned":
+                  "groundingMetadata" in function and "Sources checked:" in function,
+              "general learning is not limited to the static brain":
+                  "Do not limit useful teaching to facts in the DCDS knowledge files" in function,
+              "shared DCDS facts require official source confirmation":
+                  "If a DCDS-specific fact cannot be confirmed" in Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8"),
+              "student memory remains owner-controlled":
+                  "dcds_ai_student_memory" in function
+                  and "user.id" in function,
+          }
+          failures = [name for name, passed in invariants.items() if not passed]
+          for name, passed in invariants.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} DCDS Super Intelligence invariants failed.")
+
+          knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
+          evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
+          test_ids = {item.get("id") for item in evaluation.get("tests", [])}
+          required_tests = {
+              "retrieval-001", "retrieval-002", "retrieval-003",
+              "learning-003", "web-001", "memory-001", "memory-002", "security-002",
+          }
+          missing = sorted(required_tests - test_ids)
+          if missing:
+              raise SystemExit("Missing DCDS Super Intelligence evaluation tests: " + ", ".join(missing))
+          if not knowledge.get("assistant_policy", {}).get("current_state"):
+              raise SystemExit("DCDS AI knowledge base has no current state policy.")
+          print("Validated DCDS AI knowledge JSON and all required Super Intelligence evaluation cases.")
+          PY
