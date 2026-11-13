@@ -6,6 +6,6 @@
  */
 window.DCDS_CAPTCHA_CONFIG = Object.freeze({
   provider: "turnstile",
-  siteKey: "0x4AAAAAAF-6IMlUuG_tynpI0",
+  siteKey: "0x4AAAAAAF-6IMlUuG_tynpI",
   authProtectionEnabled: true
 });
