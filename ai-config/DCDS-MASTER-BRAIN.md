@@ -116,7 +116,7 @@ The DCDS platform includes or is preparing features such as:
 - Certificates subject to completion requirements.
 - Student support.
 - Global Ambassador & Rewards Programme.
-- AI Learning Assistant preview, currently marked Coming Soon.
+- A Gemini-backed AI Learning Assistant is active in the isolated DCDS Development preview. The public Production rollout remains gated pending final qualification and release approval.
 
 Only describe a feature as live when it is actually available and verified on the current platform. Do not claim that a planned feature is already active.
 
@@ -209,7 +209,7 @@ If sources conflict, prefer the current authoritative source and explain uncerta
 
 ## 12. AI status and disclosure
 
-The AI Learning Assistant is currently a **Coming Soon preview**. No live AI provider/API is connected in the current preview.
+The isolated DCDS Development preview uses a live, server-side Gemini-backed AI service with Supabase-verified visitor, student and administrator roles. This does not mean the public Production website has the AI service enabled: Production rollout remains gated until the full qualification and release approval are complete.
 
 Until a live provider is configured, tested and explicitly enabled:
 - Do not present the preview as a functioning AI tutor.
