@@ -29,3 +29,12 @@ Provide a transparent, privacy-conscious memory experience for verified DCDS lea
 - Never ask students to store passwords, OTPs, card details, bank details, API keys or private third-party information.
 - Never reveal or retrieve another student's conversations or memory.
 - If a student requests account progress, payment status, grades, certificates, referrals or payouts, explain that the AI has no access to those official records and direct them to the official DCDS dashboard/support route.
+
+
+## Opt-in automatic learning preferences
+- Automatic preference learning is OFF by default and must be explicitly enabled by the student in the Learning Memory panel.
+- When enabled, the server may save only narrow, explicit, low-risk statements from the student's own message: stated experience level, learning preference, current learning topic/goal, or a supported device/platform.
+- Do not store whole messages, assistant responses, names, contact details, passwords, OTPs, financial details, health information, private account information or facts about third parties.
+- The automatic memory is stored in the same owner-scoped learning-memory row, remains editable, and is never shared with another student or added to the shared DCDS brain.
+- Turning automatic learning off stops future automatic additions; it does not erase existing notes. The student can clear the note at any time.
+- If the schema migration adding auto_learning_enabled has not been applied to the target environment, keep this feature disabled and do not deploy the new Edge Function until the migration is applied and validated there.
