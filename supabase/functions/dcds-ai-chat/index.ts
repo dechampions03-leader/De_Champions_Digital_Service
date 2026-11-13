@@ -100,6 +100,30 @@ function mergeLearningContext(existing: string, candidate: string): string {
 
 type DcdsKnowledgeSource = { kind: string; title: string; content: string };
 
+const DCDS_DIGITAL_TOOL_RESOURCES: Array<{ name: string; href: string; aliases: string[] }> = [
+  { name: "Canva", href: "https://www.canva.com/", aliases: ["canva"] },
+  { name: "CapCut", href: "https://www.capcut.com/", aliases: ["capcut"] },
+  { name: "Adobe Express", href: "https://www.adobe.com/express/", aliases: ["adobe express"] },
+  { name: "ChatGPT", href: "https://chatgpt.com/", aliases: ["chatgpt"] },
+  { name: "Claude", href: "https://claude.ai/", aliases: ["claude ai", "claude"] },
+  { name: "Gemini", href: "https://gemini.google.com/", aliases: ["gemini"] },
+  { name: "Grok", href: "https://grok.com/", aliases: ["grok"] },
+  { name: "YouTube Studio", href: "https://studio.youtube.com/", aliases: ["youtube studio"] },
+  { name: "Meta Business Suite", href: "https://business.facebook.com/", aliases: ["meta business suite"] },
+  { name: "Figma", href: "https://www.figma.com/", aliases: ["figma"] },
+  { name: "GitHub", href: "https://github.com/", aliases: ["github"] },
+  { name: "Supabase", href: "https://supabase.com/", aliases: ["supabase"] },
+  { name: "Cloudflare", href: "https://dash.cloudflare.com/", aliases: ["cloudflare"] },
+  { name: "WordPress", href: "https://wordpress.com/", aliases: ["wordpress"] },
+  { name: "Flutterwave", href: "https://flutterwave.com/", aliases: ["flutterwave"] },
+  { name: "Selar", href: "https://selar.com/", aliases: ["selar"] },
+  { name: "Google Drive", href: "https://drive.google.com/", aliases: ["google drive"] },
+  { name: "Google Docs", href: "https://docs.google.com/", aliases: ["google docs"] },
+  { name: "Notion", href: "https://www.notion.so/", aliases: ["notion"] },
+  { name: "Paystack", href: "https://paystack.com/", aliases: ["paystack"] },
+];
+
+
 function searchTokens(input: string): string[] {
   const stopWords = new Set([
     "the","and","for","with","from","what","when","where","which","who","why","how",
@@ -715,6 +739,11 @@ ${platformSearch.context}${savedMemoryInstruction}`;
   if (/\b(?:announcement|announcements|student update)\b/i.test(answer)) resources.push({ label: "View Student Announcements", href: "index.html#notificationPanel", kind: "resource" });
   if (/\b(?:approved review|student reviews|testimonials)\b/i.test(answer)) resources.push({ label: "Read Student Reviews", href: "index.html#studentReviews", kind: "resource" });
   if (/\b(?:privacy policy|data privacy)\b/i.test(answer)) resources.push({ label: "Read DCDS Privacy Policy", href: "privacy-policy.html", kind: "resource" });
+  for (const tool of DCDS_DIGITAL_TOOL_RESOURCES) {
+    if (tool.aliases.some((alias) => new RegExp("\\b" + alias.replace(/[.*+?^${}()|[\\]\\\\]/g, "\\\\  for (const source of uniqueWebSources) resources.push({ label: "Read: " + source.title, href: source.uri, kind: "source" });") + "\\b", "i").test(answer))) {
+      resources.push({ label: "Open " + tool.name, href: tool.href, kind: "tool" });
+    }
+  }
   for (const source of uniqueWebSources) resources.push({ label: "Read: " + source.title, href: source.uri, kind: "source" });
   const uniqueResources = [...new Map(resources.map((resource) => [resource.href, resource])).values()].slice(0, 10);
 
