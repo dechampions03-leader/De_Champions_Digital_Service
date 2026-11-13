@@ -173,19 +173,29 @@
 .dcds-ticker-viewport{flex:1;min-width:0;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 2%,#000 98%,transparent)}
 .dcds-ticker-track{display:flex;width:max-content;align-items:center;animation:dcdsTickerScroll 300s linear infinite;will-change:transform}
 .dcds-ticker-group{display:flex;align-items:center;flex:0 0 auto;gap:34px;padding:0 18px;white-space:nowrap}
-.dcds-ticker-entry{appearance:none;-webkit-appearance:none;border:0;background:transparent;padding:0;margin:0;display:inline-flex;align-items:center;gap:9px;color:#fff;font:600 12px/1.4 'DM Sans',sans-serif;text-align:left;cursor:pointer;border-radius:5px}
+.dcds-ticker-entry{appearance:none;-webkit-appearance:none;border:0;background:transparent;padding:0;margin:0;display:inline-flex;align-items:center;gap:9px;color:#fff;font:600 13px/1.45 'DM Sans',sans-serif;text-align:left;cursor:pointer;border-radius:5px}
 .dcds-ticker-entry:hover,.dcds-ticker-entry:focus-visible{color:#ffe6a1;text-decoration:underline;text-underline-offset:4px;outline:none}
 .dcds-announcement-full-message{white-space:pre-wrap;overflow-wrap:anywhere;color:#51465f;font-size:15px;line-height:1.8;margin:14px 0 4px}
 .dcds-announcement-date{display:block;margin-top:16px;color:#9877b8;font-size:11px;font-weight:750;letter-spacing:.04em}
 .dcds-ticker-entry strong{color:#ffe6a1;font-weight:900}
-.dcds-ticker-subheading{color:#e2c5ff;font-weight:900;text-shadow:0 0 10px #b889ed30}
+.dcds-ticker-subheading{font-weight:900;text-shadow:0 0 10px #b889ed30}
+.dcds-ticker-subheading.dcds-ticker-heading-1{color:#e2c5ff}
+.dcds-ticker-subheading.dcds-ticker-heading-2{color:#6bdcff}
+.dcds-ticker-subheading.dcds-ticker-heading-3{color:#8ee6ad}
+.dcds-ticker-subheading.dcds-ticker-heading-4{color:#ffd17e}
+.dcds-ticker-subheading.dcds-ticker-heading-5{color:#ff9fca}
 .dcds-ticker-message{color:#fff}
-.dcds-announcement-message-heading{display:block;color:#6c2aa3;font-weight:900;font-size:1.02em;line-height:1.5;margin:12px 0 3px}
+.dcds-announcement-message-heading{display:block;font-weight:900;font-size:1.02em;line-height:1.5;margin:12px 0 3px}
+.dcds-announcement-message-heading.dcds-announcement-heading-1{color:#7436ad}
+.dcds-announcement-message-heading.dcds-announcement-heading-2{color:#087b9b}
+.dcds-announcement-message-heading.dcds-announcement-heading-3{color:#23834b}
+.dcds-announcement-message-heading.dcds-announcement-heading-4{color:#a86500}
+.dcds-announcement-message-heading.dcds-announcement-heading-5{color:#c13d7f}
 .dcds-ticker-separator{color:#e8c66e;font-size:15px}
 .dcds-announcement-ticker:hover .dcds-ticker-track,.dcds-announcement-ticker:focus-within .dcds-ticker-track{animation-play-state:paused}
 @keyframes dcdsTickerScroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 @media(prefers-reduced-motion:reduce){.dcds-ticker-track{animation:none!important;transform:none!important}}
-  @media(max-width:480px){.dcds-ticker-label{padding:0 10px;font-size:8px}.dcds-ticker-entry{font-size:11px}.dcds-ticker-group{gap:24px}}
+  @media(max-width:480px){.dcds-ticker-label{padding:0 10px;font-size:8px}.dcds-ticker-entry{font-size:12px}.dcds-ticker-group{gap:24px}}
 
 </style>
 <style id="dcds-scroll-motion">
@@ -1054,32 +1064,37 @@ function getDcdsAnnouncementHeading(line,index,lines){
  if(!trimmed)return null;
  const markdown=trimmed.match(/^#{1,3}\s+(.+)$/)||trimmed.match(/^\*\*(.+)\*\*$/);
  if(markdown)return markdown[1].trim();
+ const numbered=trimmed.match(/^\d+[.)]\s+(.+)$/);
+ if(numbered&&numbered[1].trim().length<=72)return trimmed;
  const previous=index>0?String(lines[index-1]??'').trim():'';
  const shortStandalone=trimmed.length<=72
   && !/[.!?;:]$/.test(trimmed)
-  && !/^(?:[-*•]|\d+[.)])\s/.test(trimmed)
+  && !/^(?:[-*•])\s/.test(trimmed)
   && (index===0||!previous);
  return shortStandalone?trimmed:null;
 }
 function formatDcdsAnnouncementMessageHtml(message){
  const lines=String(message??'').split(/\r?\n/);
+ let headingIndex=0;
  return lines.map((line,index)=>{
   const heading=getDcdsAnnouncementHeading(line,index,lines);
-  return heading
-   ?'<strong class="dcds-announcement-message-heading">'+escapeHtml(heading)+'</strong>'
-   :escapeHtml(line);
+  if(!heading)return escapeHtml(line);
+  const colourNumber=(headingIndex++%5)+1;
+  return '<strong class="dcds-announcement-message-heading dcds-announcement-heading-'+colourNumber+'">'+escapeHtml(heading)+'</strong>';
  }).join('\n');
 }
 function appendDcdsTickerMessage(target,message){
- const lines=String(message??'').split(/\\r?\\n/);
+ const lines=String(message??'').split(/\r?\n/);
  let hasContent=false;
+ let headingIndex=0;
  lines.forEach((line,index)=>{
   if(!line.trim())return;
   if(hasContent)target.append(document.createTextNode(' · '));
   const heading=getDcdsAnnouncementHeading(line,index,lines);
   if(heading){
+   const colourNumber=(headingIndex++%5)+1;
    const accent=document.createElement('strong');
-   accent.className='dcds-ticker-subheading';
+   accent.className='dcds-ticker-subheading dcds-ticker-heading-'+colourNumber;
    accent.textContent=heading;
    target.append(accent);
   }else{
