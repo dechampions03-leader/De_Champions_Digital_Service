@@ -195,57 +195,32 @@ async function searchPlatformKnowledge(
   return { context, sources: boundedSources };
 }
 
-// Discover model names dynamically and use only models that the Gemini API
-// currently lists as supporting generateContent. Cache the result per isolate.
-let cachedGeminiModels: { names: string[]; expiresAt: number } | null = null;
-const MODEL_PREFERENCE = [
-  "gemini-4-hydrogen", "gemini-4-carbon", "gemini-4-argon",
-  "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash",
-  "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
-];
-const STATIC_DOCUMENTED_MODELS = [
-  "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
-];
-const GOOGLE_SEARCH_MODELS = new Set([
-  "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash",
-  "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
-]);
-
-async function listAvailableGeminiModels(apiKey: string): Promise<string[] | null> {
-  if (cachedGeminiModels && cachedGeminiModels.expiresAt > Date.now()) return cachedGeminiModels.names;
-  try {
-    const response = await fetch("https://generativelanguage.googleapis.com/v1beta/models?pageSize=100", {
-      headers: { "x-goog-api-key": apiKey },
-      signal: AbortSignal.timeout(4000),
-    });
-    if (!response.ok) throw new Error("Gemini models.list returned HTTP " + response.status);
-    const payload = await response.json();
-    const names = Array.isArray(payload?.models)
-      ? payload.models
-        .filter((item: Record<string, unknown>) =>
-          Array.isArray(item.supportedGenerationMethods)
-          && item.supportedGenerationMethods.includes("generateContent"))
-        .map((item: Record<string, unknown>) =>
-          typeof item.name === "string" ? item.name.replace(/^models\//, "") : "")
-        .filter((name: string) =>
-          /^gemini-[a-z0-9.-]+$/i.test(name)
-          && !/(embedding|image|audio|tts|live|computer|robotics|deep-research)/i.test(name))
-      : [];
-    if (!names.length) throw new Error("Gemini models.list returned no supported text-generation models.");
-    cachedGeminiModels = { names, expiresAt: Date.now() + 10 * 60 * 1000 };
-    return names;
-  } catch (error) {
-    console.warn("DCDS AI could not refresh the Gemini model catalogue; using documented fallbacks.", error);
-    return null;
-  }
-}
-
 function wantsExternalWebSearch(message: string, role: "student" | "admin"): boolean {
   if (role !== "student") return false;
   if (/\b(password|otp|one[- ]time code|payment status|bank details|payout status|my enrolment|my enrollment|my grades|my progress|my certificate|my account)\b/i.test(message)) return false;
-  // DCDS operational facts should use live DCDS records, never generic web pages.
   if (/\b(DCDS|course fee|course price|enrolment|enrollment|payment|referral|payout|certificate|my lesson|my course)\b/i.test(message)) return false;
   return /\b(search the web|search online|look online|on the internet|latest news|recent news|recent developments|this week|up[- ]to[- ]date|newest version|latest version)\b/i.test(message);
+}
+
+const sexualisedMinorPattern = /\b(?:child|children|minor|underage|schoolboy|schoolgirl|young teen|teenager)\b[\s\S]{0,100}\b(?:nude|naked|sexual|sexually explicit|porn|pornographic|sext|erotic|fetish)\b/i;
+
+function isHighRiskModerationCategory(categories: Record<string, unknown>): boolean {
+  const highRisk = ["sexual/minors", "self-harm/instructions", "violence/graphic", "hate/threatening", "illicit/violent"];
+  return highRisk.some((category) => categories[category] === true);
+}
+
+async function moderateDcdsText(apiKey: string, text: string): Promise<{ flagged: boolean; categories: Record<string, unknown> }> {
+  const response = await fetch("https://api.openai.com/v1/moderations", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "Authorization": "Bearer " + apiKey },
+    body: JSON.stringify({ model: "omni-moderation-latest", input: text }),
+    signal: AbortSignal.timeout(9000),
+  });
+  if (!response.ok) throw new Error("DCDS safety moderation returned HTTP " + response.status);
+  const payload = await response.json();
+  const result = Array.isArray(payload?.results) ? payload.results[0] : null;
+  if (!result || typeof result !== "object") throw new Error("DCDS safety moderation returned an invalid result.");
+  return { flagged: result.flagged === true, categories: result.categories && typeof result.categories === "object" ? result.categories : {} };
 }
 
 Deno.serve(async (request: Request) => {
@@ -263,8 +238,8 @@ Deno.serve(async (request: Request) => {
       try { return JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") ?? "{}").default; }
       catch { return undefined; }
     })();
-  const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-  const model = Deno.env.get("DCDS_AI_MODEL") || "gemini-3.6-flash";
+  const openAiApiKey = Deno.env.get("OPENAI_API_KEY");
+  const model = Deno.env.get("DCDS_AI_MODEL") || "gpt-6-astra";
 
   if (!supabaseUrl || !publishableKey) {
     return json({ success: false, error: "DCDS authentication is not configured." }, 503);
@@ -331,11 +306,8 @@ Deno.serve(async (request: Request) => {
     return json({ success: false, error: "Message limit reached. Please wait one minute and try again." }, 429);
   }
 
-  if (!geminiApiKey) {
-    return json({
-      success: false,
-      error: "AI_NOT_CONFIGURED: the Gemini provider key has not yet been configured in Production Supabase secrets.",
-    }, 503);
+  if (!openAiApiKey) {
+    return json({ success: false, error: "The DCDS AI service is being prepared for its next release. Please try again later or contact DCDS support." }, 503);
   }
 
   let knowledge: string;
