@@ -32,14 +32,15 @@
 - An 18+ account requires an administrator-reviewed `age_band=18_plus`, `access_status=approved` record.
 - A 13–17 account requires an administrator-reviewed age record, a separately approved adult DCDS guardian account, verified guardian consent and a non-sensitive internal consent evidence reference.
 - **13–17 access remains disabled by default** (`DCDS_AI_TEENS_ENABLED` is unset/false and the page release switch is false). A guardian-approved record does not unlock chat until DCDS completes and approves the under-18 disclosure, monitoring, escalation and real-account tests.
-- Under-13 requests are recorded as blocked. **Do not approve under-13 AI access** until OpenAI confirms Zero Data Retention eligibility and it is implemented for the exact API project, and DCDS completes additional child-safety, privacy and legal review.
+- Under-13 requests are recorded as blocked. **Do not approve under-13 AI access** until DCDS selects a provider whose data-processing and retention terms are suitable for this use, completes age-appropriate child-safety, privacy and legal review, and implements all required safeguards. A provider feature flag is not evidence of approval.
 - Age typed into chat or selected in the browser is not proof. Browser-supplied role, guardian flags or eligibility values must never unlock access.
 - Do not collect a full date of birth, identity-document image or unnecessary sensitive family details in the AI system.
 
 ## Provider, privacy and child-safety gates
 
-1. Add `OPENAI_API_KEY` through Supabase Edge Function secrets only. Never place secrets in HTML, GitHub or chat.
-2. Confirm the OpenAI API project/organisation, billing, model availability, budget limits and provider-side alerts before launch.
+1. **Current budget decision:** do not add `OPENAI_API_KEY`; OpenAI billing is separate from ChatGPT Go. The current PR code cannot run without a funded OpenAI API project, so keep it draft/unmerged.
+2. First evaluate a Gemini-based candidate using the existing provider integration and the existing DCDS-Development Free project. Confirm the exact model, quota availability, safety-filter behaviour and data terms before changing the deployment path. Do not assume the candidate's model name or free quota is currently available.
+3. If DCDS later chooses OpenAI, add `OPENAI_API_KEY` through Supabase Edge Function secrets only; never place secrets in HTML, GitHub or chat, and confirm the API project, billing, model availability, budget limits and alerts before launch.
 3. Review current OpenAI Under-18 API Guidance and ensure DCDS has appropriate age assurance, child-appropriate disclosures, content filters, monitoring, escalation and support processes.
 4. Do not send known or suspected child sexual abuse material to the Moderation API. The endpoint is not a CSAM detector; suspected material requires a separate safeguarding route.
 5. `store: false` does not confer Zero Data Retention. Standard API abuse monitoring may retain content for up to 30 days unless the project has an approved ZDR or modified-monitoring arrangement.
