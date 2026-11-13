@@ -59,7 +59,7 @@ jobs:
           from pathlib import Path
           for page in ("ai-learning-assistant.html", "dcds-ai-access-review.html"):
               html = Path(page).read_text(encoding="utf-8")
-              scripts = re.findall(r"<script\\b(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)</script>", html, re.I)
+              scripts = re.findall(r"<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)</script>", html, re.I)
               for i, script in enumerate(scripts):
                   if script.strip():
                       Path(f"/tmp/{Path(page).stem}-{i}.js").write_text(script, encoding="utf-8")

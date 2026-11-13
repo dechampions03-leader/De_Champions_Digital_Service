@@ -44,8 +44,8 @@ async function loadKnowledge(): Promise<string> {
 // Conservative local guard for common identifiers, credentials and sensitive topics.
 // It is not a guarantee that all personal data can be detected; the UI and policy
 // also instruct learners not to submit personal, sensitive or confidential data.
-const restrictedPersonalDataPattern = /(?:[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|https?:\\/\\/|\\+?\\d[\\d ()-]{7,}\\d|\\b(?:password|passcode|otp|one[- ]time code|card number|cvv|bank account|account number|bvn|nin|passport|home address|date of birth|\\bdob\\b|my name is|i live at|my phone|my email|medical record|diagnos(?:is|ed|tic)|medication|pregnan\\w*|mental health|hiv|aids|religion|church|mosque|politic\\w*|sexual orientation|criminal record|salary|income|debt)\\b)/i;
-const thirdPartyPersonalContextPattern = /\\b(?:my|our)\\s+(?:child|son|daughter|wife|husband|spouse|partner|parent|mother|father|friend|relative|colleague|boss|employee|customer|client|patient|student|family|sibling|brother|sister|teacher|doctor|lawyer)\\b/i;
+const restrictedPersonalDataPattern = /(?:[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}|https?:\/\/|\+?\d[\d ()-]{7,}\d|\b(?:password|passcode|otp|one[- ]time code|card number|cvv|bank account|account number|bvn|nin|passport|home address|date of birth|\bdob\b|my name is|i live at|my phone|my email|medical record|diagnos(?:is|ed|tic)|medication|pregnan\w*|mental health|hiv|aids|religion|church|mosque|politic\w*|sexual orientation|criminal record|salary|income|debt)\b)/i;
+const thirdPartyPersonalContextPattern = /\b(?:my|our)\s+(?:child|son|daughter|wife|husband|spouse|partner|parent|mother|father|friend|relative|colleague|boss|employee|customer|client|patient|student|family|sibling|brother|sister|teacher|doctor|lawyer)\b/i;
 function containsRestrictedPersonalData(value: string): boolean {
   return restrictedPersonalDataPattern.test(value) || thirdPartyPersonalContextPattern.test(value);
 }
@@ -54,16 +54,16 @@ const safeLearningPreferencePattern = /^(?:step[- ]by[- ]step(?: explanations?)?
 function extractExplicitLearningPreference(message: string): string | null {
   if (message.length > 2500 || containsRestrictedPersonalData(message)) return null;
   const patterns: Array<{ pattern: RegExp; label: string; preferenceOnly?: boolean }> = [
-    { pattern: /\\bI(?:'m| am) (?:a )?(beginner|intermediate|advanced) (?:in|at|with) ([^.!?\\n]{2,70})/i, label: "Experience level" },
-    { pattern: /\\bI prefer ([^.!?\\n]{2,90})/i, label: "Learning preference", preferenceOnly: true },
-    { pattern: /\\bMy learning goal is ([^.!?\\n]{2,90})/i, label: "Learning goal" },
-    { pattern: /\\bI(?:'m| am) learning ([^.!?\\n]{2,80})/i, label: "Current learning topic" },
-    { pattern: /\\bI use (?:an? )?(Android|iPhone|iPad|Windows|Mac|Linux)\\b/i, label: "Device or platform" },
+    { pattern: /\bI(?:'m| am) (?:a )?(beginner|intermediate|advanced) (?:in|at|with) ([^.!?\n]{2,70})/i, label: "Experience level" },
+    { pattern: /\bI prefer ([^.!?\n]{2,90})/i, label: "Learning preference", preferenceOnly: true },
+    { pattern: /\bMy learning goal is ([^.!?\n]{2,90})/i, label: "Learning goal" },
+    { pattern: /\bI(?:'m| am) learning ([^.!?\n]{2,80})/i, label: "Current learning topic" },
+    { pattern: /\bI use (?:an? )?(Android|iPhone|iPad|Windows|Mac|Linux)\b/i, label: "Device or platform" },
   ];
   for (const item of patterns) {
     const match = message.match(item.pattern);
     if (!match) continue;
-    const detail = match.slice(1).filter(Boolean).join(" ").replace(/\\s+/g, " ").trim();
+    const detail = match.slice(1).filter(Boolean).join(" ").replace(/\s+/g, " ").trim();
     if (!detail || detail.length > 110) continue;
     if (item.preferenceOnly && !safeLearningPreferencePattern.test(detail)) continue;
     return item.label + ": " + detail;
@@ -73,7 +73,7 @@ function extractExplicitLearningPreference(message: string): string | null {
 function mergeLearningContext(existing: string, candidate: string): string {
   const current = existing.trim();
   if (current.toLowerCase().includes(candidate.toLowerCase())) return current.slice(0, 1200);
-  const combined = [current, candidate].filter(Boolean).join("\\n");
+  const combined = [current, candidate].filter(Boolean).join("\n");
   return combined.length <= 1200 ? combined : current;
 }
 
