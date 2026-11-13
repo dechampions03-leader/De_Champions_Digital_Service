@@ -75,7 +75,7 @@ jobs:
               "Guests cannot access student-only saved history or enrolled lessons": 'if (role === "student")' in files["edge"] and "data.role==='guest'" in files["ai"] and "isGuestSession=true" in files["ai"],
               "Adults do not require a second global access switch": "dcds_ai_access_settings" not in files["edge"],
               "Teen access still requires verified guardian consent and under-13 remains blocked": 'eligibility.guardian_consent_status === "verified"' in files["edge"] and "under-13" in files["edge"].lower() and "Under-13 AI access remains blocked" in files["privacy"],
-              "Failed chat sends preserve the draft and do not reopen the mobile keyboard": "Your draft is still in the message box" in files["ai"] and "input.blur()" in files["ai"] and "input.focus()" not in submit_handler,
+              "Failed chat sends preserve the draft and do not reopen the mobile keyboard": "your draft is still in the message box" in files["ai"] and "input.blur()" in files["ai"] and "input.focus()" not in submit_handler,
               "Public visitor processing and temporary chats are disclosed": "visitor chat transcripts" in files["privacy"] and "temporary anonymous session" in files["privacy"],
               "Age policy database migration is present": "create table if not exists public.dcds_ai_access_settings" in files["age-policy-migration"],
               "Production CAPTCHA activation is enabled after Supabase Auth secret is configured": 'authProtectionEnabled: true' in files["captcha"],
