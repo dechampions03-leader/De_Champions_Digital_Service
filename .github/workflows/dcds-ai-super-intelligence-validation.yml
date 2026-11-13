@@ -99,7 +99,7 @@ jobs:
                   "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100" in function
                   and "supportedGenerationMethods" in function,
               "Google Search is opt-in/freshness-triggered":
-                  "wantsExternalWebSearch(message, role)" in function
+                  "wantsExternalWebSearch(promptMessage, role)" in function
                   and "google_search: {}" in function,
               "grounded source links are returned":
                   "groundingMetadata" in function and "Sources checked:" in function,
@@ -110,6 +110,21 @@ jobs:
               "student memory remains owner-controlled":
                   "dcds_ai_student_memory" in function
                   and "user.id" in function,
+              "image data is sent to Gemini as transient inline data":
+                  "inlineData" in function and "imageAttachment" in function,
+              "image file type, size and signature are checked":
+                  "maxImageBytes" in function and "allowedImageTypes" in function
+                  and "isJpeg" in function and "isPng" in function and "isWebp" in function,
+              "uploaded image files are not stored in DCDS chat history":
+                  "The image file itself is not stored in DCDS chat history" in function,
+              "image history markers tell the assistant to request reattachment":
+                  "ask them to attach it again" in function,
+              "voice input and spoken replies have browser fallback controls":
+                  "SpeechRecognition" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "speechSynthesis" in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
+              "image upload UI is connected to the chat request":
+                  "attachImageButton" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "requestBody.image" in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
           }
           failures = [name for name, passed in invariants.items() if not passed]
           for name, passed in invariants.items():
@@ -123,6 +138,7 @@ jobs:
           required_tests = {
               "retrieval-001", "retrieval-002", "retrieval-003",
               "learning-003", "web-001", "memory-001", "memory-002", "security-002",
+              "image-001", "image-002", "voice-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
