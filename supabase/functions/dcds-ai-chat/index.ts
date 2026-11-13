@@ -408,8 +408,10 @@ Deno.serve(async (request: Request) => {
   }
 
   const rateLimit = role === "student" ? 5 : 8;
+  const dailyRateLimit = role === "student" ? 60 : 120;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
+    p_daily_limit: dailyRateLimit,
   });
   if (quotaError) {
     console.error("DCDS AI quota check failed:", quotaError.message);
