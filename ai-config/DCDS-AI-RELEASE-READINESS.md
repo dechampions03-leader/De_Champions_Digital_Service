@@ -18,7 +18,7 @@
 
 ## Access policy
 
-- Every account must be authenticated, contact-verified, non-anonymous and assigned its role server-side.
+- Every account must be authenticated, contact-verified, non-anonymous and assigned its role server-side. DCDS AI is members-only: no guests, anonymous sessions, public visitors, open demo mode or general public access.
 - An 18+ account requires an administrator-reviewed `age_band=18_plus`, `access_status=approved` record.
 - A 13–17 account requires an administrator-reviewed age record, a separately approved adult DCDS guardian account, verified guardian consent and a non-sensitive internal consent evidence reference.
 - Under-13 requests are recorded as blocked. **Do not approve under-13 AI access** until OpenAI confirms Zero Data Retention eligibility and it is implemented for the exact API project, and DCDS completes additional child-safety, privacy and legal review.
@@ -78,7 +78,7 @@ Do not deploy the candidate Edge Function until its schema, functions, RLS and a
 - Conversation history can be saved, reopened and deleted; optional learning preference storage stays OFF until explicitly enabled and can be switched off/cleared.
 - Per-minute and daily caps return a controlled limit message.
 - Admin eligibility review is inaccessible to students and cannot approve under-13 accounts.
-- Visitor access remains disabled.
+- General visitor access is permanently out of scope for this release; do not add a visitor mode or guest chat in future release work.
 
 ## Release integrity
 
