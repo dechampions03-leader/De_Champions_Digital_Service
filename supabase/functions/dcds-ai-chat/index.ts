@@ -278,6 +278,44 @@ Deno.serve(async (request: Request) => {
   }
   if (isAdmin === true) role = "admin";
 
+  // Administrators are authorised by the server-side admin registry and do not
+  // need a student age-review row. Student access is enforced here as well as
+  // in the browser so direct Edge Function calls cannot bypass age controls.
+  if (role === "student") {
+    const [policyResult, eligibilityResult] = await Promise.all([
+      userClient.from("dcds_ai_access_settings")
+        .select("adult_access_enabled,teen_access_enabled")
+        .eq("id", 1).maybeSingle(),
+      userClient.from("dcds_ai_access_eligibility")
+        .select("age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_reference,guardian_consent_at")
+        .eq("user_id", user.id).maybeSingle(),
+    ]);
+
+    if (policyResult.error || !policyResult.data || eligibilityResult.error) {
+      console.error("DCDS AI age-access policy check failed:", policyResult.error?.message ?? eligibilityResult.error?.message);
+      return json({ success: false, error: "DCDS AI age-access verification is temporarily unavailable. Please try again later." }, 503);
+    }
+
+    const policy = policyResult.data;
+    const eligibility = eligibilityResult.data;
+    const adultAllowed = policy.adult_access_enabled === true
+      && eligibility?.age_band === "18_plus"
+      && eligibility.access_status === "approved"
+      && eligibility.guardian_consent_status === "not_required";
+    const teenAllowed = policy.teen_access_enabled === true
+      && eligibility?.age_band === "13_17"
+      && eligibility.access_status === "approved"
+      && eligibility.guardian_consent_status === "verified"
+      && Boolean(eligibility.guardian_user_id && eligibility.guardian_consent_reference && eligibility.guardian_consent_at);
+
+    if (!adultAllowed && !teenAllowed) {
+      return json({
+        success: false,
+        error: "DCDS AI access is not enabled for this account's age group. Complete the required eligibility and guardian-consent review, or contact DCDS support.",
+      }, 403);
+    }
+  }
+
   const rateLimit = role === "student" ? 10 : 15;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
