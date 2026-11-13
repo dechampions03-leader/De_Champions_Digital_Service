@@ -1,56 +1,83 @@
 # DCDS AI — Production release readiness
 
 **Last reviewed:** 13 November 2026  
-**Scope:** DCDS AI Learning Assistant, its shared website/dashboard surface, and the opt-in automatic learning-preference extension.
+**Candidate:** `feature/dcds-ai-private-learning-memory` / PR #59  
+**Current Production:** Supabase `dcds-ai-chat` remains the previous deployed release. This candidate is not merged or deployed.
 
-## Current verified state
+## Candidate scope
 
-- The Production Supabase Edge Function `dcds-ai-chat` is ACTIVE, version 4, with JWT verification enabled.
-- The live service requires a verified account and derives the student/administrator role on the server. Anonymous visitor access remains disabled.
-- The automatic learning-preference extension is a candidate on `feature/dcds-ai-private-learning-memory` / PR #59. It is not yet merged or deployed.
-- The candidate schema change adds `auto_learning_enabled BOOLEAN NOT NULL DEFAULT false`; existing students remain opted out.
-- A passing CI run validates type-checking and static privacy/retrieval invariants. It is not a substitute for an authenticated end-to-end student test.
+- OpenAI Responses API generation, default model `gpt-6-astra`, and server-only `OPENAI_API_KEY`.
+- OpenAI Moderation API checks before and after generation, with fail-closed behaviour.
+- DCDS-owned identity and concise, polished GPT-style writing. No voluntary vendor or infrastructure disclosure in ordinary assistant replies.
+- Safe Markdown rendering using DOM nodes and text-only content, never model-generated HTML.
+- Native DCDS action buttons for verified course, enrolled lesson/material, service, announcement, dashboard, support, privacy and grounded web resources.
+- Optional student-controlled learning preference capture, OFF by default and owner-scoped.
+- Server-enforced age-band eligibility and guardian review, plus an administrator-only review page.
+- Rolling per-minute and daily per-account AI request limits.
 
-## Release blockers that must be resolved
+## Access policy
 
-### 1. Age and provider eligibility
+- Every account must be authenticated, contact-verified, non-anonymous and assigned its role server-side.
+- An 18+ account requires an administrator-reviewed `age_band=18_plus`, `access_status=approved` record.
+- A 13–17 account requires an administrator-reviewed age record, a separately approved adult DCDS guardian account, verified guardian consent and a non-sensitive internal consent evidence reference.
+- Under-13 requests are recorded as blocked. **Do not approve under-13 AI access** until OpenAI confirms Zero Data Retention eligibility and it is implemented for the exact API project, and DCDS completes additional child-safety, privacy and legal review.
+- Age typed into chat or selected in the browser is not proof. Browser-supplied role, guardian flags or eligibility values must never unlock access.
+- Do not collect a full date of birth, identity-document image or unnecessary sensitive family details in the AI system.
 
-The Gemini API Additional Terms effective 23 March 2026 require API users to be at least 18 and prohibit using the API in an application directed to, or likely to be accessed by, people under 18:
-https://ai.google.dev/gemini-api/terms
+## Provider, privacy and child-safety gates
 
-DCDS's privacy notice contemplates younger learners and parent/guardian-managed accounts. The current public `profiles` table has no date-of-birth field, so no database-backed age gate is evident from that table.
+1. Add `OPENAI_API_KEY` through Supabase Edge Function secrets only. Never place secrets in HTML, GitHub or chat.
+2. Confirm the OpenAI API project/organisation, billing, model availability, budget limits and provider-side alerts before launch.
+3. Review current OpenAI Under-18 API Guidance and ensure DCDS has appropriate age assurance, child-appropriate disclosures, content filters, monitoring, escalation and support processes.
+4. Do not send known or suspected child sexual abuse material to the Moderation API. The endpoint is not a CSAM detector; suspected material requires a separate safeguarding route.
+5. `store: false` does not confer Zero Data Retention. Standard API abuse monitoring may retain content for up to 30 days unless the project has an approved ZDR or modified-monitoring arrangement.
+6. Keep under-13 access blocked until ZDR is formally approved and effective. Do not treat the presence of a feature flag as provider approval.
+7. Confirm the Privacy Policy describes the actual API data path, moderation checks, storage and retention. Have DCDS's privacy/legal reviewer approve the under-18 launch approach.
 
-**Do not expand or re-release Gemini-backed student AI until DCDS confirms that the AI surface is genuinely restricted to adults and that the provider terms permit the deployment.** If DCDS needs AI access for under-18 learners, select a provider/product whose terms and safeguarding controls permit that use; do not rely on a simple UI disclaimer.
+Official references:
+- https://developers.openai.com/api/docs/guides/safety-checks/under-18-api-guidance
+- https://developers.openai.com/api/docs/guides/your-data
+- https://developers.openai.com/api/docs/guides/moderation
+- https://developers.openai.com/api/docs/models/gpt-6-astra
 
-### 2. Gemini API billing and data handling
+## Database migrations required before deploy
 
-Google's terms distinguish Unpaid Services from Paid Services. With Unpaid Services, prompts and responses may be used to improve and develop Google products and may be reviewed by humans. With Paid Services, prompts and responses are not used for product improvement, but limited logging may still occur for safety and legal requirements. Gemini API access is treated as Paid Services when the API is accessed through a Cloud Project with an active billing account.
+Apply and verify all of these additive migrations in the target environment:
+1. `20261113110000_dcds_ai_opt_in_learning_memory.sql` — automatic learning flag, default OFF.
+2. `20261113120000_dcds_ai_age_guardian_eligibility.sql` — age bands, consent audit reference, RLS and approved-adult guardian check.
+3. `20261113123000_dcds_ai_daily_usage_budget.sql` — rolling minute plus daily request counts and function.
 
-DCDS must verify the billing status of the exact Cloud Project used by the Production `GEMINI_API_KEY`. Do not assume a key is on paid terms merely because the application is deployed or because API usage has a quota. Do not send sensitive or confidential student information to unpaid service.
+Do not deploy the candidate Edge Function until its schema, functions, RLS and admin review UI exist.
 
-Reference: https://ai.google.dev/gemini-api/terms
+## Controlled rollout sequence
 
-## Safe release sequence after blockers are cleared
+1. Configure provider secrets and provider-side budget/usage alerts.
+2. Obtain and record the DCDS provider, privacy and child-safety approval.
+3. Apply the three migrations in Development; inspect RLS and SQL advisor results.
+4. Merge PR #59 only after approval and all CI checks pass.
+5. Deploy the matching Edge Function and page together. Keep visitor access disabled.
+6. Start with a small controlled cohort: DCDS administrators and adult test students first. Validate the provider response, source citations, buttons, history, memory and quota behaviour.
+7. Add 13–17 learners only after the guardian-review flow, verified adult guardian RPC, parent consent evidence handling, support/escalation and adult-under-18 disclosure process have been tested.
+8. Keep under-13 blocked until the exact project receives approved ZDR and DCDS completes the additional under-13 release review.
+9. Verify production version, run post-deploy smoke tests, inspect logs and monitor token usage/cost before expanding cohort sizes.
 
-1. Record the approved age/provider decision and verify the Gemini API Cloud Project billing status.
-2. Confirm the public privacy notice accurately describes the actual provider mode and data flow.
-3. Apply the additive opt-in migration. It must remain OFF by default.
-4. Merge the reviewed candidate only after CI passes.
-5. Deploy the matching Edge Function and website page as one release; do not deploy code before the schema exists.
-6. Verify the deployed function version and page deployment.
-7. Run tests with a verified, non-admin adult student account:
-   - Send a general tutoring request and confirm a complete, practical answer.
-   - Save a conversation, start a new one, reopen the old one, and delete it.
-   - Leave automatic learning OFF and verify no preferences are appended.
-   - Enable it explicitly; send a harmless preference such as “I prefer step-by-step explanations”; confirm only that preference is saved.
-   - Try sensitive and third-party examples; confirm none is saved.
-   - Turn automatic learning OFF and confirm future additions stop.
-   - Clear the memory and confirm it is removed.
-   - Verify a second account cannot read the first account's conversations or memory.
+## Required tests
+
+- Valid adult request succeeds only after administrator approval; missing or pending eligibility returns 403 and never contacts the provider.
+- 13–17 cannot access without a separately approved adult guardian account, guardian consent reference and administrator approval.
+- Under-13 remains blocked even if a browser request attempts to alter the record; the environment flag alone is insufficient.
+- Known or suspected child sexual exploitation inputs are intercepted locally and never forwarded to the Moderation or generation API.
+- Input and output moderation failures are closed safely; no unmoderated answer is returned.
+- No assistant response contains volunteered model-vendor branding; direct technical-provider questions remain truthful.
+- Simple questions are concise; substantial lessons contain the requested tools, steps, prompts, examples and checks.
+- Valuable DCDS courses, enrolled lessons/materials, dashboard, services and official pages render real native action buttons.
+- Invalid links are discarded; assistant text is rendered as text/Markdown nodes and never as executable HTML.
+- Course and enrolled lesson buttons resolve; a second student cannot see the first student's enrolled lesson or memory.
+- Conversation history can be saved, reopened and deleted; optional learning preference storage stays OFF until explicitly enabled and can be switched off/cleared.
+- Per-minute and daily caps return a controlled limit message.
+- Admin eligibility review is inaccessible to students and cannot approve under-13 accounts.
+- Visitor access remains disabled.
 
 ## Release integrity
 
-- A deployment status is not proof that a student workflow passed.
-- Never say personal referral, payment, payout, certificate, grade or account status was checked unless a protected platform tool actually checked it.
-- Never let private chats or student memory become shared DCDS knowledge automatically.
-- Keep visitor access disabled until a separate security review qualifies CAPTCHA, rate limits and abuse controls.
+A CI pass proves only the checks that CI actually runs. It does not prove provider billing, age assurance, guardian consent, ZDR approval, a real signed-in student flow, legal compliance, production deployment or cost safety. Record those independently.
