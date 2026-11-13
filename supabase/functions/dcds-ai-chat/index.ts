@@ -1,3 +1,5 @@
+// Production Gemini-backed runtime for DCDS AI.
+// Uses the existing Production Supabase Gemini secret and age-eligibility controls.
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -104,18 +106,15 @@ Deno.serve(async (request: Request) => {
     return json({ success: false, error: "Please enter a message between 1 and 2,500 characters." }, 400);
   }
 
-  // Role is derived only from the verified Supabase user and the existing
-  // server-side is_dcds_admin() function. Never accept a browser-supplied role.
+  // DCDS AI is members-only. Reject anonymous or unverified accounts,
+  // and never trust age, role or guardian values supplied by the browser.
   const anonymous = user.is_anonymous === true;
   const verifiedContact = Boolean(user.email_confirmed_at || user.phone_confirmed_at);
-
-  // Stage 1 is a controlled release for verified DCDS accounts only.
-  // Visitor access remains disabled until Production CAPTCHA and abuse limits
-  // have been separately qualified. Enforce this on the server, not just UI.
   if (anonymous || !verifiedContact) {
     return json({
       success: false,
-      error: "DCDS AI is currently available to verified DCDS students and administrators. Please sign in with a verified account.",
+      code: "DCDS_VERIFIED_ACCOUNT_REQUIRED",
+      error: "DCDS AI is available only to signed-in, contact-verified DCDS accounts.",
     }, 403);
   }
 
@@ -127,6 +126,90 @@ Deno.serve(async (request: Request) => {
   }
   if (isAdmin === true) role = "admin";
 
+  // Check server-side eligibility before quota consumption, saved history/memory
+  // reads, or any request to Gemini. A page-level lock is not authorization.
+  const { data: aiEligibility, error: eligibilityError } = await userClient
+    .from("dcds_ai_access_eligibility")
+    .select("age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_at,guardian_consent_reference")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (eligibilityError) {
+    console.error("DCDS AI eligibility check failed:", eligibilityError.message);
+    return json({
+      success: false,
+      code: "AI_ELIGIBILITY_UNAVAILABLE",
+      error: "DCDS AI access verification is temporarily unavailable. Please try again later.",
+    }, 503);
+  }
+
+  const approvedAdult = aiEligibility?.age_band === "18_plus"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "not_required";
+
+  let approvedAdultGuardian = false;
+  const guardianUserId = typeof aiEligibility?.guardian_user_id === "string"
+    ? aiEligibility.guardian_user_id
+    : null;
+
+  if (guardianUserId && aiEligibility?.guardian_consent_status === "verified") {
+    const { data: guardianIsAdult, error: guardianError } = await userClient.rpc(
+      "dcds_ai_guardian_is_approved_adult",
+      { p_guardian_user_id: guardianUserId },
+    );
+    if (guardianError) {
+      console.error("DCDS AI guardian eligibility check failed:", guardianError.message);
+      return json({
+        success: false,
+        code: "AI_GUARDIAN_CHECK_UNAVAILABLE",
+        error: "DCDS parent/guardian verification is temporarily unavailable.",
+      }, 503);
+    }
+    approvedAdultGuardian = guardianIsAdult === true;
+  }
+
+  const guardianConsentVerified = Boolean(
+    approvedAdultGuardian
+    && aiEligibility?.guardian_consent_at
+    && aiEligibility?.guardian_consent_reference
+  );
+
+  // Youth access remains off by default until DCDS approves its separate safeguards.
+  const teenAccessEnabled = Deno.env.get("DCDS_AI_TEENS_ENABLED") === "true";
+  const approvedTeen = teenAccessEnabled
+    && aiEligibility?.age_band === "13_17"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "verified"
+    && guardianConsentVerified;
+
+  const under13ZdrEnabled = Deno.env.get("DCDS_AI_UNDER_13_ZDR_ENABLED") === "true";
+  const approvedUnder13 = under13ZdrEnabled
+    && aiEligibility?.age_band === "under_13"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "verified"
+    && guardianConsentVerified;
+
+  if (!(approvedAdult || approvedTeen || approvedUnder13)) {
+    const under13 = aiEligibility?.age_band === "under_13";
+    return json({
+      success: false,
+      code: "AI_ACCESS_REVIEW_REQUIRED",
+      error: under13
+        ? "DCDS AI is not available for under-13 accounts until additional child-safety and Zero Data Retention requirements are approved."
+        : aiEligibility?.age_band === "13_17" && !teenAccessEnabled
+          ? "DCDS AI access for ages 13–17 is not enabled yet. Additional youth-safety, disclosure, monitoring and escalation reviews must be completed first."
+          : "DCDS AI access is awaiting an authorised age and, where required, parent/guardian consent review.",
+    }, 403);
+  }
+
+  // Check provider configuration before consuming a learner's allowance.
+  if (!geminiApiKey) {
+    return json({
+      success: false,
+      error: "The DCDS AI service is being prepared. Please try again later or contact DCDS support.",
+    }, 503);
+  }
+
   const rateLimit = role === "student" ? 10 : 15;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
@@ -137,13 +220,6 @@ Deno.serve(async (request: Request) => {
   }
   if (allowed !== true) {
     return json({ success: false, error: "Message limit reached. Please wait one minute and try again." }, 429);
-  }
-
-  if (!geminiApiKey) {
-    return json({
-      success: false,
-      error: "AI_NOT_CONFIGURED: the Gemini provider key has not yet been configured in Production Supabase secrets.",
-    }, 503);
   }
 
   let knowledge: string;
