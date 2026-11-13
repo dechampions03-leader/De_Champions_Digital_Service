@@ -126,7 +126,7 @@ jobs:
           evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
           test_ids = {item.get("id") for item in evaluation.get("tests", [])}
           required_tests = {
-              "retrieval-001", "retrieval-002", "retrieval-003",
+              "retrieval-001", "retrieval-002", "retrieval-003", "memory-003", "memory-004",
               "learning-003", "web-001", "memory-001", "memory-002", "security-002",
           }
           missing = sorted(required_tests - test_ids)
