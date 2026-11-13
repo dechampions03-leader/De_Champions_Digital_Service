@@ -93,6 +93,26 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 .memory-actions button{border:1px solid #e2d2f1;border-radius:9px;padding:8px 10px;background:#fff;color:#5c258e;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
 .memory-actions button.primary{border-color:#6b2aa7;background:#6827a4;color:#fff}
 
+
+/* Accessible voice and image tools */
+.composer-row{flex-wrap:wrap}
+.composer textarea{min-width:0;flex:1 1 210px}
+.composer-tool{min-height:46px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:11px 12px;border:1px solid #e1d0f0;border-radius:12px;background:#fbf7ff;color:#57208b;font:800 11px 'DM Sans',sans-serif;cursor:pointer;white-space:nowrap}
+.composer-tool:hover{border-color:#b995df;background:#f3e9ff}
+.composer-tool:disabled{opacity:.45;cursor:not-allowed}
+#imageInput{display:none}
+.attachment-preview{display:flex;align-items:center;gap:10px;padding:9px 11px;margin-bottom:10px;border:1px solid #e5d7ef;border-radius:12px;background:#fcf9ff}
+.attachment-preview[hidden],.voice-status[hidden]{display:none}
+.attachment-preview img{width:48px;height:48px;object-fit:cover;border-radius:8px;border:1px solid #eadff2;background:#fff}
+.attachment-details{min-width:0;flex:1}
+.attachment-details strong,.attachment-details small{display:block;overflow-wrap:anywhere}
+.attachment-details strong{color:#4b216d;font-size:11px}
+.attachment-details small{margin-top:3px;color:#8d7d99;font-size:9px}
+.remove-attachment{border:1px solid #ead9e1;border-radius:9px;padding:7px 9px;background:#fff;color:#95415b;font:700 10px 'DM Sans',sans-serif;cursor:pointer}
+.voice-status{padding:8px 11px;margin-bottom:9px;border-radius:10px;background:#f3ebfc;color:#653b88;font-size:10px;line-height:1.5}
+.speak-message{display:inline-flex;margin:7px 3px 0 0;padding:7px 10px;border:1px solid #e4d6ef;border-radius:999px;background:#fff;color:#652b98;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
+.speak-message:disabled{opacity:.55;cursor:wait}
+@media(max-width:580px){.composer-row{align-items:stretch}.composer-tool{flex:0 0 auto;min-height:44px;padding:10px}.composer textarea{flex:1 1 100%;order:3;min-height:48px}.send{flex:1 1 auto;order:4}.attachment-preview{align-items:flex-start}}
 </style>
 </head>
 <body>
@@ -146,11 +166,20 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    </div>
    <div class="typing" id="typing" hidden>DCDS AI is thinking…</div>
    <form class="composer" id="chatForm">
+    <div class="attachment-preview" id="attachmentPreview" hidden>
+     <img id="attachmentPreviewImage" alt="Preview of the image attached to your DCDS AI message">
+     <div class="attachment-details"><strong id="attachmentPreviewName">Image selected</strong><small>Image is analysed for this request and is not saved as a file in chat history.</small></div>
+     <button class="remove-attachment" id="removeAttachment" type="button">Remove</button>
+    </div>
+    <input id="imageInput" type="file" accept="image/jpeg,image/png,image/webp" aria-label="Choose an image to share with DCDS AI">
+    <div class="voice-status" id="voiceStatus" role="status" aria-live="polite" hidden></div>
     <div class="composer-row">
-     <textarea id="messageInput" maxlength="2500" rows="2" placeholder="Ask your DCDS AI assistant…" aria-label="Your message" required></textarea>
+     <button class="composer-tool" id="attachImageButton" type="button" aria-label="Attach an image">📎 Image</button>
+     <button class="composer-tool" id="voiceButton" type="button" aria-label="Speak your message">🎙 Speak</button>
+     <textarea id="messageInput" maxlength="2500" rows="2" placeholder="Type or speak to DCDS AI…" aria-label="Your message"></textarea>
      <button class="send" id="sendButton" type="submit">Send ↗</button>
     </div>
-    <div class="composer-meta"><span>Enter to send · Shift + Enter for a new line</span><span id="charCount">0 / 2,500</span></div>
+    <div class="composer-meta"><span>Enter to send · Shift + Enter for a new line · JPG, PNG or WEBP up to 4 MB</span><span id="charCount">0 / 2,500</span></div>
    </form>
   </section>
   <aside class="side-column">
@@ -185,6 +214,14 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  const sendButton=document.getElementById('sendButton');
  const typing=document.getElementById('typing');
  const charCount=document.getElementById('charCount');
+ const imageInput=document.getElementById('imageInput');
+ const attachImageButton=document.getElementById('attachImageButton');
+ const attachmentPreview=document.getElementById('attachmentPreview');
+ const attachmentPreviewImage=document.getElementById('attachmentPreviewImage');
+ const attachmentPreviewName=document.getElementById('attachmentPreviewName');
+ const removeAttachmentButton=document.getElementById('removeAttachment');
+ const voiceButton=document.getElementById('voiceButton');
+ const voiceStatus=document.getElementById('voiceStatus');
  const studentTools=document.getElementById('studentTools');
  const historyPanel=document.getElementById('historyPanel');
  const historyList=document.getElementById('conversationList');
@@ -201,6 +238,11 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let isPersistentStudent=false;
  let activeConversationId=null;
  input.disabled=true;sendButton.disabled=true;document.getElementById('newChat').disabled=true;
+ imageInput.disabled=true;attachImageButton.disabled=true;voiceButton.disabled=true;
+ let selectedImageFile=null;
+ let imagePreviewUrl=null;
+ let activeRecognition=null;
+ let isListening=false;
  let knownCourseResources=[];
  let knownEnrolledCourseSlugs=new Set();
  const knownDigitalToolResources=[
@@ -305,7 +347,82 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  }
  function setChatEnabled(enabled){
   input.disabled=!enabled;sendButton.disabled=!enabled;document.getElementById('newChat').disabled=!enabled;
+  imageInput.disabled=!enabled;attachImageButton.disabled=!enabled;voiceButton.disabled=!enabled;
   if(!enabled){studentTools.hidden=true;historyPanel.hidden=true;memoryPanel.hidden=true;}
+ }
+ function updateCharacterCount(){
+  charCount.textContent=input.value.length.toLocaleString()+' / 2,500';
+ }
+ function clearImageAttachment(){
+  selectedImageFile=null;imageInput.value='';
+  attachmentPreview.hidden=true;attachmentPreviewImage.removeAttribute('src');attachmentPreviewName.textContent='';
+  if(imagePreviewUrl){URL.revokeObjectURL(imagePreviewUrl);imagePreviewUrl=null;}
+ }
+ function fileToBase64(file){
+  return new Promise((resolve,reject)=>{
+   const reader=new FileReader();
+   reader.onerror=()=>reject(new Error('The selected image could not be read. Please choose it again.'));
+   reader.onload=()=>{
+    const result=String(reader.result||''),comma=result.indexOf(',');
+    if(comma<0){reject(new Error('The selected image could not be prepared. Please choose it again.'));return;}
+    resolve(result.slice(comma+1));
+   };
+   reader.readAsDataURL(file);
+  });
+ }
+ function speakText(text,button){
+  if(!('speechSynthesis' in window)||typeof window.SpeechSynthesisUtterance!=='function'){
+   setStatus('Spoken replies are not supported by this browser. You can still read the answer on screen.',true);return;
+  }
+  const spoken=String(text||'').trim().slice(0,10000);
+  if(!spoken)return;
+  window.speechSynthesis.cancel();
+  const utterance=new SpeechSynthesisUtterance(spoken);
+  utterance.lang='en-NG';utterance.rate=1;
+  button.disabled=true;button.textContent='Speaking…';
+  utterance.onend=()=>{button.disabled=false;button.textContent='🔊 Listen';};
+  utterance.onerror=()=>{button.disabled=false;button.textContent='🔊 Listen';};
+  window.speechSynthesis.speak(utterance);
+ }
+ function toggleVoiceInput(){
+  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!Recognition){
+   setStatus('Voice typing is not supported in this browser. Try Chrome on Android, or use your keyboard microphone.',true);return;
+  }
+  if(isListening&&activeRecognition){activeRecognition.stop();return;}
+  const recognition=new Recognition();activeRecognition=recognition;
+  recognition.lang='en-NG';recognition.continuous=false;recognition.interimResults=true;recognition.maxAlternatives=1;
+  recognition.onstart=()=>{
+   isListening=true;voiceButton.textContent='■ Stop';
+   voiceStatus.hidden=false;voiceStatus.textContent='Listening… Speak clearly, then pause. You can review the words before sending.';
+  };
+  recognition.onresult=event=>{
+   let finalText='',interimText='';
+   for(let index=event.resultIndex;index<event.results.length;index++){
+    const result=event.results[index],transcript=result?.[0]?.transcript||'';
+    if(result.isFinal)finalText+=transcript;else interimText+=transcript;
+   }
+   if(finalText.trim()){input.value=[input.value.trim(),finalText.trim()].filter(Boolean).join(' ');updateCharacterCount();}
+   if(interimText.trim()){voiceStatus.hidden=false;voiceStatus.textContent='Hearing: '+interimText.trim();}
+   else if(finalText.trim()){voiceStatus.hidden=false;voiceStatus.textContent='Words captured. Review or edit them, then tap Send.';}
+  };
+  recognition.onerror=event=>{
+   const issue=event?.error==='not-allowed'||event?.error==='service-not-allowed'
+    ?'Microphone permission was denied. Allow microphone access in your browser settings and try again.'
+    :event?.error==='no-speech'
+     ?'No speech was detected. Tap Speak and try again.'
+     :'Voice input is temporarily unavailable. You can type your message or use your keyboard microphone.';
+   voiceStatus.hidden=false;voiceStatus.textContent=issue;setStatus(issue,true);
+  };
+  recognition.onend=()=>{
+   isListening=false;activeRecognition=null;voiceButton.textContent='🎙 Speak';
+   if(!voiceStatus.textContent.trim())voiceStatus.hidden=true;
+   else if(!/^(Microphone permission|No speech|Voice input is temporarily unavailable)/.test(voiceStatus.textContent)){
+    voiceStatus.textContent='Voice input finished. Review the words before sending.';
+   }
+  };
+  try{recognition.start();}
+  catch(error){isListening=false;activeRecognition=null;voiceButton.textContent='🎙 Speak';setStatus('Could not start voice input. Check microphone permission and try again.',true);}
  }
  function explainAgeChoice(){
   eligibilityGuidance.textContent=ageBandSelect.value==='18_plus'
@@ -419,7 +536,13 @@ async function submitAiEligibilityRequest(){
   if(role==='user')bubble.textContent=String(text??'');
   else{bubble.classList.add('markdown-body');renderAssistantMarkdown(bubble,text);}
   wrap.appendChild(bubble);
-  if(role!=='user')renderResourceActions(wrap,resources);
+  if(role!=='user'){
+   const listen=document.createElement('button');listen.type='button';listen.className='speak-message';listen.textContent='🔊 Listen';
+   listen.setAttribute('aria-label','Listen to this DCDS AI response');
+   listen.addEventListener('click',()=>speakText(bubble.textContent,listen));
+   wrap.appendChild(listen);
+   renderResourceActions(wrap,resources);
+  }
   row.appendChild(wrap);
   messagesEl.appendChild(row);
   messagesEl.scrollTop=messagesEl.scrollHeight;
@@ -629,7 +752,24 @@ async function submitAiEligibilityRequest(){
   return;
  }
 
- input.addEventListener('input',()=>{charCount.textContent=input.value.length.toLocaleString()+' / 2,500';});
+ input.addEventListener('input',updateCharacterCount);
+ attachImageButton.addEventListener('click',()=>imageInput.click());
+ imageInput.addEventListener('change',()=>{
+  const file=imageInput.files?.[0];if(!file)return;
+  if(!['image/jpeg','image/png','image/webp'].includes(file.type)){
+   clearImageAttachment();setStatus('Please choose a JPG, PNG or WEBP image.',true);return;
+  }
+  if(file.size>4*1024*1024){
+   clearImageAttachment();setStatus('Images must be 4 MB or smaller. Choose a smaller image and try again.',true);return;
+  }
+  clearImageAttachment();selectedImageFile=file;imagePreviewUrl=URL.createObjectURL(file);
+  attachmentPreviewImage.src=imagePreviewUrl;attachmentPreviewName.textContent=file.name||'Selected image';
+  attachmentPreview.hidden=false;setStatus('Image attached. Add a question or send it for analysis.');
+ });
+ removeAttachmentButton.addEventListener('click',()=>{
+  clearImageAttachment();setStatus('Image removed. It will not be sent to DCDS AI.');
+ });
+ voiceButton.addEventListener('click',toggleVoiceInput);
  input.addEventListener('keydown',event=>{
   if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();form.requestSubmit();}
  });
@@ -652,28 +792,32 @@ async function submitAiEligibilityRequest(){
 
  form.addEventListener('submit',async event=>{
   event.preventDefault();
-  const message=input.value.trim();
-  if(!message||sendButton.disabled)return;
+  const typedMessage=input.value.trim();
+  const attachedFile=selectedImageFile;
+  if((!typedMessage&&!attachedFile)||sendButton.disabled)return;
+  const message=typedMessage||(attachedFile?'Please analyse the attached image and explain what you can help me with.':'');
+  const historyMessage=message+(attachedFile?'\n[Image attached. The image file itself is not stored in DCDS chat history.]':'');
+  const displayMessage=attachedFile?'📎 Image attached\n'+(typedMessage||'Please analyse this image.'):message;
   const previousHistory=conversation.slice(-10).map(item=>({role:item.role,text:item.text}));
-  conversation.push({role:'user',text:message});
-  addMessage('user',message);
-  input.value='';charCount.textContent='0 / 2,500';
-  sendButton.disabled=true;input.disabled=true;typing.hidden=false;
-  setStatus('DCDS AI is preparing your answer…');
+  conversation.push({role:'user',text:historyMessage});
+  addMessage('user',displayMessage);
+  sendButton.disabled=true;input.disabled=true;imageInput.disabled=true;attachImageButton.disabled=true;voiceButton.disabled=true;typing.hidden=false;
+  setStatus(attachedFile?'Preparing your image for secure analysis…':'DCDS AI is preparing your answer…');
   const requestBody={message,history:previousHistory};
   if(activeConversationId)requestBody.conversation_id=activeConversationId;
   try{
+   if(attachedFile)requestBody.image={mime_type:attachedFile.type,data:await fileToBase64(attachedFile)};
    const {data,error}=await client.functions.invoke('dcds-ai-chat',{body:requestBody});
    if(error)throw error;
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
    conversation.push({role:'model',text:data.answer});
    addMessage('assistant',data.answer,Array.isArray(data.resources)?data.resources:inferResourceActions(data.answer));
+   input.value='';updateCharacterCount();clearImageAttachment();
    const roleLabels={student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot'};
    if(!roleLabels[data.role])throw new Error('This DCDS AI access role is not permitted.');
    document.getElementById('accountLabel').textContent=roleLabels[data.role];
    if(data.role==='student'&&data.history_saved&&data.conversation_id){
-    activeConversationId=data.conversation_id;
-    await loadConversationList();
+    activeConversationId=data.conversation_id;await loadConversationList();
     setStatus('Connected. This conversation has been saved to your private DCDS chat history.');
    }else if(data.role==='student'){
     setStatus('Your answer is ready, but this turn could not be added to saved history. Please keep this page open and try again later.',true);
@@ -681,13 +825,11 @@ async function submitAiEligibilityRequest(){
     setStatus('Connected to the read-only DCDS administrator assistant. No administrative actions can be performed here.');
    }
   }catch(error){
-   const messageText=String(error?.message||'').toLowerCase();
-   let serverMessage='';
+   const messageText=String(error?.message||'').toLowerCase();let serverMessage='';
    try{
     const response=error?.context;
     if(response&&typeof response.json==='function'){
-     const payload=await response.json();
-     if(typeof payload?.error==='string')serverMessage=payload.error;
+     const payload=await response.json();if(typeof payload?.error==='string')serverMessage=payload.error;
     }
    }catch(_){}
    const friendly=serverMessage||(
@@ -697,10 +839,9 @@ async function submitAiEligibilityRequest(){
       ?'DCDS AI has reached a request limit. Please wait before trying again.'
       :'The AI service is temporarily unavailable. Please try again shortly.'
    );
-   addMessage('assistant',friendly);
-   setStatus(friendly,true);
+   addMessage('assistant',friendly);setStatus(friendly,true);
   }finally{
-   typing.hidden=true;sendButton.disabled=false;input.disabled=false;input.focus();
+   typing.hidden=true;sendButton.disabled=false;input.disabled=false;imageInput.disabled=false;attachImageButton.disabled=false;voiceButton.disabled=false;input.focus();
   }
  });
 })();
