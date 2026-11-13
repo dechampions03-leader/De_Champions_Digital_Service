@@ -198,6 +198,7 @@ jobs:
               "retrieval-001", "retrieval-002", "retrieval-003",
               "learning-003", "web-001", "memory-001", "memory-002", "security-002",
               "image-001", "image-002", "voice-001", "voice-002", "voice-003",
+              "guest-001", "guest-002", "chat-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
