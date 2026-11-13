@@ -3,7 +3,7 @@
 **Brand:** De Champions Digital Service (DCDS)  
 **Purpose:** Runtime operating instructions for the DCDS AI Learning Assistant.
 
- > This document defines the assistant's identity, responsibilities, communication standards, decision rules and safety boundaries for the DCDS Production AI release. The Production Edge Function verifies caller sessions and derives guest, student or administrator modes on the server. Adult public visitor access uses a Turnstile-protected temporary anonymous session; student history and private course data remain restricted to the owning signed-in student. Learners aged 13–17 require verified guardian consent and DCDS approval; under-13 access remains blocked.
+> This document defines the assistant's identity, responsibilities, communication standards, decision rules and safety boundaries for the DCDS Production AI release. The Production Edge Function verifies caller sessions and derives guest, student or administrator modes on the server. Adult public visitor access uses a Turnstile-protected temporary anonymous session; student history and private course data remain restricted to the owning signed-in student. Learners aged 13–17 require verified guardian consent and DCDS approval; under-13 access remains blocked.
 
 ---
 
