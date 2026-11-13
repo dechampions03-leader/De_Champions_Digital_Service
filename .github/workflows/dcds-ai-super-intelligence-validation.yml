@@ -9,6 +9,7 @@ on:
       - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
       - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
+      - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
       - "ai-learning-assistant.html"
       - "dcds-ai-access-review.html"
       - "admin-account-deletions.html"
@@ -26,6 +27,7 @@ on:
       - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
       - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
+      - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
       - "ai-learning-assistant.html"
       - "dcds-ai-access-review.html"
       - "admin-account-deletions.html"
@@ -83,6 +85,7 @@ jobs:
           function = function_path.read_text(encoding="utf-8")
           page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
           admin_page = Path("dcds-ai-access-review.html").read_text(encoding="utf-8")
+          eligibility_policy = Path("supabase/migrations/20261113133000_dcds_ai_eligibility_review_policy_scope.sql").read_text(encoding="utf-8")
           master = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
           knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
           evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
@@ -125,6 +128,10 @@ jobs:
           system_prompt = function[system_start:system_end]
 
           invariants = {
+              "eligibility admin policies are action-scoped, not overlapping FOR ALL":
+                  "FOR UPDATE TO authenticated" in eligibility_policy
+                  and "FOR DELETE TO authenticated" in eligibility_policy
+                  and "FOR ALL" not in eligibility_policy,
               "student lesson lookup is limited to own enrolments":
                   '.from("enrollments").select("course_id").eq("user_id", userId)' in search_helper
                   and '.in("course_id", enrolledIds)' in search_helper,
