@@ -224,6 +224,28 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  input.disabled=true;sendButton.disabled=true;document.getElementById('newChat').disabled=true;
  let knownCourseResources=[];
  let knownEnrolledCourseSlugs=new Set();
+ const knownDigitalToolResources=[
+  {name:'Canva',aliases:['canva'],href:'https://www.canva.com/'},
+  {name:'CapCut',aliases:['capcut'],href:'https://www.capcut.com/'},
+  {name:'Adobe Express',aliases:['adobe express'],href:'https://www.adobe.com/express/'},
+  {name:'ChatGPT',aliases:['chatgpt'],href:'https://chatgpt.com/'},
+  {name:'Claude',aliases:['claude ai','claude'],href:'https://claude.ai/'},
+  {name:'Gemini',aliases:['gemini'],href:'https://gemini.google.com/'},
+  {name:'Grok',aliases:['grok'],href:'https://grok.com/'},
+  {name:'YouTube Studio',aliases:['youtube studio'],href:'https://studio.youtube.com/'},
+  {name:'Meta Business Suite',aliases:['meta business suite'],href:'https://business.facebook.com/'},
+  {name:'Figma',aliases:['figma'],href:'https://www.figma.com/'},
+  {name:'GitHub',aliases:['github'],href:'https://github.com/'},
+  {name:'Supabase',aliases:['supabase'],href:'https://supabase.com/'},
+  {name:'Cloudflare',aliases:['cloudflare'],href:'https://dash.cloudflare.com/'},
+  {name:'WordPress',aliases:['wordpress'],href:'https://wordpress.com/'},
+  {name:'Flutterwave',aliases:['flutterwave'],href:'https://flutterwave.com/'},
+  {name:'Selar',aliases:['selar'],href:'https://selar.com/'},
+  {name:'Google Drive',aliases:['google drive'],href:'https://drive.google.com/'},
+  {name:'Google Docs',aliases:['google docs'],href:'https://docs.google.com/'},
+  {name:'Notion',aliases:['notion'],href:'https://www.notion.so/'},
+  {name:'Paystack',aliases:['paystack'],href:'https://paystack.com/'}
+ ];
 
  const welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS learning companion. I can teach general topics, search approved DCDS courses and announcements, find lessons and materials available in your enrolled courses, and use your private saved learning context. What would you like to explore today?";
 
@@ -337,7 +359,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    const href=safeResourceHref(resource?.href);if(!href)return;
    const link=document.createElement('a');link.className='resource-link';link.href=href;
    link.textContent='↗ '+String(resource.label||'Open resource').slice(0,90);
-   const kind=['course','dashboard','support','assistant','source'].includes(resource.kind)?resource.kind:'resource';
+   const kind=['course','dashboard','support','assistant','source','tool'].includes(resource.kind)?resource.kind:'resource';
    link.dataset.kind=kind;
    if(/^https:\/\//i.test(href)){link.target='_blank';link.rel='noopener noreferrer';}
    actions.appendChild(link);
@@ -432,6 +454,11 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   if(/\b(announcement|announcements|student update)\b/i.test(value))resources.push({label:'View Student Announcements',href:'index.html#notificationPanel',kind:'resource'});
   if(/\b(approved review|student reviews|testimonials)\b/i.test(value))resources.push({label:'Read Student Reviews',href:'index.html#studentReviews',kind:'resource'});
   if(/\b(privacy policy|data privacy)\b/i.test(value))resources.push({label:'Read DCDS Privacy Policy',href:'privacy-policy.html',kind:'resource'});
+  knownDigitalToolResources.forEach(tool=>{
+   if(tool.aliases.some(alias=>new RegExp('\\\\b'+alias.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')+'\\\\b','i').test(value))){
+    resources.push({label:'Open '+tool.name,href:tool.href,kind:'tool'});
+   }
+  });
   const webPattern=/\[WEB-\d+\]\s+(.+?)\s+—\s+(https:\/\/[^\s]+)/g;let match;
   while((match=webPattern.exec(String(text||'')))!==null)resources.push({label:'Read: '+match[1].slice(0,72),href:match[2],kind:'source'});
   return [...new Map(resources.map(item=>[item.href,item])).values()].slice(0,10);
