@@ -14,7 +14,7 @@ on:
       - "index.html"
       - "ai-config/captcha-public-config.js"
       - "supabase/functions/dcds-ai-chat/**"
-      - "supabase/functions/dcds-ai-speech-token/**"
+      - "supabase/functions/dcds-ai-speech-session/**"
       - "supabase/migrations/20261113160000_dcds_ai_global_age_access_controls.sql"
       - "supabase/migrations/20261113160210_dcds_ai_age_policy_autoapproval_guard.sql"
       - ".github/workflows/dcds-ai-pages-sync-validation.yml"
@@ -44,7 +44,7 @@ jobs:
               "captcha": Path("ai-config/captcha-public-config.js").read_text(encoding="utf-8"),
               "student-management": Path("student-management.html").read_text(encoding="utf-8"),
               "edge": Path("supabase/functions/dcds-ai-chat/index.ts").read_text(encoding="utf-8"),
-              "speech": Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8"),
+              "speech": Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8"),
               "age-policy-migration": Path("supabase/migrations/20261113160000_dcds_ai_global_age_access_controls.sql").read_text(encoding="utf-8"),
           }
           production_url = "https://qxsenflgaweeadvggnyp.supabase.co"
@@ -76,9 +76,11 @@ jobs:
               "Privacy notice explains optional browser voice processing": "speech-recognition" in files["privacy"] and "raw microphone recording" in files["privacy"],
               "Privacy notice explains OpenAI Realtime voice processing": "OpenAI Realtime API" in files["privacy"] and "gpt-realtime-2.1-mini" in files["privacy"] and "30 days" in files["privacy"],
               "DCDS AI page includes image attachment and voice input controls": "attachImageButton" in files["ai"] and "voiceButton" in files["ai"],
-              "DCDS AI page provides OpenAI natural spoken response controls": "dcds-ai-speech-token" in files["ai"] and "Listen · AI voice" in files["ai"] and "speechSynthesis" not in files["ai"],
+              "DCDS AI page provides OpenAI natural spoken response controls": "dcds-ai-speech-session" in files["ai"] and "Listen · AI voice" in files["ai"] and "speechSynthesis" not in files["ai"],
               "OpenAI voice session is JWT-protected and age-gated": "getUser()" in files["speech"] and "guardian_consent_status" in files["speech"],
               "OpenAI voice API key stays server-side": 'Deno.env.get("OPENAI_API_KEY")' in files["speech"],
+              "OpenAI voice function returns only the SDP answer": 'return json({ success: true, sdp: answerSdp, voice: "marin" })' in files["speech"] and "client_secret" not in files["speech"],
+              "Browser does not call OpenAI directly or receive project credentials": "api.openai.com" not in files["ai"] and "data.client_secret" not in files["ai"],
               "Teen access remains disabled and under-13 blocked": "13–17" in files["privacy"] and "Under-13 AI access remains blocked" in files["privacy"],
           }
           for name, passed in checks.items():
