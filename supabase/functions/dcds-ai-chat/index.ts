@@ -108,18 +108,26 @@ Deno.serve(async (request: Request) => {
   // server-side is_dcds_admin() function. Never accept a browser-supplied role.
   const anonymous = user.is_anonymous === true;
   const verifiedContact = Boolean(user.email_confirmed_at || user.phone_confirmed_at);
-  let role: "visitor" | "student" | "admin" = anonymous || !verifiedContact ? "visitor" : "student";
 
-  if (!anonymous && verifiedContact) {
-    const { data: isAdmin, error: adminCheckError } = await userClient.rpc("is_dcds_admin");
-    if (adminCheckError) {
-      console.error("DCDS AI admin-role check failed:", adminCheckError.message);
-      return json({ success: false, error: "The DCDS access check is temporarily unavailable." }, 503);
-    }
-    if (isAdmin === true) role = "admin";
+  // Stage 1 is a controlled release for verified DCDS accounts only.
+  // Visitor access remains disabled until Production CAPTCHA and abuse limits
+  // have been separately qualified. Enforce this on the server, not just UI.
+  if (anonymous || !verifiedContact) {
+    return json({
+      success: false,
+      error: "DCDS AI is currently available to verified DCDS students and administrators. Please sign in with a verified account.",
+    }, 403);
   }
 
-  const rateLimit = role === "visitor" ? 5 : role === "student" ? 10 : 15;
+  let role: "student" | "admin" = "student";
+  const { data: isAdmin, error: adminCheckError } = await userClient.rpc("is_dcds_admin");
+  if (adminCheckError) {
+    console.error("DCDS AI admin-role check failed:", adminCheckError.message);
+    return json({ success: false, error: "The DCDS access check is temporarily unavailable." }, 503);
+  }
+  if (isAdmin === true) role = "admin";
+
+  const rateLimit = role === "student" ? 10 : 15;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
   });
@@ -134,7 +142,7 @@ Deno.serve(async (request: Request) => {
   if (!geminiApiKey) {
     return json({
       success: false,
-      error: "AI_NOT_CONFIGURED: the Gemini provider key has not yet been configured in Development Supabase secrets.",
+      error: "AI_NOT_CONFIGURED: the Gemini provider key has not yet been configured in Production Supabase secrets.",
     }, 503);
   }
 
