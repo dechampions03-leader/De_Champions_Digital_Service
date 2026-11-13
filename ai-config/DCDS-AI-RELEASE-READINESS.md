@@ -11,6 +11,7 @@
 - DCDS-owned identity and concise, polished GPT-style writing. No voluntary vendor or infrastructure disclosure in ordinary assistant replies.
 - Safe Markdown rendering using DOM nodes and text-only content, never model-generated HTML.
 - Native DCDS action buttons for verified course, enrolled lesson/material, service, announcement, dashboard, support, privacy and grounded web resources.
+- Curated official tool shortcuts for relevant external learning and creator products (Canva, CapCut, Adobe Express, ChatGPT, Claude, Gemini, Grok, YouTube Studio, Meta Business Suite, Figma, GitHub, Supabase, Cloudflare, WordPress, Flutterwave, Selar, Google Drive, Google Docs, Notion and Paystack), with history reconstruction.
 - Optional student-controlled learning preference capture, OFF by default and owner-scoped.
 - Server-enforced age-band eligibility and guardian review, plus an administrator-only review page.
 - Rolling per-minute and daily per-account AI request limits.
@@ -73,6 +74,7 @@ Do not deploy the candidate Edge Function until its schema, functions, RLS and a
 - Valuable DCDS courses, enrolled lessons/materials, dashboard, services and official pages render real native action buttons.
 - Invalid links are discarded; assistant text is rendered as text/Markdown nodes and never as executable HTML.
 - Course and enrolled lesson buttons resolve; a second student cannot see the first student's enrolled lesson or memory.
+- Curated external tool buttons resolve to the approved official HTTPS domains; reopening a saved conversation restores those buttons.
 - Conversation history can be saved, reopened and deleted; optional learning preference storage stays OFF until explicitly enabled and can be switched off/cleared.
 - Per-minute and daily caps return a controlled limit message.
 - Admin eligibility review is inaccessible to students and cannot approve under-13 accounts.
