@@ -1,0 +1,73 @@
+name: DCDS GitHub Pages AI sync validation
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "ai-learning-assistant.html"
+      - "dcds-ai-access-review.html"
+      - "admin-notifications.html"
+      - "student-dashboard.html"
+      - "privacy-policy.html"
+      - "index.html"
+      - ".github/workflows/dcds-ai-pages-sync-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate-pages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate published DCDS AI pages and project wiring
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          files = {
+              "ai": Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
+              "review": Path("dcds-ai-access-review.html").read_text(encoding="utf-8"),
+              "admin": Path("admin-notifications.html").read_text(encoding="utf-8"),
+              "dashboard": Path("student-dashboard.html").read_text(encoding="utf-8"),
+              "privacy": Path("privacy-policy.html").read_text(encoding="utf-8"),
+              "home": Path("index.html").read_text(encoding="utf-8"),
+          }
+          production_url = "https://qxsenflgaweeadvggnyp.supabase.co"
+          development_ref = "tjgsxbmkpvktlqulbktv"
+
+          checks = {
+              "AI chat page points to Production Supabase": production_url in files["ai"],
+              "Admin review page points to Production Supabase": production_url in files["review"],
+              "No Development project URL is embedded in published pages": all(development_ref not in value for value in files.values()),
+              "AI access review form is present": "dcds_ai_access_eligibility" in files["ai"] and "aiEligibilityPanel" in files["ai"],
+              "Admin access review screen is noindex": "noindex" in files["review"].lower() and "nofollow" in files["review"].lower(),
+              "Admin Centre links to the access review screen": 'href="dcds-ai-access-review.html"' in files["admin"],
+              "Student dashboard links to DCDS AI": 'href="ai-learning-assistant.html?source=student-dashboard"' in files["dashboard"],
+              "Homepage retains its public AI entry point": "ai-learning-assistant.html" in files["home"],
+              "Privacy notice identifies the Gemini provider": "Google Gemini API" in files["privacy"],
+              "Privacy notice warns about free-tier human review": "human reviewers" in files["privacy"].lower(),
+              "Teen access remains disabled and under-13 blocked": "13–17" in files["privacy"] and "Under-13 AI access remains blocked" in files["privacy"],
+          }
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          failures = [name for name, passed in checks.items() if not passed]
+          if failures:
+              raise SystemExit(f"{len(failures)} GitHub Pages release checks failed.")
+
+          for page_name in ("ai-learning-assistant.html", "dcds-ai-access-review.html"):
+              html = Path(page_name).read_text(encoding="utf-8")
+              scripts = re.findall(r"<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)</script>", html, re.I)
+              if not scripts:
+                  raise SystemExit(f"No inline JavaScript found in {page_name}.")
+              for index, script in enumerate(scripts):
+                  if script.strip():
+                      Path(f"/tmp/{Path(page_name).stem}-{index}.js").write_text(script, encoding="utf-8")
+          print("Validated GitHub Pages wiring and DCDS AI release gates.")
+          PY
+          for script in /tmp/ai-learning-assistant-*.js /tmp/dcds-ai-access-review-*.js; do
+            [ -f "$script" ] && node --check "$script"
+          done

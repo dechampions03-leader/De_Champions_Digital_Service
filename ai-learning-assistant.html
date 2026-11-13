@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#35105f">
 <meta name="description" content="The shared De Champions Digital Service AI learning companion.">
 <title>DCDS AI Learning Assistant</title>
-<script src="ai-config/captcha-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -25,6 +24,24 @@ main{max-width:1160px;margin:0 auto;padding:26px 18px 50px}.hero{position:relati
 .new-chat{border:1px solid #e3d3f2;border-radius:10px;padding:9px 11px;background:#fff;color:#5d218e;font-weight:800;font-size:11px;cursor:pointer}
 .messages{height:min(58vh,590px);min-height:340px;overflow:auto;padding:18px;background:linear-gradient(180deg,#fff,#fdfaff)}
 .message{display:flex;margin:0 0 14px}.message.user{justify-content:flex-end}.bubble{max-width:min(82%,700px);padding:12px 14px;border-radius:16px;background:#f3ebfc;color:#3c2451;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}.message.user .bubble{background:linear-gradient(120deg,#542080,#7628d8);color:#fff;border-bottom-right-radius:5px}.message.assistant .bubble{border-bottom-left-radius:5px}.message-time{font-size:9px;color:#9b8da7;margin:5px 4px 0}.message.user .message-time{text-align:right}
+.markdown-body{white-space:normal;line-height:1.68}
+.markdown-body p{margin:0 0 10px}
+.markdown-body p:last-child{margin-bottom:0}
+.markdown-body h1,.markdown-body h2,.markdown-body h3{color:#35105f;font-weight:800;line-height:1.3;margin:16px 0 8px}
+.markdown-body h1{font-size:17px}.markdown-body h2{font-size:15px}.markdown-body h3{font-size:13px}
+.markdown-body ul,.markdown-body ol{padding-left:22px;margin:7px 0 12px}
+.markdown-body li{margin:4px 0}
+.markdown-body strong{font-weight:800;color:#35105f}
+.markdown-body code{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;background:#eee5f7;padding:2px 5px;border-radius:5px}
+.markdown-body pre{white-space:pre;overflow:auto;padding:12px;border-radius:10px;background:#231236;color:#f8efff;font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}
+.markdown-body pre code{background:none;padding:0;color:inherit}
+.message.user .markdown-body strong{color:#fff}
+.resource-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;max-width:min(82%,700px)}
+.resource-link{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:8px 11px;border:1px solid #e2d2f1;border-radius:999px;background:linear-gradient(135deg,#fbf7ff,#f1e5ff);color:#57208b;text-decoration:none;font-size:10px;font-weight:800;line-height:1.3;box-shadow:0 3px 10px #48136f0d}
+.resource-link:hover{border-color:#be9ce5;background:#eee0ff}
+.resource-link[data-kind="source"]{background:#fff;border-color:#e9dfef;color:#6f5b80}
+.resource-link:focus-visible{outline:3px solid #d8bdff;outline-offset:2px}
+@media(max-width:580px){.resource-actions{max-width:95%}.resource-link{font-size:10px;padding:8px 10px}}
 .composer{padding:14px;border-top:1px solid var(--line);background:#fff}.composer-row{display:flex;gap:9px;align-items:flex-end}.composer textarea{flex:1;min-height:48px;max-height:130px;resize:vertical;border:1px solid #e3d6ef;border-radius:13px;padding:13px;font:13px 'DM Sans',sans-serif;color:var(--ink);outline:none}.composer textarea:focus{border-color:#9b78d1;box-shadow:0 0 0 3px #6128b814}.send{border:0;border-radius:13px;padding:14px 18px;background:linear-gradient(120deg,#542080,#7628d8);color:#fff;font-weight:900;cursor:pointer}.send:disabled{opacity:.55;cursor:not-allowed}.composer-meta{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:#93869f;font-size:10px}.typing{color:#7b4aa5;font-size:11px;padding:0 4px 10px}
 .side-card{padding:18px;margin-bottom:14px}.side-card h2{font:700 19px 'Playfair Display',serif;color:#35105f;margin:0 0 10px}.side-card p,.side-card li{font-size:12px;line-height:1.7;color:#766a81}.side-card ul{padding-left:18px;margin:8px 0 0}.notice{border-left:4px solid var(--gold);background:#fffaf0;border-radius:0 13px 13px 0;padding:13px;color:#6e5a31;font-size:11px;line-height:1.7}.notice strong{display:block;margin-bottom:4px}
 .status{margin:12px 0 0;padding:10px 12px;border-radius:11px;background:#f7f1fc;color:#68418b;font-size:11px;line-height:1.5}.status.error{background:#fff1f0;color:#a2352c}
@@ -33,6 +50,28 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 @media(max-width:850px){.layout{grid-template-columns:1fr}.side-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.side-card{margin:0}}
 @media(max-width:580px){.top{padding:14px}.brand{font-size:9px}.top a{font-size:10px}.top-actions{gap:8px}main{padding:18px 12px 38px}.hero{border-radius:19px}.messages{height:54vh;min-height:320px;padding:13px}.bubble{max-width:90%;font-size:12px}.side-column{grid-template-columns:1fr}.send{padding:13px}.composer{padding:10px}}
 
+.eligibility-panel{margin:12px 14px;padding:16px;border:1px solid #e7d5f2;border-radius:14px;background:linear-gradient(145deg,#fff,#faf5ff);color:#554065}
+.eligibility-panel[hidden]{display:none}
+.eligibility-panel h2{margin:0 0 8px;color:#35105f;font:800 16px 'DM Sans',sans-serif}
+.eligibility-panel p{margin:8px 0;color:#736382;font-size:12px;line-height:1.65}
+.eligibility-panel label{display:block;margin:12px 0 6px;color:#563176;font-size:11px;font-weight:800}
+.eligibility-panel select{width:100%;border:1px solid #dfcbea;border-radius:10px;background:#fff;padding:10px;color:#3c2451;font:12px 'DM Sans',sans-serif}
+.eligibility-guidance{padding:10px;border-radius:10px;background:#f7f0ff}
+.eligibility-submit{border:0;border-radius:10px;padding:11px 14px;background:linear-gradient(120deg,#542080,#7628d8);color:white;font-weight:800;font-size:11px;cursor:pointer}
+.eligibility-submit:disabled{opacity:.55;cursor:not-allowed}
+.eligibility-support{display:inline-block;margin:12px 0;color:#63279a;font-size:11px;font-weight:800;text-decoration:none}
+.eligibility-panel small{display:block;color:#8b7b98;font-size:10px;line-height:1.5}
+.eligibility-panel{margin:12px 14px;padding:16px;border:1px solid #e7d5f2;border-radius:14px;background:linear-gradient(145deg,#fff,#faf5ff);color:#554065}
+.eligibility-panel[hidden]{display:none}
+.eligibility-panel h2{margin:0 0 8px;color:#35105f;font:800 16px 'DM Sans',sans-serif}
+.eligibility-panel p{margin:8px 0;color:#736382;font-size:12px;line-height:1.65}
+.eligibility-panel label{display:block;margin:12px 0 6px;color:#563176;font-size:11px;font-weight:800}
+.eligibility-panel select{width:100%;border:1px solid #dfcbea;border-radius:10px;background:#fff;padding:10px;color:#3c2451;font:12px 'DM Sans',sans-serif}
+.eligibility-guidance{padding:10px;border-radius:10px;background:#f7f0ff}
+.eligibility-submit{border:0;border-radius:10px;padding:11px 14px;background:linear-gradient(120deg,#542080,#7628d8);color:white;font-weight:800;font-size:11px;cursor:pointer}
+.eligibility-submit:disabled{opacity:.55;cursor:not-allowed}
+.eligibility-support{display:inline-block;margin:12px 0;color:#63279a;font-size:11px;font-weight:800;text-decoration:none}
+.eligibility-panel small{display:block;color:#8b7b98;font-size:10px;line-height:1.5}
 .chat-tools{display:flex;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line);background:#fcf9ff}
 .chat-tools[hidden],.history-panel[hidden],.memory-panel[hidden]{display:none}
 .tool-btn{border:1px solid #e2d2f1;border-radius:999px;background:#fff;color:#5c258e;padding:8px 13px;font:800 11px 'DM Sans',sans-serif;cursor:pointer}
@@ -48,7 +87,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 .empty-state{margin:6px 2px;color:#897b95;font-size:11px;line-height:1.6}
 .memory-panel label{display:block;margin-bottom:7px;color:#63437d;font-size:11px;font-weight:700}
 .memory-panel textarea{display:block;width:100%;min-height:78px;resize:vertical;border:1px solid #e3d6ef;border-radius:11px;padding:10px;font:12px/1.6 'DM Sans',sans-serif;color:var(--ink)}
-.memory-help{display:block;margin-top:6px;color:#93869f;font-size:9px;line-height:1.5}
+.memory-help{display:block;margin-top:6px;color:#93869f;font-size:9px;line-height:1.5}.memory-panel label.memory-auto-option{display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid #e8dcf2;border-radius:10px;background:#fff}.memory-auto-option input{width:16px;height:16px;margin:2px 0 0;accent-color:#6827a4;flex:0 0 auto}.memory-auto-option span{display:block}.memory-auto-option strong{display:block;color:#563176;font-size:10px}.memory-auto-option small{display:block;margin-top:4px;color:#85758f;font-size:9px;line-height:1.5}
 .memory-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px}
 .memory-actions div{display:flex;gap:7px}
 .memory-actions button{border:1px solid #e2d2f1;border-radius:9px;padding:8px 10px;background:#fff;color:#5c258e;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
@@ -65,7 +104,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  <section class="hero">
   <div class="eyebrow">ONE BRAIN · ONE KNOWLEDGE BASE · ONE AI SERVICE</div>
   <h1>Your DCDS AI Learning Assistant.</h1>
-  <p>The same DCDS assistant is opened from the main website and your student dashboard. Available to verified DCDS students and authorised administrators. Verified students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note. Visitor access will be introduced only after Production security checks are completed.</p>
+  <p>The same DCDS assistant is opened from the main website and your student dashboard. Available only to authenticated, contact-verified DCDS students and authorised administrators after the required age and guardian-consent review. No public guest chats, anonymous sessions or general visitor access. Eligible students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note.</p>
   <div class="shared-pill">✦ SHARED DCDS AI EXPERIENCE</div>
  </section>
  <div class="layout">
@@ -74,7 +113,18 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="assistant-mark"><div class="assistant-icon">🤖</div><div><strong>DCDS AI Companion</strong><small id="accountLabel">Verifying your student account…</small></div></div>
     <button class="new-chat" id="newChat" type="button">＋ New chat</button>
    </div>
-      <div class="chat-tools" id="studentTools" hidden>
+      
+   <section class="eligibility-panel" id="aiEligibilityPanel" hidden aria-labelledby="aiEligibilityTitle">
+    <h2 id="aiEligibilityTitle">DCDS AI access review</h2>
+    <p id="aiEligibilityMessage">DCDS checks age eligibility and parent/guardian consent where required before AI processing begins.</p>
+    <label for="aiAgeBand">Select your age group. Do not enter your date of birth.</label>
+    <select id="aiAgeBand"><option value="18_plus">18 or older</option><option value="13_17">13–17 years old</option><option value="under_13">Under 13</option></select>
+    <p class="eligibility-guidance" id="aiEligibilityGuidance">Adults must complete DCDS age verification before AI access is approved.</p>
+    <button class="eligibility-submit" id="requestAiEligibility" type="button">Submit access review request</button>
+    <a class="eligibility-support" href="https://wa.me/2348109146285" target="_blank" rel="noopener noreferrer">Parent/guardian or account verification support →</a>
+    <small>Do not send identity documents, a child’s full date of birth, passwords or verification codes through the AI chat. Under-13 access remains unavailable until additional provider and Zero Data Retention requirements are independently approved.</small>
+   </section>
+   <div class="chat-tools" id="studentTools" hidden>
     <button class="tool-btn" id="historyToggle" type="button">◷ Conversation history</button>
     <button class="tool-btn" id="memoryToggle" type="button">✦ Learning memory</button>
    </div>
@@ -87,20 +137,14 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="panel-heading"><span>Your learning memory</span></div>
     <label for="learningMemoryInput">What should DCDS AI remember when you start a fresh chat?</label>
     <textarea id="learningMemoryInput" maxlength="1200" rows="3" placeholder="For example: I am a beginner in graphic design, I use an Android phone, and I prefer step-by-step explanations with practical exercises."></textarea>
-    <small class="memory-help">This note is optional, editable and used to personalise new student chats. Do not save passwords, OTPs, payment details or private account information. Maximum 1,200 characters.</small>
+    <label class="memory-auto-option"><input id="autoLearningEnabled" type="checkbox"> <span><strong>Let DCDS AI learn my learning preferences</strong><small>When enabled, it may save clear preferences you explicitly state, such as your skill level, learning style, current topic or device. It will not store every message. This is private to your account and can be switched off or cleared at any time.</small></span></label>
+    <small class="memory-help">Your note is optional, editable and used to personalise new student chats. Never save passwords, OTPs, payment details, health details or private account information. Maximum 1,200 characters.</small>
     <div class="memory-actions"><button id="clearLearningMemory" type="button">Clear memory</button><div><button class="primary" id="saveLearningMemory" type="button">Save memory</button></div></div>
    </section>
    <div class="messages" id="messages" role="log" aria-live="polite">
     <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, search approved DCDS information, find lessons in your enrolled courses and explore general topics beyond the prepared knowledge files. What would you like to work on today?</div></div></div>
    </div>
    <div class="typing" id="typing" hidden>DCDS AI is thinking…</div>
-   <section class="captcha-panel" id="visitorCaptcha" hidden aria-live="polite">
-    <strong>Secure visitor access</strong>
-    <p>Complete this quick security check to start a visitor session.</p>
-    <div id="turnstileWidget"></div>
-    <small id="captchaHint">Preparing verification…</small>
-    <a href="index.html?login=required&amp;next=ai-learning-assistant.html">Sign in to an existing DCDS account →</a>
-   </section>
    <form class="composer" id="chatForm">
     <div class="composer-row">
      <textarea id="messageInput" maxlength="2500" rows="2" placeholder="Ask your DCDS AI assistant…" aria-label="Your message" required></textarea>
@@ -112,12 +156,12 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   <aside class="side-column">
    <section class="side-card">
     <h2>How I can help</h2>
-    <ul><li>Explain digital skills step by step, even when a topic is not in the prepared brain.</li><li>Search current DCDS courses, published announcements and approved reviews.</li><li>Find lesson and material titles available in your own enrolled courses.</li><li>Use grounded online sources for general, freshness-sensitive questions when requested.</li><li>Use your private saved conversations and optional learning memory to support continuity.</li><li>Guide you to official DCDS support when a question requires private account or administrator access.</li></ul>
+    <ul><li>Explain digital skills step by step, even when a topic is not in the prepared brain.</li><li>Search current DCDS courses, published announcements and approved reviews.</li><li>Find lesson and material titles available in your own enrolled courses.</li><li>Explain general topics and tell you when information needs fresh verification.</li><li>Use your private saved conversations and optional learning memory to support continuity.</li><li>Guide you to official DCDS support when a question requires private account or administrator access.</li></ul>
    </section>
    <section class="side-card">
     <h2>One shared assistant</h2>
-    <p>The student dashboard and authenticated DCDS surfaces open the same protected DCDS AI service. The server verifies the signed-in account and administrator role; the browser cannot select its own role.</p>
-    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Your chats are not automatically shared with other students or promoted into the official DCDS brain. Only verified DCDS students and authorised administrators can use this release. Do not enter passwords, OTPs, card details, bank information or sensitive personal information. Messages and limited conversation context are processed by Google Gemini to generate replies. Gemini free-tier content may be used by Google to improve its products.</div>
+    <p>The student dashboard and authenticated DCDS surfaces open the same protected DCDS AI service. The server verifies the signed-in account, administrator role and approved age/guardian eligibility; the browser cannot select its own role.</p>
+    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Your chats are never automatically shared with other students or added to the shared DCDS brain. DCDS checks age eligibility and parent/guardian consent where required before AI processing begins. Do not enter passwords, OTPs, card details, bank information or sensitive personal information. Messages and limited context are sent to Google Gemini to generate replies. On Gemini's unpaid tier, Google may use prompts and responses to improve its products and human reviewers may review them. Never enter personal, sensitive, confidential or financial information in AI chat. Read the DCDS Privacy Policy for provider details. Read the <a href="privacy-policy.html">DCDS Privacy Policy</a> for details about providers and data handling.</div>
    </section>
    <section class="side-card">
     <h2>Need human support?</h2>
@@ -141,77 +185,235 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  const sendButton=document.getElementById('sendButton');
  const typing=document.getElementById('typing');
  const charCount=document.getElementById('charCount');
- const captchaPanel=document.getElementById('visitorCaptcha');
- const captchaHint=document.getElementById('captchaHint');
- const captchaWidget=document.getElementById('turnstileWidget');
  const studentTools=document.getElementById('studentTools');
  const historyPanel=document.getElementById('historyPanel');
  const historyList=document.getElementById('conversationList');
  const memoryPanel=document.getElementById('memoryPanel');
  const memoryInput=document.getElementById('learningMemoryInput');
+ const eligibilityPanel=document.getElementById('aiEligibilityPanel');
+ const eligibilityMessage=document.getElementById('aiEligibilityMessage');
+ const ageBandSelect=document.getElementById('aiAgeBand');
+ const eligibilityGuidance=document.getElementById('aiEligibilityGuidance');
+ const requestEligibilityButton=document.getElementById('requestAiEligibility');
  const conversation=[];
  let client=null;
  let currentUser=null;
  let isPersistentStudent=false;
  let activeConversationId=null;
- let turnstileWidgetId=null;
+ input.disabled=true;sendButton.disabled=true;document.getElementById('newChat').disabled=true;
+ let knownCourseResources=[];
+ let knownEnrolledCourseSlugs=new Set();
+ const knownDigitalToolResources=[
+  {name:'Canva',aliases:['canva'],href:'https://www.canva.com/'},
+  {name:'CapCut',aliases:['capcut'],href:'https://www.capcut.com/'},
+  {name:'Adobe Express',aliases:['adobe express'],href:'https://www.adobe.com/express/'},
+  {name:'ChatGPT',aliases:['chatgpt'],href:'https://chatgpt.com/'},
+  {name:'Claude',aliases:['claude ai','claude'],href:'https://claude.ai/'},
+  {name:'Gemini',aliases:['gemini'],href:'https://gemini.google.com/'},
+  {name:'Grok',aliases:['grok'],href:'https://grok.com/'},
+  {name:'YouTube Studio',aliases:['youtube studio'],href:'https://studio.youtube.com/'},
+  {name:'Meta Business Suite',aliases:['meta business suite'],href:'https://business.facebook.com/'},
+  {name:'Figma',aliases:['figma'],href:'https://www.figma.com/'},
+  {name:'GitHub',aliases:['github'],href:'https://github.com/'},
+  {name:'Supabase',aliases:['supabase'],href:'https://supabase.com/'},
+  {name:'Cloudflare',aliases:['cloudflare'],href:'https://dash.cloudflare.com/'},
+  {name:'WordPress',aliases:['wordpress'],href:'https://wordpress.com/'},
+  {name:'Flutterwave',aliases:['flutterwave'],href:'https://flutterwave.com/'},
+  {name:'Selar',aliases:['selar'],href:'https://selar.com/'},
+  {name:'Google Drive',aliases:['google drive'],href:'https://drive.google.com/'},
+  {name:'Google Docs',aliases:['google docs'],href:'https://docs.google.com/'},
+  {name:'Notion',aliases:['notion'],href:'https://www.notion.so/'},
+  {name:'Paystack',aliases:['paystack'],href:'https://paystack.com/'}
+ ];
 
- const welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS learning companion. I can teach general topics, search approved DCDS courses and announcements, find lessons and materials available in your enrolled courses, and use your private saved learning context. What would you like to explore today?";
+ const welcomeMessage="Welcome to De Champions Digital Service. I’m DCDS AI, your private learning companion. I can teach digital skills, explain general topics, find approved DCDS information and guide you through lessons available to your verified account. What would you like to learn today?";
 
  function setStatus(message,isError=false){
   statusEl.textContent=message;
   statusEl.classList.toggle('error',isError);
  }
- function loadTurnstile(){
-  if(window.turnstile)return Promise.resolve();
-  return new Promise((resolve,reject)=>{
-   let script=document.getElementById('dcds-turnstile-script');
-   if(!script){
-    script=document.createElement('script');
-    script.id='dcds-turnstile-script';
-    script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    script.async=true;script.defer=true;
+ function appendInlineMarkdown(parent,text){
+  const parts=String(text).split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  parts.forEach(part=>{
+   if(part.startsWith('**')&&part.endsWith('**')){
+    const strong=document.createElement('strong');strong.textContent=part.slice(2,-2);parent.appendChild(strong);
+   }else if(part.startsWith('*')&&part.endsWith('*')){
+    const em=document.createElement('em');em.textContent=part.slice(1,-1);parent.appendChild(em);
+   }else if(part.startsWith('`')&&part.endsWith('`')){
+    const code=document.createElement('code');code.textContent=part.slice(1,-1);parent.appendChild(code);
+   }else parent.appendChild(document.createTextNode(part));
+  });
+ }
+ function renderAssistantMarkdown(container,source){
+  const lines=String(source??'').replace(/\r/g,'').split('\n');
+  let paragraph=[],list=null,codeLines=null;
+  const flushParagraph=()=>{
+   if(!paragraph.length)return;
+   const p=document.createElement('p');appendInlineMarkdown(p,paragraph.join(' '));container.appendChild(p);paragraph=[];
+  };
+  const closeList=()=>{if(list){container.appendChild(list);list=null;}};
+  lines.forEach(line=>{
+   if(line.trim().startsWith('```')){
+    flushParagraph();closeList();
+    if(codeLines===null)codeLines=[];
+    else{const pre=document.createElement('pre'),code=document.createElement('code');code.textContent=codeLines.join('\n');pre.appendChild(code);container.appendChild(pre);codeLines=null;}
+    return;
    }
-   script.addEventListener('load',()=>window.turnstile?resolve():reject(new Error('Turnstile did not initialise.')),{once:true});
-   script.addEventListener('error',()=>reject(new Error('The security verification service could not load.')),{once:true});
-   if(!script.isConnected)document.head.appendChild(script);
+   if(codeLines!==null){codeLines.push(line);return;}
+   if(!line.trim()){flushParagraph();closeList();return;}
+   const heading=line.match(/^(#{1,3})\s+(.+)$/);
+   if(heading){
+    flushParagraph();closeList();
+    const el=document.createElement('h'+Math.min(3,heading[1].length));
+    appendInlineMarkdown(el,heading[2]);container.appendChild(el);return;
+   }
+   const bullet=line.match(/^\s*[-*]\s+(.+)$/);
+   const numbered=line.match(/^\s*\d+[.)]\s+(.+)$/);
+   if(bullet||numbered){
+    flushParagraph();
+    const wanted=numbered?'ol':'ul';
+    if(!list||list.tagName.toLowerCase()!==wanted){closeList();list=document.createElement(wanted);}
+    const li=document.createElement('li');appendInlineMarkdown(li,(bullet||numbered)[1]);list.appendChild(li);return;
+   }
+   closeList();paragraph.push(line.trim());
   });
- }
- async function getVisitorCaptchaToken(){
-  const config=window.DCDS_CAPTCHA_CONFIG||{};
-  const siteKey=typeof config.siteKey==='string'?config.siteKey.trim():'';
-  if(config.provider!=='turnstile'||config.authProtectionEnabled!==true||!siteKey){
-   captchaPanel.hidden=false;
-   captchaHint.textContent='Visitor verification has not been configured yet. Please sign in to an existing DCDS account, or contact DCDS support.';
-   setStatus('New visitor sessions are paused until CAPTCHA is configured. Existing verified DCDS accounts can still sign in.',true);
-   throw new Error('DCDS_VISITOR_CAPTCHA_NOT_CONFIGURED');
+  flushParagraph();closeList();
+  if(codeLines!==null){
+   const pre=document.createElement('pre'),code=document.createElement('code');code.textContent=codeLines.join('\n');pre.appendChild(code);container.appendChild(pre);
   }
-  captchaPanel.hidden=false;
-  captchaHint.textContent='Loading the security check…';
-  await loadTurnstile();
-  captchaWidget.replaceChildren();
-  return await new Promise((resolve,reject)=>{
-   let settled=false;
-   const finish=(callback,value)=>{if(settled)return;settled=true;callback(value);};
-   captchaHint.textContent='Complete the check below to continue.';
-   try{
-    turnstileWidgetId=window.turnstile.render(captchaWidget,{
-     sitekey:siteKey,theme:'light',action:'dcds_auth',
-     callback:token=>finish(resolve,token),
-     'error-callback':()=>finish(reject,new Error('The security check failed to load. Please refresh and try again.')),
-     'expired-callback':()=>{captchaHint.textContent='The security check expired. Please complete it again.';}
-    });
-   }catch(error){finish(reject,error instanceof Error?error:new Error('The security check could not start.'));}
-  });
  }
- function addMessage(role,text){
+ function safeResourceHref(value){
+  if(typeof value!=='string'||!value.trim())return null;
+  const raw=value.trim();
+  if(/^https:\/\//i.test(raw))return raw;
+  if(/^(?:index\.html(?:#(?:course-[a-z0-9_-]+|courses|services|notificationPanel|studentReviews))?|learn\.html\?course=[a-z0-9_-]+|general-course\.html|student-dashboard\.html(?:#(?:ambassadorPanel|studentSupportPanel))?|ai-learning-assistant\.html|privacy-policy\.html)$/i.test(raw))return raw;
+  return null;
+ }
+ function renderResourceActions(wrapper,resources){
+  if(!Array.isArray(resources)||!resources.length)return;
+  const actions=document.createElement('div');actions.className='resource-actions';actions.setAttribute('aria-label','Related DCDS resources');
+  resources.slice(0,10).forEach(resource=>{
+   const href=safeResourceHref(resource?.href);if(!href)return;
+   const link=document.createElement('a');link.className='resource-link';link.href=href;
+   link.textContent='↗ '+String(resource.label||'Open resource').slice(0,90);
+   const kind=['course','dashboard','support','assistant','source','tool'].includes(resource.kind)?resource.kind:'resource';
+   link.dataset.kind=kind;
+   if(/^https:\/\//i.test(href)){link.target='_blank';link.rel='noopener noreferrer';}
+   actions.appendChild(link);
+  });
+  if(actions.childElementCount)wrapper.appendChild(actions);
+ }
+ function setChatEnabled(enabled){
+  input.disabled=!enabled;sendButton.disabled=!enabled;document.getElementById('newChat').disabled=!enabled;
+  if(!enabled){studentTools.hidden=true;historyPanel.hidden=true;memoryPanel.hidden=true;}
+ }
+ function explainAgeChoice(){
+  eligibilityGuidance.textContent=ageBandSelect.value==='18_plus'
+   ?'Adults must complete DCDS age verification before AI access can be approved.'
+   :ageBandSelect.value==='13_17'
+    ?'A parent or legal guardian must provide verifiable consent. DCDS will review it before AI access can be approved.'
+    :'Under-13 access is not enabled yet. DCDS must first complete additional child-safety safeguards and obtain the required Zero Data Retention arrangement.';
+ }
+ // Keep 13–17 chat access closed until the separate DCDS youth-safety release is approved.
+ const TEEN_AI_ACCESS_ENABLED = false;
+ async function loadAiEligibility(){
+  eligibilityPanel.hidden=true;setChatEnabled(false);
+  const {data,error}=await client.from('dcds_ai_access_eligibility').select('age_band,access_status,guardian_consent_status').eq('user_id',currentUser.id).maybeSingle();
+  if(error){
+   eligibilityPanel.hidden=false;requestEligibilityButton.hidden=true;
+   eligibilityMessage.textContent='DCDS could not confirm your AI access eligibility. The assistant remains locked until this check succeeds.';
+   eligibilityGuidance.textContent='Please refresh later or contact DCDS support. No chat message will be sent while access is unverified.';
+   setStatus('AI access eligibility could not be checked. Your assistant remains protected.',true);return false;
+  }
+  if(!data){
+   ageBandSelect.disabled=false;requestEligibilityButton.hidden=false;ageBandSelect.value='18_plus';explainAgeChoice();
+   eligibilityMessage.textContent='Before using DCDS AI, choose your age group. DCDS stores only the age band, not your full date of birth. AI processing does not begin until review is complete.';
+   eligibilityPanel.hidden=false;setStatus('Please complete the DCDS AI access review first.');return false;
+  }
+  ageBandSelect.value=data.age_band;ageBandSelect.disabled=true;requestEligibilityButton.hidden=true;
+  const adult=data.age_band==='18_plus'&&data.access_status==='approved'&&data.guardian_consent_status==='not_required';
+  const teen=TEEN_AI_ACCESS_ENABLED&&data.age_band==='13_17'&&data.access_status==='approved'&&data.guardian_consent_status==='verified';
+  if(adult||teen){eligibilityPanel.hidden=true;setChatEnabled(true);return true;}
+  eligibilityPanel.hidden=false;
+  if(data.age_band==='under_13'){
+   eligibilityMessage.textContent='DCDS has recorded an under-13 access request, but this age group is not enabled yet.';
+   eligibilityGuidance.textContent='No AI processing is permitted for this account at this stage. DCDS must complete additional child-safety and Zero Data Retention requirements before approval.';
+  }else if(data.age_band==='13_17'&&data.guardian_consent_status!=='verified'){
+   eligibilityMessage.textContent='Parent or guardian consent verification is still required. AI access remains locked until DCDS confirms it.';
+   eligibilityGuidance.textContent='Ask your parent or legal guardian to complete the official DCDS consent review through support. Do not send identity documents or private family information in the chat.';
+  }else if(data.age_band==='13_17'&&!TEEN_AI_ACCESS_ENABLED){
+   eligibilityMessage.textContent='DCDS AI access for ages 13–17 is not enabled yet.';
+   eligibilityGuidance.textContent='DCDS must complete additional youth-safety, age-appropriate disclosure, monitoring and escalation reviews before this age group can use AI chat. Your account remains protected while that review is pending.';
+  }else if(data.access_status==='pending'){
+   eligibilityMessage.textContent='Your age eligibility request is awaiting DCDS review. AI access remains locked until the review is complete.';
+   eligibilityGuidance.textContent='Contact DCDS support if you need help with verification.';
+  }else{
+   eligibilityMessage.textContent='DCDS AI access has not been approved for this account.';
+   eligibilityGuidance.textContent='Contact DCDS support if you believe this status is incorrect.';
+  }
+  setStatus('DCDS AI is not yet enabled for this account.',true);return false;
+ }
+ async function submitAiEligibilityRequest(){
+  const selected=ageBandSelect.value;if(!['18_plus','13_17','under_13'].includes(selected))return;
+  requestEligibilityButton.disabled=true;requestEligibilityButton.textContent='Submitting…';
+  const {error}=await client.from('dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:selected});
+  if(error)setStatus('Your access review request could not be submitted. Refresh or contact DCDS support.',true);
+  else setStatus('Your request has been recorded. DCDS AI will remain locked until eligibility and required consent checks are completed.');
+  await loadAiEligibility();requestEligibilityButton.disabled=false;requestEligibilityButton.textContent='Submit access review request';
+ }
+ ageBandSelect.addEventListener('change',explainAgeChoice);
+ requestEligibilityButton.addEventListener('click',submitAiEligibilityRequest);
+
+ async function loadResourceIndex(){
+  try{
+   const {data:courses,error}=await client.from('courses').select('id,title,slug').order('title',{ascending:true}).limit(40);
+   if(error)throw error;
+   knownCourseResources=(courses||[]).filter(c=>c&&typeof c.id==='string'&&typeof c.title==='string'&&typeof c.slug==='string');
+   knownEnrolledCourseSlugs=new Set();
+   if(isPersistentStudent){
+    const {data:enrollments,error:enrollmentError}=await client.from('enrollments').select('course_id').eq('user_id',currentUser.id).limit(100);
+    if(enrollmentError)throw enrollmentError;
+    const enrolledIds=new Set((enrollments||[]).map(row=>String(row.course_id)));
+    knownEnrolledCourseSlugs=new Set(knownCourseResources.filter(c=>enrolledIds.has(c.id)).map(c=>c.slug));
+   }
+  }catch(error){console.warn('DCDS resource shortcuts could not be refreshed:',error?.message||error);}
+ }
+ function inferResourceActions(text){
+  const value=String(text||'').toLowerCase(),resources=[];
+  knownCourseResources.forEach(course=>{
+   if(value.includes(course.title.toLowerCase())){
+    const enrolled=knownEnrolledCourseSlugs.has(course.slug);
+    resources.push({label:(enrolled?'Continue ':'Explore ')+course.title,href:enrolled?'learn.html?course='+encodeURIComponent(course.slug):'index.html#course-'+course.slug,kind:'course'});
+   }
+  });
+  if(/\bdcds general course\b/i.test(value))resources.push({label:'Open General Course',href:'general-course.html',kind:'course'});
+  if(/\b(course catalogue|course catalog|browse courses|dcds courses)\b/i.test(value))resources.push({label:'Browse DCDS Courses',href:'index.html#courses',kind:'course'});
+  if(/\b(ambassador|referral|rewards|commission)\b/i.test(value))resources.push({label:'Open Ambassador & Rewards',href:'student-dashboard.html#ambassadorPanel',kind:'dashboard'});
+  if(/\b(student dashboard|dashboard)\b/i.test(value))resources.push({label:'Open Student Dashboard',href:'student-dashboard.html',kind:'dashboard'});
+  if(/\b(dcds support|contact support|support team|payment dispute|account access issue)\b/i.test(value))resources.push({label:'Contact DCDS Support',href:'https://wa.me/2348109146285',kind:'support'});
+  if(/\b(dcds ai|learning assistant)\b/i.test(value))resources.push({label:'Open DCDS AI',href:'ai-learning-assistant.html',kind:'assistant'});
+  if(/\b(digital services|our services|dcds services)\b/i.test(value))resources.push({label:'Explore DCDS Services',href:'index.html#services',kind:'resource'});
+  if(/\b(announcement|announcements|student update)\b/i.test(value))resources.push({label:'View Student Announcements',href:'index.html#notificationPanel',kind:'resource'});
+  if(/\b(approved review|student reviews|testimonials)\b/i.test(value))resources.push({label:'Read Student Reviews',href:'index.html#studentReviews',kind:'resource'});
+  if(/\b(privacy policy|data privacy)\b/i.test(value))resources.push({label:'Read DCDS Privacy Policy',href:'privacy-policy.html',kind:'resource'});
+  knownDigitalToolResources.forEach(tool=>{
+   if(tool.aliases.some(alias=>value.includes(alias))){
+    resources.push({label:'Open '+tool.name,href:tool.href,kind:'tool'});
+   }
+  });
+  const webPattern=/\[WEB-\d+\]\s+(.+?)\s+—\s+(https:\/\/[^\s]+)/g;let match;
+  while((match=webPattern.exec(String(text||'')))!==null)resources.push({label:'Read: '+match[1].slice(0,72),href:match[2],kind:'source'});
+  return [...new Map(resources.map(item=>[item.href,item])).values()].slice(0,10);
+ }
+ function addMessage(role,text,resources=[]){
   const row=document.createElement('div');
   row.className='message '+(role==='user'?'user':'assistant');
   const wrap=document.createElement('div');
-  const bubble=document.createElement('div');
-  bubble.className='bubble';
-  bubble.textContent=String(text??'');
+  const bubble=document.createElement('div');bubble.className='bubble';
+  if(role==='user')bubble.textContent=String(text??'');
+  else{bubble.classList.add('markdown-body');renderAssistantMarkdown(bubble,text);}
   wrap.appendChild(bubble);
+  if(role!=='user')renderResourceActions(wrap,resources);
   row.appendChild(wrap);
   messagesEl.appendChild(row);
   messagesEl.scrollTop=messagesEl.scrollHeight;
@@ -295,7 +497,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   for(const row of rows||[]){
    const role=row.role==='user'?'user':'model';
    conversation.push({role,text:row.content});
-   addMessage(role==='user'?'user':'assistant',row.content);
+   addMessage(role==='user'?'user':'assistant',row.content,role==='user'?[]:inferResourceActions(row.content));
   }
   closePanels();
   setStatus('Reopened: '+(owned.title||'Saved conversation')+'. You can continue where you left off.');
@@ -327,7 +529,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   if(!isPersistentStudent)return;
   const {data,error}=await client
    .from('dcds_ai_student_memory')
-   .select('learning_context')
+   .select('learning_context,auto_learning_enabled')
    .eq('user_id',currentUser.id)
    .maybeSingle();
   if(error){
@@ -336,6 +538,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    return;
   }
   memoryInput.value=data?.learning_context||'';
+  autoLearningToggle.checked=data?.auto_learning_enabled===true;
  }
  async function saveLearningMemory(){
   if(!isPersistentStudent)return;
@@ -345,24 +548,28 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    return;
   }
   if(!value){
-   const {error}=await client.from('dcds_ai_student_memory').delete().eq('user_id',currentUser.id);
-   if(error){setStatus('Your learning memory could not be cleared.',true);return;}
-   setStatus('Your saved learning memory is now empty.');
+   const {error}=await client.from('dcds_ai_student_memory').upsert(
+    {user_id:currentUser.id,learning_context:'',auto_learning_enabled:autoLearningToggle.checked},
+    {onConflict:'user_id'}
+   );
+   if(error){setStatus('Your learning-memory settings could not be saved.',true);return;}
+   setStatus(autoLearningToggle.checked?'Automatic learning is enabled. DCDS AI will save only clear, low-risk learning preferences you explicitly state.':'Your learning memory is empty and automatic learning is off.');
    return;
   }
   const {error}=await client.from('dcds_ai_student_memory').upsert(
-   {user_id:currentUser.id,learning_context:value},
+   {user_id:currentUser.id,learning_context:value,auto_learning_enabled:autoLearningToggle.checked},
    {onConflict:'user_id'}
   );
   if(error){setStatus('Your learning memory could not be saved. Please try again.',true);return;}
-  setStatus('Learning memory saved. New chats can use this context.');
+  setStatus(autoLearningToggle.checked?'Learning memory saved. Automatic preference learning is enabled.':'Learning memory saved. Automatic preference learning is off.');
  }
  async function clearLearningMemory(){
   if(!isPersistentStudent||!window.confirm('Clear your saved learning-memory note? Conversation history will remain.'))return;
   const {error}=await client.from('dcds_ai_student_memory').delete().eq('user_id',currentUser.id);
   if(error){setStatus('Your learning memory could not be cleared.',true);return;}
   memoryInput.value='';
-  setStatus('Your saved learning-memory note has been cleared.');
+  autoLearningToggle.checked=false;
+  setStatus('Your saved learning-memory note has been cleared and automatic learning is off.');
  }
 
  try{
@@ -391,20 +598,23 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    form.querySelectorAll('textarea,button').forEach(el=>el.disabled=true);
    return;
   }
-  const isAdmin=adminData===true;
-  isPersistentStudent=!isAdmin;
-  if(isPersistentStudent){
-   document.getElementById('accountLabel').textContent='Student · Learning Assistant';
-   studentTools.hidden=false;
-   await Promise.all([loadConversationList(),loadLearningMemory()]);
-   setStatus('Verified student session. Your saved conversations are private to this account. Visitor chats are temporary.');
-  }else if(isAdmin){
-   document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
-   setStatus('Administrator session verified. This assistant remains read-only and does not change account or payment records.');
-  }else{
-   document.getElementById('accountLabel').textContent=currentUser.is_anonymous?'Visitor session · role checked securely':'Signed-in session · role checked securely';
-   setStatus('Your visitor session is ready. Only public DCDS information is available in this mode.');
-  }
+   const isAdmin=adminData===true;
+   isPersistentStudent=!isAdmin;
+   const accessApproved=await loadAiEligibility();
+   if(!accessApproved){
+    document.getElementById('accountLabel').textContent=isAdmin?'Administrator · Access review required':'Student · Access review required';
+    return;
+   }
+   await loadResourceIndex();
+   if(isPersistentStudent){
+    document.getElementById('accountLabel').textContent='Student · Learning Assistant';
+    studentTools.hidden=false;
+    await Promise.all([loadConversationList(),loadLearningMemory()]);
+    setStatus('DCDS AI access approved. Your saved conversations are private to this account.');
+   }else{
+    document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
+    setStatus('Administrator session verified. This assistant remains read-only and does not change account or payment records.');
+   }
  }catch(error){
   setStatus('We could not verify your account. Please sign in again.',true);
   return;
@@ -448,9 +658,10 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    if(error)throw error;
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
    conversation.push({role:'model',text:data.answer});
-   addMessage('assistant',data.answer);
-   const roleLabels={visitor:'Visitor · Public DCDS Assistant',student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot'};
-   document.getElementById('accountLabel').textContent=roleLabels[data.role]||'Shared DCDS AI';
+   addMessage('assistant',data.answer,Array.isArray(data.resources)?data.resources:inferResourceActions(data.answer));
+   const roleLabels={student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot'};
+   if(!roleLabels[data.role])throw new Error('This DCDS AI access role is not permitted.');
+   document.getElementById('accountLabel').textContent=roleLabels[data.role];
    if(data.role==='student'&&data.history_saved&&data.conversation_id){
     activeConversationId=data.conversation_id;
     await loadConversationList();
