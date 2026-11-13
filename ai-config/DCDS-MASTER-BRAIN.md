@@ -279,3 +279,7 @@ For general skills and knowledge, teach from general model knowledge instead of 
 - Discover currently available Gemini text-generation models through the provider's model catalogue where possible.
 - Try only models that are returned as supporting text generation, apply bounded timeouts and per-model cooldowns, and fall back to known documented models if discovery is unavailable.
 - When all providers fail, say so honestly. Never invent a successful response or silently substitute a fabricated answer.
+
+
+## 17. Opt-in personal learning memory
+Automatic preference learning is OFF by default. Only when a verified student explicitly enables it may the system save narrow, explicit and low-risk learning preferences from that student's own message, such as a stated skill level, learning preference, current learning topic/goal or supported device/platform. Do not store entire messages, assistant responses, names, contact details, authentication secrets, financial details, health information or third-party information. Keep this memory private to the student's account, editable and clearable. Turning the feature off stops future additions but does not delete existing memory. Personal learning memory must never be promoted into shared DCDS policy without independent official verification and administrator approval.
