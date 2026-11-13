@@ -123,7 +123,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  async function getVisitorCaptchaToken(){
   const config=window.DCDS_CAPTCHA_CONFIG||{};
   const siteKey=typeof config.siteKey==='string'?config.siteKey.trim():'';
-  if(config.provider!=='turnstile'||!siteKey){
+  if(config.provider!=='turnstile'||config.authProtectionEnabled!==true||!siteKey){
    captchaPanel.hidden=false;
    captchaHint.textContent='Visitor verification has not been configured yet. Please sign in to an existing DCDS account, or contact DCDS support.';
    setStatus('New visitor sessions are paused until CAPTCHA is configured. Existing verified DCDS accounts can still sign in.',true);
@@ -140,7 +140,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    try{
     turnstileWidgetId=window.turnstile.render(captchaWidget,{
      sitekey:siteKey,
-     theme:'light',
+     theme:'light',action:'dcds_auth',
      callback:token=>finish(resolve,token),
      'error-callback':()=>finish(reject,new Error('The security check failed to load. Please refresh and try again.')),
      'expired-callback':()=>{captchaHint.textContent='The security check expired. Please complete it again.';}
