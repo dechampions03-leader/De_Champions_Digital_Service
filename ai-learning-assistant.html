@@ -455,7 +455,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   if(/\b(approved review|student reviews|testimonials)\b/i.test(value))resources.push({label:'Read Student Reviews',href:'index.html#studentReviews',kind:'resource'});
   if(/\b(privacy policy|data privacy)\b/i.test(value))resources.push({label:'Read DCDS Privacy Policy',href:'privacy-policy.html',kind:'resource'});
   knownDigitalToolResources.forEach(tool=>{
-   if(tool.aliases.some(alias=>new RegExp('\\\\b'+alias.replace(/[.*+?^${}()|[\\]\\\\]/g,'\\\\$&')+'\\\\b','i').test(value))){
+   if(tool.aliases.some(alias=>value.includes(alias))){
     resources.push({label:'Open '+tool.name,href:tool.href,kind:'tool'});
    }
   });
