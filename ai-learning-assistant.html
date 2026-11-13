@@ -25,6 +25,24 @@ main{max-width:1160px;margin:0 auto;padding:26px 18px 50px}.hero{position:relati
 .new-chat{border:1px solid #e3d3f2;border-radius:10px;padding:9px 11px;background:#fff;color:#5d218e;font-weight:800;font-size:11px;cursor:pointer}
 .messages{height:min(58vh,590px);min-height:340px;overflow:auto;padding:18px;background:linear-gradient(180deg,#fff,#fdfaff)}
 .message{display:flex;margin:0 0 14px}.message.user{justify-content:flex-end}.bubble{max-width:min(82%,700px);padding:12px 14px;border-radius:16px;background:#f3ebfc;color:#3c2451;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}.message.user .bubble{background:linear-gradient(120deg,#542080,#7628d8);color:#fff;border-bottom-right-radius:5px}.message.assistant .bubble{border-bottom-left-radius:5px}.message-time{font-size:9px;color:#9b8da7;margin:5px 4px 0}.message.user .message-time{text-align:right}
+.markdown-body{white-space:normal;line-height:1.68}
+.markdown-body p{margin:0 0 10px}
+.markdown-body p:last-child{margin-bottom:0}
+.markdown-body h1,.markdown-body h2,.markdown-body h3{color:#35105f;font-weight:800;line-height:1.3;margin:16px 0 8px}
+.markdown-body h1{font-size:17px}.markdown-body h2{font-size:15px}.markdown-body h3{font-size:13px}
+.markdown-body ul,.markdown-body ol{padding-left:22px;margin:7px 0 12px}
+.markdown-body li{margin:4px 0}
+.markdown-body strong{font-weight:800;color:#35105f}
+.markdown-body code{font:12px ui-monospace,SFMono-Regular,Consolas,monospace;background:#eee5f7;padding:2px 5px;border-radius:5px}
+.markdown-body pre{white-space:pre;overflow:auto;padding:12px;border-radius:10px;background:#231236;color:#f8efff;font:11px/1.6 ui-monospace,SFMono-Regular,Consolas,monospace}
+.markdown-body pre code{background:none;padding:0;color:inherit}
+.message.user .markdown-body strong{color:#fff}
+.resource-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;max-width:min(82%,700px)}
+.resource-link{display:inline-flex;align-items:center;gap:7px;min-height:34px;padding:8px 11px;border:1px solid #e2d2f1;border-radius:999px;background:linear-gradient(135deg,#fbf7ff,#f1e5ff);color:#57208b;text-decoration:none;font-size:10px;font-weight:800;line-height:1.3;box-shadow:0 3px 10px #48136f0d}
+.resource-link:hover{border-color:#be9ce5;background:#eee0ff}
+.resource-link[data-kind="source"]{background:#fff;border-color:#e9dfef;color:#6f5b80}
+.resource-link:focus-visible{outline:3px solid #d8bdff;outline-offset:2px}
+@media(max-width:580px){.resource-actions{max-width:95%}.resource-link{font-size:10px;padding:8px 10px}}
 .composer{padding:14px;border-top:1px solid var(--line);background:#fff}.composer-row{display:flex;gap:9px;align-items:flex-end}.composer textarea{flex:1;min-height:48px;max-height:130px;resize:vertical;border:1px solid #e3d6ef;border-radius:13px;padding:13px;font:13px 'DM Sans',sans-serif;color:var(--ink);outline:none}.composer textarea:focus{border-color:#9b78d1;box-shadow:0 0 0 3px #6128b814}.send{border:0;border-radius:13px;padding:14px 18px;background:linear-gradient(120deg,#542080,#7628d8);color:#fff;font-weight:900;cursor:pointer}.send:disabled{opacity:.55;cursor:not-allowed}.composer-meta{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:#93869f;font-size:10px}.typing{color:#7b4aa5;font-size:11px;padding:0 4px 10px}
 .side-card{padding:18px;margin-bottom:14px}.side-card h2{font:700 19px 'Playfair Display',serif;color:#35105f;margin:0 0 10px}.side-card p,.side-card li{font-size:12px;line-height:1.7;color:#766a81}.side-card ul{padding-left:18px;margin:8px 0 0}.notice{border-left:4px solid var(--gold);background:#fffaf0;border-radius:0 13px 13px 0;padding:13px;color:#6e5a31;font-size:11px;line-height:1.7}.notice strong{display:block;margin-bottom:4px}
 .status{margin:12px 0 0;padding:10px 12px;border-radius:11px;background:#f7f1fc;color:#68418b;font-size:11px;line-height:1.5}.status.error{background:#fff1f0;color:#a2352c}
@@ -156,6 +174,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let isPersistentStudent=false;
  let activeConversationId=null;
  let turnstileWidgetId=null;
+ let knownCourseResources=[];
+ let knownEnrolledCourseSlugs=new Set();
 
  const welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS learning companion. I can teach general topics, search approved DCDS courses and announcements, find lessons and materials available in your enrolled courses, and use your private saved learning context. What would you like to explore today?";
 
@@ -205,14 +225,103 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    }catch(error){finish(reject,error instanceof Error?error:new Error('The security check could not start.'));}
   });
  }
- function addMessage(role,text){
+ function appendInlineMarkdown(parent,text){
+  const parts=String(text).split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
+  parts.forEach(part=>{
+   if(part.startsWith('**')&&part.endsWith('**')){
+    const strong=document.createElement('strong');strong.textContent=part.slice(2,-2);parent.appendChild(strong);
+   }else if(part.startsWith('*')&&part.endsWith('*')){
+    const em=document.createElement('em');em.textContent=part.slice(1,-1);parent.appendChild(em);
+   }else if(part.startsWith('`')&&part.endsWith('`')){
+    const code=document.createElement('code');code.textContent=part.slice(1,-1);parent.appendChild(code);
+   }else parent.appendChild(document.createTextNode(part));
+  });
+ }
+ function renderAssistantMarkdown(container,source){
+  const lines=String(source??'').replace(/\r/g,'').split('\n');
+  let paragraph=[],list=null,codeLines=null;
+  const flushParagraph=()=>{
+   if(!paragraph.length)return;
+   const p=document.createElement('p');appendInlineMarkdown(p,paragraph.join(' '));container.appendChild(p);paragraph=[];
+  };
+  const closeList=()=>{if(list){container.appendChild(list);list=null;}};
+  lines.forEach(line=>{
+   if(line.trim().startsWith('```')){
+    flushParagraph();closeList();
+    if(codeLines===null)codeLines=[];
+    else{const pre=document.createElement('pre'),code=document.createElement('code');code.textContent=codeLines.join('\n');pre.appendChild(code);container.appendChild(pre);codeLines=null;}
+    return;
+   }
+   if(codeLines!==null){codeLines.push(line);return;}
+   if(!line.trim()){flushParagraph();closeList();return;}
+   const heading=line.match(/^(#{1,3})\s+(.+)$/);
+   if(heading){
+    flushParagraph();closeList();
+    const el=document.createElement('h'+Math.min(3,heading[1].length));
+    appendInlineMarkdown(el,heading[2]);container.appendChild(el);return;
+   }
+   const bullet=line.match(/^\s*[-*]\s+(.+)$/);
+   const numbered=line.match(/^\s*\d+[.)]\s+(.+)$/);
+   if(bullet||numbered){
+    flushParagraph();
+    const wanted=numbered?'ol':'ul';
+    if(!list||list.tagName.toLowerCase()!==wanted){closeList();list=document.createElement(wanted);}
+    const li=document.createElement('li');appendInlineMarkdown(li,(bullet||numbered)[1]);list.appendChild(li);return;
+   }
+   closeList();paragraph.push(line.trim());
+  });
+  flushParagraph();closeList();
+  if(codeLines!==null){
+   const pre=document.createElement('pre'),code=document.createElement('code');code.textContent=codeLines.join('\n');pre.appendChild(code);container.appendChild(pre);
+  }
+ }
+ function safeResourceHref(value){
+  if(typeof value!=='string'||!value.trim())return null;
+  const raw=value.trim();
+  if(/^https:\/\//i.test(raw))return raw;
+  if(/^(?:index\.html(?:#[a-z0-9_-]+)?|learn\.html\?course=[a-z0-9-]+|general-course\.html|student-dashboard\.html(?:#[a-z0-9_-]+)?|ai-learning-assistant\.html|privacy-policy\.html)$/i.test(raw))return raw;
+  return null;
+ }
+ function renderResourceActions(wrapper,resources){
+  if(!Array.isArray(resources)||!resources.length)return;
+  const actions=document.createElement('div');actions.className='resource-actions';actions.setAttribute('aria-label','Related DCDS resources');
+  resources.slice(0,10).forEach(resource=>{
+   const href=safeResourceHref(resource?.href);if(!href)return;
+   const link=document.createElement('a');link.className='resource-link';link.href=href;
+   link.textContent='↗ '+String(resource.label||'Open resource').slice(0,90);
+   const kind=['course','dashboard','support','assistant','source'].includes(resource.kind)?resource.kind:'resource';
+   link.dataset.kind=kind;
+   if(/^https:\/\//i.test(href)){link.target='_blank';link.rel='noopener noreferrer';}
+   actions.appendChild(link);
+  });
+  if(actions.childElementCount)wrapper.appendChild(actions);
+ }
+ function inferResourceActions(text){
+  const value=String(text||'').toLowerCase(),resources=[];
+  knownCourseResources.forEach(course=>{
+   if(value.includes(course.title.toLowerCase())){
+    const enrolled=knownEnrolledCourseSlugs.has(course.slug);
+    resources.push({label:(enrolled?'Continue ':'Explore ')+course.title,href:enrolled?'learn.html?course='+encodeURIComponent(course.slug):'index.html#course-'+course.slug,kind:'course'});
+   }
+  });
+  if(/\bdcds general course\b/i.test(value))resources.push({label:'Open General Course',href:'general-course.html',kind:'course'});
+  if(/\b(ambassador|referral|rewards|commission)\b/i.test(value))resources.push({label:'Open Ambassador & Rewards',href:'student-dashboard.html#ambassadorPanel',kind:'dashboard'});
+  if(/\b(student dashboard|dashboard)\b/i.test(value))resources.push({label:'Open Student Dashboard',href:'student-dashboard.html',kind:'dashboard'});
+  if(/\b(dcds support|contact support|support team)\b/i.test(value))resources.push({label:'Contact DCDS Support',href:'https://wa.me/2348109146285',kind:'support'});
+  if(/\b(dcds ai|learning assistant)\b/i.test(value))resources.push({label:'Open DCDS AI',href:'ai-learning-assistant.html',kind:'assistant'});
+  const webPattern=/\[WEB-\d+\]\s+(.+?)\s+—\s+(https:\/\/[^\s]+)/g;let match;
+  while((match=webPattern.exec(String(text||'')))!==null)resources.push({label:'Read: '+match[1].slice(0,72),href:match[2],kind:'source'});
+  return [...new Map(resources.map(item=>[item.href,item])).values()].slice(0,10);
+ }
+ function addMessage(role,text,resources=[]){
   const row=document.createElement('div');
   row.className='message '+(role==='user'?'user':'assistant');
   const wrap=document.createElement('div');
-  const bubble=document.createElement('div');
-  bubble.className='bubble';
-  bubble.textContent=String(text??'');
+  const bubble=document.createElement('div');bubble.className='bubble';
+  if(role==='user')bubble.textContent=String(text??'');
+  else{bubble.classList.add('markdown-body');renderAssistantMarkdown(bubble,text);}
   wrap.appendChild(bubble);
+  if(role!=='user')renderResourceActions(wrap,resources);
   row.appendChild(wrap);
   messagesEl.appendChild(row);
   messagesEl.scrollTop=messagesEl.scrollHeight;
@@ -296,7 +405,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   for(const row of rows||[]){
    const role=row.role==='user'?'user':'model';
    conversation.push({role,text:row.content});
-   addMessage(role==='user'?'user':'assistant',row.content);
+   addMessage(role==='user'?'user':'assistant',row.content,role==='user'?[]:inferResourceActions(row.content));
   }
   closePanels();
   setStatus('Reopened: '+(owned.title||'Saved conversation')+'. You can continue where you left off.');
@@ -454,7 +563,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    if(error)throw error;
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
    conversation.push({role:'model',text:data.answer});
-   addMessage('assistant',data.answer);
+   addMessage('assistant',data.answer,Array.isArray(data.resources)?data.resources:inferResourceActions(data.answer));
    const roleLabels={visitor:'Visitor · Public DCDS Assistant',student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot'};
    document.getElementById('accountLabel').textContent=roleLabels[data.role]||'Shared DCDS AI';
    if(data.role==='student'&&data.history_saved&&data.conversation_id){
