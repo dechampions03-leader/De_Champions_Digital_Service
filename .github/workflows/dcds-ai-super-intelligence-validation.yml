@@ -6,7 +6,21 @@ on:
       - main
     paths:
       - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/functions/dcds-ai-chat-development/**"
+      - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
+      - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
+      - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
+      - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
+      - "supabase/migrations/*restrict_ai_guardian_approval_lookup.sql"
+      - "supabase/migrations/*prevent_ai_self_approval.sql"
       - "ai-learning-assistant.html"
+      - "admin-notifications.html"
+      - "delete-account.html"
+      - "student-dashboard.html"
+      - "index.html"
+      - "dcds-ai-access-review.html"
+      - "admin-account-deletions.html"
+      - "privacy-policy.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
       - ".github/workflows/dcds-ai-super-intelligence-validation.yml"
@@ -14,9 +28,24 @@ on:
     branches:
       - main
       - feature/dcds-super-intelligence
+      - feature/dcds-ai-private-learning-memory
     paths:
       - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/functions/dcds-ai-chat-development/**"
+      - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
+      - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
+      - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
+      - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
+      - "supabase/migrations/*restrict_ai_guardian_approval_lookup.sql"
+      - "supabase/migrations/*prevent_ai_self_approval.sql"
       - "ai-learning-assistant.html"
+      - "admin-notifications.html"
+      - "delete-account.html"
+      - "student-dashboard.html"
+      - "index.html"
+      - "dcds-ai-access-review.html"
+      - "admin-account-deletions.html"
+      - "privacy-policy.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
       - ".github/workflows/dcds-ai-super-intelligence-validation.yml"
@@ -42,18 +71,54 @@ jobs:
 
       - name: Type-check DCDS AI Edge Function
         run: deno check supabase/functions/dcds-ai-chat/index.ts
+      - name: Type-check Development Gemini Edge Function
+        run: deno check supabase/functions/dcds-ai-chat-development/index.ts
 
-      - name: Validate live retrieval, privacy boundaries and evaluation coverage
+      - name: Validate DCDS AI page JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          for page_name in ("ai-learning-assistant.html", "index.html"):
+              html = Path(page_name).read_text(encoding="utf-8")
+              scripts = re.findall(r"<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)</script>", html, re.I)
+              scripts = [script.strip() for script in scripts if script.strip()]
+              if not scripts:
+                  raise SystemExit(f"No inline JavaScript was found in {page_name}.")
+              for index, script in enumerate(scripts):
+                  Path(f"/tmp/{Path(page_name).stem}-{index}.js").write_text(script, encoding="utf-8")
+          PY
+          for script in /tmp/ai-learning-assistant-*.js /tmp/index-*.js; do
+            node --check "$script"
+          done
+
+      - name: Validate live retrieval, OpenAI safety, age gates, native actions and evaluation coverage
         shell: bash
         run: |
           python3 - <<'PY'
           import json
+          import re
           from pathlib import Path
 
           function_path = Path("supabase/functions/dcds-ai-chat/index.ts")
           function = function_path.read_text(encoding="utf-8")
+          page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+          admin_page = Path("dcds-ai-access-review.html").read_text(encoding="utf-8")
+          dev_function = Path("supabase/functions/dcds-ai-chat-development/index.ts").read_text(encoding="utf-8")
+          admin_centre = Path("admin-notifications.html").read_text(encoding="utf-8")
+          pwa_pages = ("index.html", "student-dashboard.html", "delete-account.html", "privacy-policy.html")
+          pwa_html = {name: Path(name).read_text(encoding="utf-8") for name in pwa_pages}
+          eligibility_policy = Path("supabase/migrations/20261113133000_dcds_ai_eligibility_review_policy_scope.sql").read_text(encoding="utf-8")
+          guardian_security = Path("supabase/migrations/20261113135915_restrict_ai_guardian_approval_lookup.sql").read_text(encoding="utf-8")
+          self_approval_guard = Path("supabase/migrations/20261113140500_prevent_ai_self_approval.sql").read_text(encoding="utf-8")
+          master = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
+          knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
+          evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
+
           start = function.index("async function searchPlatformKnowledge(")
-          end = function.index("// Discover model names dynamically", start)
+          end = function.index("function wantsExternalWebSearch", start)
           search_helper = function[start:end]
 
           allowed_tables = (
@@ -85,31 +150,153 @@ jobs:
               if table in search_helper:
                   raise SystemExit(f"Disallowed private/financial retrieval source found: {table}")
 
+          system_start = function.index("const systemInstruction")
+          system_end = function.index("APPROVED DCDS KNOWLEDGE", system_start)
+          system_prompt = function[system_start:system_end]
+
           invariants = {
-              "student lesson retrieval is scoped to the student's own enrollments":
+              "AI eligibility approval cannot be self-approved by the account owner":
+                  "auth.uid()" in self_approval_guard
+                  and "NEW.user_id = v_actor_id" in self_approval_guard
+                  and "NEW.access_status = 'approved'" in self_approval_guard
+                  and "A different authorised DCDS administrator" in admin_page
+                  and 'adminUser.id===row.user_id' in admin_page,
+              "guardian RPC is restricted to the caller's linked guardian or an administrator":
+                  "child.user_id = v_caller_id" in guardian_security
+                  and "child.guardian_user_id = p_guardian_user_id" in guardian_security
+                  and "public.is_dcds_admin()" in guardian_security
+                  and "REVOKE ALL ON FUNCTION public.dcds_ai_guardian_is_approved_adult(uuid) FROM PUBLIC, anon" in guardian_security,
+              "eligibility admin policies are action-scoped, not overlapping FOR ALL":
+                  "FOR UPDATE TO authenticated" in eligibility_policy
+                  and "FOR DELETE TO authenticated" in eligibility_policy
+                  and "FOR ALL" not in eligibility_policy,
+              "student lesson lookup is limited to own enrolments":
                   '.from("enrollments").select("course_id").eq("user_id", userId)' in search_helper
-                  and '.in("course_id", courseIds)' in search_helper,
-              "announcements are published and time-scoped":
+                  and '.in("course_id", enrolledIds)' in search_helper,
+              "only published, in-date announcements are retrieved":
                   '.eq("status", "published")' in search_helper
                   and '.lte("starts_at", now)' in search_helper
                   and "currentAnnouncements" in search_helper,
               "reviews are approval-filtered":
                   '.eq("is_approved", true)' in search_helper,
-              "Gemini model catalogue is discovered dynamically":
-                  "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100" in function
-                  and "supportedGenerationMethods" in function,
-              "Google Search is opt-in/freshness-triggered":
-                  "wantsExternalWebSearch(message, role)" in function
-                  and "google_search: {}" in function,
-              "grounded source links are returned":
-                  "groundingMetadata" in function and "Sources checked:" in function,
-              "general learning is not limited to the static brain":
+              "general learning is not limited to static knowledge":
                   "Do not limit useful teaching to facts in the DCDS knowledge files" in function,
+              "DCDS identity is stable and provider names are not volunteered":
+                  "AI identity and brand loyalty" in system_prompt
+                  and "Do not volunteer API vendors" in system_prompt,
+              "normal responses direct native resource actions":
+                  "native action buttons" in system_prompt
+                  and "const resources:" in function
+                  and "uniqueResources" in function,
+              "curated digital tools receive official native shortcuts":
+                  "DCDS_DIGITAL_TOOL_RESOURCES" in function
+                  and "knownDigitalToolResources" in page
+                  and 'kind: "tool"' in function
+                  and "kind:'tool'" in page,
+              "OpenAI Responses API is used":
+                  'https://api.openai.com/v1/responses' in function
+                  and 'const model = Deno.env.get("DCDS_AI_MODEL") || "gpt-6-astra";' in function
+                  and 'store: false' in function,
+              "Moderation API screens the full learner context before and after generation":
+                  'https://api.openai.com/v1/moderations' in function
+                  and "omni-moderation-latest" in function
+                  and function.index("moderateDcdsText(openAiApiKey, userPrompt)") < function.index("https://api.openai.com/v1/responses")
+                  and function.index("moderateDcdsText(openAiApiKey, generatedAnswer)") > function.index("https://api.openai.com/v1/responses"),
+              "missing provider secret fails before consuming user quota":
+                  function.index('if (!openAiApiKey)') < function.index('rpc("dcds_consume_ai_request"'),
+              "suspected child exploitation is intercepted locally across current and saved learner context":
+                  "suspectedChildExploitationPattern" in function
+                  and "suspectedChildExploitationPattern.test(message)" in function
+                  and "suspectedChildExploitationPattern.test(userPrompt)" in function
+                  and function.index("suspectedChildExploitationPattern.test(userPrompt)") < function.index("moderateDcdsText(openAiApiKey, userPrompt)"),
+              "moderation fails closed for both input and output":
+                  "DCDS input safety check unavailable" in function
+                  and "DCDS output safety check unavailable" in function
+                  and "The DCDS safety check is temporarily unavailable." in function
+                  and "DCDS is checking the safety of this response." in function,
+              "adult age eligibility is server-enforced":
+                  'aiEligibility?.age_band === "18_plus"' in function
+                  and 'aiEligibility.access_status === "approved"' in function,
+              "teen eligibility requires an approved adult guardian":
+                  'aiEligibility?.age_band === "13_17"' in function
+                  and "dcds_ai_guardian_is_approved_adult" in function
+                  and "guardianConsentVerified" in function,
+              "under-13 remains blocked unless ZDR gate is explicitly set":
+                  "DCDS_AI_UNDER_13_ZDR_ENABLED" in function
+                  and "approvedUnder13" in function,
+              "teen AI access remains disabled until a separate youth-safety release":
+                  'Deno.env.get("DCDS_AI_TEENS_ENABLED") === "true"' in function
+                  and "const TEEN_AI_ACCESS_ENABLED = false;" in page
+                  and "DCDS AI access for ages 13–17 is not enabled yet." in page,
+              "eligibility gate runs before provider generation":
+                  function.index('from("dcds_ai_access_eligibility")') < function.index('https://api.openai.com/v1/responses'),
+              "per-minute and daily caps are explicit":
+                  'role === "student" ? 5 : 8' in function
+                  and 'role === "student" ? 20 : 60' in function
+                  and "p_daily_limit: dailyRateLimit" in function
+                  and "max_output_tokens: 1600" in function,
+              "automatic learning is opt-in and default false":
+                  "autoLearningEnabled" in page
+                  and "auto_learning_enabled === true" in function
+                  and "DEFAULT false" in Path("supabase/migrations/20261113110000_dcds_ai_opt_in_learning_memory.sql").read_text(encoding="utf-8"),
+              "age and guardian schema has RLS and blocked under-13 default":
+                  "CREATE TABLE IF NOT EXISTS public.dcds_ai_access_eligibility" in Path("supabase/migrations/20261113120000_dcds_ai_age_guardian_eligibility.sql").read_text(encoding="utf-8")
+                  and "ENABLE ROW LEVEL SECURITY" in Path("supabase/migrations/20261113120000_dcds_ai_age_guardian_eligibility.sql").read_text(encoding="utf-8")
+                  and "THEN 'blocked'" in Path("supabase/migrations/20261113120000_dcds_ai_age_guardian_eligibility.sql").read_text(encoding="utf-8"),
+              "daily usage migration adds server-side daily counts":
+                  "daily_request_count" in Path("supabase/migrations/20261113123000_dcds_ai_daily_usage_budget.sql").read_text(encoding="utf-8")
+                  and "CREATE FUNCTION public.dcds_consume_ai_request" in Path("supabase/migrations/20261113123000_dcds_ai_daily_usage_budget.sql").read_text(encoding="utf-8"),
+              "student frontend fails closed on eligibility":
+                  "loadAiEligibility" in page and "setChatEnabled(false)" in page
+                  and "dcds_ai_access_eligibility" in page,
+              "DCDS AI is members-only with no visitor interface":
+                  "No public guest chats, anonymous sessions or general visitor access" in page
+                  and "visitorCaptcha" not in page
+                  and "getVisitorCaptchaToken" not in page
+                  and "roleLabels={visitor" not in page,
+              "server rejects anonymous and unverified users":
+                  "user.is_anonymous === true" in function
+                  and "user.email_confirmed_at || user.phone_confirmed_at" in function
+                  and "if (anonymous || !verifiedContact)" in function,
+              "assistant content is rendered as safe Markdown, not executable HTML":
+                  "renderAssistantMarkdown" in page
+                  and "textContent" in page
+                  and "safeResourceHref" in page,
+              "administrator review checks verified adult guardian":
+                  "is_dcds_admin" in admin_page
+                  and "dcds_ai_guardian_is_approved_adult" in admin_page
+                  and "Under-13" in admin_page,
+              "privacy policy reflects OpenAI processing and youth controls":
+                  "OpenAI API (DCDS Responses and safety services)" in Path("privacy-policy.html").read_text(encoding="utf-8")
+                  and "Google Gemini" not in Path("privacy-policy.html").read_text(encoding="utf-8")
+                  and "Zero Data Retention" in Path("privacy-policy.html").read_text(encoding="utf-8"),
+              "Development Gemini runtime rejects anonymous and unverified callers":
+                  "if (anonymous || !verifiedContact)" in dev_function
+                  and "DCDS_VERIFIED_ACCOUNT_REQUIRED" in dev_function,
+              "Development Gemini runtime enforces age eligibility before quota and provider":
+                  'from("dcds_ai_access_eligibility")' in dev_function
+                  and dev_function.index('from("dcds_ai_access_eligibility")') < dev_function.index('rpc("dcds_consume_ai_request"')
+                  and dev_function.index('from("dcds_ai_access_eligibility")') < dev_function.index("generativelanguage.googleapis.com"),
+              "Development Gemini adult access requires an approved adult record":
+                  'aiEligibility?.age_band === "18_plus"' in dev_function
+                  and 'aiEligibility.access_status === "approved"' in dev_function
+                  and 'aiEligibility.guardian_consent_status === "not_required"' in dev_function,
+              "Development Gemini youth access remains gated by default-off flags":
+                  'Deno.env.get("DCDS_AI_TEENS_ENABLED") === "true"' in dev_function
+                  and 'Deno.env.get("DCDS_AI_UNDER_13_ZDR_ENABLED") === "true"' in dev_function,
+              "missing Gemini secret is checked before quota":
+                  dev_function.index("if (!geminiApiKey)") < dev_function.index('rpc("dcds_consume_ai_request"'),
+              "Development preview runtime stays Gemini-backed, without OpenAI billing":
+                  "GEMINI_API_KEY" in dev_function and "OPENAI_API_KEY" not in dev_function,
+              "AI assistant page has one eligibility panel and unique IDs":
+                  page.count('id="aiEligibilityPanel"') == 1
+                  and len(re.findall(r'\bid="([^"]+)"', page)) == len(set(re.findall(r'\bid="([^"]+)"', page))),
+              "preview install prompt is suppressed on all manifest-enabled pages":
+                  all('rel="manifest"' not in pwa_html[name] or "dcds-preview-install-prompt-guard" in pwa_html[name] for name in pwa_pages),
+              "Admin Centre links to the admin-only AI access review":
+                  'href="dcds-ai-access-review.html"' in admin_centre and "is_dcds_admin" in admin_page,
               "shared DCDS facts require official source confirmation":
-                  "If a DCDS-specific fact cannot be confirmed" in Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8"),
-              "student memory remains owner-controlled":
-                  "dcds_ai_student_memory" in function
-                  and "user.id" in function,
+                  "If a DCDS-specific fact cannot be confirmed" in master,
           }
           failures = [name for name, passed in invariants.items() if not passed]
           for name, passed in invariants.items():
@@ -117,17 +304,21 @@ jobs:
           if failures:
               raise SystemExit(f"{len(failures)} DCDS Super Intelligence invariants failed.")
 
-          knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
-          evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
           test_ids = {item.get("id") for item in evaluation.get("tests", [])}
           required_tests = {
               "retrieval-001", "retrieval-002", "retrieval-003",
-              "learning-003", "web-001", "memory-001", "memory-002", "security-002",
+              "learning-003", "learning-004", "referral-004",
+              "memory-001", "memory-002", "memory-003", "memory-004", "memory-005",
+              "identity-002", "clarification-002", "voice-001", "voice-002",
+              "resource-001", "resource-002", "resource-003", "resource-004", "resource-005", "access-003",
+              "age-001", "age-002", "age-003", "age-004", "age-005",
+              "safety-001", "safety-002", "safety-003", "safety-004", "provider-001",
+              "cost-001", "privacy-002",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
               raise SystemExit("Missing DCDS Super Intelligence evaluation tests: " + ", ".join(missing))
           if not knowledge.get("assistant_policy", {}).get("current_state"):
               raise SystemExit("DCDS AI knowledge base has no current state policy.")
-          print("Validated DCDS AI knowledge JSON and all required Super Intelligence evaluation cases.")
+          print("Validated DCDS knowledge JSON and required GPT, youth-safety, resource-action and memory evaluations.")
           PY

@@ -5,6 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="theme-color" content="#ffffff">
 <meta name="description" content="How De Champions Digital Service collects, uses, protects, retains and deletes personal information.">
+<script id="dcds-preview-install-prompt-guard">
+(()=> {
+  try {
+    const host = location.hostname.toLowerCase();
+    const previewHost = host.endsWith(".pages.dev");
+    const alreadyInstalled = window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+    if (previewHost || alreadyInstalled) {
+      window.addEventListener("beforeinstallprompt", event => event.preventDefault());
+    }
+  } catch (_) {}
+})();
+</script>
 <link rel="manifest" href="./manifest-v4.webmanifest">
 <link rel="icon" href="./assets/dcds-splash-icon-v4-192.png" type="image/png" sizes="192x192">
 <title>Privacy Policy | De Champions Digital Service</title>
@@ -40,6 +53,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 0}
 <ul>
 <li><strong>Account and identity details:</strong> name, email address, mobile number, account identifier and the email or mobile verification state. Authentication credentials are handled through our authentication provider; do not share your password or verification code with DCDS staff.</li>
 <li><strong>Learning records:</strong> course enrollments, lesson progress, quiz attempts and answers, assignment submissions and feedback, certificates and learning activity needed to operate the student portal.</li>
+<li><strong>AI access eligibility and guardian consent:</strong> an age band (under 13, 13–17 or 18+), access-review status, a linked verified adult guardian account where required, an internal consent-evidence reference and limited review/audit timestamps. DCDS does not need to store a full date of birth or a copy of identity documents in the AI eligibility record. Under-13 AI access remains blocked until the required provider Zero Data Retention and additional safeguarding arrangements are approved.</li>
 <li><strong>Purchases and payment records:</strong> course and order identifiers, amount and currency, transaction reference, payment status, provider transaction identifiers and information required to verify a payment or provide access. Payment processing is provided by Flutterwave. Payment-card details are entered on the provider's payment flow, not requested from you by DCDS through chat or email.</li>
 <li><strong>Support and communications:</strong> support ticket subject and message, responses, contact details and information you choose to provide when contacting us.</li>
 <li><strong>Reviews and public contributions:</strong> review text, rating, course name and display name where you submit a review. Reviews are subject to moderation before public display.</li>
@@ -57,7 +71,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 0}
 <li><strong>Supabase:</strong> account authentication, database and server-side application functions.</li>
 <li><strong>Flutterwave:</strong> hosted payment processing and transaction verification.</li>
 <li><strong>jsDelivr:</strong> delivery of the Supabase JavaScript client library used by web pages.</li>
-<li><strong>Google Gemini API and optional Google Search grounding:</strong> process messages and limited user-provided conversation context submitted to the DCDS assistant to generate replies. When a student asks for current or online information, a relevant search query may also be sent to Google Search grounding and source links may be returned. The assistant does not intentionally send private student records, account profiles, payment records, payout records or administrator records to these services. Google's applicable terms and privacy practices apply. Free-tier Gemini content may be used by Google to improve its products. Do not enter passwords, OTPs, payment credentials, banking details or sensitive personal information into the AI chat.</li>
+<li><strong>OpenAI API (DCDS Responses and safety services):</strong> the DCDS AI service may send your message and limited conversation context to OpenAI to generate a reply, and may send relevant text to OpenAI's Moderation API for safety screening. Limited context can include a recent part of the same private conversation, an optional learning-memory note you provided, and relevant DCDS course or lesson information. When web search is used, the relevant query and retrieved public search results are processed to answer the request. DCDS does not intentionally send passwords, OTPs, payment-card data, bank credentials or unrelated private student records to the AI provider. OpenAI states that API inputs and outputs are not used to train its models by default, unless an organisation explicitly opts in. Standard API abuse-monitoring logs may retain content for up to 30 days; eligible customers may separately obtain approved Zero Data Retention or modified monitoring arrangements. DCDS uses non-persistent Responses settings, but this does not itself mean Zero Data Retention is enabled. See <a href="https://developers.openai.com/api/docs/guides/your-data" target="_blank" rel="noopener noreferrer">OpenAI API data controls</a>, <a href="https://developers.openai.com/api/docs/guides/safety-checks/under-18-api-guidance" target="_blank" rel="noopener noreferrer">Under-18 API guidance</a> and <a href="https://developers.openai.com/api/docs/guides/moderation" target="_blank" rel="noopener noreferrer">Moderation guidance</a>. DCDS AI access is age-gated. Adult accounts require administrator approval. AI chat for learners aged 13–17 remains disabled until DCDS completes and approves the additional youth-safety disclosures, monitoring, escalation and guardian-consent controls; guardian consent alone does not activate access. Under-13 accounts remain blocked until the required Zero Data Retention and safeguarding requirements are approved and implemented. Known or suspected child sexual abuse material must not be submitted to the Moderation API. DCDS applies a local pre-screen to some clearly identifiable high-risk text before any provider call and returns safe guidance; this is not an automated child-abuse detection or reporting service. A person who is concerned about a child should contact a trusted adult and the appropriate child-protection or official DCDS support route. Optional automatic learning preferences are off by default, store only limited low-risk learning preferences in the student's own private record, and can be switched off or cleared. Private chats and memory are not added automatically to the shared DCDS knowledge base.</li>
 <li><strong>Google Fonts:</strong> delivery of typography used by some DCDS pages.</li>
 <li><strong>YouTube and Google Drive:</strong> hosting or delivery of course videos and learning materials where those services are used.</li>
 <li><strong>Communication and social platforms:</strong> WhatsApp, Instagram, Facebook, YouTube and email when you choose to use those links.</li>
@@ -81,7 +95,7 @@ footer{text-align:center;color:var(--muted);font-size:12px;padding:25px 0}
 <p>In Nigeria, the Nigeria Data Protection Act 2023 and applicable guidance provide the framework for personal-data protection. You may also contact the <a href="https://ndpc.gov.ng/" target="_blank" rel="noopener noreferrer">Nigeria Data Protection Commission</a> for information about data-protection rights and complaints.</p>
 
 <h2>9. Children and learning accounts</h2>
-<p>DCDS offers learning content that may be of interest to younger learners. Accounts, payments and communications should be managed by a parent, guardian or other authorised adult where the learner is a child. Please do not submit a child's sensitive personal information unless it is necessary for the service and you are authorised to do so.</p>
+<p>DCDS offers learning content that may be of interest to younger learners. Accounts, payments and communications should be managed by a parent, guardian or other authorised adult where the learner is a child. Use of DCDS AI is separately age-gated. Adult accounts require administrator approval. AI chat for learners aged 13–17 is currently disabled until DCDS completes and approves the additional youth-safety disclosures, monitoring, escalation and guardian-consent controls; an approved guardian record alone does not activate access. Under-13 AI access is unavailable until the additional provider retention and safeguarding requirements are complete. Please do not submit a child's sensitive personal information unless it is necessary for the service and you are authorised to do so.</p>
 
 <h2>10. Changes to this notice</h2>
 <p>We may update this notice as DCDS services, providers or legal requirements change. The latest version and its effective date will be published on this page. Material changes may also be communicated through an appropriate DCDS channel.</p>

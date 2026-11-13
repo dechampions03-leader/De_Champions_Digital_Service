@@ -4,6 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
+<script id="dcds-preview-install-prompt-guard">
+(()=> {
+  try {
+    const host = location.hostname.toLowerCase();
+    const previewHost = host.endsWith(".pages.dev");
+    const alreadyInstalled = window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+    if (previewHost || alreadyInstalled) {
+      window.addEventListener("beforeinstallprompt", event => event.preventDefault());
+    }
+  } catch (_) {}
+})();
+</script>
 <link rel="manifest" href="./manifest-v4.webmanifest">
 <link rel="icon" href="./assets/dcds-splash-icon-v4-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="./assets/dcds-splash-icon-v4-192.png">
@@ -436,8 +449,8 @@ html.dcds-text-motion-ready [data-dcds-text-reveal],
 
 <footer>© 2026 De Champions Digital Service.<br>CREATE • LEARN • INNOVATE • EARN.<br><a href="privacy-policy.html">Privacy Policy</a> · <a href="delete-account.html">Request Account Deletion</a></footer>
 </main><script>
-const SUPABASE_URL = 'https://qxsenflgaweeadvggnyp.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
+const SUPABASE_URL = 'https://tjgsxbmkpvktlqulbktv.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn';
 const GENERAL_COURSE_ID = 'a1030000-0000-4000-8000-000000000001';
 const statusEl = document.getElementById('status');
 const escapeHtml = value => String(value ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));

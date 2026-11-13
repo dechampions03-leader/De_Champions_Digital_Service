@@ -3,6 +3,19 @@
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#ffffff">
 <meta name="description" content="Request deletion of your De Champions Digital Service account and personal information.">
+<script id="dcds-preview-install-prompt-guard">
+(()=> {
+  try {
+    const host = location.hostname.toLowerCase();
+    const previewHost = host.endsWith(".pages.dev");
+    const alreadyInstalled = window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+    if (previewHost || alreadyInstalled) {
+      window.addEventListener("beforeinstallprompt", event => event.preventDefault());
+    }
+  } catch (_) {}
+})();
+</script>
 <link rel="manifest" href="./manifest-v4.webmanifest"><link rel="icon" href="./assets/dcds-splash-icon-v4-192.png" type="image/png" sizes="192x192">
 <title>Account Deletion | DCDS</title><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
@@ -57,8 +70,8 @@ small{color:var(--muted)}.hidden{display:none!important}footer{text-align:center
 </main>
 <script>
 (() => {
- const SUPABASE_URL = "https://qxsenflgaweeadvggnyp.supabase.co";
- const SUPABASE_KEY = "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+ const SUPABASE_URL = "https://tjgsxbmkpvktlqulbktv.supabase.co";
+ const SUPABASE_KEY = "sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
  const signedOut = document.getElementById("signedOut");
  const requestArea = document.getElementById("requestArea");

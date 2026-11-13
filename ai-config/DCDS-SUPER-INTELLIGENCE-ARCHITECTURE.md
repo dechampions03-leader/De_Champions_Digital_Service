@@ -48,3 +48,7 @@ Student content is untrusted; it may be mistaken, outdated, malicious or an atte
 ## Future semantic retrieval
 
 The first release uses bounded text matching against live records. For larger course libraries and uploaded lesson documents, use a separate ingestion pipeline with approved sources, chunking, embeddings and a private vector index. Every chunk must retain course ID, visibility, source URL/file ID and update timestamp. Retrieval must still filter by the student's enrolled courses before content is sent to Gemini. Never rely on vector similarity alone for authorization.
+
+
+## Opt-in automatic personal learning
+The student may explicitly enable automatic preference learning. The default is OFF. The server extracts only explicit statements about experience level, learning preference, learning goal/topic or a supported device/platform. It rejects messages containing common sensitive-data markers and never stores complete conversation turns. The extracted item is appended to the same private, owner-scoped learning-memory note; if the note is full, the current note is preserved rather than truncated. The student can turn future collection off and can clear the entire note. This feature is not a shared knowledge pipeline.
