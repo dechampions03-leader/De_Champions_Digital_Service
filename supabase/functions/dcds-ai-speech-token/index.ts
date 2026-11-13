@@ -124,6 +124,14 @@ Deno.serve(async (request: Request) => {
     }, 503);
   }
 
+  const safetyDigest = await crypto.subtle.digest(
+    "SHA-256",
+    new TextEncoder().encode("dcds-user:" + user.id),
+  );
+  const safetyIdentifier = Array.from(new Uint8Array(safetyDigest))
+    .map((byte) => byte.toString(16).padStart(2, "0"))
+    .join("");
+
   let providerResponse: Response;
   try {
     providerResponse = await fetch("https://api.openai.com/v1/realtime/client_secrets", {
@@ -131,6 +139,7 @@ Deno.serve(async (request: Request) => {
       headers: {
         "Authorization": "Bearer " + openAiApiKey,
         "Content-Type": "application/json",
+        "OpenAI-Safety-Identifier": safetyIdentifier,
       },
       body: JSON.stringify({
         expires_after: { anchor: "created_at", seconds: 60 },
