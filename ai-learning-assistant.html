@@ -6,7 +6,6 @@
 <meta name="theme-color" content="#35105f">
 <meta name="description" content="The shared De Champions Digital Service AI learning companion.">
 <title>DCDS AI Learning Assistant</title>
-<script src="ai-config/captcha-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -105,7 +104,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  <section class="hero">
   <div class="eyebrow">ONE BRAIN · ONE KNOWLEDGE BASE · ONE AI SERVICE</div>
   <h1>Your DCDS AI Learning Assistant.</h1>
-  <p>The same DCDS assistant is opened from the main website and your student dashboard. Available to verified DCDS students and authorised administrators after the required age and guardian-consent review. Eligible students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note. Visitor access will be introduced only after Production security checks are completed.</p>
+  <p>The same DCDS assistant is opened from the main website and your student dashboard. Available only to authenticated, contact-verified DCDS students and authorised administrators after the required age and guardian-consent review. No public guest chats, anonymous sessions or general visitor access. Eligible students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note.</p>
   <div class="shared-pill">✦ SHARED DCDS AI EXPERIENCE</div>
  </section>
  <div class="layout">
@@ -155,13 +154,6 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, search approved DCDS information, find lessons in your enrolled courses and explore general topics beyond the prepared knowledge files. What would you like to work on today?</div></div></div>
    </div>
    <div class="typing" id="typing" hidden>DCDS AI is thinking…</div>
-   <section class="captcha-panel" id="visitorCaptcha" hidden aria-live="polite">
-    <strong>Secure visitor access</strong>
-    <p>Complete this quick security check to start a visitor session.</p>
-    <div id="turnstileWidget"></div>
-    <small id="captchaHint">Preparing verification…</small>
-    <a href="index.html?login=required&amp;next=ai-learning-assistant.html">Sign in to an existing DCDS account →</a>
-   </section>
    <form class="composer" id="chatForm">
     <div class="composer-row">
      <textarea id="messageInput" maxlength="2500" rows="2" placeholder="Ask your DCDS AI assistant…" aria-label="Your message" required></textarea>
@@ -202,9 +194,6 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  const sendButton=document.getElementById('sendButton');
  const typing=document.getElementById('typing');
  const charCount=document.getElementById('charCount');
- const captchaPanel=document.getElementById('visitorCaptcha');
- const captchaHint=document.getElementById('captchaHint');
- const captchaWidget=document.getElementById('turnstileWidget');
  const studentTools=document.getElementById('studentTools');
  const historyPanel=document.getElementById('historyPanel');
  const historyList=document.getElementById('conversationList');
@@ -220,7 +209,6 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let currentUser=null;
  let isPersistentStudent=false;
  let activeConversationId=null;
- let turnstileWidgetId=null;
  input.disabled=true;sendButton.disabled=true;document.getElementById('newChat').disabled=true;
  let knownCourseResources=[];
  let knownEnrolledCourseSlugs=new Set();
@@ -247,53 +235,11 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   {name:'Paystack',aliases:['paystack'],href:'https://paystack.com/'}
  ];
 
- const welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS learning companion. I can teach general topics, search approved DCDS courses and announcements, find lessons and materials available in your enrolled courses, and use your private saved learning context. What would you like to explore today?";
+ const welcomeMessage="Welcome to De Champions Digital Service. I’m DCDS AI, your private learning companion. I can teach digital skills, explain general topics, find approved DCDS information and guide you through lessons available to your verified account. What would you like to learn today?";
 
  function setStatus(message,isError=false){
   statusEl.textContent=message;
   statusEl.classList.toggle('error',isError);
- }
- function loadTurnstile(){
-  if(window.turnstile)return Promise.resolve();
-  return new Promise((resolve,reject)=>{
-   let script=document.getElementById('dcds-turnstile-script');
-   if(!script){
-    script=document.createElement('script');
-    script.id='dcds-turnstile-script';
-    script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';
-    script.async=true;script.defer=true;
-   }
-   script.addEventListener('load',()=>window.turnstile?resolve():reject(new Error('Turnstile did not initialise.')),{once:true});
-   script.addEventListener('error',()=>reject(new Error('The security verification service could not load.')),{once:true});
-   if(!script.isConnected)document.head.appendChild(script);
-  });
- }
- async function getVisitorCaptchaToken(){
-  const config=window.DCDS_CAPTCHA_CONFIG||{};
-  const siteKey=typeof config.siteKey==='string'?config.siteKey.trim():'';
-  if(config.provider!=='turnstile'||config.authProtectionEnabled!==true||!siteKey){
-   captchaPanel.hidden=false;
-   captchaHint.textContent='Visitor verification has not been configured yet. Please sign in to an existing DCDS account, or contact DCDS support.';
-   setStatus('New visitor sessions are paused until CAPTCHA is configured. Existing verified DCDS accounts can still sign in.',true);
-   throw new Error('DCDS_VISITOR_CAPTCHA_NOT_CONFIGURED');
-  }
-  captchaPanel.hidden=false;
-  captchaHint.textContent='Loading the security check…';
-  await loadTurnstile();
-  captchaWidget.replaceChildren();
-  return await new Promise((resolve,reject)=>{
-   let settled=false;
-   const finish=(callback,value)=>{if(settled)return;settled=true;callback(value);};
-   captchaHint.textContent='Complete the check below to continue.';
-   try{
-    turnstileWidgetId=window.turnstile.render(captchaWidget,{
-     sitekey:siteKey,theme:'light',action:'dcds_auth',
-     callback:token=>finish(resolve,token),
-     'error-callback':()=>finish(reject,new Error('The security check failed to load. Please refresh and try again.')),
-     'expired-callback':()=>{captchaHint.textContent='The security check expired. Please complete it again.';}
-    });
-   }catch(error){finish(reject,error instanceof Error?error:new Error('The security check could not start.'));}
-  });
  }
  function appendInlineMarkdown(parent,text){
   const parts=String(text).split(/(\*\*[^*]+\*\*|\*[^*]+\*|`[^`]+`)/g);
