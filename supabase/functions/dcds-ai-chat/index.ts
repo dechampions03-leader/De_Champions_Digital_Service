@@ -281,8 +281,11 @@ ${knowledge}${savedMemoryInstruction}`;
   // Use stable text-generation models only. Quotas are model-specific, so a
   // daily quota on the primary model can sometimes be bypassed safely by
   // trying another supported model once. Generic 429s are not blindly retried.
+  // Ordered stable Gemini text-model pool for independent capacity failover.
   const fallbackModels = [
+    "gemini-3.7-flash",
     "gemini-3.6-flash",
+    "gemini-3.5-flash",
     "gemini-3.5-flash-lite",
     "gemini-3.1-flash-lite",
   ];
@@ -330,9 +333,8 @@ ${knowledge}${savedMemoryInstruction}`;
   const unavailableModels: string[] = [];
 
   for (const candidate of modelCandidates) {
-    // Retry the configured primary once on transient 5xx responses only.
-    // Fallbacks are tried once each to cap latency and avoid wasting quota.
-    const attempts = candidate === model ? 2 : 1;
+    // Fail over quickly instead of retrying one overloaded model.
+    const attempts = 1;
 
     for (let attempt = 0; attempt < attempts; attempt++) {
       let response: Response;
@@ -417,14 +419,20 @@ ${knowledge}${savedMemoryInstruction}`;
       }
 
       if (response.status === 429) {
-        // Short-window rate limits are not treated as daily quota exhaustion.
-        // Do not retry the same request or fan out across models.
+        // Quotas can be model-specific. Cool this model and try the next one.
         const retryMs = getRetryDelayMs(providerMessage, providerDetails);
-        if (retryMs) providerModelCooldowns.set(candidate, Date.now() + Math.min(retryMs, 5 * 60 * 1000));
-        return json({
-          success: false,
-          error: "DCDS AI is receiving requests too quickly. Please wait briefly before trying again.",
-        }, 429);
+        const cooldownMs = isDailyQuota
+          ? Math.min(Math.max(retryMs ?? 30 * 60 * 1000, 60_000), 24 * 60 * 60 * 1000)
+          : Math.min(Math.max(retryMs ?? 30_000, 15_000), 5 * 60 * 1000);
+        providerModelCooldowns.set(candidate, Date.now() + cooldownMs);
+        if (isDailyQuota) dailyQuotaModels.push(candidate);
+        else unavailableModels.push(candidate);
+        console.warn("DCDS AI model rate-limited; trying the next model.", {
+          model: candidate,
+          dailyQuota: isDailyQuota,
+          retryAfterMs: cooldownMs,
+        });
+        break;
       }
 
       if (response.status === 401 || response.status === 403) {
@@ -434,13 +442,13 @@ ${knowledge}${savedMemoryInstruction}`;
         }, 503);
       }
 
-      if (response.status === 500 || response.status === 503) {
+      if (response.status === 408 || response.status === 500 || response.status === 502 || response.status === 503 || response.status === 504) {
         unavailableModels.push(candidate);
-        providerModelCooldowns.set(candidate, Date.now() + 30_000);
-        if (attempt + 1 < attempts) {
-          await new Promise((resolve) => setTimeout(resolve, 500));
-          continue;
-        }
+        providerModelCooldowns.set(candidate, Date.now() + 20_000);
+        console.warn("DCDS AI model temporarily unavailable; trying the next model.", {
+          model: candidate,
+          status: response.status,
+        });
         break;
       }
 
