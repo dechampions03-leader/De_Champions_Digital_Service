@@ -105,7 +105,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  <section class="hero">
   <div class="eyebrow">ONE BRAIN · ONE KNOWLEDGE BASE · ONE AI SERVICE</div>
   <h1>Your DCDS AI Learning Assistant.</h1>
-  <p>The same DCDS assistant is opened from the main website and your student dashboard. Available to verified DCDS students and authorised administrators. Verified students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note. Visitor access will be introduced only after Production security checks are completed.</p>
+  <p>The same DCDS assistant is opened from the main website and your student dashboard. Available to verified DCDS students and authorised administrators after the required age and guardian-consent review. Eligible students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note. Visitor access will be introduced only after Production security checks are completed.</p>
   <div class="shared-pill">✦ SHARED DCDS AI EXPERIENCE</div>
  </section>
  <div class="layout">
@@ -177,8 +177,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    </section>
    <section class="side-card">
     <h2>One shared assistant</h2>
-    <p>The student dashboard and authenticated DCDS surfaces open the same protected DCDS AI service. The server verifies the signed-in account and administrator role; the browser cannot select its own role.</p>
-    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Your chats are not automatically shared with other students or promoted into the official DCDS brain. Only verified DCDS students and authorised administrators can use this release. Do not enter passwords, OTPs, card details, bank information or sensitive personal information. Messages and limited conversation context are processed by Google Gemini to generate replies. Gemini free-tier content may be used by Google to improve its products.</div>
+    <p>The student dashboard and authenticated DCDS surfaces open the same protected DCDS AI service. The server verifies the signed-in account, administrator role and approved age/guardian eligibility; the browser cannot select its own role.</p>
+    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Your chats are never automatically shared with other students or added to the shared DCDS brain. DCDS checks age eligibility and parent/guardian consent where required before AI processing begins. Do not enter passwords, OTPs, card details, bank information or sensitive personal information. Messages and limited context are processed through the DCDS AI service and safety checks. Read the <a href="privacy-policy.html">DCDS Privacy Policy</a> for details about providers and data handling.</div>
    </section>
    <section class="side-card">
     <h2>Need human support?</h2>
@@ -333,7 +333,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   if(typeof value!=='string'||!value.trim())return null;
   const raw=value.trim();
   if(/^https:\/\//i.test(raw))return raw;
-  if(/^(?:index\.html(?:#[a-z0-9_-]+)?|learn\.html\?course=[a-z0-9-]+|general-course\.html|student-dashboard\.html(?:#[a-z0-9_-]+)?|ai-learning-assistant\.html|privacy-policy\.html)$/i.test(raw))return raw;
+  if(/^(?:index\.html(?:#(?:course-[a-z0-9_-]+|courses|services|notificationPanel|studentReviews))?|learn\.html\?course=[a-z0-9_-]+|general-course\.html|student-dashboard\.html(?:#(?:ambassadorPanel|studentSupportPanel))?|ai-learning-assistant\.html|privacy-policy\.html)$/i.test(raw))return raw;
   return null;
  }
  function renderResourceActions(wrapper,resources){
@@ -485,10 +485,16 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    }
   });
   if(/\bdcds general course\b/i.test(value))resources.push({label:'Open General Course',href:'general-course.html',kind:'course'});
+  if(/\b(course catalogue|course catalog|browse courses|dcds courses)\b/i.test(value))resources.push({label:'Browse DCDS Courses',href:'index.html#courses',kind:'course'});
+  knownCourseResources.forEach(course=>{if(value.includes(course.title.toLowerCase())){const enrolled=knownEnrolledCourseSlugs.has(course.slug);resources.push({label:(enrolled?'Continue ':'Explore ')+course.title,href:enrolled?'learn.html?course='+encodeURIComponent(course.slug):'index.html#course-'+course.slug,kind:'course'});}});
   if(/\b(ambassador|referral|rewards|commission)\b/i.test(value))resources.push({label:'Open Ambassador & Rewards',href:'student-dashboard.html#ambassadorPanel',kind:'dashboard'});
   if(/\b(student dashboard|dashboard)\b/i.test(value))resources.push({label:'Open Student Dashboard',href:'student-dashboard.html',kind:'dashboard'});
-  if(/\b(dcds support|contact support|support team)\b/i.test(value))resources.push({label:'Contact DCDS Support',href:'https://wa.me/2348109146285',kind:'support'});
+  if(/\b(dcds support|contact support|support team|payment dispute|account access issue)\b/i.test(value))resources.push({label:'Contact DCDS Support',href:'https://wa.me/2348109146285',kind:'support'});
   if(/\b(dcds ai|learning assistant)\b/i.test(value))resources.push({label:'Open DCDS AI',href:'ai-learning-assistant.html',kind:'assistant'});
+  if(/\b(digital services|our services|dcds services)\b/i.test(value))resources.push({label:'Explore DCDS Services',href:'index.html#services',kind:'resource'});
+  if(/\b(announcement|announcements|student update)\b/i.test(value))resources.push({label:'View Student Announcements',href:'index.html#notificationPanel',kind:'resource'});
+  if(/\b(approved review|student reviews|testimonials)\b/i.test(value))resources.push({label:'Read Student Reviews',href:'index.html#studentReviews',kind:'resource'});
+  if(/\b(privacy policy|data privacy)\b/i.test(value))resources.push({label:'Read DCDS Privacy Policy',href:'privacy-policy.html',kind:'resource'});
   const webPattern=/\[WEB-\d+\]\s+(.+?)\s+—\s+(https:\/\/[^\s]+)/g;let match;
   while((match=webPattern.exec(String(text||'')))!==null)resources.push({label:'Read: '+match[1].slice(0,72),href:match[2],kind:'source'});
   return [...new Map(resources.map(item=>[item.href,item])).values()].slice(0,10);
