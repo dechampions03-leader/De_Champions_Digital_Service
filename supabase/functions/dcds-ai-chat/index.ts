@@ -60,18 +60,18 @@ function priorConversationContext(value: unknown): string {
 // Extract only explicit, low-risk learning preferences from the student's own message.
 // This deliberately avoids names, contact details, financial facts, health data and third-party information.
 function extractExplicitLearningPreference(message: string): string | null {
-  if (message.length > 2500 || /(?:password|passcode|otp|one[- ]time code|bank|account number|card|cvv|pin|api key|secret|email address|phone number|\\+?\\d[\\d ()-]{7,})/i.test(message)) return null;
+  if (message.length > 2500 || /(?:password|passcode|otp|one[- ]time code|bank|account number|card|cvv|pin|api key|secret|email address|phone number|\+?\d[\d ()-]{7,})/i.test(message)) return null;
   const patterns: Array<{ pattern: RegExp; label: string }> = [
-    { pattern: /\\bI(?:'m| am) (?:a )?(beginner|intermediate|advanced) (?:in|at|with) ([^.!?\\n]{2,70})/i, label: 'Experience level' },
-    { pattern: /\\bI prefer ([^.!?\\n]{2,90})/i, label: 'Learning preference' },
-    { pattern: /\\bMy learning goal is ([^.!?\\n]{2,90})/i, label: 'Learning goal' },
-    { pattern: /\\bI(?:'m| am) learning ([^.!?\\n]{2,80})/i, label: 'Current learning topic' },
-    { pattern: /\\bI use (?:an? )?(Android|iPhone|iPad|Windows|Mac|Linux)\\b/i, label: 'Device or platform' },
+    { pattern: /\bI(?:'m| am) (?:a )?(beginner|intermediate|advanced) (?:in|at|with) ([^.!?\n]{2,70})/i, label: 'Experience level' },
+    { pattern: /\bI prefer ([^.!?\n]{2,90})/i, label: 'Learning preference' },
+    { pattern: /\bMy learning goal is ([^.!?\n]{2,90})/i, label: 'Learning goal' },
+    { pattern: /\bI(?:'m| am) learning ([^.!?\n]{2,80})/i, label: 'Current learning topic' },
+    { pattern: /\bI use (?:an? )?(Android|iPhone|iPad|Windows|Mac|Linux)\b/i, label: 'Device or platform' },
   ];
   for (const item of patterns) {
     const match = message.match(item.pattern);
     if (!match) continue;
-    const detail = match.slice(1).filter(Boolean).join(' ').replace(/\\s+/g, ' ').trim();
+    const detail = match.slice(1).filter(Boolean).join(' ').replace(/\s+/g, ' ').trim();
     if (!detail || detail.length > 110) continue;
     return item.label + ': ' + detail;
   }
@@ -81,8 +81,8 @@ function extractExplicitLearningPreference(message: string): string | null {
 function mergeLearningContext(existing: string, candidate: string): string {
   const current = existing.trim();
   if (current.toLowerCase().includes(candidate.toLowerCase())) return current.slice(0, 1200);
-  const combined = [current, candidate].filter(Boolean).join('\\n');
-  return combined.length <= 1200 ? combined : combined.slice(-1200);
+  const combined = [current, candidate].filter(Boolean).join('\n');
+  return combined.length <= 1200 ? combined : current;
 }
 
 type DcdsKnowledgeSource = { kind: string; title: string; content: string };
