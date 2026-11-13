@@ -323,6 +323,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     ?'A parent or legal guardian must provide verifiable consent. DCDS will review it before AI access can be approved.'
     :'Under-13 access is not enabled yet. DCDS must first complete additional child-safety safeguards and obtain the required Zero Data Retention arrangement.';
  }
+ // Keep 13–17 chat access closed until the separate DCDS youth-safety release is approved.
+ const TEEN_AI_ACCESS_ENABLED = false;
  async function loadAiEligibility(){
   eligibilityPanel.hidden=true;setChatEnabled(false);
   const {data,error}=await client.from('dcds_ai_access_eligibility').select('age_band,access_status,guardian_consent_status').eq('user_id',currentUser.id).maybeSingle();
@@ -339,7 +341,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   }
   ageBandSelect.value=data.age_band;ageBandSelect.disabled=true;requestEligibilityButton.hidden=true;
   const adult=data.age_band==='18_plus'&&data.access_status==='approved'&&data.guardian_consent_status==='not_required';
-  const teen=data.age_band==='13_17'&&data.access_status==='approved'&&data.guardian_consent_status==='verified';
+  const teen=TEEN_AI_ACCESS_ENABLED&&data.age_band==='13_17'&&data.access_status==='approved'&&data.guardian_consent_status==='verified';
   if(adult||teen){eligibilityPanel.hidden=true;setChatEnabled(true);return true;}
   eligibilityPanel.hidden=false;
   if(data.age_band==='under_13'){
@@ -348,6 +350,9 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   }else if(data.age_band==='13_17'&&data.guardian_consent_status!=='verified'){
    eligibilityMessage.textContent='Parent or guardian consent verification is still required. AI access remains locked until DCDS confirms it.';
    eligibilityGuidance.textContent='Ask your parent or legal guardian to complete the official DCDS consent review through support. Do not send identity documents or private family information in the chat.';
+  }else if(data.age_band==='13_17'&&!TEEN_AI_ACCESS_ENABLED){
+   eligibilityMessage.textContent='DCDS AI access for ages 13–17 is not enabled yet.';
+   eligibilityGuidance.textContent='DCDS must complete additional youth-safety, age-appropriate disclosure, monitoring and escalation reviews before this age group can use AI chat. Your account remains protected while that review is pending.';
   }else if(data.access_status==='pending'){
    eligibilityMessage.textContent='Your age eligibility request is awaiting DCDS review. AI access remains locked until the review is complete.';
    eligibilityGuidance.textContent='Contact DCDS support if you need help with verification.';
