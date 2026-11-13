@@ -107,8 +107,14 @@ async function searchPlatformKnowledge(
   const [courseResult, announcementResult, reviewResult] = publicQueries;
   if (courseResult.error) console.warn("DCDS AI public course search unavailable:", courseResult.error.message);
   else addRows("Public course catalogue", courseResult.data ?? [], "title", ["slug", "price", "currency"]);
-  if (announcementResult.error) console.warn("DCDS AI announcement search unavailable:", announcementResult.error.message);
-  else addRows("Published DCDS announcement", announcementResult.data ?? [], "title", ["message"]);
+  if (announcementResult.error) {
+    console.warn("DCDS AI announcement search unavailable:", announcementResult.error.message);
+  } else {
+    const currentAnnouncements = (announcementResult.data ?? []).filter((row) =>
+      !row.expires_at || new Date(row.expires_at).getTime() > Date.now()
+    );
+    addRows("Published DCDS announcement", currentAnnouncements, "title", ["message"]);
+  }
   if (reviewResult.error) console.warn("DCDS AI approved review search unavailable:", reviewResult.error.message);
   else addRows("Approved public student review", reviewResult.data ?? [], "course_title", ["rating", "review_text"]);
 
