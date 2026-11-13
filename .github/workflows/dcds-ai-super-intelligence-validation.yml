@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
       - "ai-learning-assistant.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
@@ -110,6 +111,10 @@ jobs:
               "student memory remains owner-controlled":
                   "dcds_ai_student_memory" in function
                   and "user.id" in function,
+              "automatic learning requires explicit opt-in":
+                  "autoLearningEnabled" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "auto_learning_enabled === true" in function
+                  and "DEFAULT false" in Path("supabase/migrations/20261113110000_dcds_ai_opt_in_learning_memory.sql").read_text(encoding="utf-8"),
           }
           failures = [name for name, passed in invariants.items() if not passed]
           for name, passed in invariants.items():
@@ -121,7 +126,7 @@ jobs:
           evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
           test_ids = {item.get("id") for item in evaluation.get("tests", [])}
           required_tests = {
-              "retrieval-001", "retrieval-002", "retrieval-003",
+              "retrieval-001", "retrieval-002", "retrieval-003", "memory-003", "memory-004",
               "learning-003", "web-001", "memory-001", "memory-002", "security-002",
           }
           missing = sorted(required_tests - test_ids)
