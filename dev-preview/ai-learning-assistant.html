@@ -25,7 +25,7 @@ main{max-width:1160px;margin:0 auto;padding:26px 18px 50px}.hero{position:relati
 .assistant-mark{display:flex;align-items:center;gap:10px}.assistant-icon{width:42px;height:42px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,#f1e5ff,#e3ceff);font-size:21px}.assistant-mark strong{display:block;color:#35105f;font-size:14px}.assistant-mark small{display:block;margin-top:3px;color:#8b7a9b;font-size:10px}
 .new-chat{border:1px solid #e3d3f2;border-radius:10px;padding:9px 11px;background:#fff;color:#5d218e;font-weight:800;font-size:11px;cursor:pointer}
 .messages{height:min(58vh,590px);min-height:340px;overflow:auto;padding:18px;background:linear-gradient(180deg,#fff,#fdfaff)}
-.message{display:flex;margin:0 0 14px}.message.user{justify-content:flex-end}.bubble{max-width:min(82%,700px);padding:12px 14px;border-radius:16px;background:#f3ebfc;color:#3c2451;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}.message.user .bubble{background:linear-gradient(120deg,#542080,#7628d8);color:#fff;border-bottom-right-radius:5px}.message.assistant .bubble{border-bottom-left-radius:5px}.message-time{font-size:9px;color:#9b8da7;margin:5px 4px 0}.message.user .message-time{text-align:right}
+.message{display:flex;margin:0 0 14px}.message>div{min-width:0;max-width:82%}.message.user{justify-content:flex-end}.bubble{width:fit-content;max-width:100%;padding:12px 14px;border-radius:16px;background:#f3ebfc;color:#3c2451;font-size:13px;line-height:1.7;white-space:pre-wrap;overflow-wrap:anywhere}.message.user .bubble{background:linear-gradient(120deg,#542080,#7628d8);color:#fff;border-bottom-right-radius:5px}.message.assistant .bubble{border-bottom-left-radius:5px}.message-time{font-size:9px;color:#9b8da7;margin:5px 4px 0}.message.user .message-time{text-align:right}
 .composer{padding:14px;border-top:1px solid var(--line);background:#fff}.composer-row{display:flex;gap:9px;align-items:flex-end}.composer textarea{flex:1;min-height:48px;max-height:130px;resize:vertical;border:1px solid #e3d6ef;border-radius:13px;padding:13px;font:13px 'DM Sans',sans-serif;color:var(--ink);outline:none}.composer textarea:focus{border-color:#9b78d1;box-shadow:0 0 0 3px #6128b814}.send{border:0;border-radius:13px;padding:14px 18px;background:linear-gradient(120deg,#542080,#7628d8);color:#fff;font-weight:900;cursor:pointer}.send:disabled{opacity:.55;cursor:not-allowed}.composer-meta{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:#93869f;font-size:10px}.typing{color:#7b4aa5;font-size:11px;padding:0 4px 10px}
 .side-card{padding:18px;margin-bottom:14px}.side-card h2{font:700 19px 'Playfair Display',serif;color:#35105f;margin:0 0 10px}.side-card p,.side-card li{font-size:12px;line-height:1.7;color:#766a81}.side-card ul{padding-left:18px;margin:8px 0 0}.notice{border-left:4px solid var(--gold);background:#fffaf0;border-radius:0 13px 13px 0;padding:13px;color:#6e5a31;font-size:11px;line-height:1.7}.notice strong{display:block;margin-bottom:4px}
 .status{margin:12px 0 0;padding:10px 12px;border-radius:11px;background:#f7f1fc;color:#68418b;font-size:11px;line-height:1.5}.status.error{background:#fff1f0;color:#a2352c}
@@ -211,7 +211,21 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    setStatus('Connected to the shared DCDS AI service.');
   }catch(error){
    const messageText=String(error?.message||'').toLowerCase();
-   const friendly=messageText.includes('ai_not_configured')||messageText.includes('provider key')?'The shared AI service is built, but its provider API key has not yet been added to secure Supabase secrets. No key should be entered on this page.':messageText.includes('429')||messageText.includes('rate')?'You have reached the short-term message limit. Please wait a moment and try again.':'The AI service is temporarily unavailable. Please try again shortly.';
+   let serverMessage='';
+   try{
+    const response=error?.context;
+    if(response&&typeof response.json==='function'){
+     const payload=await response.json();
+     if(typeof payload?.error==='string')serverMessage=payload.error;
+    }
+   }catch(_){}
+   const friendly=serverMessage||(
+    messageText.includes('ai_not_configured')||messageText.includes('provider key')
+     ?'The shared AI service is built, but its provider API key has not yet been added to secure Supabase secrets. No key should be entered on this page.'
+     :messageText.includes('429')||messageText.includes('rate')
+      ?'You have reached the short-term message limit. Please wait a moment and try again.'
+      :'The AI service is temporarily unavailable. Please try again shortly.'
+   );
    addMessage('assistant',friendly);setStatus(friendly,true);
   }finally{typing.hidden=true;sendButton.disabled=false;input.disabled=false;input.focus();}
  });
