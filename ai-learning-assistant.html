@@ -404,7 +404,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   });
  }
  async async function speakText(text,button){
-  const spoken=String(text||'').replace(/\s+/g,' ').trim();
+  const spoken=String(text||'').replace(/\\s+/g,' ').trim();
   if(!spoken)return;
   if(activeSpeechButton===button){
    stopOpenAiSpeech();
@@ -489,7 +489,6 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    if(!data?.success||!data?.sdp)throw new Error(data?.error||'The DCDS natural voice service is not available yet.');
    await peer.setRemoteDescription({type:'answer',sdp:data.sdp});
    await channelReady;
-   if(!spoken)throw new Error('There is no answer text to speak.');
    channel.send(JSON.stringify({
     type:'response.create',
     response:{
@@ -500,102 +499,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
      input:[{
       type:'message',
       role:'user',
-      content:[{type:'input_text',text:'Speak the following DCDS AI answer exactly as written, preserving all course names, numbers and prices:\n\n'+spoken}]
-     }]
-    }
-   }));
-   button.disabled=false;
-   button.textContent='■ Stop voice';
-   button.setAttribute('aria-label','Stop the natural AI-generated voice');
-   setStatus('Natural DCDS AI voice connected. The spoken words follow the answer shown on screen.');
-
-   const peer=new RTCPeerConnection();
-   const audio=document.createElement('audio');
-   audio.className='dcds-ai-audio';
-   audio.controls=true;
-   audio.autoplay=true;
-   audio.playsInline=true;
-   audio.preload='none';
-   audio.setAttribute('aria-label','AI-generated DCDS voice playback');
-   button.insertAdjacentElement('afterend',audio);
-
-   activeSpeechPeer=peer;
-   activeSpeechAudio=audio;
-   activeSpeechButton=button;
-   peer.addTransceiver('audio',{direction:'recvonly'});
-   peer.ontrack=async event=>{
-    const stream=event.streams?.[0]||new MediaStream([event.track]);
-    audio.srcObject=stream;
-    try{
-     await audio.play();
-     setStatus('Playing DCDS AI’s natural AI-generated voice.');
-    }catch(_){
-     setStatus('Your browser blocked automatic playback. Tap Play in the audio player below the answer.');
-    }
-   };
-   peer.onconnectionstatechange=()=>{
-    if(peer.connectionState==='failed'||peer.connectionState==='disconnected'){
-     setStatus('The natural voice connection was interrupted. Tap Listen to try again.',true);
-    }
-   };
-
-   const channel=peer.createDataChannel('oai-events');
-   activeSpeechDataChannel=channel;
-   channel.addEventListener('message',event=>{
-    let message;
-    try{message=JSON.parse(event.data);}catch(_){return;}
-    if(message.type==='error'){
-     const detail=message.error?.message||'The natural voice could not finish this response.';
-     setStatus(detail,true);
-     stopOpenAiSpeech();
-     return;
-    }
-    if(message.type==='response.done'){
-     if(message.response?.status&&message.response.status!=='completed'){
-      setStatus('The natural voice response did not finish. Tap Listen to try again.',true);
-      return;
-     }
-     setStatus('Your spoken answer is ready. Use the audio controls to pause or replay it.');
-     button.disabled=false;
-     button.textContent='■ Stop voice';
-     button.setAttribute('aria-label','Stop the natural AI-generated voice');
-    }
-   });
-
-   const channelReady=waitForSpeechChannel(channel);
-   const offer=await peer.createOffer();
-   await peer.setLocalDescription(offer);
-   if(!offer.sdp)throw new Error('Your browser could not prepare the voice connection.');
-   const sdpResponse=await fetch('https://api.openai.com/v1/realtime/calls',{
-    method:'POST',
-    headers:{
-     'Authorization':'Bearer '+data.client_secret,
-     'Content-Type':'application/sdp'
-    },
-    body:offer.sdp
-   });
-   if(!sdpResponse.ok){
-    const providerMessage=await sdpResponse.text();
-    console.error('DCDS OpenAI Realtime connection returned:',sdpResponse.status,providerMessage.slice(0,900));
-    throw new Error(sdpResponse.status===429
-     ?'The natural voice service has reached its usage limit. Please try again later.'
-     :'The natural voice connection could not be started. Please try again.');
-   }
-   const answerSdp=await sdpResponse.text();
-   await peer.setRemoteDescription({type:'answer',sdp:answerSdp});
-   await channelReady;
-   if(!spoken)throw new Error('There is no answer text to speak.');
-   channel.send(JSON.stringify({
-    type:'response.create',
-    response:{
-     conversation:'none',
-     output_modalities:['audio'],
-     max_output_tokens:4096,
-     instructions:'Read the supplied text word for word exactly. Do not summarise, paraphrase, add a greeting, add commentary, or omit any words. Use a natural adult female-sounding voice: warm, smooth, mature, confident and beautifully conversational. Use subtle human-like intonation, clear pronunciation and a comfortable pace. Avoid a childish, cartoonish, doll-like, sing-song, exaggeratedly sweet or robotic delivery. Do not sing or add sound effects.',
-     input:[{
-      type:'message',
-      role:'user',
-      content:[{type:'input_text',text:'Speak the following DCDS AI answer exactly as written, preserving all course names, numbers and prices:\n\n'+spoken}]
+      content:[{type:'input_text',text:'Speak the following DCDS AI answer exactly as written, preserving all course names, numbers and prices:\\n\\n'+spoken}]
      }]
     }
    }));
