@@ -9,6 +9,7 @@ on:
       - "ai-learning-assistant.html"
       - "ai-config/captcha-public-config.js"
       - "supabase/functions/dcds-ai-chat/**"
+      - "dev-preview/**"
       - "ai-learning-assistant.html"
       - "ai-config/captcha-public-config.js"
       - "student-dashboard.html"
@@ -62,7 +63,7 @@ jobs:
           import subprocess
           import tempfile
 
-          files = ["index.html", "ai-learning-assistant.html", "dev-preview/ai-learning-assistant.html", "student-dashboard.html", "student-management.html", "learn.html", "general-course.html"]
+          files = ["index.html", "ai-learning-assistant.html", "dev-preview/ai-learning-assistant.html", "dev-preview/student-test-login.html", "student-dashboard.html", "student-management.html", "learn.html", "general-course.html"]
           checked = 0
           with tempfile.TemporaryDirectory() as tmp:
               for html_file in files:
