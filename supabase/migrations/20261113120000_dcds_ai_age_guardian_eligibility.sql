@@ -83,9 +83,13 @@ CREATE POLICY "Users submit their own DCDS AI eligibility request"
   FOR INSERT TO authenticated
   WITH CHECK (
     user_id = (SELECT auth.uid())
-    AND age_band IN ('under_13','13_17','18_plus')
-    AND access_status = 'pending'
-    AND guardian_consent_status IN ('not_required','pending')
+    AND (
+      (age_band = '18_plus' AND access_status = 'pending' AND guardian_consent_status = 'not_required')
+      OR
+      (age_band = '13_17' AND access_status = 'pending' AND guardian_consent_status = 'pending')
+      OR
+      (age_band = 'under_13' AND access_status = 'blocked' AND guardian_consent_status = 'pending')
+    )
     AND guardian_user_id IS NULL
     AND guardian_consent_reference IS NULL
     AND guardian_consent_at IS NULL
@@ -104,3 +108,25 @@ CREATE POLICY "DCDS admins review AI eligibility"
 REVOKE ALL ON TABLE public.dcds_ai_access_eligibility FROM anon;
 GRANT SELECT, INSERT ON TABLE public.dcds_ai_access_eligibility TO authenticated;
 GRANT UPDATE, DELETE ON TABLE public.dcds_ai_access_eligibility TO authenticated;
+
+-- Expose only a boolean guardian eligibility check to the child's authenticated
+-- session. The child cannot read the guardian's age record or private profile.
+CREATE OR REPLACE FUNCTION private.dcds_ai_guardian_is_approved_adult(p_guardian_user_id uuid)
+RETURNS boolean
+LANGUAGE sql
+STABLE
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+  SELECT EXISTS (
+    SELECT 1
+    FROM public.dcds_ai_access_eligibility AS e
+    WHERE e.user_id = p_guardian_user_id
+      AND e.age_band = '18_plus'
+      AND e.access_status = 'approved'
+      AND e.guardian_consent_status = 'not_required'
+  );
+$function$;
+
+REVOKE ALL ON FUNCTION private.dcds_ai_guardian_is_approved_adult(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION private.dcds_ai_guardian_is_approved_adult(uuid) TO authenticated;
