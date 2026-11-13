@@ -6,6 +6,7 @@
 <meta name="theme-color" content="#35105f">
 <meta name="description" content="The shared De Champions Digital Service AI learning companion.">
 <title>DCDS AI Learning Assistant</title>
+<script src="ai-config/captcha-public-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,6 +28,7 @@ main{max-width:1160px;margin:0 auto;padding:26px 18px 50px}.hero{position:relati
 .composer{padding:14px;border-top:1px solid var(--line);background:#fff}.composer-row{display:flex;gap:9px;align-items:flex-end}.composer textarea{flex:1;min-height:48px;max-height:130px;resize:vertical;border:1px solid #e3d6ef;border-radius:13px;padding:13px;font:13px 'DM Sans',sans-serif;color:var(--ink);outline:none}.composer textarea:focus{border-color:#9b78d1;box-shadow:0 0 0 3px #6128b814}.send{border:0;border-radius:13px;padding:14px 18px;background:linear-gradient(120deg,#542080,#7628d8);color:#fff;font-weight:900;cursor:pointer}.send:disabled{opacity:.55;cursor:not-allowed}.composer-meta{display:flex;justify-content:space-between;gap:12px;margin-top:8px;color:#93869f;font-size:10px}.typing{color:#7b4aa5;font-size:11px;padding:0 4px 10px}
 .side-card{padding:18px;margin-bottom:14px}.side-card h2{font:700 19px 'Playfair Display',serif;color:#35105f;margin:0 0 10px}.side-card p,.side-card li{font-size:12px;line-height:1.7;color:#766a81}.side-card ul{padding-left:18px;margin:8px 0 0}.notice{border-left:4px solid var(--gold);background:#fffaf0;border-radius:0 13px 13px 0;padding:13px;color:#6e5a31;font-size:11px;line-height:1.7}.notice strong{display:block;margin-bottom:4px}
 .status{margin:12px 0 0;padding:10px 12px;border-radius:11px;background:#f7f1fc;color:#68418b;font-size:11px;line-height:1.5}.status.error{background:#fff1f0;color:#a2352c}
+.captcha-panel{margin:12px 14px;padding:14px;border:1px solid #e6d8f1;border-radius:13px;background:#fcf9ff;color:#554065;font-size:12px;line-height:1.6}.captcha-panel strong{display:block;color:#35105f;margin-bottom:4px}.captcha-panel p{margin:0 0 10px}.captcha-panel small{display:block;color:#897a96;margin-top:8px}.captcha-panel a{display:inline-block;margin-top:8px;color:#6527a4;font-weight:800;text-decoration:none}.captcha-panel[hidden]{display:none}
 footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;padding:22px 10px 6px}footer strong{display:block;color:#6c348e;letter-spacing:.17em;margin-top:7px}
 @media(max-width:850px){.layout{grid-template-columns:1fr}.side-column{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.side-card{margin:0}}
 @media(max-width:580px){.top{padding:14px}.brand{font-size:9px}.top a{font-size:10px}.top-actions{gap:8px}main{padding:18px 12px 38px}.hero{border-radius:19px}.messages{height:54vh;min-height:320px;padding:13px}.bubble{max-width:90%;font-size:12px}.side-column{grid-template-columns:1fr}.send{padding:13px}.composer{padding:10px}}
@@ -54,6 +56,13 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, explore the DCDS catalogue and find the right support route. What would you like to work on today?</div></div></div>
    </div>
    <div class="typing" id="typing" hidden>DCDS AI is thinking…</div>
+   <section class="captcha-panel" id="visitorCaptcha" hidden aria-live="polite">
+    <strong>Secure visitor access</strong>
+    <p>Complete this quick security check to start a visitor session.</p>
+    <div id="turnstileWidget"></div>
+    <small id="captchaHint">Preparing verification…</small>
+    <a href="index.html?login=required&amp;next=ai-learning-assistant.html">Sign in to an existing DCDS account →</a>
+   </section>
    <form class="composer" id="chatForm">
     <div class="composer-row">
      <textarea id="messageInput" maxlength="2500" rows="2" placeholder="Ask your DCDS AI assistant…" aria-label="Your message" required></textarea>
@@ -94,9 +103,51 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  const sendButton=document.getElementById('sendButton');
  const typing=document.getElementById('typing');
  const charCount=document.getElementById('charCount');
+ const captchaPanel=document.getElementById('visitorCaptcha');
+ const captchaHint=document.getElementById('captchaHint');
+ const captchaWidget=document.getElementById('turnstileWidget');
  const conversation=[];
  let client;
+ let turnstileWidgetId=null;
  function setStatus(message,isError=false){statusEl.textContent=message;statusEl.classList.toggle('error',isError);}
+ function loadTurnstile(){
+  if(window.turnstile)return Promise.resolve();
+  return new Promise((resolve,reject)=>{
+   let script=document.getElementById('dcds-turnstile-script');
+   if(!script){script=document.createElement('script');script.id='dcds-turnstile-script';script.src='https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit';script.async=true;script.defer=true;}
+   script.addEventListener('load',()=>window.turnstile?resolve():reject(new Error('Turnstile did not initialise.')),{once:true});
+   script.addEventListener('error',()=>reject(new Error('The security verification service could not load.')),{once:true});
+   if(!script.isConnected)document.head.appendChild(script);
+  });
+ }
+ async function getVisitorCaptchaToken(){
+  const config=window.DCDS_CAPTCHA_CONFIG||{};
+  const siteKey=typeof config.siteKey==='string'?config.siteKey.trim():'';
+  if(config.provider!=='turnstile'||!siteKey){
+   captchaPanel.hidden=false;
+   captchaHint.textContent='Visitor verification has not been configured yet. Please sign in to an existing DCDS account, or contact DCDS support.';
+   setStatus('New visitor sessions are paused until CAPTCHA is configured. Existing verified DCDS accounts can still sign in.',true);
+   throw new Error('DCDS_VISITOR_CAPTCHA_NOT_CONFIGURED');
+  }
+  captchaPanel.hidden=false;
+  captchaHint.textContent='Loading the security check…';
+  await loadTurnstile();
+  captchaWidget.replaceChildren();
+  return await new Promise((resolve,reject)=>{
+   let settled=false;
+   const finish=(callback,value)=>{if(settled)return;settled=true;callback(value);};
+   captchaHint.textContent='Complete the check below to continue.';
+   try{
+    turnstileWidgetId=window.turnstile.render(captchaWidget,{
+     sitekey:siteKey,
+     theme:'light',
+     callback:token=>finish(resolve,token),
+     'error-callback':()=>finish(reject,new Error('The security check failed to load. Please refresh and try again.')),
+     'expired-callback':()=>{captchaHint.textContent='The security check expired. Please complete it again.';}
+    });
+   }catch(error){finish(reject,error instanceof Error?error:new Error('The security check could not start.'));}
+  });
+ }
  function addMessage(role,text){
   const row=document.createElement('div');row.className='message '+(role==='user'?'user':'assistant');
   const wrap=document.createElement('div');const bubble=document.createElement('div');bubble.className='bubble';bubble.textContent=text;wrap.appendChild(bubble);
@@ -114,14 +165,26 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   if(error) throw error;
   let user=session?.user??null;
   if(!user){
-   const {data,error:visitorError}=await client.auth.signInAnonymously();
-   if(visitorError){
-    document.getElementById('accountLabel').textContent='Sign in or enable visitor access';
-    setStatus('Visitor access is not available in this Development project yet. Sign in with a verified DCDS account, or enable anonymous sign-ins in Supabase Auth settings.',true);
+   try{
+    const captchaToken=await getVisitorCaptchaToken();
+    const {data:visitor,error:visitorError}=await client.auth.signInAnonymously({options:{captchaToken}});
+    if(visitorError)throw visitorError;
+    user=visitor?.user??null;
+    if(!user)throw new Error('Visitor sign-in did not return a user.');
+    captchaPanel.hidden=true;
+   }catch(visitorError){
+    const reason=String(visitorError?.message||'');
+    document.getElementById('accountLabel').textContent='Visitor access requires verification';
+    if(reason!=='DCDS_VISITOR_CAPTCHA_NOT_CONFIGURED'){
+     captchaPanel.hidden=false;
+     captchaHint.textContent='We could not verify this session. Refresh the page and try again, or sign in to an existing account.';
+     setStatus('Visitor verification could not be completed. Please refresh and try again, or sign in to your DCDS account.',true);
+    }
     form.querySelectorAll('textarea,button').forEach(el=>el.disabled=true);
     return;
+   }finally{
+    if(turnstileWidgetId!==null&&window.turnstile){try{window.turnstile.reset(turnstileWidgetId);}catch(_){}}
    }
-   user=visitor.data.user;
   }
   if(!user){setStatus('Please sign in to continue.',true);return;}
   const verified=Boolean(user.email_confirmed_at||user.phone_confirmed_at);
