@@ -31,11 +31,14 @@ Apply `supabase/migrations/20261110000000_dcds_ai_usage_windows.sql` to DCDS-Dev
 
 Do not run `supabase db push` until remote migration history is reconciled; the restored baseline was applied as schema-only SQL and the project initially had no migration records.
 
-## Visitor-access prerequisite
+## Visitor and Auth CAPTCHA prerequisite
 - Supabase anonymous sign-ins must be enabled in DCDS-Development for visitor sessions.
-- The current page calls `signInAnonymously()`, but it does not yet render a CAPTCHA widget or pass a CAPTCHA token. Do not enable Supabase Auth CAPTCHA for this visitor flow until the DCDS frontend has integrated and tested a provider widget/token (Cloudflare Turnstile or hCaptcha).
-- For any public visitor launch, implement the widget and pass its token in the Supabase Auth sign-up options, then enable CAPTCHA protection in Supabase Auth → Bot and Abuse Protection.
-- If anonymous sign-in is disabled or blocked, the page displays a clear fallback and verified students can still sign in.
+- The shared AI page now renders Cloudflare Turnstile and passes the resulting token to `signInAnonymously({ options: { captchaToken } })`. New visitor sessions remain blocked until the provider keys are configured and project-level CAPTCHA protection is enabled.
+- The public homepage account form passes the CAPTCHA token through email signup, password login, password reset and signup-code resend when `authProtectionEnabled` is set to `true` in `ai-config/captcha-public-config.js`.
+- The separate privileged SMS-signup Edge Function verifies Turnstile server-side before it creates an Auth user. When SMS signup is enabled, configure `DCDS_TURNSTILE_SECRET_KEY` as an Edge Function secret and set `DCDS_TURNSTILE_HOSTNAMES` to the exact comma-separated allowed hostnames. It defaults to `dechampions03-leader.github.io`.
+- Create a Turnstile widget in Cloudflare and allow the DCDS website hostname(s). Put only its public **site key** in `ai-config/captcha-public-config.js`. Never put the Turnstile secret or Gemini key in that file.
+- In Supabase Dashboard → Authentication → Bot and Abuse Protection, choose Turnstile and save the matching **secret key**. Only after this is configured, set `authProtectionEnabled: true` in the public config. Supabase Auth CAPTCHA is project-wide, so do not enable it before the account form and OTP-resend paths are deployed and tested.
+- If anonymous sign-in is disabled or blocked, the page displays a clear fallback and existing verified students can still use the normal sign-in route, provided the CAPTCHA rollout is configured consistently.
 - Supabase's anonymous sign-in endpoint is rate-limited per IP; CAPTCHA and application-level abuse controls are important because visitor users can create fresh anonymous identities.
 
 ## Deployment order
@@ -52,4 +55,4 @@ Do not run `supabase db push` until remote migration history is reconciled; the 
 The assistant sends the user's message and limited user-provided conversation context to the Gemini API to produce a response. It does not query or send private student, account, payment, payout or admin records. Google's applicable terms and data practices apply; free-tier Gemini content may be used to improve Google products. Keep the assistant limited to public DCDS information and general learning. Do not ask users to submit passwords, OTPs, payment credentials, banking details or sensitive personal information.
 
 ## Current Development status
-The shared interface, role-aware Edge Function and hardened quota migration are prepared for the Development rollout. The migration and function deployment are performed separately in DCDS-Development. The Gemini provider secret must be entered by the DCDS owner in Supabase Dashboard; it is never committed or pasted into chat. Production is not enabled by this rollout.
+The shared interface, role-aware Edge Function, hardened quota migration and Turnstile client/server integration are prepared on the Development feature branch. The AI usage migration and `dcds-ai-chat` function are deployed to DCDS-Development. The DCDS owner has added `GEMINI_API_KEY` to Development Edge Function Secrets; the value is never committed or pasted into chat. Turnstile site/secret configuration, live CAPTCHA challenge, end-to-end Gemini response and identity-role test cases are still required before the Development pilot can be declared fully tested. Production is not enabled by this rollout.
