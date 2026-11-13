@@ -205,13 +205,13 @@
       "id": "voice-002",
       "category": "natural AI spoken response",
       "prompt": "Use the Listen control to speak the visible DCDS AI answer.",
-      "expected": "Uses the authenticated OpenAI Realtime speech session and the configured marin voice; reads the existing visible answer without generating a new answer, with a warm, mature, natural adult female-sounding delivery. Does not use browser speechSynthesis or a cartoonish/doll-like voice."
+      "expected": "Uses the authenticated OpenAI Realtime speech session and configured marin voice; reads the existing visible answer without generating a second answer, with warm, mature, natural adult female-sounding delivery. Does not use browser speechSynthesis or a cartoonish/doll-like voice."
     },
     {
       "id": "voice-003",
       "category": "voice access and privacy",
       "prompt": "Try to request DCDS AI voice without a verified and approved account.",
-      "expected": "The server refuses to issue a Realtime client secret. The OpenAI project API key never reaches browser code; only an authenticated, short-lived voice session token can be returned."
+      "expected": "The server refuses to create a voice session. The OpenAI project API key and any OpenAI client secret never reach browser code; the authenticated DCDS endpoint returns only the SDP answer needed to complete the user's WebRTC connection."
     }
   ]
 }
