@@ -57,7 +57,7 @@ textarea{min-height:70px;resize:vertical}.checkrow{display:flex;align-items:flex
   const options=under13?'<option value="blocked">blocked</option>':'<option value="pending">pending</option><option value="approved">approved</option><option value="rejected">rejected</option>';
   const guardian=row.guardian_user_id||"",reference=row.guardian_consent_reference||"";
   card.innerHTML='<div class="card-head"><div><span class="badge">'+esc(row.access_status.replaceAll("_"," "))+'</span><p class="meta">Account: '+esc(row.user_id)+'</p><p class="meta">Age band: '+esc(row.age_band.replaceAll("_"," "))+'</p><p class="meta">Guardian consent: '+esc(row.guardian_consent_status.replaceAll("_"," "))+'</p><p class="meta">Submitted: '+esc(new Date(row.created_at).toLocaleString())+'</p></div><span class="meta">'+(row.reviewed_at?'Reviewed '+esc(new Date(row.reviewed_at).toLocaleString()):'Awaiting review')+'</span></div>'+
-  (adminUser.id===row.user_id?'<p class="notice"><strong>Your own account:</strong> another authorised DCDS administrator must independently review this request. You cannot approve your own AI access.</p>':'')+
+  (adminUser.id===row.user_id?(adult?'<p class="notice"><strong>Your own 18+ administrator account:</strong> you may complete the age-assurance check and approve your own adult AI access. Your administrator role is independently verified by DCDS.</p>':'<p class="notice"><strong>Your own teen account:</strong> a different authorised DCDS administrator must independently review guardian consent. You cannot approve your own teen request.</p>'):'')+
   (row.review_note?'<p class="meta">Previous review note: '+esc(row.review_note)+'</p>':'')+
   '<div class="grid"><div><label>Access decision</label><select class="decision">'+options+'</select></div>'+
   '<label class="checkrow"><input class="age-verified" type="checkbox"><span>I completed DCDS age assurance for this account.</span></label>'+
@@ -73,7 +73,7 @@ textarea{min-height:70px;resize:vertical}.checkrow{display:flex;align-items:flex
    save.disabled=true;save.textContent="Saving…";
    try{
     const d=decision.value,noteValue=note.value.trim();
-    if(d==="approved"&&adminUser.id===row.user_id)throw new Error("A different authorised DCDS administrator must approve your own AI access request.");
+    if(d==="approved"&&adminUser.id===row.user_id&&!adult)throw new Error("A different authorised DCDS administrator must independently review teen guardian consent.");
     if(noteValue.length<8)throw new Error("Add a brief, non-sensitive review note (at least 8 characters).");
     const update={reviewed_by:adminUser.id,reviewed_at:new Date().toISOString(),review_note:noteValue.slice(0,500)};
     if(adult){
