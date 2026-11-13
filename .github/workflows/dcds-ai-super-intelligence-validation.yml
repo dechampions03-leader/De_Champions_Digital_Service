@@ -8,6 +8,7 @@ on:
       - "supabase/functions/dcds-ai-chat/**"
       - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
       - "ai-learning-assistant.html"
+      - "privacy-policy.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
       - ".github/workflows/dcds-ai-super-intelligence-validation.yml"
@@ -17,7 +18,9 @@ on:
       - feature/dcds-super-intelligence
     paths:
       - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
       - "ai-learning-assistant.html"
+      - "privacy-policy.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
       - ".github/workflows/dcds-ai-super-intelligence-validation.yml"
