@@ -296,6 +296,20 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   });
   if(actions.childElementCount)wrapper.appendChild(actions);
  }
+ async function loadResourceIndex(){
+  try{
+   const {data:courses,error}=await client.from('courses').select('id,title,slug').order('title',{ascending:true}).limit(40);
+   if(error)throw error;
+   knownCourseResources=(courses||[]).filter(c=>c&&typeof c.id==='string'&&typeof c.title==='string'&&typeof c.slug==='string');
+   knownEnrolledCourseSlugs=new Set();
+   if(isPersistentStudent){
+    const {data:enrollments,error:enrollmentError}=await client.from('enrollments').select('course_id').eq('user_id',currentUser.id).limit(100);
+    if(enrollmentError)throw enrollmentError;
+    const enrolledIds=new Set((enrollments||[]).map(row=>String(row.course_id)));
+    knownEnrolledCourseSlugs=new Set(knownCourseResources.filter(c=>enrolledIds.has(c.id)).map(c=>c.slug));
+   }
+  }catch(error){console.warn('DCDS resource shortcuts could not be refreshed:',error?.message||error);}
+ }
  function inferResourceActions(text){
   const value=String(text||'').toLowerCase(),resources=[];
   knownCourseResources.forEach(course=>{
@@ -514,6 +528,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    await Promise.all([loadConversationList(),loadLearningMemory()]);
    setStatus('Verified student session. Your saved conversations are private to this account. Visitor chats are temporary.');
   }else if(isAdmin){
+   await loadResourceIndex();
    document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
    setStatus('Administrator session verified. This assistant remains read-only and does not change account or payment records.');
   }else{
