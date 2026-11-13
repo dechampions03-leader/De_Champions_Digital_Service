@@ -726,6 +726,8 @@ function loadDcdsTurnstile(){
 }
 function resetDcdsTurnstile(){
  dcdsAuthCaptchaToken="";
+ const submitButton=$("authSubmit");
+ if(submitButton&&dcdsCaptchaEnabled())submitButton.disabled=true;
  if(dcdsAuthTurnstileWidgetId!==null&&window.turnstile?.reset){
   try{window.turnstile.reset(dcdsAuthTurnstileWidgetId);}catch(_){}
  }
@@ -737,6 +739,8 @@ async function renderDcdsTurnstile(){
  const host=$("dcdsAuthCaptcha");
  if(!host)return;
  const hint=$("dcdsAuthCaptchaHint");
+ const submitButton=$("authSubmit");
+ if(submitButton)submitButton.disabled=true;
  const config=window.DCDS_CAPTCHA_CONFIG;
  try{
   await loadDcdsTurnstile();
@@ -756,13 +760,16 @@ async function renderDcdsTurnstile(){
    callback:token=>{
     dcdsAuthCaptchaToken=token;
     if(hint)hint.textContent="Security check completed.";
+    if(submitButton)submitButton.disabled=false;
    },
    "expired-callback":()=>{
     dcdsAuthCaptchaToken="";
+    if(submitButton)submitButton.disabled=true;
     if(hint)hint.textContent="The security check expired. Complete it again.";
    },
    "error-callback":()=>{
     dcdsAuthCaptchaToken="";
+    if(submitButton)submitButton.disabled=true;
     if(hint)hint.textContent="The security check could not be completed. Reload the form and try again.";
    }
   });
@@ -773,8 +780,13 @@ async function renderDcdsTurnstile(){
 }
 function getDcdsCaptchaToken(){
  if(!dcdsCaptchaEnabled())return undefined;
- if(!dcdsAuthCaptchaToken)throw new Error("Complete the Cloudflare security check before continuing.");
- return dcdsAuthCaptchaToken;
+ const widgetToken=dcdsAuthTurnstileWidgetId!==null&&window.turnstile?.getResponse
+  ?window.turnstile.getResponse(dcdsAuthTurnstileWidgetId)
+  :"";
+ const token=widgetToken||dcdsAuthCaptchaToken;
+ if(!token)throw new Error("Cloudflare is still verifying. Wait for the security check to complete before continuing.");
+ dcdsAuthCaptchaToken=token;
+ return token;
 }
 function closeModal(){ $('modalBackdrop').classList.remove('open'); document.body.style.overflow=''; selectedCourseIndex=null; }
   $('modalClose').addEventListener('click',closeModal);
@@ -876,7 +888,8 @@ async function submitAuth(e){
    const loginMethod=identifier.includes('@')?'email':'sms';
    const loginValue=loginMethod==='email'?identifier.toLowerCase():normalizeDcdsPhone(identifier);
    const credentials=loginMethod==='email'?{email:loginValue,password}:{phone:loginValue,password};
-   const {data,error}=await supabaseClient.auth.signInWithPassword(credentials,captchaToken?{captchaToken}:undefined);
+   const signInCredentials={...credentials,...(captchaToken?{options:{captchaToken}}:{})};
+   const {data,error}=await supabaseClient.auth.signInWithPassword(signInCredentials);
    resetDcdsTurnstile();
    if(error){
     const unconfirmed=error.code==='email_not_confirmed'||error.code==='phone_not_confirmed'||/email not confirmed|phone not confirmed/i.test(error.message||'');
@@ -905,7 +918,7 @@ async function submitAuth(e){
   }
  }catch(err){
   setAuthError(err.message||'Unable to complete account request. Please try again.');
-  if(btn){btn.disabled=false;btn.textContent=authMode==='signup'?'Create student account':'Log in';}
+  if(btn){btn.disabled=dcdsCaptchaEnabled()&&!dcdsAuthCaptchaToken;btn.textContent=authMode==='signup'?'Create student account':'Log in';}
  }
 }
 function hasDcdsVerifiedContact(user){
