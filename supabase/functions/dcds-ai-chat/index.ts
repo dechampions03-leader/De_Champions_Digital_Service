@@ -437,6 +437,11 @@ Deno.serve(async (request: Request) => {
     }, 403);
   }
 
+  // Fail before consuming a learner's quota if the provider secret is not configured.
+  if (!openAiApiKey) {
+    return json({ success: false, error: "The DCDS AI service is being prepared for its next release. Please try again later or contact DCDS support." }, 503);
+  }
+
   const rateLimit = role === "student" ? 5 : 8;
   const dailyRateLimit = role === "student" ? 20 : 60;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
@@ -449,10 +454,6 @@ Deno.serve(async (request: Request) => {
   }
   if (allowed !== true) {
     return json({ success: false, error: "Message limit reached. Please wait one minute and try again." }, 429);
-  }
-
-  if (!openAiApiKey) {
-    return json({ success: false, error: "The DCDS AI service is being prepared for its next release. Please try again later or contact DCDS support." }, 503);
   }
 
   let knowledge: string;
@@ -620,13 +621,13 @@ ${platformSearch.context}${savedMemoryInstruction}`;
 
   // Safety-screen before generation. Known/suspected sexual content involving minors
   // is blocked locally and is never forwarded to an external classifier or model.
-  if (suspectedChildExploitationPattern.test(message)) {
+  if (suspectedChildExploitationPattern.test(message) || suspectedChildExploitationPattern.test(userPrompt)) {
     return json({ success: true, answer: "I can’t help create or discuss sexual content involving anyone under 18. If this relates to a real person who may be at risk, tell a trusted adult and use the appropriate child-protection or emergency support route.", role, conversation_id: null, history_saved: false, learning_memory_updated: false, resources: [] });
   }
 
   let inputModeration: { flagged: boolean; categories: Record<string, unknown> };
   try {
-    inputModeration = await moderateDcdsText(openAiApiKey, message);
+    inputModeration = await moderateDcdsText(openAiApiKey, userPrompt);
   } catch (error) {
     console.error("DCDS input safety check unavailable:", error);
     return json({ success: false, error: "The DCDS safety check is temporarily unavailable. Please try again shortly." }, 503);
