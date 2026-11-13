@@ -486,16 +486,31 @@ ${knowledge}${savedMemoryInstruction}`;
         targetConversationId = newConversation.id;
       }
 
-      const { error: saveMessagesError } = await userClient
+      const messageTime = Date.now();
+      const userCreatedAt = new Date(messageTime).toISOString();
+      const assistantCreatedAt = new Date(messageTime + 1).toISOString();
+
+      const { error: saveUserMessageError } = await userClient
         .from("dcds_ai_messages")
-        .insert([
-          { conversation_id: targetConversationId, role: "user", content: message },
-          { conversation_id: targetConversationId, role: "assistant", content: answer },
-        ]);
+        .insert({
+          conversation_id: targetConversationId,
+          role: "user",
+          content: message,
+          created_at: userCreatedAt,
+        });
+      if (saveUserMessageError) throw saveUserMessageError;
 
-      if (saveMessagesError) throw saveMessagesError;
+      const { error: saveAssistantMessageError } = await userClient
+        .from("dcds_ai_messages")
+        .insert({
+          conversation_id: targetConversationId,
+          role: "assistant",
+          content: answer,
+          created_at: assistantCreatedAt,
+        });
+      if (saveAssistantMessageError) throw saveAssistantMessageError;
 
-      const now = new Date().toISOString();
+      const now = assistantCreatedAt;
       const { error: touchConversationError } = await userClient
         .from("dcds_ai_conversations")
         .update({ updated_at: now, last_message_at: now })
