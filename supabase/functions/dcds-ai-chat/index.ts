@@ -22,6 +22,7 @@ let cachedKnowledge: { value: string; expiresAt: number } | null = null;
 // Best-effort per-isolate circuit breaker: avoid repeatedly calling models
 // that have returned a daily quota error or temporary overload.
 const providerModelCooldowns = new Map<string, number>();
+const providerDailyQuotaCooldowns = new Map<string, number>();
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -77,7 +78,7 @@ function buildSearchFilter(columns: string[], tokens: string[]): string {
 async function searchPlatformKnowledge(
   client: any,
   userId: string,
-  role: "student" | "admin",
+  role: "student" | "admin" | "guest",
   query: string,
 ): Promise<{ context: string; sources: DcdsKnowledgeSource[] }> {
   const tokens = searchTokens(query);
@@ -199,8 +200,8 @@ async function listAvailableGeminiModels(apiKey: string): Promise<string[] | nul
   }
 }
 
-function wantsExternalWebSearch(message: string, role: "student" | "admin"): boolean {
-  if (role !== "student") return false;
+function wantsExternalWebSearch(message: string, role: "student" | "admin" | "guest"): boolean {
+  if (role !== "student" && role !== "guest") return false;
   if (/\b(password|otp|one[- ]time code|payment status|bank details|payout status|my enrolment|my enrollment|my grades|my progress|my certificate|my account)\b/i.test(message)) return false;
   // DCDS operational facts should use live DCDS records, never generic web pages.
   if (/\b(DCDS|course fee|course price|enrolment|enrollment|payment|referral|payout|certificate|my lesson|my course)\b/i.test(message)) return false;
@@ -292,55 +293,49 @@ Deno.serve(async (request: Request) => {
     return json({ success: false, error: "Enter a message of up to 2,500 characters or attach an image." }, 400);
   }
 
-  // Role is derived only from the verified Supabase user and the existing
-  // server-side is_dcds_admin() function. Never accept a browser-supplied role.
+  // Public visitor sessions are anonymous Supabase Auth users protected by
+  // Turnstile at session creation. A visitor must affirm 18+ on every AI request.
+  // Verified, permanent accounts retain student/admin identity and safeguards.
   const anonymous = user.is_anonymous === true;
   const verifiedContact = Boolean(user.email_confirmed_at || user.phone_confirmed_at);
+  const isGuest = anonymous || !verifiedContact;
+  let role: "student" | "admin" | "guest" = isGuest ? "guest" : "student";
 
-  // Stage 1 is a controlled release for verified DCDS accounts only.
-  // Visitor access remains disabled until Production CAPTCHA and abuse limits
-  // have been separately qualified. Enforce this on the server, not just UI.
-  if (anonymous || !verifiedContact) {
-    return json({
-      success: false,
-      error: "DCDS AI is currently available to verified DCDS students and administrators. Please sign in with a verified account.",
-    }, 403);
+  if (isGuest) {
+    if (body.adult_confirmation !== true) {
+      return json({
+        success: false,
+        error_code: "ADULT_CONFIRMATION_REQUIRED",
+        error: "Public DCDS AI visitor access is for adults aged 18 or older. Confirm that you are 18+ before sending a message.",
+      }, 403);
+    }
+  } else {
+    const { data: isAdmin, error: adminCheckError } = await userClient.rpc("is_dcds_admin");
+    if (adminCheckError) {
+      console.error("DCDS AI admin-role check failed:", adminCheckError.message);
+      return json({ success: false, error_code: "ACCESS_CHECK_UNAVAILABLE", error: "The DCDS access check is temporarily unavailable." }, 503);
+    }
+    if (isAdmin === true) role = "admin";
   }
 
-  let role: "student" | "admin" = "student";
-  const { data: isAdmin, error: adminCheckError } = await userClient.rpc("is_dcds_admin");
-  if (adminCheckError) {
-    console.error("DCDS AI admin-role check failed:", adminCheckError.message);
-    return json({ success: false, error: "The DCDS access check is temporarily unavailable." }, 503);
-  }
-  if (isAdmin === true) role = "admin";
-
-  // Administrators are authorised by the server-side admin registry and do not
-  // need a student age-review row. Student access is enforced here as well as
-  // in the browser so direct Edge Function calls cannot bypass age controls.
+  // The old global age toggles accidentally blocked already-approved adults.
+  // Adults who declare 18+ can chat without a second global approval switch.
+  // 13–17-year-olds still need independently verified guardian consent;
+  // under-13 access remains blocked.
   if (role === "student") {
-    const [policyResult, eligibilityResult] = await Promise.all([
-      userClient.from("dcds_ai_access_settings")
-        .select("adult_access_enabled,teen_access_enabled")
-        .eq("id", 1).maybeSingle(),
-      userClient.from("dcds_ai_access_eligibility")
-        .select("age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_reference,guardian_consent_at")
-        .eq("user_id", user.id).maybeSingle(),
-    ]);
+    const { data: eligibility, error: eligibilityError } = await userClient
+      .from("dcds_ai_access_eligibility")
+      .select("age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_reference,guardian_consent_at")
+      .eq("user_id", user.id).maybeSingle();
 
-    if (policyResult.error || !policyResult.data || eligibilityResult.error) {
-      console.error("DCDS AI age-access policy check failed:", policyResult.error?.message ?? eligibilityResult.error?.message);
-      return json({ success: false, error: "DCDS AI age-access verification is temporarily unavailable. Please try again later." }, 503);
+    if (eligibilityError) {
+      console.error("DCDS AI age-access record check failed:", eligibilityError.message);
+      return json({ success: false, error_code: "AGE_CHECK_UNAVAILABLE", error: "DCDS AI age eligibility could not be checked. Please try again later." }, 503);
     }
 
-    const policy = policyResult.data;
-    const eligibility = eligibilityResult.data;
-    const adultAllowed = policy.adult_access_enabled === true
-      && eligibility?.age_band === "18_plus"
-      && eligibility.access_status === "approved"
+    const adultAllowed = eligibility?.age_band === "18_plus"
       && eligibility.guardian_consent_status === "not_required";
-    const teenAllowed = policy.teen_access_enabled === true
-      && eligibility?.age_band === "13_17"
+    const teenAllowed = eligibility?.age_band === "13_17"
       && eligibility.access_status === "approved"
       && eligibility.guardian_consent_status === "verified"
       && Boolean(eligibility.guardian_user_id && eligibility.guardian_consent_reference && eligibility.guardian_consent_at);
@@ -348,21 +343,33 @@ Deno.serve(async (request: Request) => {
     if (!adultAllowed && !teenAllowed) {
       return json({
         success: false,
-        error: "DCDS AI access is not enabled for this account's age group. Complete the required eligibility and guardian-consent review, or contact DCDS support.",
+        error_code: eligibility?.age_band === "under_13" ? "UNDER_13_BLOCKED" : "AGE_REVIEW_REQUIRED",
+        error: eligibility?.age_band === "under_13"
+          ? "Under-13 DCDS AI access is not available."
+          : "Complete the DCDS age declaration. Learners aged 13–17 need verified parent or guardian consent before AI access.",
       }, 403);
     }
   }
 
-  const rateLimit = role === "student" ? 10 : 15;
+  // Per-session limits protect the no-cost model key from simple automated abuse.
+  const rateLimit = role === "guest" ? 3 : role === "student" ? 10 : 15;
+  const dailyLimit = role === "guest" ? 5 : role === "student" ? 20 : 30;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
+    p_daily_limit: dailyLimit,
   });
   if (quotaError) {
     console.error("DCDS AI quota check failed:", quotaError.message);
-    return json({ success: false, error: "The DCDS AI usage check is temporarily unavailable." }, 503);
+    return json({ success: false, error_code: "USAGE_CHECK_UNAVAILABLE", error: "The DCDS AI usage check is temporarily unavailable." }, 503);
   }
   if (allowed !== true) {
-    return json({ success: false, error: "Message limit reached. Please wait one minute and try again." }, 429);
+    return json({
+      success: false,
+      error_code: role === "guest" ? "GUEST_RATE_LIMIT" : "USER_RATE_LIMIT",
+      error: role === "guest"
+        ? "This visitor session has reached its free message allowance. Sign in to use your student chat allowance, or try again later."
+        : "This account has reached its AI message allowance for now. Please wait and try again later.",
+    }, 429);
   }
 
   if (!geminiApiKey) {
@@ -542,10 +549,14 @@ ${platformSearch.context}${savedMemoryInstruction}`;
     (candidate) => (providerModelCooldowns.get(candidate) ?? 0) <= Date.now(),
   );
   if (!modelCandidates.length) {
+    const dailyQuotaCooling = [...providerDailyQuotaCooldowns.values()].some((expiresAt) => expiresAt > Date.now());
     return json({
       success: false,
-      error: "DCDS AI's verified model pool is temporarily cooling down after provider limits. Please try again shortly.",
-    }, 503);
+      error_code: dailyQuotaCooling ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE",
+      error: dailyQuotaCooling
+        ? "DCDS AI has reached the available no-cost provider allowance. Your draft is kept in the chat box; please try again after the provider quota resets."
+        : "DCDS AI is temporarily at capacity. Your draft is kept in the chat box; please try again shortly.",
+    }, dailyQuotaCooling ? 429 : 503);
   }
 
   function getRetryDelayMs(message: string, details: unknown[]): number | null {
@@ -578,9 +589,9 @@ ${platformSearch.context}${savedMemoryInstruction}`;
   const dailyQuotaModels: string[] = [];
   const unavailableModels: string[] = [];
 
-  const generationDeadline = Date.now() + 26_000;
+  const generationDeadline = Date.now() + 18_000;
   let attemptedModels = 0;
-  const maxModelAttempts = 10;
+  const maxModelAttempts = 5;
   const orderedCandidates = shouldUseGoogleSearch
     ? [
       ...modelCandidates.filter((candidate) => GOOGLE_SEARCH_MODELS.has(candidate)),
@@ -609,7 +620,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
                 ? { tools: [{ google_search: {} }] }
                 : {}),
             }),
-            signal: AbortSignal.timeout(Math.max(1000, Math.min(10000, generationDeadline - Date.now()))),
+            signal: AbortSignal.timeout(Math.max(1000, Math.min(7000, generationDeadline - Date.now()))),
           },
         );
       } catch (error) {
@@ -628,6 +639,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
         providerResponse = response;
         resolvedModel = candidate;
         providerModelCooldowns.delete(candidate);
+        providerDailyQuotaCooldowns.delete(candidate);
         break;
       }
 
@@ -670,6 +682,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
         const retryMs = getRetryDelayMs(providerMessage, providerDetails) ?? 30 * 60 * 1000;
         const boundedRetryMs = Math.min(Math.max(retryMs, 60_000), 24 * 60 * 60 * 1000);
         providerModelCooldowns.set(candidate, Date.now() + boundedRetryMs);
+        providerDailyQuotaCooldowns.set(candidate, Date.now() + boundedRetryMs);
         dailyQuotaModels.push(candidate);
         console.warn("DCDS AI model daily quota exhausted; moving to next model.", {
           model: candidate,
@@ -734,7 +747,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
     const error = dailyQuotaModels.length > 0
       ? "DCDS AI has reached a provider quota or capacity limit. We checked the available fallback models, but they are not currently responding. Please try again later."
       : "DCDS AI is temporarily at capacity. Please try again shortly.";
-    return json({ success: false, error }, 503);
+    return json({ success: false, error_code: dailyQuotaModels.length > 0 ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE", error }, dailyQuotaModels.length > 0 ? 429 : 503);
   }
 
   const result = await providerResponse.json();

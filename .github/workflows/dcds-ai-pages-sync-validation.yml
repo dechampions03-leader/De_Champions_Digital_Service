@@ -49,11 +49,13 @@ jobs:
           }
           production_url = "https://qxsenflgaweeadvggnyp.supabase.co"
           development_ref = "tjgsxbmkpvktlqulbktv"
+          submit_handler = files["ai"].split("form.addEventListener('submit'", 1)[1].split(" });\n})();", 1)[0]
 
           checks = {
               "AI chat page points to Production Supabase": production_url in files["ai"],
               "Admin review page points to Production Supabase": production_url in files["review"],
               "No Development project URL is embedded in published pages": all(development_ref not in value for value in files.values()),
+              "Public guest entry is visible and visitor mode cannot display private student tools": "guestAccessPanel" in files["ai"] and "studentTools.hidden=true" in files["ai"] and "visitor chats are temporary" in files["ai"],
               "AI access review form is present": "dcds_ai_access_eligibility" in files["ai"] and "aiEligibilityPanel" in files["ai"],
               "Admin access review screen is noindex": "noindex" in files["review"].lower() and "nofollow" in files["review"].lower(),
               "Admin Centre links to the access review screen": 'href="dcds-ai-access-review.html"' in files["admin"],
@@ -66,8 +68,15 @@ jobs:
               "Supabase signup, login and reset receive CAPTCHA tokens": "captchaToken" in files["home"] and "signInWithPassword(signInCredentials)" in files["home"] and "options:{captchaToken}" in files["home"] and "resetPasswordForEmail(email,{redirectTo,...(captchaToken?{captchaToken}:{})})" in files["home"],
               "Turnstile login waits for and reads a completed widget token": "turnstile.getResponse(dcdsAuthTurnstileWidgetId)" in files["home"] and "Cloudflare is still verifying" in files["home"],
               "Administrator AI access bypasses student eligibility review": "if(isAdmin)" in files["ai"] and "setChatEnabled(true)" in files["ai"],
-              "Global AI age controls exist in the admin dashboard": "aiTeenAccessToggle" in files["student-management"] and "aiAdultAccessToggle" in files["student-management"],
-              "Global adult and teen policy is enforced server-side": "dcds_ai_access_settings" in files["edge"] and "eligibility.guardian_consent_status === \"verified\"" in files["edge"] and "role === \"student\"" in files["edge"],
+              "Admin AI access panel explains retired adult global toggles and preserves the guardian review link": "adult global approval switches have been retired" in files["student-management"] and "dcds-ai-access-review.html" in files["student-management"] and "aiAdultAccessToggle" not in files["student-management"] and "aiTeenAccessToggle" not in files["student-management"],
+              "Adult visitors can use public AI without a DCDS student account": "guestAccessPanel" in files["ai"] and "signInAnonymously" in files["ai"] and "dcdsGuestCaptcha" in files["ai"],
+              "Anonymous visitor creation is protected by Turnstile": "captcha-public-config.js" in files["ai"] and "captchaToken:guestCaptchaToken" in files["ai"] and "appearance:'always'" in files["ai"],
+              "Guest messages carry an explicit adult confirmation": "adult_confirmation=true" in files["ai"] and "body.adult_confirmation !== true" in files["edge"],
+              "Guests cannot access student-only saved history or enrolled lessons": 'if (role === "student")' in files["edge"] and "data.role==='guest'" in files["ai"] and "isGuestSession=true" in files["ai"],
+              "Adults do not require a second global access switch": "dcds_ai_access_settings" not in files["edge"],
+              "Teen access still requires verified guardian consent and under-13 remains blocked": 'eligibility.guardian_consent_status === "verified"' in files["edge"] and "under-13" in files["edge"].lower() and "Under-13 AI access remains blocked" in files["privacy"],
+              "Failed chat sends preserve the draft and do not reopen the mobile keyboard": "your draft is still in the message box" in files["ai"] and "input.blur()" in files["ai"] and "input.focus()" not in submit_handler,
+              "Public visitor processing and temporary chats are disclosed": "visitor chat transcripts" in files["privacy"] and "temporary anonymous session" in files["privacy"],
               "Age policy database migration is present": "create table if not exists public.dcds_ai_access_settings" in files["age-policy-migration"],
               "Production CAPTCHA activation is enabled after Supabase Auth secret is configured": 'authProtectionEnabled: true' in files["captcha"],
               "Privacy notice identifies the Gemini provider": "Google Gemini API" in files["privacy"],
