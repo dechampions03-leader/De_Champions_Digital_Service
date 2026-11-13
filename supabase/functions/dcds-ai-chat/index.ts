@@ -57,6 +57,34 @@ function priorConversationContext(value: unknown): string {
 }
 
 
+// Extract only explicit, low-risk learning preferences from the student's own message.
+// This deliberately avoids names, contact details, financial facts, health data and third-party information.
+function extractExplicitLearningPreference(message: string): string | null {
+  if (message.length > 2500 || /(?:password|passcode|otp|one[- ]time code|bank|account number|card|cvv|pin|api key|secret|email address|phone number|\\+?\\d[\\d ()-]{7,})/i.test(message)) return null;
+  const patterns: Array<{ pattern: RegExp; label: string }> = [
+    { pattern: /\\bI(?:'m| am) (?:a )?(beginner|intermediate|advanced) (?:in|at|with) ([^.!?\\n]{2,70})/i, label: 'Experience level' },
+    { pattern: /\\bI prefer ([^.!?\\n]{2,90})/i, label: 'Learning preference' },
+    { pattern: /\\bMy learning goal is ([^.!?\\n]{2,90})/i, label: 'Learning goal' },
+    { pattern: /\\bI(?:'m| am) learning ([^.!?\\n]{2,80})/i, label: 'Current learning topic' },
+    { pattern: /\\bI use (?:an? )?(Android|iPhone|iPad|Windows|Mac|Linux)\\b/i, label: 'Device or platform' },
+  ];
+  for (const item of patterns) {
+    const match = message.match(item.pattern);
+    if (!match) continue;
+    const detail = match.slice(1).filter(Boolean).join(' ').replace(/\\s+/g, ' ').trim();
+    if (!detail || detail.length > 110) continue;
+    return item.label + ': ' + detail;
+  }
+  return null;
+}
+
+function mergeLearningContext(existing: string, candidate: string): string {
+  const current = existing.trim();
+  if (current.toLowerCase().includes(candidate.toLowerCase())) return current.slice(0, 1200);
+  const combined = [current, candidate].filter(Boolean).join('\\n');
+  return combined.length <= 1200 ? combined : combined.slice(-1200);
+}
+
 type DcdsKnowledgeSource = { kind: string; title: string; content: string };
 
 function searchTokens(input: string): string[] {
@@ -310,6 +338,7 @@ Deno.serve(async (request: Request) => {
   let requestedConversationId: string | null = null;
   let priorContext = "";
   let savedLearningContext = "";
+  let autoLearningEnabled = false;
 
   if (role === "student") {
     const rawConversationId = typeof body.conversation_id === "string"
@@ -356,7 +385,7 @@ Deno.serve(async (request: Request) => {
 
     const { data: memoryRow, error: memoryError } = await userClient
       .from("dcds_ai_student_memory")
-      .select("learning_context")
+      .select("learning_context,auto_learning_enabled")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -364,6 +393,7 @@ Deno.serve(async (request: Request) => {
       console.error("DCDS AI student memory lookup failed:", memoryError.message);
     } else if (typeof memoryRow?.learning_context === "string") {
       savedLearningContext = memoryRow.learning_context.trim().slice(0, 1200);
+      autoLearningEnabled = memoryRow.auto_learning_enabled === true;
     }
   } else {
     // Visitor/admin chats remain page-session only.
@@ -680,6 +710,29 @@ ${platformSearch.context}${savedMemoryInstruction}`;
     ? generatedAnswer + "\n\nSources checked:\n" + sourceLines.join("\n")
     : generatedAnswer;
 
+  let learningMemoryUpdated = false;
+  if (role === "student" && autoLearningEnabled) {
+    const candidateMemory = extractExplicitLearningPreference(message);
+    if (candidateMemory) {
+      const nextLearningContext = mergeLearningContext(savedLearningContext, candidateMemory);
+      if (nextLearningContext !== savedLearningContext) {
+        const { error: memoryUpdateError } = await userClient
+          .from("dcds_ai_student_memory")
+          .upsert({
+            user_id: user.id,
+            learning_context: nextLearningContext,
+            auto_learning_enabled: true,
+            updated_at: new Date().toISOString(),
+          }, { onConflict: "user_id" });
+        if (memoryUpdateError) {
+          console.warn("DCDS AI opted-in learning memory update failed:", memoryUpdateError.message);
+        } else {
+          learningMemoryUpdated = true;
+        }
+      }
+    }
+  }
+
   let persistedConversationId: string | null = null;
   let historySaved = false;
 
@@ -748,5 +801,6 @@ ${platformSearch.context}${savedMemoryInstruction}`;
     role,
     conversation_id: persistedConversationId,
     history_saved: historySaved,
+    learning_memory_updated: learningMemoryUpdated,
   });
 });
