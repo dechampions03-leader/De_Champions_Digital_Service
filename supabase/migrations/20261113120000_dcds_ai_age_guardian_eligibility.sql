@@ -111,7 +111,7 @@ GRANT UPDATE, DELETE ON TABLE public.dcds_ai_access_eligibility TO authenticated
 
 -- Expose only a boolean guardian eligibility check to the child's authenticated
 -- session. The child cannot read the guardian's age record or private profile.
-CREATE OR REPLACE FUNCTION private.dcds_ai_guardian_is_approved_adult(p_guardian_user_id uuid)
+CREATE OR REPLACE FUNCTION public.dcds_ai_guardian_is_approved_adult(p_guardian_user_id uuid)
 RETURNS boolean
 LANGUAGE sql
 STABLE
@@ -128,5 +128,5 @@ AS $function$
   );
 $function$;
 
-REVOKE ALL ON FUNCTION private.dcds_ai_guardian_is_approved_adult(uuid) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION private.dcds_ai_guardian_is_approved_adult(uuid) TO authenticated;
+REVOKE ALL ON FUNCTION public.dcds_ai_guardian_is_approved_adult(uuid) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.dcds_ai_guardian_is_approved_adult(uuid) TO authenticated;
