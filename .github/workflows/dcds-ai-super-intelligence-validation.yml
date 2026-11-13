@@ -12,6 +12,7 @@ on:
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
       - "supabase/migrations/*restrict_ai_guardian_approval_lookup.sql"
+      - "supabase/migrations/*prevent_ai_self_approval.sql"
       - "ai-learning-assistant.html"
       - "admin-notifications.html"
       - "delete-account.html"
@@ -36,6 +37,7 @@ on:
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
       - "supabase/migrations/*restrict_ai_guardian_approval_lookup.sql"
+      - "supabase/migrations/*prevent_ai_self_approval.sql"
       - "ai-learning-assistant.html"
       - "admin-notifications.html"
       - "delete-account.html"
@@ -110,6 +112,7 @@ jobs:
           pwa_html = {name: Path(name).read_text(encoding="utf-8") for name in pwa_pages}
           eligibility_policy = Path("supabase/migrations/20261113133000_dcds_ai_eligibility_review_policy_scope.sql").read_text(encoding="utf-8")
           guardian_security = Path("supabase/migrations/20261113135915_restrict_ai_guardian_approval_lookup.sql").read_text(encoding="utf-8")
+          self_approval_guard = Path("supabase/migrations/20261113140500_prevent_ai_self_approval.sql").read_text(encoding="utf-8")
           master = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
           knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
           evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
@@ -152,6 +155,12 @@ jobs:
           system_prompt = function[system_start:system_end]
 
           invariants = {
+              "AI eligibility approval cannot be self-approved by the account owner":
+                  "auth.uid()" in self_approval_guard
+                  and "NEW.user_id = v_actor_id" in self_approval_guard
+                  and "NEW.access_status = 'approved'" in self_approval_guard
+                  and "A different authorised DCDS administrator" in admin_page
+                  and 'adminUser.id===row.user_id' in admin_page,
               "guardian RPC is restricted to the caller's linked guardian or an administrator":
                   "child.user_id = v_caller_id" in guardian_security
                   and "child.guardian_user_id = p_guardian_user_id" in guardian_security
