@@ -75,7 +75,7 @@ function buildSearchFilter(columns: string[], tokens: string[]): string {
 }
 
 async function searchPlatformKnowledge(
-  client: ReturnType<typeof createClient>,
+  client: any,
   userId: string,
   role: "student" | "admin",
   query: string,
@@ -110,8 +110,9 @@ async function searchPlatformKnowledge(
   if (announcementResult.error) {
     console.warn("DCDS AI announcement search unavailable:", announcementResult.error.message);
   } else {
-    const currentAnnouncements = (announcementResult.data ?? []).filter((row) =>
-      !row.expires_at || new Date(row.expires_at).getTime() > Date.now()
+    const announcementRows = (announcementResult.data ?? []) as Array<Record<string, unknown>>;
+    const currentAnnouncements = announcementRows.filter((row) =>
+      !row.expires_at || new Date(String(row.expires_at)).getTime() > Date.now()
     );
     addRows("Published DCDS announcement", currentAnnouncements, "title", ["message"]);
   }
@@ -125,7 +126,8 @@ async function searchPlatformKnowledge(
     if (enrollmentError) {
       console.warn("DCDS AI enrolled-course lookup unavailable:", enrollmentError.message);
     } else {
-      const courseIds = [...new Set((enrollments ?? [])
+      const enrollmentRows = (enrollments ?? []) as Array<{ course_id: string | null }>;
+      const courseIds = [...new Set(enrollmentRows
         .map((row) => row.course_id)
         .filter((value): value is string => typeof value === "string"))];
       if (courseIds.length) {
