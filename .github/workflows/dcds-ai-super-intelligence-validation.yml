@@ -118,6 +118,8 @@ jobs:
                   "autoLearningEnabled" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
                   and "auto_learning_enabled === true" in function
                   and "DEFAULT false" in Path("supabase/migrations/20261113110000_dcds_ai_opt_in_learning_memory.sql").read_text(encoding="utf-8"),
+              "automatic learning rejects sensitive-data patterns":
+                  "password|passcode|otp|one[- ]time code|bank|account number|card|cvv|pin|api key" in function,
           }
           failures = [name for name, passed in invariants.items() if not passed]
           for name, passed in invariants.items():
