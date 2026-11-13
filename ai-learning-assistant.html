@@ -91,7 +91,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="memory-actions"><button id="clearLearningMemory" type="button">Clear memory</button><div><button class="primary" id="saveLearningMemory" type="button">Save memory</button></div></div>
    </section>
    <div class="messages" id="messages" role="log" aria-live="polite">
-    <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, explore the DCDS catalogue and find the right support route. What would you like to work on today?</div></div></div>
+    <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, search approved DCDS information, find lessons in your enrolled courses and explore general topics beyond the prepared knowledge files. What would you like to work on today?</div></div></div>
    </div>
    <div class="typing" id="typing" hidden>DCDS AI is thinking…</div>
    <section class="captcha-panel" id="visitorCaptcha" hidden aria-live="polite">
@@ -112,12 +112,12 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   <aside class="side-column">
    <section class="side-card">
     <h2>How I can help</h2>
-    <ul><li>Explain digital skills step by step.</li><li>Teach with examples and practice tasks.</li><li>Answer questions about DCDS courses and prices.</li><li>Help you plan projects and improve your work.</li><li>Guide you to official DCDS support when needed.</li></ul>
+    <ul><li>Explain digital skills step by step, even when a topic is not in the prepared brain.</li><li>Search current DCDS courses, published announcements and approved reviews.</li><li>Find lesson and material titles available in your own enrolled courses.</li><li>Use grounded online sources for general, freshness-sensitive questions when requested.</li><li>Use your private saved conversations and optional learning memory to support continuity.</li><li>Guide you to official DCDS support when a question requires private account or administrator access.</li></ul>
    </section>
    <section class="side-card">
     <h2>One shared assistant</h2>
     <p>The student dashboard and authenticated DCDS surfaces open the same protected DCDS AI service. The server verifies the signed-in account and administrator role; the browser cannot select its own role.</p>
-    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Only verified DCDS students and authorised administrators can use this release. Do not enter passwords, OTPs, card details, bank information or sensitive personal information. Messages and limited conversation context are processed by Google Gemini to generate replies. Gemini free-tier content may be used by Google to improve its products.</div>
+    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Your chats are not automatically shared with other students or promoted into the official DCDS brain. Only verified DCDS students and authorised administrators can use this release. Do not enter passwords, OTPs, card details, bank information or sensitive personal information. Messages and limited conversation context are processed by Google Gemini to generate replies. Gemini free-tier content may be used by Google to improve its products.</div>
    </section>
    <section class="side-card">
     <h2>Need human support?</h2>
@@ -156,7 +156,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let activeConversationId=null;
  let turnstileWidgetId=null;
 
- const welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, explore the DCDS catalogue and find the right support route. What would you like to work on today?";
+ const welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS learning companion. I can teach general topics, search approved DCDS courses and announcements, find lessons and materials available in your enrolled courses, and use your private saved learning context. What would you like to explore today?";
 
  function setStatus(message,isError=false){
   statusEl.textContent=message;

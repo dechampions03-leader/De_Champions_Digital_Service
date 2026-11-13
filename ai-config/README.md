@@ -24,14 +24,12 @@ The public DCDS AI Learning Assistant is released for verified student accounts 
 - Never expose API keys, service-role credentials, encryption keys or private student records in public files.
 - Do not present proposed learning themes as guaranteed course inclusions.
 
-## Before launch
+## Current platform retrieval boundary
 
-1. Choose and configure an AI provider on a server-side endpoint.
-2. Keep provider secrets in server-side secret storage only.
-3. Authenticate users and enforce least-privilege access.
-4. Connect only the approved, necessary knowledge sources.
-5. Run the evaluation suite and record actual results.
-6. Test failure states, privacy boundaries, usage limits and cost controls.
-7. Obtain approval before enabling live student conversations.
+The Super Intelligence candidate retrieves public course catalogue entries, published and unexpired announcements, approved public reviews, and lesson/material titles only for courses in the authenticated student's own enrolments. It uses the signed-in user's Supabase client so existing row-level security remains authoritative. It does not query payment, payout, order, referral, grade, progress, profile, quiz-answer or private support records.
+
+General learning questions should still receive useful general educational answers even when the subject is absent from the DCDS knowledge files. External web grounding is reserved for public, freshness-sensitive questions and must provide source links. Student chats and optional learning memory remain private; raw conversation content must never be auto-published into the shared DCDS brain.
+
+Candidate-branch implementation is not Production until validation, review and deployment are complete.
 
 **DCDS principle:** CREATE • LEARN • INNOVATE • EARN.
