@@ -4,6 +4,19 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#ffffff">
+<script id="dcds-preview-install-prompt-guard">
+(()=> {
+  try {
+    const host = location.hostname.toLowerCase();
+    const previewHost = host.endsWith(".pages.dev");
+    const alreadyInstalled = window.matchMedia("(display-mode: standalone)").matches
+      || window.navigator.standalone === true;
+    if (previewHost || alreadyInstalled) {
+      window.addEventListener("beforeinstallprompt", event => event.preventDefault());
+    }
+  } catch (_) {}
+})();
+</script>
 <link rel="manifest" href="./manifest-v4.webmanifest">
 <link rel="icon" href="./assets/dcds-splash-icon-v4-192.png" type="image/png" sizes="192x192">
 <link rel="apple-touch-icon" href="./assets/dcds-splash-icon-v4-192.png">

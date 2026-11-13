@@ -9,7 +9,19 @@
 - Root cause of the Preview message "AI access eligibility could not be checked": the candidate website pages were still configured to use the Production Supabase URL and publishable key, while the four new eligibility/memory/usage migrations exist only in the existing DCDS-Development Free project.
 - Updated the candidate branch's website/auth pages to use the DCDS-Development project URL and its publishable key. This includes the login entry page, AI assistant, student dashboard, and related account/admin pages. Production branch files and Production Supabase were not changed.
 - These commits should trigger a fresh Cloudflare Preview deployment. Verify the deployed preview commit before testing. The Development project has its own authentication users: use a dedicated, confirmed test-student account created in DCDS-Development; do not use a real customer account or assume a Production login is valid in Development.
-- Important security follow-up: the currently inspected Development Edge Function version 10 does not yet contain a server-side lookup of `dcds_ai_access_eligibility`. The browser UI currently performs that lookup, but this alone is not an adequate authorization boundary. Add and test server-side eligibility enforcement in the candidate Edge Function before any Production release. Keep Production unchanged until that is complete.
+- Development Edge Function version 11 now performs the server-side eligibility lookup described above. Production remains unchanged; the separate candidate OpenAI function is still draft/unmerged.
+
+
+## Development access and PWA hardening — 13 November 2026
+
+- Removed the duplicated AI eligibility panel from `ai-learning-assistant.html`; repeated DOM IDs are now unique.
+- Added a preview-only `beforeinstallprompt` guard to every DCDS page that links the PWA manifest (`index.html`, `student-dashboard.html`, `delete-account.html`, and `privacy-policy.html`). It suppresses browser installation promotion on `*.pages.dev` preview hosts while retaining normal first-time installation on the real DCDS website.
+- Added an AI Access Review link to the existing authenticated Admin Centre. The destination page still checks `is_dcds_admin()` and uses the existing eligibility-table RLS policies; it is marked `noindex,nofollow`.
+- Updated the existing Development Gemini-backed `dcds-ai-chat` Edge Function to reject anonymous/unverified accounts and enforce `dcds_ai_access_eligibility` on the server before quota consumption, history/memory reads or provider requests. Pending, rejected, missing and blocked records do not reach Gemini. Failed eligibility/guardian lookups fail closed with HTTP 503; unapproved records return HTTP 403.
+- Adult AI access requires `18_plus`, `access_status=approved` and `guardian_consent_status=not_required`. Teen access remains default-off behind `DCDS_AI_TEENS_ENABLED`; under-13 remains default-off behind the separate ZDR gate.
+- The exact Development runtime source is mirrored at `supabase/functions/dcds-ai-chat-development/index.ts` and is deployed only to the existing DCDS-Development Free project as function slug `dcds-ai-chat` with JWT verification enabled. This keeps the current Gemini path; no OpenAI API key, new project, paid Supabase branch or Production deployment is used.
+- The separate OpenAI-based candidate source in `supabase/functions/dcds-ai-chat/index.ts` remains an unmerged draft and is not deployed. Do not merge/deploy it without a funded API project and separate provider, privacy and safeguarding approval.
+- The current Development test account has an `18_plus / pending` eligibility record. It has deliberately not been auto-approved. An authorised administrator must independently complete DCDS age assurance and record a non-sensitive note in Admin Centre → AI Access Review before adult AI access is granted.
 
 
 - DCDS has declined a billable Supabase development branch. **Do not create a Supabase subscription branch or another paid project.**

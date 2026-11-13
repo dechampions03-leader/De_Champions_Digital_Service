@@ -6,11 +6,15 @@ on:
       - main
     paths:
       - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/functions/dcds-ai-chat-development/**"
       - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
       - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
       - "ai-learning-assistant.html"
+      - "admin-notifications.html"
+      - "delete-account.html"
+      - "student-dashboard.html"
       - "index.html"
       - "dcds-ai-access-review.html"
       - "admin-account-deletions.html"
@@ -25,11 +29,15 @@ on:
       - feature/dcds-ai-private-learning-memory
     paths:
       - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/functions/dcds-ai-chat-development/**"
       - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
       - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
       - "ai-learning-assistant.html"
+      - "admin-notifications.html"
+      - "delete-account.html"
+      - "student-dashboard.html"
       - "index.html"
       - "dcds-ai-access-review.html"
       - "admin-account-deletions.html"
@@ -59,6 +67,8 @@ jobs:
 
       - name: Type-check DCDS AI Edge Function
         run: deno check supabase/functions/dcds-ai-chat/index.ts
+      - name: Type-check Development Gemini Edge Function
+        run: deno check supabase/functions/dcds-ai-chat-development/index.ts
 
       - name: Validate DCDS AI page JavaScript syntax
         shell: bash
@@ -91,6 +101,10 @@ jobs:
           function = function_path.read_text(encoding="utf-8")
           page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
           admin_page = Path("dcds-ai-access-review.html").read_text(encoding="utf-8")
+          dev_function = Path("supabase/functions/dcds-ai-chat-development/index.ts").read_text(encoding="utf-8")
+          admin_centre = Path("admin-notifications.html").read_text(encoding="utf-8")
+          pwa_pages = ("index.html", "student-dashboard.html", "delete-account.html", "privacy-policy.html")
+          pwa_html = {name: Path(name).read_text(encoding="utf-8") for name in pwa_pages}
           eligibility_policy = Path("supabase/migrations/20261113133000_dcds_ai_eligibility_review_policy_scope.sql").read_text(encoding="utf-8")
           master = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
           knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
@@ -238,6 +252,31 @@ jobs:
                   "OpenAI API (DCDS Responses and safety services)" in Path("privacy-policy.html").read_text(encoding="utf-8")
                   and "Google Gemini" not in Path("privacy-policy.html").read_text(encoding="utf-8")
                   and "Zero Data Retention" in Path("privacy-policy.html").read_text(encoding="utf-8"),
+              "Development Gemini runtime rejects anonymous and unverified callers":
+                  "if (anonymous || !verifiedContact)" in dev_function
+                  and "DCDS_VERIFIED_ACCOUNT_REQUIRED" in dev_function,
+              "Development Gemini runtime enforces age eligibility before quota and provider":
+                  'from("dcds_ai_access_eligibility")' in dev_function
+                  and dev_function.index('from("dcds_ai_access_eligibility")') < dev_function.index('rpc("dcds_consume_ai_request"')
+                  and dev_function.index('from("dcds_ai_access_eligibility")') < dev_function.index("generativelanguage.googleapis.com"),
+              "Development Gemini adult access requires an approved adult record":
+                  'aiEligibility?.age_band === "18_plus"' in dev_function
+                  and 'aiEligibility.access_status === "approved"' in dev_function
+                  and 'aiEligibility.guardian_consent_status === "not_required"' in dev_function,
+              "Development Gemini youth access remains gated by default-off flags":
+                  'Deno.env.get("DCDS_AI_TEENS_ENABLED") === "true"' in dev_function
+                  and 'Deno.env.get("DCDS_AI_UNDER_13_ZDR_ENABLED") === "true"' in dev_function,
+              "missing Gemini secret is checked before quota":
+                  dev_function.index("if (!geminiApiKey)") < dev_function.index('rpc("dcds_consume_ai_request"'),
+              "Development preview runtime stays Gemini-backed, without OpenAI billing":
+                  "GEMINI_API_KEY" in dev_function and "OPENAI_API_KEY" not in dev_function,
+              "AI assistant page has one eligibility panel and unique IDs":
+                  page.count('id="aiEligibilityPanel"') == 1
+                  and len(re.findall(r'\bid="([^"]+)"', page)) == len(set(re.findall(r'\bid="([^"]+)"', page))),
+              "preview install prompt is suppressed on all manifest-enabled pages":
+                  all('rel="manifest"' not in pwa_html[name] or "dcds-preview-install-prompt-guard" in pwa_html[name] for name in pwa_pages),
+              "Admin Centre links to the admin-only AI access review":
+                  'href="dcds-ai-access-review.html"' in admin_centre and "is_dcds_admin" in admin_page,
               "shared DCDS facts require official source confirmation":
                   "If a DCDS-specific fact cannot be confirmed" in master,
           }
