@@ -8,6 +8,9 @@ on:
       - "index.html"
       - "ai-learning-assistant.html"
       - "ai-config/captcha-public-config.js"
+      - "supabase/functions/dcds-ai-chat/**"
+      - "ai-learning-assistant.html"
+      - "ai-config/captcha-public-config.js"
       - "student-dashboard.html"
       - "student-management.html"
       - "learn.html"
@@ -22,6 +25,9 @@ on:
       - main
     paths:
       - "index.html"
+      - "ai-learning-assistant.html"
+      - "ai-config/captcha-public-config.js"
+      - "supabase/functions/dcds-ai-chat/**"
       - "student-dashboard.html"
       - "student-management.html"
       - "learn.html"
