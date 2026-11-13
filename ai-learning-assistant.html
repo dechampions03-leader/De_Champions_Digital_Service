@@ -403,8 +403,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    channel.addEventListener('close',()=>{clearTimeout(timer);reject(new Error('The natural voice connection closed before playback started.'));},{once:true});
   });
  }
- async function speakText(text,button){
-  const spoken=String(text||'').replace(/\\s+/g,' ').trim();
+ async async function speakText(text,button){
+  const spoken=String(text||'').replace(/\s+/g,' ').trim();
   if(!spoken)return;
   if(activeSpeechButton===button){
    stopOpenAiSpeech();
@@ -516,7 +516,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
      input:[{
       type:'message',
       role:'user',
-      content:[{type:'input_text',text:'Speak the following DCDS AI answer exactly as written, preserving all course names, numbers and prices:\\n\\n'+spoken}]
+      content:[{type:'input_text',text:'Speak the following DCDS AI answer exactly as written, preserving all course names, numbers and prices:\n\n'+spoken}]
      }]
     }
    }));
