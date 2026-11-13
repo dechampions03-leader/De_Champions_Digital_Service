@@ -62,7 +62,7 @@ jobs:
           import subprocess
           import tempfile
 
-          files = ["index.html", "ai-learning-assistant.html", "student-dashboard.html", "student-management.html", "learn.html", "general-course.html"]
+          files = ["index.html", "ai-learning-assistant.html", "dev-preview/ai-learning-assistant.html", "student-dashboard.html", "student-management.html", "learn.html", "general-course.html"]
           checked = 0
           with tempfile.TemporaryDirectory() as tmp:
               for html_file in files:
@@ -102,6 +102,8 @@ jobs:
           phone_signup_function = Path("supabase/functions/dcds-create-account/index.ts").read_text(encoding="utf-8")
           ai_page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
           captcha_config = Path("ai-config/captcha-public-config.js").read_text(encoding="utf-8")
+          dev_preview_ai_page = Path("dev-preview/ai-learning-assistant.html").read_text(encoding="utf-8")
+          dev_preview_config = Path("dev-preview/ai-config/captcha-public-config.js").read_text(encoding="utf-8")
 
           required_page = [
               "grid-template-columns:repeat(6,minmax(0,1fr))",
@@ -144,8 +146,14 @@ jobs:
           for item in required_ai:
               if item not in ai_page:
                   raise SystemExit(f"ai-learning-assistant.html missing visitor protection behavior: {item}")
-          if 'siteKey: ""' not in captcha_config or "authProtectionEnabled: false" not in captcha_config:
-              raise SystemExit("Public CAPTCHA config must remain safely disabled until both keys are configured.")
+          if 'provider: "turnstile"' not in captcha_config or 'siteKey: ""' in captcha_config or "authProtectionEnabled: false" not in captcha_config:
+              raise SystemExit("Shared homepage CAPTCHA config must contain the public Turnstile key but remain disabled while its browser client targets Production.")
+          if 'provider: "turnstile"' not in dev_preview_config or 'siteKey: ""' in dev_preview_config or "authProtectionEnabled: true" not in dev_preview_config:
+              raise SystemExit("Isolated Development preview must use a configured Turnstile public key with CAPTCHA enabled.")
+          if "https://tjgsxbmkpvktlqulbktv.supabase.co" not in dev_preview_ai_page or "qxsenflgaweeadvggnyp" in dev_preview_ai_page:
+              raise SystemExit("Development preview AI page must target DCDS-Development only.")
+          if "GEMINI_API_KEY" in dev_preview_ai_page or "DCDS_TURNSTILE_SECRET_KEY" in dev_preview_ai_page:
+              raise SystemExit("Development preview browser source must not contain server-side secrets.")
           if "GEMINI_API_KEY" in ai_page or "GEMINI_API_KEY" in page:
               raise SystemExit("Gemini API key must never appear in browser source.")
           if "dcds_phone_e164" not in signup_migration:
