@@ -125,9 +125,10 @@ jobs:
                   "ask them to attach it again" in function,
               "voice dictation remains available through browser speech recognition":
                   "SpeechRecognition" in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
-              "spoken replies use OpenAI Realtime rather than browser text-to-speech":
-                  "dcds-ai-speech-session" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
-                  and "speechSynthesis" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
+              "spoken replies use free browser/device speech rather than a paid speech API":
+                  "Listen · free voice" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "speechSynthesis" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "dcds-ai-speech-session" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
               "OpenAI voice sessions use server-mediated WebRTC SDP exchange":
                   "https://api.openai.com/v1/realtime/calls" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
                   and "FormData()" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
