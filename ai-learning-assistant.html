@@ -87,7 +87,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="panel-heading"><span>Your learning memory</span></div>
     <label for="learningMemoryInput">What should DCDS AI remember when you start a fresh chat?</label>
     <textarea id="learningMemoryInput" maxlength="1200" rows="3" placeholder="For example: I am a beginner in graphic design, I use an Android phone, and I prefer step-by-step explanations with practical exercises."></textarea>
-    <small class="memory-help">This note is optional, editable and used to personalise new student chats. Do not save passwords, OTPs, payment details or private account information. Maximum 1,200 characters.</small>
+    <label class="memory-auto-option"><input id="autoLearningEnabled" type="checkbox"> <span><strong>Let DCDS AI learn my learning preferences</strong><small>When enabled, it may save clear preferences you explicitly state, such as your skill level, learning style, current topic or device. It will not store every message. This is private to your account and can be switched off or cleared at any time.</small></span></label>
+    <small class="memory-help">Your note is optional, editable and used to personalise new student chats. Never save passwords, OTPs, payment details, health details or private account information. Maximum 1,200 characters.</small>
     <div class="memory-actions"><button id="clearLearningMemory" type="button">Clear memory</button><div><button class="primary" id="saveLearningMemory" type="button">Save memory</button></div></div>
    </section>
    <div class="messages" id="messages" role="log" aria-live="polite">
@@ -327,7 +328,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   if(!isPersistentStudent)return;
   const {data,error}=await client
    .from('dcds_ai_student_memory')
-   .select('learning_context')
+   .select('learning_context,auto_learning_enabled')
    .eq('user_id',currentUser.id)
    .maybeSingle();
   if(error){
@@ -336,6 +337,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    return;
   }
   memoryInput.value=data?.learning_context||'';
+  autoLearningToggle.checked=data?.auto_learning_enabled===true;
  }
  async function saveLearningMemory(){
   if(!isPersistentStudent)return;
@@ -345,24 +347,28 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    return;
   }
   if(!value){
-   const {error}=await client.from('dcds_ai_student_memory').delete().eq('user_id',currentUser.id);
-   if(error){setStatus('Your learning memory could not be cleared.',true);return;}
-   setStatus('Your saved learning memory is now empty.');
+   const {error}=await client.from('dcds_ai_student_memory').upsert(
+    {user_id:currentUser.id,learning_context:'',auto_learning_enabled:autoLearningToggle.checked},
+    {onConflict:'user_id'}
+   );
+   if(error){setStatus('Your learning-memory settings could not be saved.',true);return;}
+   setStatus(autoLearningToggle.checked?'Automatic learning is enabled. DCDS AI will save only clear, low-risk learning preferences you explicitly state.':'Your learning memory is empty and automatic learning is off.');
    return;
   }
   const {error}=await client.from('dcds_ai_student_memory').upsert(
-   {user_id:currentUser.id,learning_context:value},
+   {user_id:currentUser.id,learning_context:value,auto_learning_enabled:autoLearningToggle.checked},
    {onConflict:'user_id'}
   );
   if(error){setStatus('Your learning memory could not be saved. Please try again.',true);return;}
-  setStatus('Learning memory saved. New chats can use this context.');
+  setStatus(autoLearningToggle.checked?'Learning memory saved. Automatic preference learning is enabled.':'Learning memory saved. Automatic preference learning is off.');
  }
  async function clearLearningMemory(){
   if(!isPersistentStudent||!window.confirm('Clear your saved learning-memory note? Conversation history will remain.'))return;
   const {error}=await client.from('dcds_ai_student_memory').delete().eq('user_id',currentUser.id);
   if(error){setStatus('Your learning memory could not be cleared.',true);return;}
   memoryInput.value='';
-  setStatus('Your saved learning-memory note has been cleared.');
+  autoLearningToggle.checked=false;
+  setStatus('Your saved learning-memory note has been cleared and automatic learning is off.');
  }
 
  try{
