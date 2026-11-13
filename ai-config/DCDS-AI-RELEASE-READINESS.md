@@ -18,6 +18,7 @@
 - Added a preview-only `beforeinstallprompt` guard to every DCDS page that links the PWA manifest (`index.html`, `student-dashboard.html`, `delete-account.html`, and `privacy-policy.html`). It suppresses browser installation promotion on `*.pages.dev` preview hosts while retaining normal first-time installation on the real DCDS website.
 - Added an AI Access Review link to the existing authenticated Admin Centre. The destination page still checks `is_dcds_admin()` and uses the existing eligibility-table RLS policies; it is marked `noindex,nofollow`.
 - Updated the existing Development Gemini-backed `dcds-ai-chat` Edge Function to reject anonymous/unverified accounts and enforce `dcds_ai_access_eligibility` on the server before quota consumption, history/memory reads or provider requests. Pending, rejected, missing and blocked records do not reach Gemini. Failed eligibility/guardian lookups fail closed with HTTP 503; unapproved records return HTTP 403.
+- Restricted `dcds_ai_guardian_is_approved_adult(uuid)` so a signed-in learner can only validate the guardian already linked to their own verified eligibility record; administrators can still validate guardian accounts during review. The change is recorded in Development migration `20261113135915`.
 - Adult AI access requires `18_plus`, `access_status=approved` and `guardian_consent_status=not_required`. Teen access remains default-off behind `DCDS_AI_TEENS_ENABLED`; under-13 remains default-off behind the separate ZDR gate.
 - The exact Development runtime source is mirrored at `supabase/functions/dcds-ai-chat-development/index.ts` and is deployed only to the existing DCDS-Development Free project as function slug `dcds-ai-chat` with JWT verification enabled. This keeps the current Gemini path; no OpenAI API key, new project, paid Supabase branch or Production deployment is used.
 - The separate OpenAI-based candidate source in `supabase/functions/dcds-ai-chat/index.ts` remains an unmerged draft and is not deployed. Do not merge/deploy it without a funded API project and separate provider, privacy and safeguarding approval.
@@ -78,6 +79,7 @@ Apply and verify all of these additive migrations in the target environment:
 2. `20261113120000_dcds_ai_age_guardian_eligibility.sql` — age bands, consent audit reference, RLS and approved-adult guardian check.
 3. `20261113123000_dcds_ai_daily_usage_budget.sql` — rolling minute plus daily request counts and function.
 4. `20261113133000_dcds_ai_eligibility_review_policy_scope.sql` — separates administrator UPDATE/DELETE permissions from user SELECT/initial INSERT policies.
+5. `20261113135915_restrict_ai_guardian_approval_lookup.sql` — limits guardian verification RPC lookups to the caller's own linked guardian or an authorised administrator.
 
 Do not deploy the candidate Edge Function until its schema, functions, RLS and admin review UI exist.
 

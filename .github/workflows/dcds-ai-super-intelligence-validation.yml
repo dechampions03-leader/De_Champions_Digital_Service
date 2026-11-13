@@ -11,6 +11,7 @@ on:
       - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
+      - "supabase/migrations/*restrict_ai_guardian_approval_lookup.sql"
       - "ai-learning-assistant.html"
       - "admin-notifications.html"
       - "delete-account.html"
@@ -34,6 +35,7 @@ on:
       - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
+      - "supabase/migrations/*restrict_ai_guardian_approval_lookup.sql"
       - "ai-learning-assistant.html"
       - "admin-notifications.html"
       - "delete-account.html"
@@ -107,6 +109,7 @@ jobs:
           pwa_pages = ("index.html", "student-dashboard.html", "delete-account.html", "privacy-policy.html")
           pwa_html = {name: Path(name).read_text(encoding="utf-8") for name in pwa_pages}
           eligibility_policy = Path("supabase/migrations/20261113133000_dcds_ai_eligibility_review_policy_scope.sql").read_text(encoding="utf-8")
+          guardian_security = Path("supabase/migrations/20261113135915_restrict_ai_guardian_approval_lookup.sql").read_text(encoding="utf-8")
           master = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
           knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
           evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
@@ -149,6 +152,11 @@ jobs:
           system_prompt = function[system_start:system_end]
 
           invariants = {
+              "guardian RPC is restricted to the caller's linked guardian or an administrator":
+                  "child.user_id = v_caller_id" in guardian_security
+                  and "child.guardian_user_id = p_guardian_user_id" in guardian_security
+                  and "public.is_dcds_admin()" in guardian_security
+                  and "REVOKE ALL ON FUNCTION public.dcds_ai_guardian_is_approved_adult(uuid) FROM PUBLIC, anon" in guardian_security,
               "eligibility admin policies are action-scoped, not overlapping FOR ALL":
                   "FOR UPDATE TO authenticated" in eligibility_policy
                   and "FOR DELETE TO authenticated" in eligibility_policy
