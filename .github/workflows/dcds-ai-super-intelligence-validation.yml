@@ -6,7 +6,7 @@ on:
       - main
     paths:
       - "supabase/functions/dcds-ai-chat/**"
-      - "supabase/functions/dcds-ai-speech-token/**"
+      - "supabase/functions/dcds-ai-speech-session/**"
       - "ai-learning-assistant.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
@@ -17,7 +17,7 @@ on:
       - feature/dcds-super-intelligence
     paths:
       - "supabase/functions/dcds-ai-chat/**"
-      - "supabase/functions/dcds-ai-speech-token/**"
+      - "supabase/functions/dcds-ai-speech-session/**"
       - "ai-learning-assistant.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
@@ -45,7 +45,7 @@ jobs:
       - name: Type-check DCDS AI Edge Functions
         run: |
           deno check supabase/functions/dcds-ai-chat/index.ts
-          deno check supabase/functions/dcds-ai-speech-token/index.ts
+          deno check supabase/functions/dcds-ai-speech-session/index.ts
 
       - name: Validate live retrieval, privacy boundaries and evaluation coverage
         shell: bash
@@ -128,19 +128,27 @@ jobs:
               "spoken replies use OpenAI Realtime rather than browser text-to-speech":
                   "dcds-ai-speech-token" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
                   and "speechSynthesis" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
-              "OpenAI voice sessions use short-lived client secrets":
-                  "https://api.openai.com/v1/realtime/client_secrets" in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8")
-                  and "client_secret" in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8"),
+              "OpenAI voice sessions use server-mediated WebRTC SDP exchange":
+                  "https://api.openai.com/v1/realtime/calls" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
+                  and "FormData()" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
+                  and "body: formData" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8"),
               "natural female-style DCDS voice uses the recommended Realtime model and Marin voice":
-                  "gpt-realtime-2.1-mini" in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8")
-                  and 'voice: "marin"' in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8"),
-              "OpenAI voice tokens are protected by verified-account and age access checks":
-                  "getUser()" in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8")
-                  and "is_dcds_admin" in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8")
-                  and "guardian_consent_status" in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8"),
+                  "gpt-realtime-2.1-mini" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
+                  and 'voice: "marin"' in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8"),
+              "OpenAI voice sessions are protected by verified-account and age access checks":
+                  "getUser()" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
+                  and "is_dcds_admin" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
+                  and "guardian_consent_status" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8"),
               "OpenAI voice generation is usage-limited and keeps the project key server-side":
-                  "dcds_consume_ai_request" in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8")
-                  and 'Deno.env.get("OPENAI_API_KEY")' in Path("supabase/functions/dcds-ai-speech-token/index.ts").read_text(encoding="utf-8"),
+                  "dcds_consume_ai_request" in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
+                  and 'Deno.env.get("OPENAI_API_KEY")' in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8"),
+              "The browser receives only the SDP answer, not an OpenAI credential":
+                  'return json({ success: true, sdp: answerSdp, voice: "marin" })' in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
+                  and "client_secret" not in Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8")
+                  and "data.client_secret" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
+              "The browser connects to DCDS instead of calling OpenAI directly":
+                  "dcds-ai-speech-session" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "api.openai.com" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
               "natural voice tests are present":
                   "voice-002" in Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8")
                   and "voice-003" in Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"),
