@@ -164,7 +164,8 @@ const STATIC_DOCUMENTED_MODELS = [
   "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
 ];
 const GOOGLE_SEARCH_MODELS = new Set([
-  "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
+  "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash",
+  "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
 ]);
 
 async function listAvailableGeminiModels(apiKey: string): Promise<string[] | null> {
@@ -199,7 +200,9 @@ async function listAvailableGeminiModels(apiKey: string): Promise<string[] | nul
 function wantsExternalWebSearch(message: string, role: "student" | "admin"): boolean {
   if (role !== "student") return false;
   if (/\b(password|otp|one[- ]time code|payment status|bank details|payout status|my enrolment|my enrollment|my grades|my progress|my certificate|my account)\b/i.test(message)) return false;
-  return /\b(search the web|search online|look online|on the internet|latest|current|today|right now|this week|recent news|up[- ]to[- ]date|as of 2026|in 2026)\b/i.test(message);
+  // DCDS operational facts should use live DCDS records, never generic web pages.
+  if (/\b(DCDS|course fee|course price|enrolment|enrollment|payment|referral|payout|certificate|my lesson|my course)\b/i.test(message)) return false;
+  return /\b(search the web|search online|look online|on the internet|latest news|recent news|recent developments|this week|up[- ]to[- ]date|newest version|latest version)\b/i.test(message);
 }
 
 Deno.serve(async (request: Request) => {
