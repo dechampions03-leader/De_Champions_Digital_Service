@@ -417,7 +417,17 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   setStatus('Preparing the natural DCDS AI voice…');
   try{
    const {data,error}=await client.functions.invoke('dcds-ai-speech-token',{body:{}});
-   if(error)throw error;
+   if(error){
+    let reason=error.message||'The natural voice service could not be reached.';
+    try{
+     const response=error.context;
+     if(response&&typeof response.json==='function'){
+      const payload=await response.json();
+      if(typeof payload?.error==='string')reason=payload.error;
+     }
+    }catch(_){}
+    throw new Error(reason);
+   }
    if(!data?.success||!data?.client_secret)throw new Error(data?.error||'The DCDS natural voice service is not available yet.');
 
    const peer=new RTCPeerConnection();
@@ -458,6 +468,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     if(message.type==='error'){
      const detail=message.error?.message||'The natural voice could not finish this response.';
      setStatus(detail,true);
+     stopOpenAiSpeech();
      return;
     }
     if(message.type==='response.done'){
@@ -516,9 +527,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   }catch(error){
    console.error('DCDS natural voice playback failed:',error?.message||error);
    stopOpenAiSpeech();
-   const friendly=String(error?.message||'').toLowerCase().includes('openai_api_key')
-    ?'DCDS natural voice needs the OpenAI API key configured in Production Supabase secrets.'
-    :String(error?.message||'')||'The natural voice service is temporarily unavailable. Please try again.';
+   resetSpeechButton(button);
+   const friendly=String(error?.message||'')||'The natural voice service is temporarily unavailable. Please try again.';
    setStatus(friendly,true);
   }
  }
