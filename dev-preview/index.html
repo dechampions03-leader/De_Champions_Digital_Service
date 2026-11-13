@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<meta name="theme-color" content="#35105f">
+<title>DCDS Development Preview</title>
+<style>
+:root{color-scheme:light;--purple:#7628d8;--deep:#21083f;--ink:#28183a;--muted:#70647e;--line:#e9def5}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;font-family:system-ui,-apple-system,"Segoe UI",sans-serif;color:var(--ink);background:radial-gradient(ellipse at 8% 0,#f0e4ff,transparent 36%),linear-gradient(180deg,#fbf9ff,#f4edfc);display:grid;place-items:center;padding:24px}
+main{width:min(680px,100%);background:#fff;border:1px solid var(--line);border-radius:26px;padding:clamp(24px,5vw,42px);box-shadow:0 20px 60px #4a187c15}
+.brand{font-weight:900;letter-spacing:.04em;color:#4b167e;font-size:13px}.tag{display:inline-flex;margin-top:26px;padding:7px 12px;border-radius:99px;background:#f0e4ff;color:#5b218f;font-size:11px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+h1{font-size:clamp(30px,6vw,44px);line-height:1.07;letter-spacing:-.045em;margin:15px 0 12px}
+p{color:var(--muted);line-height:1.65}.notice{margin:22px 0;padding:16px;border:1px solid #f0dca6;background:#fff9e9;border-radius:15px;color:#604b1e;font-size:14px;line-height:1.55}
+ul{padding-left:20px;color:#534663;line-height:1.8;font-size:14px}
+a.button{display:inline-flex;align-items:center;justify-content:center;margin-top:14px;padding:14px 20px;border-radius:13px;background:linear-gradient(120deg,#a34cf0,#7526ce 52%,#4c147e);color:white;text-decoration:none;font-weight:850;box-shadow:0 9px 24px #7628d82b}
+small{display:block;margin-top:22px;color:#8a8095;font-size:12px}
+</style>
+</head>
+<body>
+<main>
+<div class="brand">DE CHAMPIONS DIGITAL SERVICE</div>
+<div class="tag">Development-only test environment</div>
+<h1>Turnstile & DCDS AI verification</h1>
+<p>This isolated preview is connected to the DCDS-Development Supabase project. It is separate from the public GitHub Pages website and does not connect to Production.</p>
+<div class="notice"><strong>Testing note:</strong> Opening the AI preview may create an anonymous test session in DCDS-Development. Do not use a real customer account, password, payment information, OTP, or private student data here.</div>
+<ul>
+<li>Cloudflare Turnstile should appear when the AI visitor page loads.</li>
+<li>Completing it should allow a Development-only anonymous visitor session.</li>
+<li>You can then send one harmless test message to the DCDS AI service.</li>
+</ul>
+<a class="button" href="./ai-learning-assistant.html">Open DCDS AI visitor test →</a>
+<small>Private testing guidance: this page is marked noindex. It is not an official customer-facing DCDS website.</small>
+</main>
+</body>
+</html>
