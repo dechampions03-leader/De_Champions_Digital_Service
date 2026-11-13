@@ -123,6 +123,7 @@ jobs:
                   "sensitiveTopicPattern" in function
                   and "thirdPartyContextPattern" in function
                   and "contactOrIdentifierPattern" in function
+                  and "divorce|separation|abuse|trauma|addiction" in function
                   and "safeLearningPreferencePattern" in function,
               "substantial project lessons have sufficient response budget":
                   "maxOutputTokens: 2200" in function
