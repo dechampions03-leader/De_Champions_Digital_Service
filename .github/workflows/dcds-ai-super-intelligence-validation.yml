@@ -95,6 +95,7 @@ jobs:
         run: |
           python3 - <<'PY'
           import json
+          import re
           from pathlib import Path
 
           function_path = Path("supabase/functions/dcds-ai-chat/index.ts")
