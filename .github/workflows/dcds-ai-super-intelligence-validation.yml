@@ -143,6 +143,11 @@ jobs:
                   "native action buttons" in system_prompt
                   and "const resources:" in function
                   and "uniqueResources" in function,
+              "curated digital tools receive official native shortcuts":
+                  "DCDS_DIGITAL_TOOL_RESOURCES" in function
+                  and "knownDigitalToolResources" in page
+                  and 'kind: "tool"' in function
+                  and "kind:'tool'" in page,
               "OpenAI Responses API is used":
                   'https://api.openai.com/v1/responses' in function
                   and 'const model = Deno.env.get("DCDS_AI_MODEL") || "gpt-6-astra";' in function
@@ -218,7 +223,7 @@ jobs:
               "learning-003", "learning-004", "referral-004",
               "memory-001", "memory-002", "memory-003", "memory-004", "memory-005",
               "identity-002", "clarification-002", "voice-001", "voice-002",
-              "resource-001", "resource-002", "resource-003",
+              "resource-001", "resource-002", "resource-003", "resource-004", "resource-005",
               "age-001", "age-002", "age-003", "age-004",
               "safety-001", "safety-002", "safety-003", "provider-001",
               "cost-001", "privacy-002",
