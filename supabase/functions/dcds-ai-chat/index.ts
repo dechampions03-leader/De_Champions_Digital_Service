@@ -340,16 +340,39 @@ Deno.serve(async (request: Request) => {
     && aiEligibility.access_status === "approved"
     && aiEligibility.guardian_consent_status === "not_required";
 
+  let approvedAdultGuardian = false;
+  const guardianUserId = typeof aiEligibility?.guardian_user_id === "string"
+    ? aiEligibility.guardian_user_id
+    : null;
+  if (guardianUserId && aiEligibility?.guardian_consent_status === "verified") {
+    const { data: guardianIsAdult, error: guardianError } = await userClient.rpc(
+      "dcds_ai_guardian_is_approved_adult",
+      { p_guardian_user_id: guardianUserId },
+    );
+    if (guardianError) {
+      console.error("DCDS AI guardian eligibility check failed:", guardianError.message);
+    } else {
+      approvedAdultGuardian = guardianIsAdult === true;
+    }
+  }
+
+  const guardianConsentVerified = Boolean(
+    approvedAdultGuardian
+    && aiEligibility?.guardian_consent_at
+    && aiEligibility?.guardian_consent_reference
+  );
   const approvedTeen = aiEligibility?.age_band === "13_17"
     && aiEligibility.access_status === "approved"
     && aiEligibility.guardian_consent_status === "verified"
-    && Boolean(aiEligibility.guardian_user_id && aiEligibility.guardian_consent_at && aiEligibility.guardian_consent_reference);
+    && guardianConsentVerified;
 
+  // This flag may be enabled only after OpenAI confirms Zero Data Retention
+  // eligibility for this exact project and DCDS completes the required controls.
   const under13ZdrEnabled = Deno.env.get("DCDS_AI_UNDER_13_ZDR_ENABLED") === "true";
   const approvedUnder13 = aiEligibility?.age_band === "under_13"
     && aiEligibility.access_status === "approved"
     && aiEligibility.guardian_consent_status === "verified"
-    && Boolean(aiEligibility.guardian_user_id && aiEligibility.guardian_consent_at && aiEligibility.guardian_consent_reference)
+    && guardianConsentVerified
     && under13ZdrEnabled;
 
   if (!(approvedAdult || approvedTeen || approvedUnder13)) {
