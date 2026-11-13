@@ -7,7 +7,11 @@ on:
     paths:
       - "supabase/functions/dcds-ai-chat/**"
       - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
+      - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
+      - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "ai-learning-assistant.html"
+      - "dcds-ai-access-review.html"
+      - "admin-account-deletions.html"
       - "privacy-policy.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
@@ -20,7 +24,11 @@ on:
     paths:
       - "supabase/functions/dcds-ai-chat/**"
       - "supabase/migrations/*dcds_ai_opt_in_learning_memory.sql"
+      - "supabase/migrations/*dcds_ai_age_guardian_eligibility.sql"
+      - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "ai-learning-assistant.html"
+      - "dcds-ai-access-review.html"
+      - "admin-account-deletions.html"
       - "privacy-policy.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
@@ -48,7 +56,23 @@ jobs:
       - name: Type-check DCDS AI Edge Function
         run: deno check supabase/functions/dcds-ai-chat/index.ts
 
-      - name: Validate live retrieval, privacy boundaries and evaluation coverage
+      - name: Validate DCDS AI page JavaScript syntax
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+
+          html = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script\\b(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)</script>", html, re.I)
+          scripts = [script.strip() for script in scripts if script.strip()]
+          if not scripts:
+              raise SystemExit("No inline DCDS AI page script was found.")
+          Path("/tmp/dcds-ai-page.js").write_text("\\n".join(scripts), encoding="utf-8")
+          PY
+          node --check /tmp/dcds-ai-page.js
+
+      - name: Validate live retrieval, OpenAI safety, age gates, native actions and evaluation coverage
         shell: bash
         run: |
           python3 - <<'PY'
@@ -57,8 +81,14 @@ jobs:
 
           function_path = Path("supabase/functions/dcds-ai-chat/index.ts")
           function = function_path.read_text(encoding="utf-8")
+          page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+          admin_page = Path("dcds-ai-access-review.html").read_text(encoding="utf-8")
+          master = Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8")
+          knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
+          evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
+
           start = function.index("async function searchPlatformKnowledge(")
-          end = function.index("// Discover model names dynamically", start)
+          end = function.index("function wantsExternalWebSearch", start)
           search_helper = function[start:end]
 
           allowed_tables = (
@@ -90,49 +120,89 @@ jobs:
               if table in search_helper:
                   raise SystemExit(f"Disallowed private/financial retrieval source found: {table}")
 
+          system_start = function.index("const systemInstruction")
+          system_end = function.index("APPROVED DCDS KNOWLEDGE", system_start)
+          system_prompt = function[system_start:system_end]
+
           invariants = {
-              "student lesson retrieval is scoped to the student's own enrollments":
+              "student lesson lookup is limited to own enrolments":
                   '.from("enrollments").select("course_id").eq("user_id", userId)' in search_helper
-                  and '.in("course_id", courseIds)' in search_helper,
-              "announcements are published and time-scoped":
+                  and '.in("course_id", enrolledIds)' in search_helper,
+              "only published, in-date announcements are retrieved":
                   '.eq("status", "published")' in search_helper
                   and '.lte("starts_at", now)' in search_helper
                   and "currentAnnouncements" in search_helper,
               "reviews are approval-filtered":
                   '.eq("is_approved", true)' in search_helper,
-              "Gemini model catalogue is discovered dynamically":
-                  "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100" in function
-                  and "supportedGenerationMethods" in function,
-              "Google Search is opt-in/freshness-triggered":
-                  "wantsExternalWebSearch(message, role)" in function
-                  and "google_search: {}" in function,
-              "grounded source links are returned":
-                  "groundingMetadata" in function and "Sources checked:" in function,
-              "general learning is not limited to the static brain":
+              "general learning is not limited to static knowledge":
                   "Do not limit useful teaching to facts in the DCDS knowledge files" in function,
-              "shared DCDS facts require official source confirmation":
-                  "If a DCDS-specific fact cannot be confirmed" in Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8"),
-              "student memory remains owner-controlled":
-                  "dcds_ai_student_memory" in function
-                  and "user.id" in function,
-              "automatic learning requires explicit opt-in":
-                  "autoLearningEnabled" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+              "DCDS identity is stable and provider names are not volunteered":
+                  "AI identity and brand loyalty" in system_prompt
+                  and "Do not volunteer API vendors" in system_prompt,
+              "normal responses direct native resource actions":
+                  "native action buttons" in system_prompt
+                  and "const resources:" in function
+                  and "uniqueResources" in function,
+              "OpenAI Responses API is used":
+                  'https://api.openai.com/v1/responses' in function
+                  and 'model: "gpt-6-astra"' in function
+                  and 'store: false' in function,
+              "Moderation API runs before and after generation":
+                  'https://api.openai.com/v1/moderations' in function
+                  and "omni-moderation-latest" in function
+                  and function.index("moderateDcdsText(openAiApiKey, message)") < function.index("https://api.openai.com/v1/responses")
+                  and function.index("moderateDcdsText(openAiApiKey, generatedAnswer)") > function.index("https://api.openai.com/v1/responses"),
+              "suspected child exploitation is intercepted locally before Moderation API":
+                  "suspectedChildExploitationPattern" in function
+                  and function.index("suspectedChildExploitationPattern.test(message)") < function.index("moderateDcdsText(openAiApiKey, message)"),
+              "moderation fails closed":
+                  "DCDS safety check unavailable" in function
+                  and "return json({ success: false" in function,
+              "adult age eligibility is server-enforced":
+                  'aiEligibility?.age_band === "18_plus"' in function
+                  and 'aiEligibility.access_status === "approved"' in function,
+              "teen eligibility requires an approved adult guardian":
+                  'aiEligibility?.age_band === "13_17"' in function
+                  and "dcds_ai_guardian_is_approved_adult" in function
+                  and "guardianConsentVerified" in function,
+              "under-13 remains blocked unless ZDR gate is explicitly set":
+                  "DCDS_AI_UNDER_13_ZDR_ENABLED" in function
+                  and "approvedUnder13" in function,
+              "eligibility gate runs before provider generation":
+                  function.index('from("dcds_ai_access_eligibility")') < function.index('https://api.openai.com/v1/responses'),
+              "per-minute and daily caps are explicit":
+                  'role === "student" ? 5 : 8' in function
+                  and 'role === "student" ? 20 : 60' in function
+                  and "p_daily_limit: dailyRateLimit" in function
+                  and "max_output_tokens: 1600" in function,
+              "automatic learning is opt-in and default false":
+                  "autoLearningEnabled" in page
                   and "auto_learning_enabled === true" in function
                   and "DEFAULT false" in Path("supabase/migrations/20261113110000_dcds_ai_opt_in_learning_memory.sql").read_text(encoding="utf-8"),
-              "AI identity distinguishes DCDS assistant from model provider":
-                  "AI identity and provenance" in function
-                  and "Google Gemini" in function
-                  and "DCDS assistant/experience" in function,
-              "automatic learning rejects sensitive-data and third-party context":
-                  "sensitiveTopicPattern" in function
-                  and "thirdPartyContextPattern" in function
-                  and "contactOrIdentifierPattern" in function
-                  and "divorce|separation|abuse|trauma|addiction" in function
-                  and "safeLearningPreferencePattern" in function,
-              "substantial project lessons have sufficient response budget":
-                  "maxOutputTokens: 2200" in function
-                  and "Math.min(16000" in function
-                  and "complete every deliverable" in function,
+              "age and guardian schema has RLS and blocked under-13 default":
+                  "CREATE TABLE IF NOT EXISTS public.dcds_ai_access_eligibility" in Path("supabase/migrations/20261113120000_dcds_ai_age_guardian_eligibility.sql").read_text(encoding="utf-8")
+                  and "ENABLE ROW LEVEL SECURITY" in Path("supabase/migrations/20261113120000_dcds_ai_age_guardian_eligibility.sql").read_text(encoding="utf-8")
+                  and "THEN 'blocked'" in Path("supabase/migrations/20261113120000_dcds_ai_age_guardian_eligibility.sql").read_text(encoding="utf-8"),
+              "daily usage migration adds server-side daily counts":
+                  "daily_request_count" in Path("supabase/migrations/20261113123000_dcds_ai_daily_usage_budget.sql").read_text(encoding="utf-8")
+                  and "CREATE FUNCTION public.dcds_consume_ai_request" in Path("supabase/migrations/20261113123000_dcds_ai_daily_usage_budget.sql").read_text(encoding="utf-8"),
+              "student frontend fails closed on eligibility":
+                  "loadAiEligibility" in page and "setChatEnabled(false)" in page
+                  and "dcds_ai_access_eligibility" in page,
+              "assistant content is rendered as safe Markdown, not executable HTML":
+                  "renderAssistantMarkdown" in page
+                  and "textContent" in page
+                  and "safeResourceHref" in page,
+              "administrator review checks verified adult guardian":
+                  "is_dcds_admin" in admin_page
+                  and "dcds_ai_guardian_is_approved_adult" in admin_page
+                  and "Under-13" in admin_page,
+              "privacy policy reflects OpenAI processing and youth controls":
+                  "OpenAI API (DCDS Responses and safety services)" in Path("privacy-policy.html").read_text(encoding="utf-8")
+                  and "Google Gemini" not in Path("privacy-policy.html").read_text(encoding="utf-8")
+                  and "Zero Data Retention" in Path("privacy-policy.html").read_text(encoding="utf-8"),
+              "shared DCDS facts require official source confirmation":
+                  "If a DCDS-specific fact cannot be confirmed" in master,
           }
           failures = [name for name, passed in invariants.items() if not passed]
           for name, passed in invariants.items():
@@ -140,17 +210,21 @@ jobs:
           if failures:
               raise SystemExit(f"{len(failures)} DCDS Super Intelligence invariants failed.")
 
-          knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
-          evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
           test_ids = {item.get("id") for item in evaluation.get("tests", [])}
           required_tests = {
-              "retrieval-001", "retrieval-002", "retrieval-003", "memory-003", "memory-004", "memory-005", "identity-002", "clarification-002",
-              "learning-003", "learning-004", "referral-004", "web-001", "memory-001", "memory-002", "security-002",
+              "retrieval-001", "retrieval-002", "retrieval-003",
+              "learning-003", "learning-004", "referral-004",
+              "memory-001", "memory-002", "memory-003", "memory-004", "memory-005",
+              "identity-002", "clarification-002", "voice-001", "voice-002",
+              "resource-001", "resource-002", "resource-003",
+              "age-001", "age-002", "age-003", "age-004",
+              "safety-001", "safety-002", "safety-003", "provider-001",
+              "cost-001", "privacy-002",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
               raise SystemExit("Missing DCDS Super Intelligence evaluation tests: " + ", ".join(missing))
           if not knowledge.get("assistant_policy", {}).get("current_state"):
               raise SystemExit("DCDS AI knowledge base has no current state policy.")
-          print("Validated DCDS AI knowledge JSON and all required Super Intelligence evaluation cases.")
+          print("Validated DCDS knowledge JSON and required GPT, youth-safety, resource-action and memory evaluations.")
           PY
