@@ -105,6 +105,13 @@ Deno.serve(async (request: Request) => {
     }
   }
 
+  if (!openAiApiKey) {
+    return json({
+      success: false,
+      error: "DCDS natural AI voice is not configured yet. The administrator must add OPENAI_API_KEY to the Production Supabase Edge Function secrets.",
+    }, 503);
+  }
+
   const rateLimit = isAuthorisedAdmin ? 15 : 10;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
@@ -115,13 +122,6 @@ Deno.serve(async (request: Request) => {
   }
   if (allowed !== true) {
     return json({ success: false, error: "DCDS AI voice has reached the current usage limit. Please wait before listening again." }, 429);
-  }
-
-  if (!openAiApiKey) {
-    return json({
-      success: false,
-      error: "DCDS natural AI voice is not configured yet. The administrator must add OPENAI_API_KEY to the Production Supabase Edge Function secrets.",
-    }, 503);
   }
 
   const safetyDigest = await crypto.subtle.digest(
