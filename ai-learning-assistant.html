@@ -472,7 +472,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    }catch(_){}
    const friendly=serverMessage||(
     messageText.includes('ai_not_configured')||messageText.includes('provider key')
-     ?'The shared AI service is built, but its provider API key has not yet been added to secure Supabase secrets. No key should be entered on this page.'
+     ?'The DCDS AI could not connect to its secure model provider. Please try again shortly or contact DCDS support. Never enter an API key on this page.'
      :messageText.includes('429')||messageText.includes('rate')
       ?'DCDS AI has reached a request limit. Please wait before trying again.'
       :'The AI service is temporarily unavailable. Please try again shortly.'

@@ -14,7 +14,7 @@ This folder contains the public-safe design and knowledge documents for the futu
 
 ## Important status
 
-The public AI page remains a Coming Soon preview. These files prepare the assistant's knowledge and behaviour; they do not connect a model, API, database tool or live chat service.
+The public DCDS AI Learning Assistant is released for verified student accounts and authorised administrators. The Production `dcds-ai-chat` Edge Function verifies sessions server-side, calls the secure Gemini provider, applies per-user request limits, and saves verified-student conversations and optional learning-memory notes under owner-scoped RLS. Anonymous/unverified sessions are blocked; visitor access is not enabled.
 
 ## Source-of-truth rules
 

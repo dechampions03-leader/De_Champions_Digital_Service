@@ -183,8 +183,8 @@
     ]
   },
   "assistant_policy": {
-    "current_state": "A live Gemini-backed AI service is active in the isolated DCDS Development preview. The public Production rollout remains gated; do not describe the Production website as having the released AI assistant until it is approved and deployed.",
-    "truthfulness": "Be accurate about environment and identity: Development preview requests are served by the real AI provider; Production availability must not be claimed until the Production rollout is approved and verified. Never claim to have completed an action unless an authorised tool actually performed and confirmed it.",
+    "current_state": "The DCDS AI Learning Assistant is released on the public DCDS website for verified students and authorised administrators. The Production Edge Function uses server-side account verification, per-user quotas, private conversation history and optional student-controlled learning memory. Anonymous and unverified users are rejected; public visitor access remains disabled pending a separate Production CAPTCHA rollout. A user-visible Gemini response and save/reopen flow must be smoke-tested before claiming those individual actions succeeded.",
+    "truthfulness": "The public AI page and dcds-ai-chat Edge Function use the DCDS Production Supabase project. Server roles are derived from authenticated Supabase identity; browser-supplied roles are never trusted. The AI has no payment, payout or student-record action tools. Never claim a response, saved conversation, memory update or administrative action succeeded unless the operation returned a successful result.",
     "uncertainty": "If information is not in this knowledge base or current approved DCDS sources, say it is not confirmed and direct the student to official DCDS support.",
     "pricing": "Quote listed prices accurately in Nigerian naira. Do not invent discounts, payment plans, lesson schedules, guarantees or course inclusions.",
     "payments": "Never request passwords, OTPs, card PINs, full card details or secret credentials. Do not claim a payment is successful; rely on the verified student account/payment system.",
