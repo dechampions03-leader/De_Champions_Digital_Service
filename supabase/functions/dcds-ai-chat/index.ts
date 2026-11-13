@@ -234,7 +234,7 @@ function wantsExternalWebSearch(message: string, role: "student" | "admin"): boo
 const sexualisedMinorPattern = /\b(?:child|children|minor|underage|schoolboy|schoolgirl|young teen|teenager)\b[\s\S]{0,100}\b(?:nude|naked|sexual|sexually explicit|porn|pornographic|sext|erotic|fetish)\b/i;
 
 function isHighRiskModerationCategory(categories: Record<string, unknown>): boolean {
-  const highRisk = ["sexual/minors", "self-harm/instructions", "violence/graphic", "hate/threatening", "illicit/violent"];
+  const highRisk = ["sexual", "sexual/minors", "self-harm/instructions", "self-harm/intent", "violence/graphic", "harassment/threatening", "hate/threatening", "illicit", "illicit/violent"];
   return highRisk.some((category) => categories[category] === true);
 }
 
@@ -323,7 +323,47 @@ Deno.serve(async (request: Request) => {
   }
   if (isAdmin === true) role = "admin";
 
-  const rateLimit = role === "student" ? 10 : 15;
+  // No prompt, chat history or memory is sent to an AI provider until
+  // the account's age band and (where required) guardian consent are reviewed.
+  const { data: aiEligibility, error: eligibilityError } = await userClient
+    .from("dcds_ai_access_eligibility")
+    .select("age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_at,guardian_consent_reference")
+    .eq("user_id", user.id)
+    .maybeSingle();
+
+  if (eligibilityError) {
+    console.error("DCDS AI eligibility check failed:", eligibilityError.message);
+    return json({ success: false, code: "AI_ELIGIBILITY_UNAVAILABLE", error: "DCDS AI access verification is temporarily unavailable. Please try again later." }, 503);
+  }
+
+  const approvedAdult = aiEligibility?.age_band === "18_plus"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "not_required";
+
+  const approvedTeen = aiEligibility?.age_band === "13_17"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "verified"
+    && Boolean(aiEligibility.guardian_user_id && aiEligibility.guardian_consent_at && aiEligibility.guardian_consent_reference);
+
+  const under13ZdrEnabled = Deno.env.get("DCDS_AI_UNDER_13_ZDR_ENABLED") === "true";
+  const approvedUnder13 = aiEligibility?.age_band === "under_13"
+    && aiEligibility.access_status === "approved"
+    && aiEligibility.guardian_consent_status === "verified"
+    && Boolean(aiEligibility.guardian_user_id && aiEligibility.guardian_consent_at && aiEligibility.guardian_consent_reference)
+    && under13ZdrEnabled;
+
+  if (!(approvedAdult || approvedTeen || approvedUnder13)) {
+    const under13 = aiEligibility?.age_band === "under_13";
+    return json({
+      success: false,
+      code: "AI_ACCESS_REVIEW_REQUIRED",
+      error: under13
+        ? "DCDS AI is not yet available for under-13 accounts. We must first complete additional child-safety, guardian-consent and Zero Data Retention requirements."
+        : "DCDS AI access is awaiting age and, where required, parent/guardian consent verification. Please follow the DCDS access-review instructions on this page.",
+    }, 403);
+  }
+
+  const rateLimit = role === "student" ? 5 : 8;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
   });
@@ -527,7 +567,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
         model,
         instructions: systemInstruction,
         input: userPrompt,
-        max_output_tokens: 2200,
+        max_output_tokens: 1800,
         store: false,
         ...(shouldUseGoogleSearch ? { tools: [{ type: "web_search" }] } : {}),
       }),
