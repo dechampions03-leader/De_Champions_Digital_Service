@@ -155,9 +155,11 @@ jobs:
               "suspected child exploitation is intercepted locally before Moderation API":
                   "suspectedChildExploitationPattern" in function
                   and function.index("suspectedChildExploitationPattern.test(message)") < function.index("moderateDcdsText(openAiApiKey, message)"),
-              "moderation fails closed":
-                  "DCDS safety check unavailable" in function
-                  and "return json({ success: false" in function,
+              "moderation fails closed for both input and output":
+                  "DCDS input safety check unavailable" in function
+                  and "DCDS output safety check unavailable" in function
+                  and "The DCDS safety check is temporarily unavailable." in function
+                  and "DCDS is checking the safety of this response." in function,
               "adult age eligibility is server-enforced":
                   'aiEligibility?.age_band === "18_plus"' in function
                   and 'aiEligibility.access_status === "approved"' in function,
