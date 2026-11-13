@@ -12,6 +12,7 @@ on:
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/flutterwave-webhook/**"
       - "supabase/functions/dcds-create-account/**"
+      - "supabase/functions/dcds-ai-chat/**"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
   pull_request:
@@ -58,6 +59,8 @@ jobs:
         run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Type-check DCDS account creation function
         run: deno check supabase/functions/dcds-create-account/index.ts
+      - name: Type-check DCDS AI chat function
+        run: deno check supabase/functions/dcds-ai-chat/index.ts
       - name: Verify Phase 1 migration invariants
         shell: bash
         run: |
