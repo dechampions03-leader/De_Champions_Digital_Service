@@ -65,7 +65,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  <section class="hero">
   <div class="eyebrow">ONE BRAIN · ONE KNOWLEDGE BASE · ONE AI SERVICE</div>
   <h1>Your DCDS AI Learning Assistant.</h1>
-  <p>The same DCDS assistant is opened from the main website and your student dashboard. Verified students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note. Visitor conversations remain temporary.</p>
+  <p>The same DCDS assistant is opened from the main website and your student dashboard. Available to verified DCDS students and authorised administrators. Verified students can save and reopen private conversations, start fresh chats and manage an optional learning-memory note. Visitor access will be introduced only after Production security checks are completed.</p>
   <div class="shared-pill">✦ SHARED DCDS AI EXPERIENCE</div>
  </section>
  <div class="layout">
@@ -116,8 +116,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    </section>
    <section class="side-card">
     <h2>One shared assistant</h2>
-    <p>The homepage, student dashboard and admin dashboard open the same protected DCDS AI service. The server determines whether a session is a visitor, verified student or authorised administrator; the browser cannot select its own role.</p>
-    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Visitor chats remain temporary. Do not enter passwords, OTPs, card details, bank information or private student records. If DCDS uses the Gemini API free tier, submitted content may be used by Google to improve its products. Keep chats to general learning and public DCDS information.</div>
+    <p>The student dashboard and authenticated DCDS surfaces open the same protected DCDS AI service. The server verifies the signed-in account and administrator role; the browser cannot select its own role.</p>
+    <div class="notice"><strong>Privacy reminder</strong>Verified student conversations and optional learning-memory notes are saved privately to the signed-in account and can be deleted from the chat history controls. Only verified DCDS students and authorised administrators can use this release. Do not enter passwords, OTPs, card details, bank information or sensitive personal information. Messages and limited conversation context are processed by Google Gemini to generate replies. Gemini free-tier content may be used by Google to improve its products.</div>
    </section>
    <section class="side-card">
     <h2>Need human support?</h2>
@@ -131,8 +131,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 <footer>© 2026 De Champions Digital Service.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
 <script>
 (async function(){
- const SUPABASE_URL='https://tjgsxbmkpvktlqulbktv.supabase.co';
- const SUPABASE_PUBLISHABLE_KEY='sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn';
+ const SUPABASE_URL='https://qxsenflgaweeadvggnyp.supabase.co';
+ const SUPABASE_PUBLISHABLE_KEY='sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
  const loginUrl='index.html';
  const statusEl=document.getElementById('status');
  const messagesEl=document.getElementById('messages');
@@ -374,37 +374,25 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   if(error)throw error;
   currentUser=session?.user??null;
   if(!currentUser){
-   try{
-    const captchaToken=await getVisitorCaptchaToken();
-    const {data:visitor,error:visitorError}=await client.auth.signInAnonymously({options:{captchaToken}});
-    if(visitorError)throw visitorError;
-    currentUser=visitor?.user??null;
-    if(!currentUser)throw new Error('Visitor sign-in did not return a user.');
-    captchaPanel.hidden=true;
-   }catch(visitorError){
-    const reason=String(visitorError?.message||'');
-    document.getElementById('accountLabel').textContent='Visitor access requires verification';
-    if(reason!=='DCDS_VISITOR_CAPTCHA_NOT_CONFIGURED'){
-     captchaPanel.hidden=false;
-     captchaHint.textContent='We could not verify this session. Refresh the page and try again, or sign in to an existing account.';
-     setStatus('Visitor verification could not be completed. Please refresh and try again, or sign in to your DCDS account.',true);
-    }
-    form.querySelectorAll('textarea,button').forEach(el=>el.disabled=true);
-    return;
-   }finally{
-    if(turnstileWidgetId!==null&&window.turnstile){try{window.turnstile.reset(turnstileWidgetId);}catch(_){}}
-   }
+   location.replace(loginUrl+'?login=required&next='+encodeURIComponent('ai-learning-assistant.html'));
+   return;
   }
-  if(!currentUser){setStatus('Please sign in to continue.',true);return;}
-
   const verified=Boolean(currentUser.email_confirmed_at||currentUser.phone_confirmed_at);
-  let isAdmin=false;
-  let adminCheckAvailable=false;
-  if(!currentUser.is_anonymous&&verified){
-   const {data,error:adminError}=await client.rpc('is_dcds_admin');
-   if(!adminError){isAdmin=data===true;adminCheckAvailable=true;}
+  if(currentUser.is_anonymous||!verified){
+   document.getElementById('accountLabel').textContent='Verified account required';
+   setStatus('DCDS AI is currently available to verified DCDS students and authorised administrators. Verify your email or mobile number, then refresh this page.',true);
+   form.querySelectorAll('textarea,button').forEach(el=>el.disabled=true);
+   return;
   }
-  isPersistentStudent=!currentUser.is_anonymous&&verified&&adminCheckAvailable&&!isAdmin;
+  const {data:adminData,error:adminError}=await client.rpc('is_dcds_admin');
+  if(adminError){
+   document.getElementById('accountLabel').textContent='Access check unavailable';
+   setStatus('We could not verify your DCDS access. Please refresh and try again.',true);
+   form.querySelectorAll('textarea,button').forEach(el=>el.disabled=true);
+   return;
+  }
+  const isAdmin=adminData===true;
+  isPersistentStudent=!isAdmin;
   if(isPersistentStudent){
    document.getElementById('accountLabel').textContent='Student · Learning Assistant';
    studentTools.hidden=false;
@@ -470,7 +458,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    }else if(data.role==='student'){
     setStatus('Your answer is ready, but this turn could not be added to saved history. Please keep this page open and try again later.',true);
    }else{
-    setStatus('Connected to the shared DCDS AI service. Visitor and administrator chats are temporary.');
+    setStatus('Connected to the read-only DCDS administrator assistant. No administrative actions can be performed here.');
    }
   }catch(error){
    const messageText=String(error?.message||'').toLowerCase();
