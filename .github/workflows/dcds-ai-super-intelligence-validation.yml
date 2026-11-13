@@ -116,12 +116,10 @@ jobs:
               "provider quota exhaustion returns a dedicated recoverable code":
                   "PROVIDER_DAILY_QUOTA" in function
                   and "no-cost provider allowance" in function,
+              "message send failures retain the draft and keep the mobile keyboard closed":
                   "your draft is still in the message box" in ai_page
                   and "input.blur()" in ai_page
                   and "input.focus()" not in submit_handler,
-                  "your draft is still in the message box" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
-                  and "input.blur()" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
-                  and "input.focus();\n  }\n });" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
               "student lesson retrieval is scoped to the student's own enrollments":
                   '.from("enrollments").select("course_id").eq("user_id", userId)' in search_helper
                   and '.in("course_id", courseIds)' in search_helper,
