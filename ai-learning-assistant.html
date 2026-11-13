@@ -48,7 +48,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 .empty-state{margin:6px 2px;color:#897b95;font-size:11px;line-height:1.6}
 .memory-panel label{display:block;margin-bottom:7px;color:#63437d;font-size:11px;font-weight:700}
 .memory-panel textarea{display:block;width:100%;min-height:78px;resize:vertical;border:1px solid #e3d6ef;border-radius:11px;padding:10px;font:12px/1.6 'DM Sans',sans-serif;color:var(--ink)}
-.memory-help{display:block;margin-top:6px;color:#93869f;font-size:9px;line-height:1.5}
+.memory-help{display:block;margin-top:6px;color:#93869f;font-size:9px;line-height:1.5}.memory-panel label.memory-auto-option{display:flex;align-items:flex-start;gap:9px;margin-top:10px;padding:10px;border:1px solid #e8dcf2;border-radius:10px;background:#fff}.memory-auto-option input{width:16px;height:16px;margin:2px 0 0;accent-color:#6827a4;flex:0 0 auto}.memory-auto-option span{display:block}.memory-auto-option strong{display:block;color:#563176;font-size:10px}.memory-auto-option small{display:block;margin-top:4px;color:#85758f;font-size:9px;line-height:1.5}
 .memory-actions{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:9px}
 .memory-actions div{display:flex;gap:7px}
 .memory-actions button{border:1px solid #e2d2f1;border-radius:9px;padding:8px 10px;background:#fff;color:#5c258e;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
@@ -87,7 +87,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="panel-heading"><span>Your learning memory</span></div>
     <label for="learningMemoryInput">What should DCDS AI remember when you start a fresh chat?</label>
     <textarea id="learningMemoryInput" maxlength="1200" rows="3" placeholder="For example: I am a beginner in graphic design, I use an Android phone, and I prefer step-by-step explanations with practical exercises."></textarea>
-    <small class="memory-help">This note is optional, editable and used to personalise new student chats. Do not save passwords, OTPs, payment details or private account information. Maximum 1,200 characters.</small>
+    <label class="memory-auto-option"><input id="autoLearningEnabled" type="checkbox"> <span><strong>Let DCDS AI learn my learning preferences</strong><small>When enabled, it may save clear preferences you explicitly state, such as your skill level, learning style, current topic or device. It will not store every message. This is private to your account and can be switched off or cleared at any time.</small></span></label>
+    <small class="memory-help">Your note is optional, editable and used to personalise new student chats. Never save passwords, OTPs, payment details, health details or private account information. Maximum 1,200 characters.</small>
     <div class="memory-actions"><button id="clearLearningMemory" type="button">Clear memory</button><div><button class="primary" id="saveLearningMemory" type="button">Save memory</button></div></div>
    </section>
    <div class="messages" id="messages" role="log" aria-live="polite">
@@ -327,7 +328,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   if(!isPersistentStudent)return;
   const {data,error}=await client
    .from('dcds_ai_student_memory')
-   .select('learning_context')
+   .select('learning_context,auto_learning_enabled')
    .eq('user_id',currentUser.id)
    .maybeSingle();
   if(error){
@@ -336,6 +337,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    return;
   }
   memoryInput.value=data?.learning_context||'';
+  autoLearningToggle.checked=data?.auto_learning_enabled===true;
  }
  async function saveLearningMemory(){
   if(!isPersistentStudent)return;
@@ -345,24 +347,28 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    return;
   }
   if(!value){
-   const {error}=await client.from('dcds_ai_student_memory').delete().eq('user_id',currentUser.id);
-   if(error){setStatus('Your learning memory could not be cleared.',true);return;}
-   setStatus('Your saved learning memory is now empty.');
+   const {error}=await client.from('dcds_ai_student_memory').upsert(
+    {user_id:currentUser.id,learning_context:'',auto_learning_enabled:autoLearningToggle.checked},
+    {onConflict:'user_id'}
+   );
+   if(error){setStatus('Your learning-memory settings could not be saved.',true);return;}
+   setStatus(autoLearningToggle.checked?'Automatic learning is enabled. DCDS AI will save only clear, low-risk learning preferences you explicitly state.':'Your learning memory is empty and automatic learning is off.');
    return;
   }
   const {error}=await client.from('dcds_ai_student_memory').upsert(
-   {user_id:currentUser.id,learning_context:value},
+   {user_id:currentUser.id,learning_context:value,auto_learning_enabled:autoLearningToggle.checked},
    {onConflict:'user_id'}
   );
   if(error){setStatus('Your learning memory could not be saved. Please try again.',true);return;}
-  setStatus('Learning memory saved. New chats can use this context.');
+  setStatus(autoLearningToggle.checked?'Learning memory saved. Automatic preference learning is enabled.':'Learning memory saved. Automatic preference learning is off.');
  }
  async function clearLearningMemory(){
   if(!isPersistentStudent||!window.confirm('Clear your saved learning-memory note? Conversation history will remain.'))return;
   const {error}=await client.from('dcds_ai_student_memory').delete().eq('user_id',currentUser.id);
   if(error){setStatus('Your learning memory could not be cleared.',true);return;}
   memoryInput.value='';
-  setStatus('Your saved learning-memory note has been cleared.');
+  autoLearningToggle.checked=false;
+  setStatus('Your saved learning-memory note has been cleared and automatic learning is off.');
  }
 
  try{
