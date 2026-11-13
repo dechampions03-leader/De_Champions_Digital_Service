@@ -41,6 +41,42 @@ async function loadKnowledge(): Promise<string> {
   return value;
 }
 
+// Conservative local guard for common identifiers, credentials and sensitive topics.
+// It is not a guarantee that all personal data can be detected; the UI and policy
+// also instruct learners not to submit personal, sensitive or confidential data.
+const restrictedPersonalDataPattern = /(?:[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,}|https?:\\/\\/|\\+?\\d[\\d ()-]{7,}\\d|\\b(?:password|passcode|otp|one[- ]time code|card number|cvv|bank account|account number|bvn|nin|passport|home address|date of birth|\\bdob\\b|my name is|i live at|my phone|my email|medical record|diagnos(?:is|ed|tic)|medication|pregnan\\w*|mental health|hiv|aids|religion|church|mosque|politic\\w*|sexual orientation|criminal record|salary|income|debt)\\b)/i;
+const thirdPartyPersonalContextPattern = /\\b(?:my|our)\\s+(?:child|son|daughter|wife|husband|spouse|partner|parent|mother|father|friend|relative|colleague|boss|employee|customer|client|patient|student|family|sibling|brother|sister|teacher|doctor|lawyer)\\b/i;
+function containsRestrictedPersonalData(value: string): boolean {
+  return restrictedPersonalDataPattern.test(value) || thirdPartyPersonalContextPattern.test(value);
+}
+
+const safeLearningPreferencePattern = /^(?:step[- ]by[- ]step(?: explanations?)?|plain[- ]language explanations?|simple explanations?|detailed explanations?|short explanations?|visual explanations?|practical examples?|hands[- ]on exercises?|guided practice|project[- ]based learning|quizzes?|checklists?|real[- ]world examples?)$/i;
+function extractExplicitLearningPreference(message: string): string | null {
+  if (message.length > 2500 || containsRestrictedPersonalData(message)) return null;
+  const patterns: Array<{ pattern: RegExp; label: string; preferenceOnly?: boolean }> = [
+    { pattern: /\\bI(?:'m| am) (?:a )?(beginner|intermediate|advanced) (?:in|at|with) ([^.!?\\n]{2,70})/i, label: "Experience level" },
+    { pattern: /\\bI prefer ([^.!?\\n]{2,90})/i, label: "Learning preference", preferenceOnly: true },
+    { pattern: /\\bMy learning goal is ([^.!?\\n]{2,90})/i, label: "Learning goal" },
+    { pattern: /\\bI(?:'m| am) learning ([^.!?\\n]{2,80})/i, label: "Current learning topic" },
+    { pattern: /\\bI use (?:an? )?(Android|iPhone|iPad|Windows|Mac|Linux)\\b/i, label: "Device or platform" },
+  ];
+  for (const item of patterns) {
+    const match = message.match(item.pattern);
+    if (!match) continue;
+    const detail = match.slice(1).filter(Boolean).join(" ").replace(/\\s+/g, " ").trim();
+    if (!detail || detail.length > 110) continue;
+    if (item.preferenceOnly && !safeLearningPreferencePattern.test(detail)) continue;
+    return item.label + ": " + detail;
+  }
+  return null;
+}
+function mergeLearningContext(existing: string, candidate: string): string {
+  const current = existing.trim();
+  if (current.toLowerCase().includes(candidate.toLowerCase())) return current.slice(0, 1200);
+  const combined = [current, candidate].filter(Boolean).join("\\n");
+  return combined.length <= 1200 ? combined : current;
+}
+
 function priorConversationContext(value: unknown): string {
   if (!Array.isArray(value)) return "";
   const excerpts = value.slice(-10).flatMap((item) => {
@@ -48,7 +84,7 @@ function priorConversationContext(value: unknown): string {
     const row = item as Record<string, unknown>;
     if ((row.role !== "user" && row.role !== "model") || typeof row.text !== "string") return [];
     const clean = row.text.trim().slice(0, 1000);
-    if (!clean) return [];
+    if (!clean || containsRestrictedPersonalData(clean)) return [];
     const speaker = row.role === "user" ? "Learner" : "Assistant";
     return [speaker + ": " + clean];
   });
@@ -104,6 +140,14 @@ Deno.serve(async (request: Request) => {
   const message = typeof body.message === "string" ? body.message.trim() : "";
   if (!message || message.length > 2500) {
     return json({ success: false, error: "Please enter a message between 1 and 2,500 characters." }, 400);
+  }
+
+  if (containsRestrictedPersonalData(message)) {
+    return json({
+      success: false,
+      code: "DCDS_AI_PRIVATE_DATA_NOT_ALLOWED",
+      error: "For privacy, do not send names, contact details, credentials, financial information, sensitive personal details or private information about another person to DCDS AI. Remove those details and ask a general learning question instead.",
+    }, 400);
   }
 
   // DCDS AI is members-only. Reject anonymous or unverified accounts,
@@ -211,8 +255,10 @@ Deno.serve(async (request: Request) => {
   }
 
   const rateLimit = role === "student" ? 10 : 15;
+  const dailyRateLimit = role === "student" ? 20 : 60;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
+    p_daily_limit: dailyRateLimit,
   });
   if (quotaError) {
     console.error("DCDS AI quota check failed:", quotaError.message);
@@ -235,6 +281,7 @@ Deno.serve(async (request: Request) => {
   let requestedConversationId: string | null = null;
   let priorContext = "";
   let savedLearningContext = "";
+  let autoLearningEnabled = false;
 
   if (role === "student") {
     const rawConversationId = typeof body.conversation_id === "string"
@@ -281,14 +328,16 @@ Deno.serve(async (request: Request) => {
 
     const { data: memoryRow, error: memoryError } = await userClient
       .from("dcds_ai_student_memory")
-      .select("learning_context")
+      .select("learning_context,auto_learning_enabled")
       .eq("user_id", user.id)
       .maybeSingle();
 
     if (memoryError) {
       console.error("DCDS AI student memory lookup failed:", memoryError.message);
     } else if (typeof memoryRow?.learning_context === "string") {
-      savedLearningContext = memoryRow.learning_context.trim().slice(0, 1200);
+      const candidateMemory = memoryRow.learning_context.trim().slice(0, 1200);
+      savedLearningContext = containsRestrictedPersonalData(candidateMemory) ? "" : candidateMemory;
+      autoLearningEnabled = memoryRow?.auto_learning_enabled === true;
     }
   } else {
     // Visitor/admin chats remain page-session only.
@@ -341,6 +390,7 @@ CORE IDENTITY AND BEHAVIOUR
 - Follow the DCDS Master Brain, Conversation Intelligence, Teaching Engine, Response Playbook and structured knowledge supplied below.
 - Use a professional, warm, respectful, encouraging and practical voice. Use clear English; explain unfamiliar terms simply.
 - Use Nigerian naira for DCDS prices. Do not invent prices, discounts, course inclusions, schedules, official syllabi, certificates, grades, employment or income guarantees.
+- Do not request, repeat or retain personal, sensitive, confidential or financial information. If the learner asks to share it, direct them to remove identifiers and use official secure DCDS support for account-specific matters.
 - Clearly distinguish proposed curriculum themes from official published lessons and materials.
 - If approved sources do not confirm an answer, say so and guide the person to official DCDS support.
 - Never claim to have checked an account, payment, enrolment, certificate, assignment, referral, reward or payout. This assistant has no account-data or action tools.
@@ -422,6 +472,12 @@ ${knowledge}${savedMemoryInstruction}`;
               systemInstruction: { parts: [{ text: systemInstruction }] },
               contents: [{ role: "user", parts: [{ text: userPrompt }] }],
               generationConfig: { temperature: 0.65, maxOutputTokens: 1200 },
+              safetySettings: [
+                { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+                { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_MEDIUM_AND_ABOVE" },
+              ],
             }),
             signal: AbortSignal.timeout(12000),
           },
@@ -608,6 +664,21 @@ ${knowledge}${savedMemoryInstruction}`;
       if (touchConversationError) throw touchConversationError;
       persistedConversationId = targetConversationId;
       historySaved = true;
+      if (autoLearningEnabled) {
+        const preference = extractExplicitLearningPreference(message);
+        if (preference) {
+          const merged = mergeLearningContext(savedLearningContext, preference);
+          const { error: memorySaveError } = await userClient
+            .from("dcds_ai_student_memory")
+            .upsert({
+              user_id: user.id,
+              learning_context: merged,
+              auto_learning_enabled: true,
+              updated_at: new Date().toISOString(),
+            }, { onConflict: "user_id" });
+          if (memorySaveError) console.warn("DCDS opt-in learning preference could not be saved:", memorySaveError.message);
+        }
+      }
     } catch (error) {
       console.error("DCDS AI conversation persistence failed:", error);
     }

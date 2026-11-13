@@ -1,0 +1,118 @@
+name: DCDS Production Gemini AI release validation
+
+on:
+  pull_request:
+    branches:
+      - feature/shared-dcds-ai
+    paths:
+      - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/migrations/*dcds_ai_*.sql"
+      - "supabase/migrations/*restrict_ai_guardian_approval_lookup.sql"
+      - "supabase/migrations/*prevent_ai_self_approval.sql"
+      - "ai-learning-assistant.html"
+      - "dcds-ai-access-review.html"
+      - "admin-notifications.html"
+      - "student-dashboard.html"
+      - "privacy-policy.html"
+      - "ai-config/**"
+      - "dcds-ai-knowledge-base.json"
+      - ".github/workflows/dcds-ai-production-release-validation.yml"
+  push:
+    branches:
+      - "release/**"
+    paths:
+      - "supabase/functions/dcds-ai-chat/**"
+      - "supabase/migrations/*dcds_ai_*.sql"
+      - "supabase/migrations/*restrict_ai_guardian_approval_lookup.sql"
+      - "supabase/migrations/*prevent_ai_self_approval.sql"
+      - "ai-learning-assistant.html"
+      - "dcds-ai-access-review.html"
+      - "admin-notifications.html"
+      - "student-dashboard.html"
+      - "privacy-policy.html"
+      - "ai-config/**"
+      - "dcds-ai-knowledge-base.json"
+      - ".github/workflows/dcds-ai-production-release-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dcds-production-gemini-release-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Type-check Production Gemini runtime
+        run: deno check supabase/functions/dcds-ai-chat/index.ts
+      - name: Check inline page JavaScript
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import re
+          from pathlib import Path
+          for page in ("ai-learning-assistant.html", "dcds-ai-access-review.html"):
+              html = Path(page).read_text(encoding="utf-8")
+              scripts = re.findall(r"<script\\b(?![^>]*\\bsrc=)[^>]*>([\\s\\S]*?)</script>", html, re.I)
+              for i, script in enumerate(scripts):
+                  if script.strip():
+                      Path(f"/tmp/{Path(page).stem}-{i}.js").write_text(script, encoding="utf-8")
+          PY
+          for script in /tmp/ai-learning-assistant-*.js /tmp/dcds-ai-access-review-*.js; do
+            [ -f "$script" ] && node --check "$script"
+          done
+      - name: Check Production project wiring, privacy, age gates and migrations
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          fn = Path("supabase/functions/dcds-ai-chat/index.ts").read_text()
+          page = Path("ai-learning-assistant.html").read_text()
+          admin = Path("dcds-ai-access-review.html").read_text()
+          sidebar = Path("admin-notifications.html").read_text()
+          policy = Path("privacy-policy.html").read_text()
+          prod_url = "https://qxsenflgaweeadvggnyp.supabase.co"
+          dev_ref = "tjgsxbmkpvktlqulbktv"
+
+          checks = {
+              "Production runtime is Gemini-only": "GEMINI_API_KEY" in fn and "OPENAI_API_KEY" not in fn and "api.openai.com" not in fn,
+              "Age eligibility is checked before quota and Gemini": fn.index('from("dcds_ai_access_eligibility")') < fn.index('rpc("dcds_consume_ai_request"') < fn.index("generativelanguage.googleapis.com"),
+              "Only approved adults are enabled by default": 'age_band === "18_plus"' in fn and 'access_status === "approved"' in fn and 'guardian_consent_status === "not_required"' in fn,
+              "Teen and under-13 feature flags default off": 'DCDS_AI_TEENS_ENABLED") === "true"' in fn and 'DCDS_AI_UNDER_13_ZDR_ENABLED") === "true"' in fn,
+              "Per-minute and daily quota limits are applied": "p_limit: rateLimit" in fn and "p_daily_limit: dailyRateLimit" in fn,
+              "Gemini content safety settings are explicit": all(x in fn for x in ("HARM_CATEGORY_HARASSMENT","HARM_CATEGORY_HATE_SPEECH","HARM_CATEGORY_SEXUALLY_EXPLICIT","HARM_CATEGORY_DANGEROUS_CONTENT","BLOCK_MEDIUM_AND_ABOVE")),
+              "Common identifiers and sensitive topics are blocked locally": "containsRestrictedPersonalData(message)" in fn and "DCDS_AI_PRIVATE_DATA_NOT_ALLOWED" in fn,
+              "Stored history with common sensitive data is excluded from provider context": "containsRestrictedPersonalData(clean)" in fn,
+              "Student memory is owner-controlled and restricted before sending": "auto_learning_enabled" in fn and "containsRestrictedPersonalData(candidateMemory)" in fn,
+              "Opt-in learning preference capture is implemented": "extractExplicitLearningPreference(message)" in fn and "auto_learning_enabled: true" in fn,
+              "All student AI pages use Production Supabase": prod_url in page and prod_url in admin and dev_ref not in page and dev_ref not in admin,
+              "Admin review is linked and self-approval is blocked": 'href="dcds-ai-access-review.html"' in sidebar and "dcds_prevent_ai_self_approval" in Path("supabase/migrations/20261113140500_prevent_ai_self_approval.sql").read_text(),
+              "Gemini free-tier handling is disclosed": "Google Gemini API" in policy and "human reviewers" in policy and "personal, sensitive, confidential or financial information" in policy,
+              "Teen AI remains unavailable and under-13 remains blocked": "13–17 remains disabled" in policy and "Under-13 AI access remains blocked" in policy,
+              "No accidental Development project URL or OpenAI path in AI runtime": dev_ref not in fn and "api.openai.com" not in fn,
+          }
+          for name, ok in checks.items():
+              print(("PASS " if ok else "FAIL ") + name)
+          failures = [name for name, ok in checks.items() if not ok]
+          if failures:
+              raise SystemExit(f"{len(failures)} Production AI release checks failed.")
+          migration_files = [
+              "20261113110000_dcds_ai_opt_in_learning_memory.sql",
+              "20261113120000_dcds_ai_age_guardian_eligibility.sql",
+              "20261113123000_dcds_ai_daily_usage_budget.sql",
+              "20261113133000_dcds_ai_eligibility_review_policy_scope.sql",
+              "20261113135915_restrict_ai_guardian_approval_lookup.sql",
+              "20261113140500_prevent_ai_self_approval.sql",
+          ]
+          for name in migration_files:
+              if not Path("supabase/migrations", name).exists():
+                  raise SystemExit("Missing required Production AI migration: " + name)
+          print("PASS All six required additive migrations are present.")
+          PY
