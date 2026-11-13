@@ -14,7 +14,7 @@ This folder contains the public-safe design and knowledge documents for the futu
 
 ## Important status
 
-The public DCDS AI Learning Assistant is released for verified student accounts and authorised administrators. The Production `dcds-ai-chat` Edge Function verifies sessions server-side, calls the secure Gemini provider, applies per-user request limits, and saves verified-student conversations and optional learning-memory notes under owner-scoped RLS. Anonymous/unverified sessions are blocked; visitor access is not enabled.
+The public DCDS AI Learning Assistant is released for verified student accounts and authorised administrators. The Production `dcds-ai-chat` Edge Function verifies sessions server-side, calls the secure Gemini provider, applies per-user request limits, and saves verified-student conversations and optional learning-memory notes under owner-scoped RLS. Anonymous/unverified sessions are blocked; visitor access is not enabled. The candidate chat interface adds browser-based voice dictation, spoken AI replies and transient JPG/PNG/WEBP image analysis (up to 4 MB); uploaded image files are not retained in DCDS chat history or Storage. These capabilities remain candidates until pull-request validation, deployment and real student-device tests are complete.
 
 ## Source-of-truth rules
 

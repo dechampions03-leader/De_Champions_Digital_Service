@@ -70,6 +70,10 @@ jobs:
               "Production CAPTCHA activation is enabled after Supabase Auth secret is configured": 'authProtectionEnabled: true' in files["captcha"],
               "Privacy notice identifies the Gemini provider": "Google Gemini API" in files["privacy"],
               "Privacy notice warns about free-tier human review": "human reviewers" in files["privacy"].lower(),
+              "Privacy notice explains image attachment processing": "image attachments" in files["privacy"].lower() and "not stored as image files" in files["privacy"],
+              "Privacy notice explains optional browser voice processing": "speech-recognition" in files["privacy"] and "raw microphone recording" in files["privacy"],
+              "DCDS AI page includes image attachment and voice input controls": "attachImageButton" in files["ai"] and "voiceButton" in files["ai"],
+              "DCDS AI page provides spoken response controls": "speechSynthesis" in files["ai"] and "Listen" in files["ai"],
               "Teen access remains disabled and under-13 blocked": "13–17" in files["privacy"] and "Under-13 AI access remains blocked" in files["privacy"],
           }
           for name, passed in checks.items():
