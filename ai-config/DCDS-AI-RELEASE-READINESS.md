@@ -21,6 +21,7 @@
 - Every account must be authenticated, contact-verified, non-anonymous and assigned its role server-side. DCDS AI is members-only: no guests, anonymous sessions, public visitors, open demo mode or general public access.
 - An 18+ account requires an administrator-reviewed `age_band=18_plus`, `access_status=approved` record.
 - A 13–17 account requires an administrator-reviewed age record, a separately approved adult DCDS guardian account, verified guardian consent and a non-sensitive internal consent evidence reference.
+- **13–17 access remains disabled by default** (`DCDS_AI_TEENS_ENABLED` is unset/false and the page release switch is false). A guardian-approved record does not unlock chat until DCDS completes and approves the under-18 disclosure, monitoring, escalation and real-account tests.
 - Under-13 requests are recorded as blocked. **Do not approve under-13 AI access** until OpenAI confirms Zero Data Retention eligibility and it is implemented for the exact API project, and DCDS completes additional child-safety, privacy and legal review.
 - Age typed into chat or selected in the browser is not proof. Browser-supplied role, guardian flags or eligibility values must never unlock access.
 - Do not collect a full date of birth, identity-document image or unnecessary sensitive family details in the AI system.
