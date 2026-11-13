@@ -145,7 +145,7 @@ jobs:
                   and "uniqueResources" in function,
               "OpenAI Responses API is used":
                   'https://api.openai.com/v1/responses' in function
-                  and 'model: "gpt-6-astra"' in function
+                  and 'const model = Deno.env.get("DCDS_AI_MODEL") || "gpt-6-astra";' in function
                   and 'store: false' in function,
               "Moderation API runs before and after generation":
                   'https://api.openai.com/v1/moderations' in function
