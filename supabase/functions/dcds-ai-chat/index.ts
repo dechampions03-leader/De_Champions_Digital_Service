@@ -679,21 +679,39 @@ ${platformSearch.context}${savedMemoryInstruction}`;
   ];
   const answer = sourceLines.length ? safeGeneratedAnswer + "\n\nSources checked:\n" + sourceLines.join("\n") : safeGeneratedAnswer;
 
-  const mentionedCourses = (platformSearch.courseCatalog ?? []).filter((course) => course.title && answer.toLowerCase().includes(course.title.toLowerCase()));
+  const mentionedCourses = (platformSearch.courseCatalog ?? []).filter((course) =>
+    course.title && answer.toLowerCase().includes(course.title.toLowerCase())
+  );
   const resources: Array<{ label: string; href: string; kind: string }> = [];
   for (const course of mentionedCourses.slice(0, 6)) {
     const enrolled = platformSearch.enrolledCourseSlugs?.includes(course.slug) === true;
     resources.push({
       label: enrolled ? "Continue " + course.title : "Explore " + course.title,
-      href: enrolled ? "learn.html?course=" + encodeURIComponent(course.slug) : "index.html#course-" + encodeURIComponent(course.slug),
+      href: enrolled
+        ? "learn.html?course=" + encodeURIComponent(course.slug)
+        : "index.html#course-" + encodeURIComponent(course.slug),
       kind: "course",
     });
   }
+  for (const item of (platformSearch.enrolledLessonResources ?? [])) {
+    if (item.title && answer.toLowerCase().includes(item.title.toLowerCase())) {
+      resources.push({
+        label: (item.kind === "lesson" ? "Open lesson: " : "Open material: ") + item.title,
+        href: "learn.html?course=" + encodeURIComponent(item.slug),
+        kind: "course",
+      });
+    }
+  }
   if (/\bDCDS General Course\b/i.test(answer)) resources.push({ label: "Open General Course", href: "general-course.html", kind: "course" });
+  if (/\b(?:course catalogue|course catalog|browse courses|DCDS courses)\b/i.test(answer)) resources.push({ label: "Browse DCDS Courses", href: "index.html#courses", kind: "course" });
   if (/\b(?:ambassador|referral|rewards|commission|reward balance)\b/i.test(answer)) resources.push({ label: "Open Ambassador & Rewards", href: "student-dashboard.html#ambassadorPanel", kind: "dashboard" });
-  if (/\b(?:student dashboard|dashboard)\b/i.test(answer)) resources.push({ label: "Open Student Dashboard", href: "student-dashboard.html", kind: "dashboard" });
-  if (/\b(?:DCDS support|human support|contact support|support team)\b/i.test(answer)) resources.push({ label: "Contact DCDS Support", href: "https://wa.me/2348109146285", kind: "support" });
+  if (/\b(?:student dashboard|dashboard|my learning portal)\b/i.test(answer)) resources.push({ label: "Open Student Dashboard", href: "student-dashboard.html", kind: "dashboard" });
+  if (/\b(?:DCDS support|human support|contact support|support team|payment dispute|account access issue)\b/i.test(answer)) resources.push({ label: "Contact DCDS Support", href: "https://wa.me/2348109146285", kind: "support" });
   if (/\b(?:DCDS AI|learning assistant)\b/i.test(answer)) resources.push({ label: "Open DCDS AI", href: "ai-learning-assistant.html", kind: "assistant" });
+  if (/\b(?:digital services|our services|DCDS services)\b/i.test(answer)) resources.push({ label: "Explore DCDS Services", href: "index.html#services", kind: "resource" });
+  if (/\b(?:announcement|announcements|student update)\b/i.test(answer)) resources.push({ label: "View Student Announcements", href: "index.html#notificationPanel", kind: "resource" });
+  if (/\b(?:approved review|student reviews|testimonials)\b/i.test(answer)) resources.push({ label: "Read Student Reviews", href: "index.html#studentReviews", kind: "resource" });
+  if (/\b(?:privacy policy|data privacy)\b/i.test(answer)) resources.push({ label: "Read DCDS Privacy Policy", href: "privacy-policy.html", kind: "resource" });
   for (const source of uniqueWebSources) resources.push({ label: "Read: " + source.title, href: source.uri, kind: "source" });
   const uniqueResources = [...new Map(resources.map((resource) => [resource.href, resource])).values()].slice(0, 10);
 
