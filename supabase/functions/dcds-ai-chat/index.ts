@@ -18,6 +18,10 @@ const KNOWLEDGE_FILES = [
 
 let cachedKnowledge: { value: string; expiresAt: number } | null = null;
 
+// Best-effort per-isolate circuit breaker: avoid repeatedly calling models
+// that have returned a daily quota error or temporary overload.
+const providerModelCooldowns = new Map<string, number>();
+
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
 }
@@ -191,21 +195,66 @@ ${knowledge}`;
   const priorContext = priorConversationContext(body.history);
   const userPrompt = priorContext + message;
 
-  // Gemini can return 503 during temporary model-capacity spikes. Retry the
-  // configured primary once, then use a separately supported stable fallback.
-  // Do not retry or silently switch models on 400/401/403/429: those indicate
-  // request, credential, or quota issues that model switching will not solve.
-  const fallbackModel = "gemini-3.5-flash-lite";
-  const modelCandidates = model === fallbackModel ? [model] : [model, fallbackModel];
+  // Use stable text-generation models only. Quotas are model-specific, so a
+  // daily quota on the primary model can sometimes be bypassed safely by
+  // trying another supported model once. Generic 429s are not blindly retried.
+  const fallbackModels = [
+    "gemini-3.6-flash",
+    "gemini-3.5-flash-lite",
+    "gemini-3.1-flash-lite",
+  ];
+  const configuredCandidates = [...new Set([model, ...fallbackModels])];
+  const now = Date.now();
+  const modelCandidates = configuredCandidates.filter(
+    (candidate) => (providerModelCooldowns.get(candidate) ?? 0) <= now,
+  );
+
+  if (modelCandidates.length === 0) {
+    return json({
+      success: false,
+      error: "DCDS AI models are temporarily cooling down after provider quota or capacity limits. Please try again shortly.",
+    }, 503);
+  }
+
+  function getRetryDelayMs(message: string, details: unknown[]): number | null {
+    const retryInfo = details.find((detail) => {
+      if (!detail || typeof detail !== "object") return false;
+      const type = (detail as Record<string, unknown>)["@type"];
+      return typeof type === "string" && type.includes("RetryInfo");
+    }) as Record<string, unknown> | undefined;
+
+    const retryDelay = retryInfo?.retryDelay;
+    if (typeof retryDelay === "string") {
+      const seconds = retryDelay.match(/^(\d+(?:\.\d+)?)s$/);
+      if (seconds) return Math.ceil(Number(seconds[1]) * 1000);
+    }
+
+    const match = message.match(
+      /retry in\s+(?:(\d+(?:\.\d+)?)h)?\s*(?:(\d+(?:\.\d+)?)m)?\s*(?:(\d+(?:\.\d+)?)s)?/i,
+    );
+    if (!match) return null;
+    const milliseconds =
+      (Number(match[1] ?? 0) * 60 * 60 * 1000)
+      + (Number(match[2] ?? 0) * 60 * 1000)
+      + (Number(match[3] ?? 0) * 1000);
+    return milliseconds > 0 ? Math.ceil(milliseconds) : null;
+  }
+
   let providerResponse: Response | null = null;
   let resolvedModel = model;
   let lastProviderStatus = 503;
+  const dailyQuotaModels: string[] = [];
+  const unavailableModels: string[] = [];
 
   for (const candidate of modelCandidates) {
+    // Retry the configured primary once on transient 5xx responses only.
+    // Fallbacks are tried once each to cap latency and avoid wasting quota.
     const attempts = candidate === model ? 2 : 1;
+
     for (let attempt = 0; attempt < attempts; attempt++) {
+      let response: Response;
       try {
-        const response = await fetch(
+        response = await fetch(
           "https://generativelanguage.googleapis.com/v1beta/models/" + encodeURIComponent(candidate) + ":generateContent",
           {
             method: "POST",
@@ -215,69 +264,122 @@ ${knowledge}`;
               contents: [{ role: "user", parts: [{ text: userPrompt }] }],
               generationConfig: { temperature: 0.65, maxOutputTokens: 1200 },
             }),
-            signal: AbortSignal.timeout(20000),
+            signal: AbortSignal.timeout(12000),
           },
         );
-
-        if (response.ok) {
-          providerResponse = response;
-          resolvedModel = candidate;
-          break;
-        }
-
-        const providerError = await response.text();
-        lastProviderStatus = response.status;
-        console.error(
-          "DCDS AI provider returned",
-          candidate,
-          response.status,
-          providerError.slice(0, 800),
-        );
-
-        if (response.status === 429) {
-          return json({
-            success: false,
-            error: "The DCDS AI provider has reached its current request limit. Please wait a little and try again.",
-          }, 429);
-        }
-
-        if (response.status === 401 || response.status === 403) {
-          return json({
-            success: false,
-            error: "The DCDS AI provider credentials need attention. Please contact DCDS support.",
-          }, 503);
-        }
-
-        if (response.status !== 500 && response.status !== 503) {
-          return json({
-            success: false,
-            error: "The DCDS AI could not process this request. Please try again later.",
-          }, 502);
-        }
-
-        if (attempt + 1 < attempts) {
-          await new Promise((resolve) => setTimeout(resolve, 750 * (attempt + 1)));
-        }
       } catch (error) {
         lastProviderStatus = 502;
+        unavailableModels.push(candidate);
+        providerModelCooldowns.set(candidate, Date.now() + 30_000);
         console.error("DCDS AI provider request failed for", candidate, error);
         if (attempt + 1 < attempts) {
-          await new Promise((resolve) => setTimeout(resolve, 750 * (attempt + 1)));
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          continue;
         }
+        break;
       }
+
+      if (response.ok) {
+        providerResponse = response;
+        resolvedModel = candidate;
+        providerModelCooldowns.delete(candidate);
+        break;
+      }
+
+      const providerError = await response.text();
+      let providerPayload: Record<string, unknown> = {};
+      try {
+        const parsed = JSON.parse(providerError);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          providerPayload = parsed as Record<string, unknown>;
+        }
+      } catch {
+        // Preserve safe generic handling when the provider returns non-JSON.
+      }
+
+      const providerErrorBody = providerPayload.error && typeof providerPayload.error === "object"
+        ? providerPayload.error as Record<string, unknown>
+        : {};
+      const providerMessage = typeof providerErrorBody.message === "string"
+        ? providerErrorBody.message
+        : providerError.slice(0, 500);
+      const providerDetails = Array.isArray(providerErrorBody.details)
+        ? providerErrorBody.details
+        : [];
+      const quotaDescription = providerDetails.map((detail) => {
+        if (!detail || typeof detail !== "object") return "";
+        const row = detail as Record<string, unknown>;
+        return [row.description, row.quotaId, row.quotaMetric].filter(
+          (value) => typeof value === "string",
+        ).join(" ");
+      }).join(" ");
+      const quotaText = providerMessage + " " + quotaDescription;
+      const isDailyQuota = /requests per day|daily.{0,30}quota|GenerateRequestsPerDayPerProject/i.test(quotaText);
+
+      lastProviderStatus = response.status;
+      console.error("DCDS AI provider returned", candidate, response.status, providerError.slice(0, 800));
+
+      if (response.status === 429 && isDailyQuota) {
+        // Honour Google's RetryInfo / human-readable retry hint. If neither is
+        // supplied, use a conservative 30-minute local cooldown.
+        const retryMs = getRetryDelayMs(providerMessage, providerDetails) ?? 30 * 60 * 1000;
+        const boundedRetryMs = Math.min(Math.max(retryMs, 60_000), 24 * 60 * 60 * 1000);
+        providerModelCooldowns.set(candidate, Date.now() + boundedRetryMs);
+        dailyQuotaModels.push(candidate);
+        console.warn("DCDS AI model daily quota exhausted; moving to next model.", {
+          model: candidate,
+          retryAfterMs: boundedRetryMs,
+        });
+        break;
+      }
+
+      if (response.status === 429) {
+        // Short-window rate limits are not treated as daily quota exhaustion.
+        // Do not retry the same request or fan out across models.
+        const retryMs = getRetryDelayMs(providerMessage, providerDetails);
+        if (retryMs) providerModelCooldowns.set(candidate, Date.now() + Math.min(retryMs, 5 * 60 * 1000));
+        return json({
+          success: false,
+          error: "DCDS AI is receiving requests too quickly. Please wait briefly before trying again.",
+        }, 429);
+      }
+
+      if (response.status === 401 || response.status === 403) {
+        return json({
+          success: false,
+          error: "The DCDS AI provider credentials need attention. Please contact DCDS support.",
+        }, 503);
+      }
+
+      if (response.status === 500 || response.status === 503) {
+        unavailableModels.push(candidate);
+        providerModelCooldowns.set(candidate, Date.now() + 30_000);
+        if (attempt + 1 < attempts) {
+          await new Promise((resolve) => setTimeout(resolve, 500));
+          continue;
+        }
+        break;
+      }
+
+      return json({
+        success: false,
+        error: "The DCDS AI could not process this request. Please try again later.",
+      }, 502);
     }
 
     if (providerResponse) break;
-    if (candidate !== model) break;
-    console.warn("DCDS AI primary model unavailable; trying stable fallback model.");
   }
 
   if (!providerResponse) {
-    console.error("DCDS AI primary and fallback models are unavailable.", { lastProviderStatus });
-    return json({
-      success: false,
-      error: "DCDS AI is temporarily at capacity. Please try again shortly.",
-    }, 503);
+    console.error("DCDS AI model pool unavailable.", {
+      lastProviderStatus,
+      dailyQuotaModels,
+      unavailableModels,
+    });
+    const error = dailyQuotaModels.length > 0
+      ? "DCDS AI has reached a provider quota or capacity limit. We checked the available fallback models, but they are not currently responding. Please try again later."
+      : "DCDS AI is temporarily at capacity. Please try again shortly.";
+    return json({ success: false, error }, 503);
   }
 
   const result = await providerResponse.json();
