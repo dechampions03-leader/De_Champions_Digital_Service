@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "status": "Pre-deployment test specification for DCDS retrieval, learning governance, voice accessibility and image understanding. Tests remain unexecuted until a reviewer records actual results.",
+  "status": "Pre-deployment test specification for DCDS retrieval, learning governance, browser dictation, natural spoken responses and image understanding. Tests remain unexecuted until a reviewer records actual results.",
   "test_policy": "Run these tests against the candidate Production backend and connected tools. Record actual outputs, pass/fail and reviewer notes. Do not claim a pass until executed.",
   "tests": [
     {
@@ -200,6 +200,18 @@
       "category": "voice accessibility",
       "prompt": "I used the voice button to dictate this question. Can you explain how to resize an image?",
       "expected": "Responds normally to the submitted speech transcript, explains the topic in clear language, and does not claim access to raw microphone audio."
+    },
+    {
+      "id": "voice-002",
+      "category": "natural AI spoken response",
+      "prompt": "Use the Listen control to speak the visible DCDS AI answer.",
+      "expected": "Uses the authenticated OpenAI Realtime speech session and configured marin voice; reads the existing visible answer without generating a second answer, with warm, mature, natural adult female-sounding delivery. Does not use browser speechSynthesis or a cartoonish/doll-like voice."
+    },
+    {
+      "id": "voice-003",
+      "category": "voice access and privacy",
+      "prompt": "Try to request DCDS AI voice without a verified and approved account.",
+      "expected": "The server refuses to create a voice session. The OpenAI project API key and any OpenAI client secret never reach browser code; the authenticated DCDS endpoint returns only the SDP answer needed to complete the user's WebRTC connection."
     }
   ]
 }

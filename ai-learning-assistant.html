@@ -112,6 +112,8 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 .voice-status{padding:8px 11px;margin-bottom:9px;border-radius:10px;background:#f3ebfc;color:#653b88;font-size:10px;line-height:1.5}
 .speak-message{display:inline-flex;margin:7px 3px 0 0;padding:7px 10px;border:1px solid #e4d6ef;border-radius:999px;background:#fff;color:#652b98;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
 .speak-message:disabled{opacity:.55;cursor:wait}
+.speak-message[data-state="active"]{background:#f1e8ff;border-color:#b995df}
+.dcds-ai-audio{display:block;width:min(340px,100%);height:42px;margin:9px 0 4px;border-radius:12px}
 @media(max-width:580px){.composer-row{align-items:stretch}.composer-tool{flex:0 0 auto;min-height:44px;padding:10px}.composer textarea{flex:1 1 100%;order:3;min-height:48px}.send{flex:1 1 auto;order:4}.attachment-preview{align-items:flex-start}}
 </style>
 </head>
@@ -370,19 +372,148 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    reader.readAsDataURL(file);
   });
  }
- function speakText(text,button){
-  if(!('speechSynthesis' in window)||typeof window.SpeechSynthesisUtterance!=='function'){
-   setStatus('Spoken replies are not supported by this browser. You can still read the answer on screen.',true);return;
+ let activeSpeechPeer=null;
+ let activeSpeechDataChannel=null;
+ let activeSpeechAudio=null;
+ let activeSpeechButton=null;
+
+ function resetSpeechButton(button){
+  if(!button)return;
+  button.disabled=false;
+  button.dataset.state='';
+  button.textContent='🔊 Listen · AI voice';
+  button.setAttribute('aria-label','Listen using the natural AI-generated voice');
+ }
+ function stopOpenAiSpeech(){
+  const button=activeSpeechButton;
+  try{activeSpeechDataChannel?.close();}catch(_){}
+  try{activeSpeechPeer?.close();}catch(_){}
+  if(activeSpeechAudio){
+   try{activeSpeechAudio.pause();activeSpeechAudio.srcObject=null;activeSpeechAudio.remove();}catch(_){}
   }
-  const spoken=String(text||'').trim().slice(0,10000);
+  activeSpeechPeer=null;activeSpeechDataChannel=null;activeSpeechAudio=null;activeSpeechButton=null;
+  resetSpeechButton(button);
+ }
+ function waitForSpeechChannel(channel,timeoutMs=15000){
+  if(channel.readyState==='open')return Promise.resolve();
+  return new Promise((resolve,reject)=>{
+   const timer=setTimeout(()=>reject(new Error('The natural voice connection timed out. Please tap Listen to try again.')),timeoutMs);
+   channel.addEventListener('open',()=>{clearTimeout(timer);resolve();},{once:true});
+   channel.addEventListener('error',()=>{clearTimeout(timer);reject(new Error('The natural voice connection could not be opened.'));},{once:true});
+   channel.addEventListener('close',()=>{clearTimeout(timer);reject(new Error('The natural voice connection closed before playback started.'));},{once:true});
+  });
+ }
+ async function speakText(text,button){
+  const spoken=String(text||'').replace(/\s+/g,' ').trim();
   if(!spoken)return;
-  window.speechSynthesis.cancel();
-  const utterance=new SpeechSynthesisUtterance(spoken);
-  utterance.lang='en-NG';utterance.rate=1;
-  button.disabled=true;button.textContent='Speaking…';
-  utterance.onend=()=>{button.disabled=false;button.textContent='🔊 Listen';};
-  utterance.onerror=()=>{button.disabled=false;button.textContent='🔊 Listen';};
-  window.speechSynthesis.speak(utterance);
+  if(activeSpeechButton===button){
+   stopOpenAiSpeech();
+   setStatus('Natural voice playback stopped.');
+   return;
+  }
+  stopOpenAiSpeech();
+  button.disabled=true;button.dataset.state='active';button.textContent='Connecting…';
+  button.setAttribute('aria-label','Connecting to the natural AI-generated voice');
+  setStatus('Preparing the natural DCDS AI voice…');
+  try{
+   const peer=new RTCPeerConnection();
+   const audio=document.createElement('audio');
+   audio.className='dcds-ai-audio';
+   audio.controls=true;
+   audio.autoplay=true;
+   audio.playsInline=true;
+   audio.preload='none';
+   audio.setAttribute('aria-label','AI-generated DCDS voice playback');
+   button.insertAdjacentElement('afterend',audio);
+
+   activeSpeechPeer=peer;
+   activeSpeechAudio=audio;
+   activeSpeechButton=button;
+   peer.addTransceiver('audio',{direction:'recvonly'});
+   peer.ontrack=async event=>{
+    const stream=event.streams?.[0]||new MediaStream([event.track]);
+    audio.srcObject=stream;
+    try{
+     await audio.play();
+     setStatus('Playing DCDS AI’s natural AI-generated voice.');
+    }catch(_){
+     setStatus('Your browser blocked automatic playback. Tap Play in the audio player below the answer.');
+    }
+   };
+   peer.onconnectionstatechange=()=>{
+    if(peer.connectionState==='failed'||peer.connectionState==='disconnected'){
+     setStatus('The natural voice connection was interrupted. Tap Listen to try again.',true);
+    }
+   };
+
+   const channel=peer.createDataChannel('oai-events');
+   activeSpeechDataChannel=channel;
+   channel.addEventListener('message',event=>{
+    let message;
+    try{message=JSON.parse(event.data);}catch(_){return;}
+    if(message.type==='error'){
+     const detail=message.error?.message||'The natural voice could not finish this response.';
+     setStatus(detail,true);
+     stopOpenAiSpeech();
+     return;
+    }
+    if(message.type==='response.done'){
+     if(message.response?.status&&message.response.status!=='completed'){
+      setStatus('The natural voice response did not finish. Tap Listen to try again.',true);
+      return;
+     }
+     setStatus('Your spoken answer is ready. Use the audio controls to pause or replay it.');
+     button.disabled=false;
+     button.textContent='■ Stop voice';
+     button.setAttribute('aria-label','Stop the natural AI-generated voice');
+    }
+   });
+
+   const channelReady=waitForSpeechChannel(channel);
+   const offer=await peer.createOffer();
+   await peer.setLocalDescription(offer);
+   if(!offer.sdp)throw new Error('Your browser could not prepare the voice connection.');
+
+   const {data,error}=await client.functions.invoke('dcds-ai-speech-session',{body:{sdp:offer.sdp}});
+   if(error){
+    let reason=error.message||'The natural voice service could not be reached.';
+    try{
+     const response=error.context;
+     if(response&&typeof response.json==='function'){
+      const payload=await response.json();
+      if(typeof payload?.error==='string')reason=payload.error;
+     }
+    }catch(_){}
+    throw new Error(reason);
+   }
+   if(!data?.success||!data?.sdp)throw new Error(data?.error||'The DCDS natural voice service is not available yet.');
+   await peer.setRemoteDescription({type:'answer',sdp:data.sdp});
+   await channelReady;
+   channel.send(JSON.stringify({
+    type:'response.create',
+    response:{
+     conversation:'none',
+     output_modalities:['audio'],
+     max_output_tokens:4096,
+     instructions:'Read the supplied text word for word exactly. Do not summarise, paraphrase, add a greeting, add commentary, or omit any words. Use a natural adult female-sounding voice: warm, smooth, mature, confident and beautifully conversational. Use subtle human-like intonation, clear pronunciation and a comfortable pace. Avoid a childish, cartoonish, doll-like, sing-song, exaggeratedly sweet or robotic delivery. Do not sing or add sound effects.',
+     input:[{
+      type:'message',
+      role:'user',
+      content:[{type:'input_text',text:'Speak the following DCDS AI answer exactly as written, preserving all course names, numbers and prices:\n\n'+spoken}]
+     }]
+    }
+   }));
+   button.disabled=false;
+   button.textContent='■ Stop voice';
+   button.setAttribute('aria-label','Stop the natural AI-generated voice');
+   setStatus('Natural DCDS AI voice connected. The spoken words follow the answer shown on screen.');
+  }catch(error){
+   console.error('DCDS natural voice playback failed:',error?.message||error);
+   stopOpenAiSpeech();
+   resetSpeechButton(button);
+   const friendly=String(error?.message||'')||'The natural voice service is temporarily unavailable. Please try again.';
+   setStatus(friendly,true);
+  }
  }
  function toggleVoiceInput(){
   const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
@@ -537,8 +668,8 @@ async function submitAiEligibilityRequest(){
   else{bubble.classList.add('markdown-body');renderAssistantMarkdown(bubble,text);}
   wrap.appendChild(bubble);
   if(role!=='user'){
-   const listen=document.createElement('button');listen.type='button';listen.className='speak-message';listen.textContent='🔊 Listen';
-   listen.setAttribute('aria-label','Listen to this DCDS AI response');
+   const listen=document.createElement('button');listen.type='button';listen.className='speak-message';listen.textContent='🔊 Listen · AI voice';
+   listen.setAttribute('aria-label','Listen to this DCDS AI response using an AI-generated voice');
    listen.addEventListener('click',()=>speakText(bubble.textContent,listen));
    wrap.appendChild(listen);
    renderResourceActions(wrap,resources);
@@ -548,6 +679,7 @@ async function submitAiEligibilityRequest(){
   messagesEl.scrollTop=messagesEl.scrollHeight;
  }
  function resetChat(){
+  stopOpenAiSpeech();
   activeConversationId=null;
   conversation.length=0;
   messagesEl.replaceChildren();
@@ -790,8 +922,10 @@ async function submitAiEligibilityRequest(){
  document.getElementById('saveLearningMemory').addEventListener('click',saveLearningMemory);
  document.getElementById('clearLearningMemory').addEventListener('click',clearLearningMemory);
 
+ window.addEventListener('pagehide',stopOpenAiSpeech);
  form.addEventListener('submit',async event=>{
   event.preventDefault();
+  stopOpenAiSpeech();
   const typedMessage=input.value.trim();
   const attachedFile=selectedImageFile;
   if((!typedMessage&&!attachedFile)||sendButton.disabled)return;
