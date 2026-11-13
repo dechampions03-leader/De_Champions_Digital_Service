@@ -11,6 +11,7 @@ on:
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
       - "ai-learning-assistant.html"
+      - "index.html"
       - "dcds-ai-access-review.html"
       - "admin-account-deletions.html"
       - "privacy-policy.html"
@@ -29,6 +30,7 @@ on:
       - "supabase/migrations/*dcds_ai_daily_usage_budget.sql"
       - "supabase/migrations/*dcds_ai_eligibility_review_policy_scope.sql"
       - "ai-learning-assistant.html"
+      - "index.html"
       - "dcds-ai-access-review.html"
       - "admin-account-deletions.html"
       - "privacy-policy.html"
@@ -65,14 +67,18 @@ jobs:
           import re
           from pathlib import Path
 
-          html = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
-          scripts = re.findall(r"<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)</script>", html, re.I)
-          scripts = [script.strip() for script in scripts if script.strip()]
-          if not scripts:
-              raise SystemExit("No inline DCDS AI page script was found.")
-          Path("/tmp/dcds-ai-page.js").write_text("\\n".join(scripts), encoding="utf-8")
+          for page_name in ("ai-learning-assistant.html", "index.html"):
+              html = Path(page_name).read_text(encoding="utf-8")
+              scripts = re.findall(r"<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)</script>", html, re.I)
+              scripts = [script.strip() for script in scripts if script.strip()]
+              if not scripts:
+                  raise SystemExit(f"No inline JavaScript was found in {page_name}.")
+              for index, script in enumerate(scripts):
+                  Path(f"/tmp/{Path(page_name).stem}-{index}.js").write_text(script, encoding="utf-8")
           PY
-          node --check /tmp/dcds-ai-page.js
+          for script in /tmp/ai-learning-assistant-*.js /tmp/index-*.js; do
+            node --check "$script"
+          done
 
       - name: Validate live retrieval, OpenAI safety, age gates, native actions and evaluation coverage
         shell: bash
