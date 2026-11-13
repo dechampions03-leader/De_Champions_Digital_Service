@@ -33,3 +33,7 @@ General learning questions should still receive useful general educational answe
 Candidate-branch implementation is not Production until validation, review and deployment are complete.
 
 **DCDS principle:** CREATE • LEARN • INNOVATE • EARN.
+
+
+## Opt-in personal learning memory
+Automatic learning preferences are OFF by default. The student can enable the option in the Learning Memory panel. Only explicit, low-risk learning preferences are saved to the student's own private memory row. The feature is not a shared brain and never turns private chat messages into DCDS policy. The schema migration must be applied to the target environment before deploying the matching Edge Function and page.
