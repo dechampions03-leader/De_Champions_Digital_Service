@@ -121,10 +121,13 @@ AS $function$
   SELECT EXISTS (
     SELECT 1
     FROM public.dcds_ai_access_eligibility AS e
+    JOIN auth.users AS u ON u.id = e.user_id
     WHERE e.user_id = p_guardian_user_id
       AND e.age_band = '18_plus'
       AND e.access_status = 'approved'
       AND e.guardian_consent_status = 'not_required'
+      AND u.is_anonymous IS NOT TRUE
+      AND (u.email_confirmed_at IS NOT NULL OR u.phone_confirmed_at IS NOT NULL)
   );
 $function$;
 
