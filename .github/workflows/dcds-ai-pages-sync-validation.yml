@@ -79,6 +79,7 @@ jobs:
               "Visitor mode does not return before the chat form handler is attached": "await showGuestAccess();" in files["ai"] and "await showGuestAccess();return" not in files["ai"],
               "Signed-in welcome greeting is personalised from profile full_name": "user_metadata" in files["ai"] and "configureWelcomeGreeting" in files["ai"],
               "Failed chat sends preserve the draft and do not reopen the mobile keyboard": "your draft is still in the message box" in files["ai"] and "input.blur()" in files["ai"] and "input.focus()" not in submit_handler,
+              "AI pagehide cleanup references a defined function so the submit handler can register": "function stopSpeechPlayback()" in files["ai"] and "window.addEventListener('pagehide',stopSpeechPlayback)" in files["ai"] and "stopOpenAiSpeech" not in files["ai"],
               "Public visitor processing and temporary chats are disclosed": "visitor chat transcripts" in files["privacy"] and "temporary anonymous session" in files["privacy"],
               "Age policy database migration is present": "create table if not exists public.dcds_ai_access_settings" in files["age-policy-migration"],
               "Production CAPTCHA activation is enabled after Supabase Auth secret is configured": 'authProtectionEnabled: true' in files["captcha"],
