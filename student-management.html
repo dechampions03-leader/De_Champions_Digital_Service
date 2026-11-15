@@ -372,6 +372,32 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 @media(max-width:850px){.dcds-admin-showcase-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:560px){.dcds-admin-showcase-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.dcds-admin-showcase-slot{padding:11px}.dcds-admin-showcase-slot h5{font-size:13px}}
 </style>
+
+<style id="dcds-admin-showcase-manager-style">
+.dcds-admin-showcase-manager-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin:16px 0;padding:13px 15px;border:1px solid #e6d9f2;border-radius:14px;background:#fbf8ff}
+.dcds-admin-showcase-manager-toolbar strong{color:#451078;font-size:13px}
+.dcds-admin-showcase-manager-toolbar small{display:block;margin-top:4px;color:#756783;font-size:11px;line-height:1.5}
+.dcds-admin-showcase-slot-preview{overflow:hidden;margin:0 0 12px;border-radius:10px;border:1px solid #eadff5;background:#f8f4fc;aspect-ratio:16/9;display:grid;place-items:center}
+.dcds-admin-showcase-slot-preview img,.dcds-admin-showcase-slot-preview video{display:block;width:100%;height:100%;object-fit:cover}
+.dcds-admin-showcase-slot-preview a{display:block;width:100%;height:100%}
+.dcds-admin-showcase-editor{margin-top:13px;border-top:1px solid #eee5f7;padding-top:11px}
+.dcds-admin-showcase-editor summary{cursor:pointer;color:#5d2c87;font-size:11px;font-weight:900;padding:7px 0}
+.dcds-admin-showcase-editor-form{display:grid;gap:9px;margin-top:9px}
+.dcds-admin-showcase-editor-form label{display:grid;gap:5px;color:#5f5070;font-size:10px;font-weight:850}
+.dcds-admin-showcase-editor-form input[type=text],.dcds-admin-showcase-editor-form textarea,.dcds-admin-showcase-editor-form input[type=file]{width:100%;min-width:0;padding:9px;border:1px solid #e4d7f0;border-radius:9px;background:#fff;color:#31164b;font:600 11px/1.45 inherit}
+.dcds-admin-showcase-editor-form textarea{min-height:66px;resize:vertical}
+.dcds-admin-showcase-editor-form input[type=file]{font-size:10px}
+.dcds-admin-showcase-publish-row{display:flex!important;align-items:center;gap:8px!important;padding:5px 0}
+.dcds-admin-showcase-publish-row input{width:17px;height:17px;accent-color:#7132a8}
+.dcds-admin-showcase-editor-actions{display:flex;gap:8px;flex-wrap:wrap}
+.dcds-admin-showcase-editor-actions .btn{flex:1 1 auto;padding:9px 10px;font-size:10px}
+.dcds-admin-showcase-editor-message{min-height:16px;color:#6b5480;font-size:10px;line-height:1.5}
+.dcds-admin-showcase-slot-status.is-published{color:#247348}
+.dcds-admin-showcase-slot-status.is-draft{color:#94630d}
+.dcds-admin-showcase-slot-status.is-empty{color:#7a6789}
+.dcds-admin-showcase-item-link{display:inline-flex;margin-top:6px;color:#70439a;font-size:10px;font-weight:800;text-decoration:underline}
+@media(max-width:560px){.dcds-admin-showcase-editor-form input[type=text],.dcds-admin-showcase-editor-form textarea{font-size:12px}.dcds-admin-showcase-editor-actions{display:grid;grid-template-columns:1fr}.dcds-admin-showcase-manager-toolbar{align-items:flex-start}}
+</style>
 </head>
 <body>
 <div id="adminApp" hidden>
@@ -618,7 +644,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       <div class="dcds-admin-showcase-intro">
         <div><span class="admin-eyebrow">12 CATEGORIES · 72 PROJECT SPACES</span><h3>🎨 DCDS Creative Showcase</h3><p>Manage the public showcase by creative category. Every category has six matching project spaces, ready for content to be added in a later stage.</p></div>
       </div>
-      <div class="dcds-admin-showcase-note" role="status"><strong>Structure created — no media uploaded.</strong> All 12 categories have six empty project spaces each. Upload, storage, editing and publishing controls are not connected in this stage.</div>
+      <div class="dcds-admin-showcase-note" role="status"><strong>Upload manager ready.</strong> Each category has six project spaces. Only published items appear on the public Home showcase. Maximum file size: 50 MB per item; accepted formats include JPG, PNG, WebP, GIF, AVIF, MP4, WebM and MOV.</div>
       <section class="dcds-admin-showcase-group" id="admin-showcase-graphic-design" aria-labelledby="adminShowcaseHeading01">
         <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading01">✦ Graphic Design</h4><span>6 PROJECT SPACES</span></div>
         <div class="dcds-admin-showcase-grid">
@@ -993,7 +1019,7 @@ const ADMIN_VIEW_META = {
   payments: {title:"Payment Management", description:"Review orders, receipts and payment activity."},
   pricing: {title:"Course Pricing", description:"Manage approved regional course prices."},
   payouts: {title:"Payout Management", description:"Review ambassador withdrawals and international payout readiness."},
-  showcase: {title:"Creative Showcase", description:"Prepare six image spaces and six video spaces for future DCDS projects."}
+  showcase: {title:"Creative Showcase", description:"Upload, update and publish projects in all 12 creative categories."}
 };
 function closeAdminNavigation(){
   const layout=$("adminLayout"),toggle=$("adminNavToggle");
@@ -2114,6 +2140,201 @@ function loadAiAccessPolicy(){
   if(status)status.textContent="Adult public AI is available after an 18+ declaration and Cloudflare security check. Signed-in adults do not need a second global approval. Ages 13–17 require verified guardian consent and DCDS approval; under-13 remains blocked.";
 }
 
+
+/* DCDS Creative Showcase media manager — protected by the existing admin gate and Supabase RLS. */
+const DCDS_SHOWCASE_BUCKET = "dcds-creative-showcase";
+const DCDS_SHOWCASE_MAX_BYTES = 50 * 1024 * 1024;
+const DCDS_SHOWCASE_ALLOWED_MIME = new Set([
+  "image/jpeg","image/png","image/webp","image/gif","image/avif",
+  "video/mp4","video/webm","video/quicktime"
+]);
+
+function dcdsShowcaseFileExtension(file) {
+  const ext = {
+    "image/jpeg":"jpg","image/png":"png","image/webp":"webp","image/gif":"gif","image/avif":"avif",
+    "video/mp4":"mp4","video/webm":"webm","video/quicktime":"mov"
+  };
+  return ext[file.type] || "";
+}
+function dcdsShowcaseCreateField(labelText,inputType,value,placeholder) {
+  const label=document.createElement("label");
+  const caption=document.createElement("span");caption.textContent=labelText;
+  const input=document.createElement(inputType==="textarea"?"textarea":"input");
+  if(inputType!=="textarea")input.type=inputType;
+  if(value!==undefined&&value!==null)input.value=value;
+  if(placeholder)input.placeholder=placeholder;
+  label.append(caption,input);
+  return {label,input};
+}
+function dcdsShowcasePublicUrl(path) {
+  return db.storage.from(DCDS_SHOWCASE_BUCKET).getPublicUrl(path).data.publicUrl;
+}
+function dcdsShowcaseSlotParts(slotId) {
+  const match=String(slotId||"").match(/^(.+)-(\d{2})$/);
+  if(!match)return null;
+  return {category_slug:match[1],slot_number:Number(match[2])};
+}
+function dcdsShowcaseRenderSlot(card,row) {
+  const parts=dcdsShowcaseSlotParts(card.dataset.adminShowcaseSlot);
+  if(!parts)return;
+  const title=card.querySelector("h5");
+  const description=card.querySelector("p");
+  const status=card.querySelector(".dcds-admin-showcase-slot-status");
+  card.querySelector(".dcds-admin-showcase-slot-preview")?.remove();
+  card.querySelector(".dcds-admin-showcase-editor")?.remove();
+  card.querySelector(".dcds-admin-showcase-item-link")?.remove();
+  title.textContent=row?.title||("Project "+parts.slot_number);
+  description.textContent=row?.description||("Add a project from the "+parts.category_slug.replaceAll("-"," ")+" category.");
+  status.textContent=row?(row.is_published?"Published · visible on Home":"Saved as draft · hidden from visitors"):"Empty · ready for your project";
+  status.classList.toggle("is-published",!!row&&row.is_published);
+  status.classList.toggle("is-draft",!!row&&!row.is_published);
+  status.classList.toggle("is-empty",!row);
+
+  if(row?.media_path){
+    const preview=document.createElement("div");preview.className="dcds-admin-showcase-slot-preview";
+    const url=dcdsShowcasePublicUrl(row.media_path);
+    const link=document.createElement("a");link.href=url;link.target="_blank";link.rel="noopener";
+    if(row.media_type==="video"){
+      const video=document.createElement("video");video.src=url;video.muted=true;video.playsInline=true;video.preload="metadata";link.append(video);
+    }else{
+      const img=document.createElement("img");img.src=url;img.alt=row.title||"Showcase project preview";img.loading="lazy";link.append(img);
+    }
+    preview.append(link);card.insertBefore(preview,title);
+    const mediaLink=document.createElement("a");mediaLink.className="dcds-admin-showcase-item-link";mediaLink.href=url;mediaLink.target="_blank";mediaLink.rel="noopener";mediaLink.textContent="Open uploaded media ↗";
+    status.insertAdjacentElement("afterend",mediaLink);
+  }
+
+  const details=document.createElement("details");details.className="dcds-admin-showcase-editor";
+  const summary=document.createElement("summary");summary.textContent=row?"Edit or replace this project":"＋ Add a project to this space";details.append(summary);
+  const form=document.createElement("form");form.className="dcds-admin-showcase-editor-form";
+  const titleField=dcdsShowcaseCreateField("Project title","text",row?.title||"","Give this project a clear title");
+  titleField.input.maxLength=120;titleField.input.required=true;
+  const descriptionField=dcdsShowcaseCreateField("Short description","textarea",row?.description||"","Describe the work (up to 600 characters)");
+  descriptionField.input.maxLength=600;
+  const fileField=dcdsShowcaseCreateField(row?"Replace image or video (optional)":"Choose image or video","file");
+  fileField.input.accept="image/jpeg,image/png,image/webp,image/gif,image/avif,video/mp4,video/webm,video/quicktime";
+  fileField.input.required=!row;
+  const publishLabel=document.createElement("label");publishLabel.className="dcds-admin-showcase-publish-row";
+  const publish=document.createElement("input");publish.type="checkbox";publish.checked=row?row.is_published:true;
+  const publishText=document.createElement("span");publishText.textContent="Publish on the public Home showcase";
+  publishLabel.append(publish,publishText);
+  const message=document.createElement("div");message.className="dcds-admin-showcase-editor-message";message.setAttribute("role","status");message.setAttribute("aria-live","polite");
+  const actions=document.createElement("div");actions.className="dcds-admin-showcase-editor-actions";
+  const save=document.createElement("button");save.type="submit";save.className="btn gold";save.textContent=row?"Save changes":"Upload project";
+  const remove=document.createElement("button");remove.type="button";remove.className="btn ghost";remove.textContent="Remove project";remove.hidden=!row;
+  actions.append(save,remove);
+  form.append(titleField.label,descriptionField.label,fileField.label,publishLabel,message,actions);
+  form.dataset.categorySlug=parts.category_slug;form.dataset.slotNumber=String(parts.slot_number);form.dataset.oldPath=row?.media_path||"";
+  details.append(form);card.append(details);
+}
+
+async function loadDcdsCreativeShowcaseAdmin() {
+  const panel=document.getElementById("creativeShowcaseAdminPanel");
+  if(!panel)return;
+  let toolbar=panel.querySelector(".dcds-admin-showcase-manager-toolbar");
+  if(!toolbar){
+    toolbar=document.createElement("div");toolbar.className="dcds-admin-showcase-manager-toolbar";
+    toolbar.innerHTML='<div><strong id="dcdsShowcaseAdminCount">Loading showcase media…</strong><small>Choose any slot to upload an image/video, edit its details or change its public status.</small></div><button class="btn ghost" id="dcdsShowcaseAdminRefresh" type="button">↻ Refresh media</button>';
+    const note=panel.querySelector(".dcds-admin-showcase-note");if(note)note.insertAdjacentElement("afterend",toolbar);
+    toolbar.querySelector("#dcdsShowcaseAdminRefresh").addEventListener("click",()=>{
+      const button=toolbar.querySelector("#dcdsShowcaseAdminRefresh");button.disabled=true;
+      loadDcdsCreativeShowcaseAdmin().catch(error=>{console.error(error);const count=panel.querySelector("#dcdsShowcaseAdminCount");if(count)count.textContent="Could not refresh showcase items.";}).finally(()=>{button.disabled=false;});
+    });
+  }
+  const {data,error}=await db.from("dcds_showcase_items")
+    .select("category_slug,slot_number,title,description,media_type,media_path,mime_type,file_size_bytes,is_published,updated_at");
+  if(error)throw error;
+  const records=new Map((data||[]).map(row=>[row.category_slug+"-"+String(row.slot_number).padStart(2,"0"),row]));
+  panel.querySelectorAll("[data-admin-showcase-slot]").forEach(card=>dcdsShowcaseRenderSlot(card,records.get(card.dataset.adminShowcaseSlot)||null));
+  const published=(data||[]).filter(row=>row.is_published).length;
+  const count=panel.querySelector("#dcdsShowcaseAdminCount");
+  if(count)count.textContent=published+" published · "+(data||[]).length+" filled · 72 total spaces";
+
+  if(panel.dataset.showcaseManagerBound)return;
+  panel.dataset.showcaseManagerBound="true";
+  panel.addEventListener("submit",async event=>{
+    const form=event.target.closest(".dcds-admin-showcase-editor-form");
+    if(!form||!panel.contains(form))return;
+    event.preventDefault();
+    const card=form.closest("[data-admin-showcase-slot]");
+    const message=form.querySelector(".dcds-admin-showcase-editor-message");
+    const save=form.querySelector('button[type="submit"]');
+    const title=form.querySelector('input[type="text"]')?.value.trim()||"";
+    const description=form.querySelector("textarea")?.value.trim()||"";
+    const file=form.querySelector('input[type="file"]')?.files?.[0]||null;
+    const publish=form.querySelector('input[type="checkbox"]')?.checked===true;
+    const oldPath=form.dataset.oldPath||"";
+    const category_slug=form.dataset.categorySlug;
+    const slot_number=Number(form.dataset.slotNumber);
+    if(!title){message.textContent="Enter a title for this project.";return;}
+    if(description.length>600){message.textContent="Keep the description within 600 characters.";return;}
+    if(!oldPath&&!file){message.textContent="Choose an image or video for this empty space.";return;}
+    if(file){
+      if(!DCDS_SHOWCASE_ALLOWED_MIME.has(file.type)){message.textContent="Choose JPG, PNG, WebP, GIF, AVIF, MP4, WebM or MOV.";return;}
+      if(file.size<=0||file.size>DCDS_SHOWCASE_MAX_BYTES){message.textContent="File must be 50 MB or smaller.";return;}
+    }
+    save.disabled=true;save.textContent=file?"Uploading…":"Saving…";message.textContent="Saving your showcase item…";
+    let newPath=null,metadataSaved=false;
+    try{
+      const {data:{user},error:userError}=await db.auth.getUser();
+      if(userError)throw userError;
+      if(!user)throw new Error("Your admin session has expired. Please sign in again.");
+      if(file){
+        const ext=dcdsShowcaseFileExtension(file);
+        const token=(window.crypto&&crypto.randomUUID?crypto.randomUUID():Date.now().toString(36)+"-"+Math.random().toString(36).slice(2));
+        newPath=category_slug+"/"+String(slot_number)+"/"+token+"."+ext;
+        const {error:uploadError}=await db.storage.from(DCDS_SHOWCASE_BUCKET).upload(newPath,file,{cacheControl:"3600",contentType:file.type,upsert:false});
+        if(uploadError)throw uploadError;
+      }
+      const payload={title,description,is_published:publish,updated_at:new Date().toISOString()};
+      let saved;
+      if(file){
+        Object.assign(payload,{category_slug,slot_number,media_type:file.type.startsWith("video/")?"video":"image",media_path:newPath,mime_type:file.type,file_size_bytes:file.size,created_by:user.id});
+        const result=await db.from("dcds_showcase_items").upsert(payload,{onConflict:"category_slug,slot_number"}).select().single();
+        if(result.error)throw result.error;saved=result.data;
+      }else{
+        const result=await db.from("dcds_showcase_items").update(payload).eq("category_slug",category_slug).eq("slot_number",slot_number).select().single();
+        if(result.error)throw result.error;saved=result.data;
+      }
+      metadataSaved=true;
+      if(file&&oldPath&&oldPath!==newPath){
+        const {error:removeOldError}=await db.storage.from(DCDS_SHOWCASE_BUCKET).remove([oldPath]);
+        if(removeOldError)console.warn("DCDS showcase saved, but previous media cleanup needs review:",removeOldError);
+      }
+      message.textContent=saved.is_published?"Saved and published on Home.":"Saved as draft; hidden from public visitors.";
+      await loadDcdsCreativeShowcaseAdmin();
+    }catch(error){
+      if(newPath&&!metadataSaved)await db.storage.from(DCDS_SHOWCASE_BUCKET).remove([newPath]).catch(()=>{});
+      console.error("DCDS showcase save failed:",error);
+      message.textContent=error?.message||"The project could not be saved. Please try again.";
+    }finally{
+      if(save.isConnected){save.disabled=false;save.textContent=oldPath?"Save changes":"Upload project";}
+    }
+  });
+  panel.addEventListener("click",async event=>{
+    const removeButton=event.target.closest(".dcds-admin-showcase-editor-actions button[type=button]");
+    if(!removeButton||!panel.contains(removeButton))return;
+    const form=removeButton.closest(".dcds-admin-showcase-editor-form");
+    if(!form)return;
+    const oldPath=form.dataset.oldPath;if(!oldPath)return;
+    if(!confirm("Remove this project from the public showcase? The uploaded media file will also be deleted."))return;
+    removeButton.disabled=true;removeButton.textContent="Removing…";
+    const message=form.querySelector(".dcds-admin-showcase-editor-message");
+    try{
+      const category_slug=form.dataset.categorySlug,slot_number=Number(form.dataset.slotNumber);
+      const {error}=await db.from("dcds_showcase_items").delete().eq("category_slug",category_slug).eq("slot_number",slot_number);
+      if(error)throw error;
+      const {error:storageError}=await db.storage.from(DCDS_SHOWCASE_BUCKET).remove([oldPath]);
+      if(storageError)console.warn("Showcase record removed; media cleanup needs review:",storageError);
+      await loadDcdsCreativeShowcaseAdmin();
+    }catch(error){
+      console.error("DCDS showcase removal failed:",error);
+      message.textContent=error?.message||"The project could not be removed.";
+      removeButton.disabled=false;removeButton.textContent="Remove project";
+    }
+  });
+}
+
 async function initialize() {
   $("adminApp").hidden = true;
   const {data:{session},error:sessionError} = await db.auth.getSession();
@@ -2129,6 +2350,7 @@ async function initialize() {
   }
   $("adminApp").hidden = false;
   $("status").textContent = "Administrator access verified.";
+  try { await loadDcdsCreativeShowcaseAdmin(); } catch (e) { console.error("Creative Showcase media manager failed:",e); const count=$("dcdsShowcaseAdminCount"); if(count)count.textContent="Creative Showcase could not load. Please refresh the page."; }
   try { await loadAiAccessPolicy(); } catch(e) { console.error("AI age-access policy load failed:",e); }
   try { await loadCourseCatalog(); populateManualCourseOptions(); } catch(e) { console.error("Course catalog load failed:",e); }
   try { await loadAdminPaymentOps(); } catch(e) { console.error("Payment operations load failed:",e); $("paymentOpsStatus").textContent="Payment operations could not be loaded."; }
