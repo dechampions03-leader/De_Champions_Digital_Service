@@ -349,6 +349,29 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 }
 #adminViewStack>.stats[data-admin-view-panel="overview"]:not([hidden]){display:grid!important}
 </style>
+
+<style id="dcds-admin-showcase-style">
+.dcds-admin-showcase{display:grid;gap:25px;margin:18px 0}
+.dcds-admin-showcase-intro{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.dcds-admin-showcase-intro h3{margin:0;color:var(--bright-gold)}
+.dcds-admin-showcase-intro p{margin:8px 0 0;max-width:760px;color:var(--muted-text);line-height:1.65;font-size:13px}
+.dcds-admin-showcase-note{padding:13px 15px;border:1px solid #e3d3f3;border-radius:12px;background:#f8f2ff;color:#5a347a;font-size:12px;line-height:1.65}
+.dcds-admin-showcase-group{display:grid;gap:13px}
+.dcds-admin-showcase-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dcds-admin-showcase-heading h4{margin:0;color:var(--bright-gold);font-size:18px}
+.dcds-admin-showcase-heading span{color:var(--muted-text);font-size:11px;font-weight:800}
+.dcds-admin-showcase-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.dcds-admin-showcase-slot{min-width:0;border:1px dashed #d6c1e9;border-radius:13px;padding:15px;background:linear-gradient(145deg,#fff,#fbf7ff)}
+.dcds-admin-showcase-slot-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.dcds-admin-showcase-slot-number{font-size:10px;font-weight:900;letter-spacing:.12em;color:#8a59b2}
+.dcds-admin-showcase-slot-type{font-size:9px;font-weight:900;letter-spacing:.1em;color:#70439a;background:#f1e7fb;padding:5px 7px;border-radius:7px}
+.dcds-admin-showcase-slot h5{font-size:15px;margin:0 0 6px;color:#351052}
+.dcds-admin-showcase-slot p{font-size:11px;line-height:1.55;color:var(--muted-text);margin:0;min-height:35px}
+.dcds-admin-showcase-slot-status{display:flex;align-items:center;gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid #eee5f7;color:#7a6789;font-size:10px;font-weight:800}
+.dcds-admin-showcase-slot-status:before{content:"";width:7px;height:7px;border-radius:50%;background:#b49acb;flex:0 0 7px}
+@media(max-width:850px){.dcds-admin-showcase-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.dcds-admin-showcase-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.dcds-admin-showcase-slot{padding:11px}.dcds-admin-showcase-slot h5{font-size:13px}}
+</style>
 </head>
 <body>
 <div id="adminApp" hidden>
@@ -383,6 +406,10 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
         <button class="admin-nav-item" type="button" data-admin-view="payouts" aria-label="Payout management" title="Payout management">
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/><path d="M4 4v16h16"/></svg></span>
           <span class="admin-nav-copy"><strong>Payouts</strong><small>Rewards & withdrawals</small></span><span class="admin-nav-indicator"></span>
+        </button>
+        <button class="admin-nav-item" type="button" data-admin-view="showcase" aria-label="Creative showcase management" title="Creative showcase management">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="m8 14 2.5-2.5 2 2 2.5-3 3 4.5M9 8h.01"/></svg></span>
+          <span class="admin-nav-copy"><strong>Creative Showcase</strong><small>Image &amp; video spaces</small></span><span class="admin-nav-indicator"></span>
         </button>
       </nav>
       <div class="admin-sidebar-bottom">
@@ -437,6 +464,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       <button class="admin-shortcut" type="button" data-admin-view="payments"><span class="admin-shortcut-icon">₦</span><span><strong>Payment operations</strong><small>Review orders and receipts</small></span><span class="admin-shortcut-arrow">↗</span></button>
       <button class="admin-shortcut" type="button" data-admin-view="pricing"><span class="admin-shortcut-icon">▤</span><span><strong>Course pricing</strong><small>Manage regional rates</small></span><span class="admin-shortcut-arrow">↗</span></button>
       <button class="admin-shortcut" type="button" data-admin-view="payouts"><span class="admin-shortcut-icon">⇧</span><span><strong>Payout management</strong><small>Review withdrawal activity</small></span><span class="admin-shortcut-arrow">↗</span></button>
+      <button class="admin-shortcut" type="button" data-admin-view="showcase"><span class="admin-shortcut-icon">✦</span><span><strong>Creative Showcase</strong><small>View 12 empty project spaces</small></span><span class="admin-shortcut-arrow">↗</span></button>
       <a class="admin-shortcut" href="dcds-ai-access-review.html" aria-label="Review DCDS AI age and guardian eligibility" title="AI Access Review" style="text-decoration:none"><span class="admin-shortcut-icon">✦</span><span><strong>AI Access Review</strong><small>Review adult eligibility requests</small></span><span class="admin-shortcut-arrow">↗</span></a>
     </div>
   </section>
@@ -584,6 +612,363 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       <div id="studentDetailContent"></div>
     </section>
   </section>
+
+  <section class="panel" id="creativeShowcaseAdminPanel" data-admin-view-panel="showcase" style="margin:18px 0">
+    <div class="dcds-admin-showcase">
+      <div class="dcds-admin-showcase-intro">
+        <div><span class="admin-eyebrow">12 CATEGORIES · 72 PROJECT SPACES</span><h3>🎨 DCDS Creative Showcase</h3><p>Manage the public showcase by creative category. Every category has six matching project spaces, ready for content to be added in a later stage.</p></div>
+      </div>
+      <div class="dcds-admin-showcase-note" role="status"><strong>Structure created — no media uploaded.</strong> All 12 categories have six empty project spaces each. Upload, storage, editing and publishing controls are not connected in this stage.</div>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-graphic-design" aria-labelledby="adminShowcaseHeading01">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading01">✦ Graphic Design</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="graphic-design-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Graphic Design portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="graphic-design-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Graphic Design portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="graphic-design-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Graphic Design portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="graphic-design-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Graphic Design portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="graphic-design-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Graphic Design portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="graphic-design-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Graphic Design portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-video-editing" aria-labelledby="adminShowcaseHeading02">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading02">✦ Video Editing</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-editing-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Video Editing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-editing-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Video Editing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-editing-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Video Editing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-editing-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Video Editing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-editing-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Video Editing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-editing-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Video Editing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-ai-video-creativity" aria-labelledby="adminShowcaseHeading03">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading03">✦ AI Video Creativity</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-video-creativity-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a AI Video Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-video-creativity-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a AI Video Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-video-creativity-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a AI Video Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-video-creativity-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a AI Video Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-video-creativity-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a AI Video Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-video-creativity-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a AI Video Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-ai-tools-prompts" aria-labelledby="adminShowcaseHeading04">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading04">✦ Access to ChatGPT Prompts, Claude, Gemini, and Grok</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-tools-prompts-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Access to ChatGPT Prompts, Claude, Gemini, and Grok portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-tools-prompts-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Access to ChatGPT Prompts, Claude, Gemini, and Grok portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-tools-prompts-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Access to ChatGPT Prompts, Claude, Gemini, and Grok portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-tools-prompts-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Access to ChatGPT Prompts, Claude, Gemini, and Grok portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-tools-prompts-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Access to ChatGPT Prompts, Claude, Gemini, and Grok portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-tools-prompts-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Access to ChatGPT Prompts, Claude, Gemini, and Grok portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-ai-image-creativity" aria-labelledby="adminShowcaseHeading05">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading05">✦ AI Image Creativity</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-image-creativity-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a AI Image Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-image-creativity-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a AI Image Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-image-creativity-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a AI Image Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-image-creativity-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a AI Image Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-image-creativity-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a AI Image Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="ai-image-creativity-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a AI Image Creativity portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-whiteboard-animation" aria-labelledby="adminShowcaseHeading06">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading06">✦ Whiteboard Animation</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="whiteboard-animation-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Whiteboard Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="whiteboard-animation-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Whiteboard Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="whiteboard-animation-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Whiteboard Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="whiteboard-animation-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Whiteboard Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="whiteboard-animation-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Whiteboard Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="whiteboard-animation-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Whiteboard Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-website-designing" aria-labelledby="adminShowcaseHeading07">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading07">✦ Website Designing</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="website-designing-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Website Designing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="website-designing-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Website Designing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="website-designing-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Website Designing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="website-designing-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Website Designing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="website-designing-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Website Designing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="website-designing-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Website Designing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-app-building" aria-labelledby="adminShowcaseHeading08">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading08">✦ App Building</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="app-building-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a App Building portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="app-building-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a App Building portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="app-building-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a App Building portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="app-building-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a App Building portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="app-building-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a App Building portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="app-building-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a App Building portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-kids-nursery-rhymes" aria-labelledby="adminShowcaseHeading09">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading09">✦ Kids’ Nursery Rhymes</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="kids-nursery-rhymes-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Kids’ Nursery Rhymes portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="kids-nursery-rhymes-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Kids’ Nursery Rhymes portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="kids-nursery-rhymes-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Kids’ Nursery Rhymes portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="kids-nursery-rhymes-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Kids’ Nursery Rhymes portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="kids-nursery-rhymes-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Kids’ Nursery Rhymes portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="kids-nursery-rhymes-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Kids’ Nursery Rhymes portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-advanced-3d-cartoon-animation" aria-labelledby="adminShowcaseHeading10">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading10">✦ Advanced 3D Cartoon Animation</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="advanced-3d-cartoon-animation-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Advanced 3D Cartoon Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="advanced-3d-cartoon-animation-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Advanced 3D Cartoon Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="advanced-3d-cartoon-animation-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Advanced 3D Cartoon Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="advanced-3d-cartoon-animation-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Advanced 3D Cartoon Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="advanced-3d-cartoon-animation-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Advanced 3D Cartoon Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="advanced-3d-cartoon-animation-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Advanced 3D Cartoon Animation portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-affiliate-marketing" aria-labelledby="adminShowcaseHeading11">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading11">✦ Affiliate Marketing</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="affiliate-marketing-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Affiliate Marketing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="affiliate-marketing-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Affiliate Marketing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="affiliate-marketing-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Affiliate Marketing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="affiliate-marketing-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Affiliate Marketing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="affiliate-marketing-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Affiliate Marketing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="affiliate-marketing-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Affiliate Marketing portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" id="admin-showcase-social-media-management" aria-labelledby="adminShowcaseHeading12">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminShowcaseHeading12">✦ Social Media Management</h4><span>6 PROJECT SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="social-media-management-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 1</h5><p>Reserved for a Social Media Management portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="social-media-management-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 2</h5><p>Reserved for a Social Media Management portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="social-media-management-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 3</h5><p>Reserved for a Social Media Management portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="social-media-management-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 4</h5><p>Reserved for a Social Media Management portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="social-media-management-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 5</h5><p>Reserved for a Social Media Management portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="social-media-management-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">PROJECT ITEM</span></div>
+            <h5>Project 6</h5><p>Reserved for a Social Media Management portfolio item.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </section>
   </main>
   <footer>© 2026 De Champions Digital Service.<br>CREATE • LEARN • INNOVATE • EARN.</footer>
     </div>
@@ -607,7 +992,8 @@ const ADMIN_VIEW_META = {
   students: {title:"Student Management", description:"Search student records, profiles and enrolments."},
   payments: {title:"Payment Management", description:"Review orders, receipts and payment activity."},
   pricing: {title:"Course Pricing", description:"Manage approved regional course prices."},
-  payouts: {title:"Payout Management", description:"Review ambassador withdrawals and international payout readiness."}
+  payouts: {title:"Payout Management", description:"Review ambassador withdrawals and international payout readiness."},
+  showcase: {title:"Creative Showcase", description:"Prepare six image spaces and six video spaces for future DCDS projects."}
 };
 function closeAdminNavigation(){
   const layout=$("adminLayout"),toggle=$("adminNavToggle");
