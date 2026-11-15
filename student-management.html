@@ -349,6 +349,29 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 }
 #adminViewStack>.stats[data-admin-view-panel="overview"]:not([hidden]){display:grid!important}
 </style>
+
+<style id="dcds-admin-showcase-style">
+.dcds-admin-showcase{display:grid;gap:25px;margin:18px 0}
+.dcds-admin-showcase-intro{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap}
+.dcds-admin-showcase-intro h3{margin:0;color:var(--bright-gold)}
+.dcds-admin-showcase-intro p{margin:8px 0 0;max-width:760px;color:var(--muted-text);line-height:1.65;font-size:13px}
+.dcds-admin-showcase-note{padding:13px 15px;border:1px solid #e3d3f3;border-radius:12px;background:#f8f2ff;color:#5a347a;font-size:12px;line-height:1.65}
+.dcds-admin-showcase-group{display:grid;gap:13px}
+.dcds-admin-showcase-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.dcds-admin-showcase-heading h4{margin:0;color:var(--bright-gold);font-size:18px}
+.dcds-admin-showcase-heading span{color:var(--muted-text);font-size:11px;font-weight:800}
+.dcds-admin-showcase-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.dcds-admin-showcase-slot{min-width:0;border:1px dashed #d6c1e9;border-radius:13px;padding:15px;background:linear-gradient(145deg,#fff,#fbf7ff)}
+.dcds-admin-showcase-slot-top{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px}
+.dcds-admin-showcase-slot-number{font-size:10px;font-weight:900;letter-spacing:.12em;color:#8a59b2}
+.dcds-admin-showcase-slot-type{font-size:9px;font-weight:900;letter-spacing:.1em;color:#70439a;background:#f1e7fb;padding:5px 7px;border-radius:7px}
+.dcds-admin-showcase-slot h5{font-size:15px;margin:0 0 6px;color:#351052}
+.dcds-admin-showcase-slot p{font-size:11px;line-height:1.55;color:var(--muted-text);margin:0;min-height:35px}
+.dcds-admin-showcase-slot-status{display:flex;align-items:center;gap:7px;margin-top:12px;padding-top:10px;border-top:1px solid #eee5f7;color:#7a6789;font-size:10px;font-weight:800}
+.dcds-admin-showcase-slot-status:before{content:"";width:7px;height:7px;border-radius:50%;background:#b49acb;flex:0 0 7px}
+@media(max-width:850px){.dcds-admin-showcase-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.dcds-admin-showcase-grid{grid-template-columns:1fr}.dcds-admin-showcase-slot{padding:13px}}
+</style>
 </head>
 <body>
 <div id="adminApp" hidden>
@@ -383,6 +406,10 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
         <button class="admin-nav-item" type="button" data-admin-view="payouts" aria-label="Payout management" title="Payout management">
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M7 17 17 7M8 7h9v9"/><path d="M4 4v16h16"/></svg></span>
           <span class="admin-nav-copy"><strong>Payouts</strong><small>Rewards & withdrawals</small></span><span class="admin-nav-indicator"></span>
+        </button>
+        <button class="admin-nav-item" type="button" data-admin-view="showcase" aria-label="Creative showcase management" title="Creative showcase management">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v17H6.5A2.5 2.5 0 0 1 4 17.5z"/><path d="m8 14 2.5-2.5 2 2 2.5-3 3 4.5M9 8h.01"/></svg></span>
+          <span class="admin-nav-copy"><strong>Creative Showcase</strong><small>Image &amp; video spaces</small></span><span class="admin-nav-indicator"></span>
         </button>
       </nav>
       <div class="admin-sidebar-bottom">
@@ -437,6 +464,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       <button class="admin-shortcut" type="button" data-admin-view="payments"><span class="admin-shortcut-icon">₦</span><span><strong>Payment operations</strong><small>Review orders and receipts</small></span><span class="admin-shortcut-arrow">↗</span></button>
       <button class="admin-shortcut" type="button" data-admin-view="pricing"><span class="admin-shortcut-icon">▤</span><span><strong>Course pricing</strong><small>Manage regional rates</small></span><span class="admin-shortcut-arrow">↗</span></button>
       <button class="admin-shortcut" type="button" data-admin-view="payouts"><span class="admin-shortcut-icon">⇧</span><span><strong>Payout management</strong><small>Review withdrawal activity</small></span><span class="admin-shortcut-arrow">↗</span></button>
+      <button class="admin-shortcut" type="button" data-admin-view="showcase"><span class="admin-shortcut-icon">✦</span><span><strong>Creative Showcase</strong><small>View 12 empty project spaces</small></span><span class="admin-shortcut-arrow">↗</span></button>
       <a class="admin-shortcut" href="dcds-ai-access-review.html" aria-label="Review DCDS AI age and guardian eligibility" title="AI Access Review" style="text-decoration:none"><span class="admin-shortcut-icon">✦</span><span><strong>AI Access Review</strong><small>Review adult eligibility requests</small></span><span class="admin-shortcut-arrow">↗</span></a>
     </div>
   </section>
@@ -584,6 +612,73 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       <div id="studentDetailContent"></div>
     </section>
   </section>
+
+  <section class="panel" id="creativeShowcaseAdminPanel" data-admin-view-panel="showcase" style="margin:18px 0">
+    <div class="dcds-admin-showcase">
+      <div class="dcds-admin-showcase-intro">
+        <div><span class="admin-eyebrow">NEW WORKSPACE · 12 CATEGORY SPACES</span><h3>🎨 DCDS Creative Showcase</h3><p>Prepare the public showcase by category. Each image and video creativity has its own dedicated display space, ready for content to be added in a later stage.</p></div>
+      </div>
+      <div class="dcds-admin-showcase-note" role="status"><strong>Structure created — no media uploaded.</strong> This launch creates the category spaces only. Upload, storage, editing and publishing controls are not connected in this stage.</div>
+      <section class="dcds-admin-showcase-group" aria-labelledby="adminImageSpacesTitle">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminImageSpacesTitle">🖼️ Image Gallery Spaces</h4><span>6 EMPTY CATEGORY SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="image-01">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 01</span><span class="dcds-admin-showcase-slot-type">IMAGE</span></div>
+            <h5>Graphic Design</h5><p>Flyers, posters, advertisements and visual communication.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="image-02">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 02</span><span class="dcds-admin-showcase-slot-type">IMAGE</span></div>
+            <h5>Logo & Brand Identity</h5><p>Logos, brand systems and business identity designs.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="image-03">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 03</span><span class="dcds-admin-showcase-slot-type">IMAGE</span></div>
+            <h5>Social Media Creatives</h5><p>Campaign graphics, carousel posts and social content.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="image-04">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 04</span><span class="dcds-admin-showcase-slot-type">IMAGE</span></div>
+            <h5>Website & App Designs</h5><p>Website layouts, app screens and dashboard interfaces.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="image-05">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 05</span><span class="dcds-admin-showcase-slot-type">IMAGE</span></div>
+            <h5>AI Image Creations</h5><p>AI-assisted artwork, concepts and visual experiments.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="image-06">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 06</span><span class="dcds-admin-showcase-slot-type">IMAGE</span></div>
+            <h5>Thumbnails & Covers</h5><p>YouTube thumbnails, banners and digital covers.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-admin-showcase-group" aria-labelledby="adminVideoSpacesTitle">
+        <div class="dcds-admin-showcase-heading"><h4 id="adminVideoSpacesTitle">🎬 Video Showcase Spaces</h4><span>6 EMPTY CATEGORY SPACES</span></div>
+        <div class="dcds-admin-showcase-grid">
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-07">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 07</span><span class="dcds-admin-showcase-slot-type">VIDEO</span></div>
+            <h5>Video Editing</h5><p>Edited videos, reels, explainers and creative showreels.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-08">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 08</span><span class="dcds-admin-showcase-slot-type">VIDEO</span></div>
+            <h5>AI Video Creations</h5><p>AI-assisted video concepts and generated scenes.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-09">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 09</span><span class="dcds-admin-showcase-slot-type">VIDEO</span></div>
+            <h5>Whiteboard Animations</h5><p>Animated lessons, explainers and illustrated stories.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-10">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 10</span><span class="dcds-admin-showcase-slot-type">VIDEO</span></div>
+            <h5>Motion Graphics</h5><p>Animated titles, logo reveals and visual effects.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-11">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 11</span><span class="dcds-admin-showcase-slot-type">VIDEO</span></div>
+            <h5>Course Previews</h5><p>Short previews introducing DCDS courses and lessons.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+          <article class="dcds-admin-showcase-slot" data-admin-showcase-slot="video-12">
+            <div class="dcds-admin-showcase-slot-top"><span class="dcds-admin-showcase-slot-number">SPACE 12</span><span class="dcds-admin-showcase-slot-type">VIDEO</span></div>
+            <h5>Student Project Demos</h5><p>Practical project demonstrations and learner-created work.</p><div class="dcds-admin-showcase-slot-status">Empty · awaiting future content</div>
+          </article>
+        </div>
+      </section>
+    </div>
+  </section>
   </main>
   <footer>© 2026 De Champions Digital Service.<br>CREATE • LEARN • INNOVATE • EARN.</footer>
     </div>
@@ -607,7 +702,8 @@ const ADMIN_VIEW_META = {
   students: {title:"Student Management", description:"Search student records, profiles and enrolments."},
   payments: {title:"Payment Management", description:"Review orders, receipts and payment activity."},
   pricing: {title:"Course Pricing", description:"Manage approved regional course prices."},
-  payouts: {title:"Payout Management", description:"Review ambassador withdrawals and international payout readiness."}
+  payouts: {title:"Payout Management", description:"Review ambassador withdrawals and international payout readiness."},
+  showcase: {title:"Creative Showcase", description:"Prepare six image spaces and six video spaces for future DCDS projects."}
 };
 function closeAdminNavigation(){
   const layout=$("adminLayout"),toggle=$("adminNavToggle");
