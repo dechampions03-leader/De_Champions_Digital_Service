@@ -33,3 +33,8 @@ General learning questions should still receive useful general educational answe
 Candidate-branch implementation is not Production until validation, review and deployment are complete.
 
 **DCDS principle:** CREATE • LEARN • INNOVATE • EARN.
+
+
+## Current age and access rule
+
+DCDS AI is adult-only (18+) while it uses the Gemini API. Public adult visitors can chat without a DCDS account after the age declaration and Cloudflare Turnstile check. Signed-in students must pass the server-side 18+ eligibility check. Administrators must confirm 18+ and remain read-only. This provider rule does not prevent younger learners from using DCDS courses or other suitable platform services. A future under-18 AI release requires a different provider whose current terms permit it plus a separate safeguarding, privacy and technical review.
