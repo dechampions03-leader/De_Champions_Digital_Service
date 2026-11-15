@@ -935,7 +935,7 @@ async function submitAiEligibilityRequest(){
  document.getElementById('saveLearningMemory').addEventListener('click',saveLearningMemory);
  document.getElementById('clearLearningMemory').addEventListener('click',clearLearningMemory);
 
- window.addEventListener('pagehide',stopOpenAiSpeech);
+ window.addEventListener('pagehide',stopSpeechPlayback);
  form.addEventListener('submit',async event=>{
   event.preventDefault();stopSpeechPlayback();
   const typedMessage=input.value.trim();
