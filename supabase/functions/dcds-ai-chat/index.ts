@@ -177,17 +177,18 @@ async function searchPlatformKnowledge(
 // Discover model names dynamically and use only models that the Gemini API
 // currently lists as supporting generateContent. Cache the result per isolate.
 let cachedGeminiModels: { names: string[]; expiresAt: number } | null = null;
-const MODEL_PREFERENCE = [
-  "gemini-4-hydrogen", "gemini-4-carbon", "gemini-4-argon",
-  "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash",
-  "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
-];
-const STATIC_DOCUMENTED_MODELS = [
-  "gemini-3.6-flash", "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
-];
-const GOOGLE_SEARCH_MODELS = new Set([
-  "gemini-3.8-flash", "gemini-3.7-flash", "gemini-3.6-flash",
-  "gemini-3.5-flash", "gemini-3.5-flash-lite", "gemini-3.1-flash-lite",
+// DCDS currently runs without paid Gemini billing. Keep generation pinned to models
+// whose Standard tier is explicitly listed as Free in Google's published pricing.
+// models.list reports API capability, not whether a model is included in this key's tier.
+const FREE_TIER_MODEL_PREFERENCE = [
+  "gemini-3.6-flash",
+  "gemini-3.5-flash-lite",
+] as const;
+const STATIC_DOCUMENTED_MODELS = [...FREE_TIER_MODEL_PREFERENCE];
+const GOOGLE_SEARCH_MODELS = new Set<string>([
+  // The free-tier model allowlist is maintained separately from tool support.
+  // External Google Search grounding remains enabled only for a model explicitly
+  // added here after its free-tier tool availability is confirmed.
 ]);
 
 async function listAvailableGeminiModels(apiKey: string): Promise<string[] | null> {
@@ -609,17 +610,36 @@ ${platformSearch.context}${savedMemoryInstruction}`;
 
 
 
-  // Model discovery already ran concurrently with DCDS retrieval preparation.
-  const configuredCandidates = discoveredModels
-    ? [
-      ...(discoveredModels.includes(model) ? [model] : []),
-      ...MODEL_PREFERENCE.filter((candidate) => discoveredModels.includes(candidate)),
-      ...discoveredModels.filter((candidate) => !MODEL_PREFERENCE.includes(candidate)),
-    ]
-    : [...new Set([model, ...STATIC_DOCUMENTED_MODELS])];
+  // Use models.list only to confirm that a documented free-tier model is available.
+  // Never append the entire discovered catalogue: it includes paid-only models.
+  const availableFreeTierModels = discoveredModels
+    ? FREE_TIER_MODEL_PREFERENCE.filter((candidate) => discoveredModels.includes(candidate))
+    : [...FREE_TIER_MODEL_PREFERENCE];
+
+  const configuredModelIsFreeTier = (FREE_TIER_MODEL_PREFERENCE as readonly string[]).includes(model);
+  if (!configuredModelIsFreeTier) {
+    console.warn("DCDS_AI_MODEL is outside the free-tier allowlist; using a documented free model instead.", {
+      configuredModel: model,
+      requestId,
+    });
+  }
+
+  const configuredCandidates = [
+    ...(configuredModelIsFreeTier && availableFreeTierModels.includes(model as typeof FREE_TIER_MODEL_PREFERENCE[number])
+      ? [model as typeof FREE_TIER_MODEL_PREFERENCE[number]]
+      : []),
+    ...availableFreeTierModels.filter((candidate) => candidate !== model),
+  ];
+
   const modelCandidates = [...new Set(configuredCandidates)].filter(
     (candidate) => (providerModelCooldowns.get(candidate) ?? 0) <= Date.now(),
   );
+
+  console.info("DCDS AI free-tier model routing selected.", {
+    requestId,
+    candidates: modelCandidates,
+    discoveredModelCount: discoveredModels?.length ?? 0,
+  });
   if (!modelCandidates.length) {
     const dailyQuotaCooling = [...providerDailyQuotaCooldowns.values()].some((expiresAt) => expiresAt > Date.now());
     return respond({
@@ -627,7 +647,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
       error_code: dailyQuotaCooling ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE",
       error: dailyQuotaCooling
         ? "DCDS AI has reached the available no-cost provider allowance. Your draft is kept in the chat box; please try again after the provider quota resets."
-        : "DCDS AI is temporarily at capacity. Your draft is kept in the chat box; please try again shortly.",
+        : "DCDS AI's documented free-tier models are temporarily unavailable. Your draft is kept in the chat box; please try again shortly.",
     }, dailyQuotaCooling ? 429 : 503);
   }
 
