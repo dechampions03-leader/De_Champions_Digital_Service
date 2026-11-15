@@ -356,6 +356,18 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 .dcds-showcase-viewer-status{display:inline-flex;margin-top:19px;padding:8px 12px;border-radius:99px;background:#f1e8fa;color:#6c3a91;font-size:10px;font-weight:900;letter-spacing:.08em;text-transform:uppercase}
 @media(max-width:560px){.dcds-showcase-viewer{padding-left:13px;padding-right:13px}.dcds-showcase-viewer-head{padding-bottom:13px}.dcds-showcase-viewer-empty{min-height:72vh;padding:20px;border-radius:20px}}
 </style>
+
+<style id="dcds-showcase-media-rendering">
+.dcds-showcase-preview.has-media{display:block;position:relative;padding:0;overflow:hidden;background:#221039}
+.dcds-showcase-preview .dcds-showcase-thumbnail{display:block;width:100%;height:100%;min-height:inherit;object-fit:cover;aspect-ratio:16/9}
+.dcds-showcase-card[data-showcase-slot] .dcds-showcase-preview.has-media{cursor:pointer}
+.dcds-showcase-viewer-content{width:100%;display:grid;gap:18px}
+.dcds-showcase-viewer-media{display:grid;place-items:center;min-width:0;width:100%;min-height:0}
+.dcds-showcase-viewer-media[hidden]{display:none!important}
+.dcds-showcase-viewer-media img,.dcds-showcase-viewer-media video{display:block;width:100%;max-height:68vh;object-fit:contain;border-radius:18px;background:#1d102b;box-shadow:0 18px 55px rgba(32,12,50,.18)}
+.dcds-showcase-viewer-empty[hidden]{display:none!important}
+@media(max-width:560px){.dcds-showcase-viewer-media img,.dcds-showcase-viewer-media video{max-height:64vh;border-radius:13px}}
+</style>
 </head>
 <body>
 <section id="dcds-launch-screen" aria-label="De Champions Digital Service"><div class="dcds-launch-main"><img class="dcds-launch-logo dcds-reveal dcds-reveal-logo" src="./assets/dcds-splash-icon-v4-512.png" alt="DCDS logo" width="512" height="512" fetchpriority="high"><h1 class="dcds-launch-wordmark"><span class="dcds-reveal dcds-reveal-name-one">DE CHAMPIONS</span><span class="dcds-reveal dcds-reveal-name-two">DIGITAL SERVICE</span></h1><p class="dcds-launch-tagline" aria-label="Create, Learn, Innovate, Earn"><span class="dcds-reveal dcds-reveal-create">CREATE</span><span class="dot dcds-reveal dcds-reveal-create" aria-hidden="true">•</span><span class="dcds-reveal dcds-reveal-learn">LEARN</span><span class="dot dcds-reveal dcds-reveal-learn" aria-hidden="true">•</span><span class="dcds-reveal dcds-reveal-innovate">INNOVATE</span><span class="dot dcds-reveal dcds-reveal-innovate" aria-hidden="true">•</span><span class="dcds-reveal dcds-reveal-earn">EARN</span></p></div><div class="dcds-launch-footer dcds-reveal dcds-reveal-footer">De Champions Digital Service</div></section>
@@ -2657,14 +2669,87 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
 (()=>{
  const root=document.getElementById("creative-showcase");if(!root||document.getElementById("dcdsShowcaseViewer"))return;
  const viewer=document.createElement("div");viewer.id="dcdsShowcaseViewer";viewer.className="dcds-showcase-viewer";viewer.hidden=true;viewer.setAttribute("role","dialog");viewer.setAttribute("aria-modal","true");viewer.setAttribute("aria-labelledby","dcdsShowcaseViewerTitle");
- viewer.innerHTML='<div class="dcds-showcase-viewer-head"><div><div class="dcds-showcase-viewer-kicker" id="dcdsShowcaseViewerCategory">DCDS CREATIVE SHOWCASE</div><h2 class="dcds-showcase-viewer-title" id="dcdsShowcaseViewerTitle">Project space</h2></div><button class="dcds-showcase-viewer-close" type="button" aria-label="Close full-screen project view">×</button></div><div class="dcds-showcase-viewer-body"><div class="dcds-showcase-viewer-empty"><div><span class="dcds-showcase-viewer-symbol" aria-hidden="true">✦</span><h3 id="dcdsShowcaseViewerEmptyTitle">Your project space</h3><p id="dcdsShowcaseViewerDescription">This dedicated space is ready for a DCDS project.</p><span class="dcds-showcase-viewer-status">Awaiting project content</span></div></div></div>';document.body.appendChild(viewer);
- const closeButton=viewer.querySelector(".dcds-showcase-viewer-close"),categoryLabel=viewer.querySelector("#dcdsShowcaseViewerCategory"),title=viewer.querySelector("#dcdsShowcaseViewerTitle"),emptyTitle=viewer.querySelector("#dcdsShowcaseViewerEmptyTitle"),description=viewer.querySelector("#dcdsShowcaseViewerDescription");let activeCard=null,previousOverflow="";
- function closeViewer(){if(viewer.hidden)return;viewer.hidden=true;document.body.style.overflow=previousOverflow;const card=activeCard;activeCard=null;if(card&&card.isConnected)card.focus({preventScroll:true});}
- function openViewer(card){const group=card.closest(".dcds-showcase-group"),category=group?.querySelector(".dcds-showcase-group-heading h3")?.textContent.trim()||"DCDS Creative Showcase",item=card.querySelector("h4")?.textContent.trim()||"Project space",number=card.querySelector(".dcds-showcase-index")?.textContent.trim()||"PROJECT SPACE";categoryLabel.textContent=category+" · "+number;title.textContent=item;emptyTitle.textContent=item;description.textContent="This full-screen space is reserved for "+category+" work. Project media can be added when the DCDS upload and publishing tools are introduced.";activeCard=card;previousOverflow=document.body.style.overflow;document.body.style.overflow="hidden";viewer.hidden=false;closeButton.focus({preventScroll:true});}
+ viewer.innerHTML='<div class="dcds-showcase-viewer-head"><div><div class="dcds-showcase-viewer-kicker" id="dcdsShowcaseViewerCategory">DCDS CREATIVE SHOWCASE</div><h2 class="dcds-showcase-viewer-title" id="dcdsShowcaseViewerTitle">Project space</h2></div><button class="dcds-showcase-viewer-close" type="button" aria-label="Close full-screen project view">×</button></div><div class="dcds-showcase-viewer-body"><div class="dcds-showcase-viewer-content"><div class="dcds-showcase-viewer-media" id="dcdsShowcaseViewerMedia" hidden></div><div class="dcds-showcase-viewer-empty"><div><span class="dcds-showcase-viewer-symbol" aria-hidden="true">✦</span><h3 id="dcdsShowcaseViewerEmptyTitle">Your project space</h3><p id="dcdsShowcaseViewerDescription">This dedicated space is ready for a DCDS project.</p><span class="dcds-showcase-viewer-status">Awaiting project content</span></div></div></div></div>';document.body.appendChild(viewer);
+ const closeButton=viewer.querySelector(".dcds-showcase-viewer-close"),categoryLabel=viewer.querySelector("#dcdsShowcaseViewerCategory"),title=viewer.querySelector("#dcdsShowcaseViewerTitle"),emptyTitle=viewer.querySelector("#dcdsShowcaseViewerEmptyTitle"),description=viewer.querySelector("#dcdsShowcaseViewerDescription"),mediaArea=viewer.querySelector("#dcdsShowcaseViewerMedia"),emptyState=viewer.querySelector(".dcds-showcase-viewer-empty");let activeCard=null,previousOverflow="";
+ function closeViewer(){if(viewer.hidden)return;const video=mediaArea.querySelector("video");if(video){video.pause();video.removeAttribute("src");video.load();}mediaArea.replaceChildren();mediaArea.hidden=true;emptyState.hidden=false;viewer.hidden=true;document.body.style.overflow=previousOverflow;const card=activeCard;activeCard=null;if(card&&card.isConnected)card.focus({preventScroll:true});}
+ function openViewer(card){
+  const group=card.closest(".dcds-showcase-group");
+  const category=group?.querySelector(".dcds-showcase-group-heading h3")?.textContent.trim()||"DCDS Creative Showcase";
+  const item=card.dataset.showcaseTitle||card.querySelector("h4")?.textContent.trim()||"Project space";
+  const number=card.querySelector(".dcds-showcase-index")?.textContent.trim()||"PROJECT SPACE";
+  const mediaUrl=card.dataset.showcaseMediaUrl||"";
+  const mediaType=card.dataset.showcaseMediaType||"";
+  categoryLabel.textContent=category+" · "+number;
+  title.textContent=item;
+  emptyTitle.textContent=item;
+  mediaArea.replaceChildren();
+  if(mediaUrl){
+   const media=document.createElement(mediaType==="video"?"video":"img");
+   media.src=mediaUrl;
+   if(mediaType==="video"){
+    media.controls=true;media.autoplay=true;media.playsInline=true;media.preload="auto";
+    media.addEventListener("error",()=>{description.textContent="This video could not be played in your browser. Try opening it in a new tab.";},{once:true});
+   }else{media.alt=item;media.loading="eager";}
+   mediaArea.appendChild(media);
+   mediaArea.hidden=false;
+   emptyState.hidden=true;
+   description.textContent=card.dataset.showcaseDescription||"A DCDS creative project.";
+   if(mediaType==="video")media.play().catch(()=>{});
+  }else{
+   mediaArea.hidden=true;
+   emptyState.hidden=false;
+   description.textContent="This full-screen space is reserved for "+category+" work. You can add an image or video for this project from the DCDS administration dashboard.";
+  }
+  activeCard=card;
+  previousOverflow=document.body.style.overflow;
+  document.body.style.overflow="hidden";
+  viewer.hidden=false;
+  closeButton.focus({preventScroll:true});
+ }
  root.querySelectorAll("[data-showcase-slot]").forEach(card=>{card.setAttribute("role","button");card.setAttribute("tabindex","0");const category=card.closest(".dcds-showcase-group")?.querySelector(".dcds-showcase-group-heading h3")?.textContent.trim()||"DCDS project",item=card.querySelector("h4")?.textContent.trim()||"Project space";card.setAttribute("aria-haspopup","dialog");card.setAttribute("aria-label","Open "+category+": "+item+" in full screen");});
  root.addEventListener("click",event=>{const card=event.target.closest("[data-showcase-slot]");if(card&&root.contains(card)){event.preventDefault();openViewer(card);}});
  root.addEventListener("keydown",event=>{const card=event.target.closest("[data-showcase-slot]");if(card&&root.contains(card)&&(event.key==="Enter"||event.key===" ")){event.preventDefault();openViewer(card);}});
  closeButton.addEventListener("click",closeViewer);viewer.addEventListener("click",event=>{if(event.target===viewer)closeViewer();});viewer.addEventListener("keydown",event=>{if(event.key==="Escape"){event.preventDefault();closeViewer();}if(event.key==="Tab"){event.preventDefault();closeButton.focus();}});
+})();
+</script>
+
+<script id="dcds-public-showcase-media-loader">
+(async()=>{
+ const root=document.getElementById("creative-showcase");
+ if(!root||!supabaseClient)return;
+ const bucket="dcds-creative-showcase";
+ try{
+  const {data,error}=await supabaseClient.from("dcds_showcase_items")
+   .select("category_slug,slot_number,title,description,media_type,media_path,is_published")
+   .eq("is_published",true);
+  if(error)throw error;
+  (data||[]).forEach(row=>{
+   const slot=row.category_slug+"-"+String(row.slot_number).padStart(2,"0");
+   const card=root.querySelector('[data-showcase-slot="'+slot+'"]');
+   if(!card)return;
+   const url=supabaseClient.storage.from(bucket).getPublicUrl(row.media_path).data.publicUrl;
+   card.dataset.showcaseMediaUrl=url;
+   card.dataset.showcaseMediaType=row.media_type;
+   card.dataset.showcaseTitle=row.title||("Project "+row.slot_number);
+   card.dataset.showcaseDescription=row.description||"";
+   const heading=card.querySelector("h4");
+   const copy=card.querySelector(".dcds-showcase-card-copy p");
+   if(heading)heading.textContent=card.dataset.showcaseTitle;
+   if(copy){copy.textContent=row.description||"View this DCDS creative project.";copy.hidden=!row.description;}
+   const preview=card.querySelector(".dcds-showcase-preview");
+   if(!preview)return;
+   preview.replaceChildren();preview.classList.add("has-media");
+   if(row.media_type==="video"){
+    const video=document.createElement("video");
+    video.className="dcds-showcase-thumbnail";video.src=url;video.muted=true;video.playsInline=true;video.preload="metadata";
+    preview.appendChild(video);
+   }else{
+    const image=document.createElement("img");
+    image.className="dcds-showcase-thumbnail";image.src=url;image.alt=row.title||"DCDS creative showcase project";image.loading="lazy";
+    preview.appendChild(image);
+   }
+  });
+ }catch(error){console.warn("DCDS showcase media could not be loaded:",error);}
 })();
 </script>
 </body></html>
