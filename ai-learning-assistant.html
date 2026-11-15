@@ -982,12 +982,13 @@ async function submitAiEligibilityRequest(){
     userRow.querySelector('div')?.appendChild(note);
    }
    console.error('DCDS AI send failed without logging message content:',{status:error?.context?.status??null,message:String(error?.message||'').slice(0,240)});
-   const messageText=String(error?.message||'').toLowerCase();let serverMessage='',serverCode='';
+   const messageText=String(error?.message||'').toLowerCase();let serverMessage='',serverCode='',requestReference='';
    try{
     const response=error?.context;
     const payload=response&&typeof response.clone==='function'?await response.clone().json():response&&typeof response.json==='function'?await response.json():null;
     if(typeof payload?.error==='string')serverMessage=payload.error;
     if(typeof payload?.error_code==='string')serverCode=payload.error_code;
+    if(typeof payload?.request_id==='string')requestReference=payload.request_id;
    }catch(_){}
    const friendly=serverMessage||(
     messageText.includes('ai_not_configured')||messageText.includes('provider key')
@@ -998,7 +999,8 @@ async function submitAiEligibilityRequest(){
        ?'DCDS AI has reached a request limit. Your message is still in the box; please wait and try again.'
        :'The DCDS AI service could not complete this message. Your draft is still in the box; please try again shortly.'
    );
-   addMessage('assistant',friendly);setStatus(friendly,true);
+   const diagnosticMessage=requestReference?friendly+' Reference: '+requestReference:friendly;
+   addMessage('assistant',diagnosticMessage);setStatus(diagnosticMessage,true);
   }finally{
    typing.hidden=true;sendButton.disabled=false;input.disabled=false;voiceButton.disabled=false;
   }
