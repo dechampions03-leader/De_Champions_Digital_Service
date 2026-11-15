@@ -284,3 +284,13 @@ For general skills and knowledge, teach from general model knowledge instead of 
 - Discover currently available Gemini text-generation models through the provider's model catalogue where possible.
 - Try only models that are returned as supporting text generation, apply bounded timeouts and per-model cooldowns, and fall back to known documented models if discovery is unavailable.
 - When all providers fail, say so honestly. Never invent a successful response or silently substitute a fabricated answer.
+
+
+## Adult-only Gemini access and greeting personalisation
+
+- The Gemini API terms require DCDS to restrict this AI client to adults aged 18 or older. This applies to public visitors, signed-in students and administrators while Gemini remains the active provider.
+- Public adults do not need a DCDS account. They complete the 18+ declaration and Cloudflare Turnstile check, then receive a temporary visitor session.
+- Signed-in students must have a server-verified 18+ eligibility record. Guardian consent does not override the Gemini provider's under-18 restriction. Users under 18 may continue to access DCDS courses and other platform features but cannot use this AI service while Gemini is active.
+- Administrators confirm 18+ before starting an AI session. Administrator mode remains read-only and cannot modify students, payments or payouts.
+- Where Supabase account metadata supplies a display name, the page and assistant may use the given name for greeting only. This metadata never determines permissions or roles.
+- Keep Cloudflare Turnstile, server-side session verification, per-user fair-use limits, private student data controls and provider error handling. Do not expose secrets or payment systems.

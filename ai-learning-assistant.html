@@ -138,7 +138,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  <section class="hero">
   <div class="eyebrow">ONE BRAIN · ONE KNOWLEDGE BASE · ONE AI SERVICE</div>
   <h1>Your DCDS AI Learning Assistant.</h1>
-  <p>Learn and explore with DCDS AI from the public website or your student dashboard. Adults can start a free visitor chat without creating an account. Signed-in eligible students can save private conversations and learning memory; younger learners must follow the guardian-consent process.</p>
+  <p>Learn and explore with DCDS AI from the public website or your student dashboard. Adults aged 18+ can start a visitor chat without creating a DCDS account. Signed-in adult students can save private conversations and learning memory. While DCDS uses the Gemini API, AI access is limited to adults 18+; this does not restrict access to DCDS courses.</p>
   <div class="shared-pill">✦ SHARED DCDS AI EXPERIENCE</div>
  </section>
  <div class="layout">
@@ -150,21 +150,27 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
       
    <section class="guest-access-panel" id="guestAccessPanel" hidden aria-labelledby="guestAccessTitle">
     <h2 id="guestAccessTitle">Start chatting — no account needed</h2>
-    <p>Public visitor access is available to adults aged 18 or older. Confirm your age and complete the Cloudflare security check to start.</p>
+    <p>DCDS AI is currently available to adults aged 18 or older. No DCDS account is needed. Confirm your age and complete the Cloudflare security check to start.</p>
     <label for="guestAdultConfirm"><input id="guestAdultConfirm" type="checkbox"> <span>I confirm that I am 18 years old or older. I understand that visitor chats are temporary and are not saved to a student account.</span></label>
     <div class="guest-captcha-field"><strong>Cloudflare security check</strong><div id="dcdsGuestCaptcha" aria-label="Cloudflare visitor verification"></div><small id="dcdsGuestCaptchaHint" role="status" aria-live="polite">Complete the security check to continue.</small></div>
     <button class="eligibility-submit" id="guestContinue" type="button" disabled>Continue to DCDS AI</button>
-    <small>Guest chats do not include private student lessons, saved history or learning memory. Learners aged 13–17 should sign in and complete guardian consent. Under-13 AI access remains unavailable. <a href="index.html">Create or sign in to a DCDS account</a> for student features.</small>
+    <small>Guest chats do not include private student lessons, saved history or learning memory. People under 18 can still explore DCDS courses, but AI chat is unavailable to them while DCDS uses the Gemini API. <a href="index.html">Create or sign in to a DCDS account</a> for student features.</small>
+   </section>
+   <section class="guest-access-panel" id="adminAgeGate" hidden aria-labelledby="adminAgeGateTitle">
+    <h2 id="adminAgeGateTitle">Adult access confirmation</h2>
+    <p>DCDS AI is currently available only to adults aged 18 or older while the Gemini API is the active provider.</p>
+    <label for="adminAdultConfirm"><input id="adminAdultConfirm" type="checkbox"> <span>I confirm that I am 18 years old or older. I understand that the AI assistant is adult-only while this provider is in use.</span></label>
+    <button class="eligibility-submit" id="adminAgeContinue" type="button" disabled>Continue to DCDS AI</button>
    </section>
    <section class="eligibility-panel" id="aiEligibilityPanel" hidden aria-labelledby="aiEligibilityTitle">
     <h2 id="aiEligibilityTitle">DCDS AI access review</h2>
-    <p id="aiEligibilityMessage">DCDS checks age eligibility and parent/guardian consent where required before AI processing begins.</p>
-    <label for="aiAgeBand">Select your age group. Do not enter your date of birth.</label>
-    <select id="aiAgeBand"><option value="18_plus">18 or older</option><option value="13_17">13–17 years old</option><option value="under_13">Under 13</option></select>
-    <p class="eligibility-guidance" id="aiEligibilityGuidance">Adults must complete DCDS age verification before AI access is approved.</p>
+    <p id="aiEligibilityMessage">DCDS AI is available only to adults aged 18 or older while the Gemini API is the active provider.</p>
+    <label for="aiAgeBand">Confirm your age group. Do not enter your date of birth.</label>
+    <select id="aiAgeBand"><option value="18_plus">18 or older</option><option value="13_17" disabled>13–17 — AI unavailable while Gemini is used</option><option value="under_13" disabled>Under 13 — AI unavailable</option></select>
+    <p class="eligibility-guidance" id="aiEligibilityGuidance">Adults aged 18+ can continue after confirming their age.</p>
     <button class="eligibility-submit" id="requestAiEligibility" type="button">Submit access review request</button>
     <a class="eligibility-support" href="https://wa.me/2348109146285" target="_blank" rel="noopener noreferrer">Parent/guardian or account verification support →</a>
-    <small>Do not send identity documents, a child’s full date of birth, passwords or verification codes through the AI chat. Under-13 access remains unavailable until additional provider and Zero Data Retention requirements are independently approved.</small>
+    <small>AI access is currently 18+ only because of the active Gemini API provider terms. This does not affect DCDS course access. Never send passwords, OTPs, payment information or private student records to an AI provider.</small>
    </section>
    <div class="chat-tools" id="studentTools" hidden>
     <button class="tool-btn" id="historyToggle" type="button">◷ Conversation history</button>
@@ -257,6 +263,9 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  const guestAccessPanel=document.getElementById('guestAccessPanel');
  const guestAdultConfirm=document.getElementById('guestAdultConfirm');
  const guestContinue=document.getElementById('guestContinue');
+ const adminAgeGate=document.getElementById('adminAgeGate');
+ const adminAdultConfirm=document.getElementById('adminAdultConfirm');
+ const adminAgeContinue=document.getElementById('adminAgeContinue');
  const guestCaptchaHost=document.getElementById('dcdsGuestCaptcha');
  const guestCaptchaHint=document.getElementById('dcdsGuestCaptchaHint');
  const conversation=[];
@@ -264,6 +273,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let currentUser=null;
  let isPersistentStudent=false;
  let isGuestSession=false;
+ let isAdminSession=false;
  let guestCaptchaToken="";
  let guestTurnstileWidgetId=null;
  let guestTurnstileLoader=null;
@@ -299,7 +309,27 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   {name:'Paystack',aliases:['paystack'],href:'https://paystack.com/'}
  ];
 
- const welcomeMessage="Welcome to De Champions Digital Service. I’m DCDS AI, your learning companion. I can teach digital skills, explain general topics, help you explore DCDS courses and guide you through practical steps. What would you like to learn today?";
+ let welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I’m DCDS AI, your learning companion. I can teach digital skills, explain general topics, help you explore DCDS courses and guide you through practical steps. What would you like to learn today?";
+ function configureWelcomeGreeting(mode){
+  const metadata=currentUser?.user_metadata&&typeof currentUser.user_metadata==='object'?currentUser.user_metadata:{};
+  const candidate=metadata.full_name||metadata.name||metadata.display_name||'';
+  const safeName=typeof candidate==='string'?candidate.replace(/[<>\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().slice(0,80):'';
+  const firstName=safeName.split(' ')[0]||'';
+  if(mode==='admin'){
+   welcomeMessage=firstName
+    ?`Hello ${firstName}! 👋 Welcome back to your DCDS AI Companion. I’m ready to help with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.`
+    :`Hello! 👋 Welcome to your DCDS AI Companion. I can help with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.`;
+  }else if(mode==='student'){
+   welcomeMessage=firstName
+    ?`Hello ${firstName}! 👋 Welcome back to your DCDS AI Learning Assistant. I’m here to help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`
+    :`Hello! 👋 Welcome to your DCDS AI Learning Assistant. I’m here to help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`;
+  }else{
+   welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I’m DCDS AI, your public learning companion. I can explain general topics, teach digital skills and help you explore public DCDS information. What would you like to learn today?";
+  }
+  conversation.length=0;
+  messagesEl.replaceChildren();
+  addMessage('assistant',welcomeMessage);
+ }
 
  function setStatus(message,isError=false){
   statusEl.textContent=message;
@@ -537,13 +567,11 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  }
  function explainAgeChoice(){
   eligibilityGuidance.textContent=ageBandSelect.value==='18_plus'
-   ?'Adults must complete DCDS age verification before AI access can be approved.'
-   :ageBandSelect.value==='13_17'
-    ?'A parent or legal guardian must provide verifiable consent. DCDS will review it before AI access can be approved.'
-    :'Under-13 access is not enabled yet. DCDS must first complete additional child-safety safeguards and obtain the required Zero Data Retention arrangement.';
+   ?'DCDS AI is available to adults aged 18+ while Gemini is the active provider. Confirm this age to continue.'
+   :'DCDS AI is currently 18+ only while Gemini is the active provider. Younger learners can still use DCDS courses and other suitable platform features.';
  }
- // Keep 13–17 chat access closed until the separate DCDS youth-safety release is approved.
-   async function loadAiEligibility(){
+ // Gemini API terms require DCDS AI to remain adult-only while this provider is active.
+ async function loadAiEligibility(){
     eligibilityPanel.hidden=true;setChatEnabled(false);
     const {data,error}=await client.from('dcds_ai_access_eligibility')
      .select('age_band,access_status,guardian_consent_status,guardian_user_id,guardian_consent_reference,guardian_consent_at')
@@ -556,37 +584,38 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     }
     if(!data){
      ageBandSelect.disabled=false;requestEligibilityButton.hidden=false;ageBandSelect.value='18_plus';explainAgeChoice();
-     eligibilityMessage.textContent='Choose your age group to continue. Adults aged 18+ can start after declaring their age. Learners aged 13–17 need verified parent or guardian consent.';
-     eligibilityPanel.hidden=false;setStatus('Complete the short age-access step to continue.');return false;
+     eligibilityMessage.textContent='DCDS AI is currently for adults aged 18 or older. Confirm your age to continue. This age rule applies to the AI assistant, not to DCDS course access.';
+     eligibilityPanel.hidden=false;setStatus('Confirm that you are 18 or older to use DCDS AI.');return false;
     }
     ageBandSelect.value=data.age_band;ageBandSelect.disabled=true;requestEligibilityButton.hidden=true;
     const adult=data.age_band==='18_plus'&&data.guardian_consent_status==='not_required';
-    const teen=data.age_band==='13_17'&&data.access_status==='approved'&&data.guardian_consent_status==='verified'
-     &&Boolean(data.guardian_user_id&&data.guardian_consent_reference&&data.guardian_consent_at);
-    if(adult||teen){eligibilityPanel.hidden=true;setChatEnabled(true);return true;}
+    if(adult){eligibilityPanel.hidden=true;setChatEnabled(true);return true;}
     eligibilityPanel.hidden=false;
-    if(data.age_band==='under_13'){
-     eligibilityMessage.textContent='Under-13 AI access is not available.';
-     eligibilityGuidance.textContent='No AI processing is permitted for this age group.';
-    }else if(data.age_band==='13_17'&&data.guardian_consent_status!=='verified'){
-     eligibilityMessage.textContent='Parent or guardian consent verification is still required. AI access remains locked until DCDS confirms it.';
-     eligibilityGuidance.textContent='Ask your parent or legal guardian to complete the official DCDS consent review. Do not send identity documents or private family information in chat.';
-    }else if(data.age_band==='13_17'){
-     eligibilityMessage.textContent='The 13–17 access review is not yet approved.';
-     eligibilityGuidance.textContent='Contact DCDS support if guardian consent has already been verified.';
+    if(data.age_band==='13_17'||data.age_band==='under_13'){
+     eligibilityMessage.textContent='DCDS AI access is currently limited to adults aged 18 or older while the Gemini API is in use.';
+     eligibilityGuidance.textContent='This does not affect access to DCDS courses. AI access for younger learners can be reconsidered only after DCDS changes to a provider whose terms permit it and completes the required safeguarding review.';
     }else{
-     eligibilityMessage.textContent='This account’s DCDS AI access needs review.';
+     eligibilityMessage.textContent='This account’s adult age confirmation is incomplete.';
      eligibilityGuidance.textContent='Contact DCDS support if you believe this status is incorrect.';
     }
-    setStatus('DCDS AI is not enabled for this account yet.',true);return false;
+    setStatus('DCDS AI is currently available to adults aged 18+ only.',true);return false;
    }
 async function submitAiEligibilityRequest(){
-  const selected=ageBandSelect.value;if(!['18_plus','13_17','under_13'].includes(selected))return;
-  requestEligibilityButton.disabled=true;requestEligibilityButton.textContent='Submitting…';
-  const {error}=await client.from('dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:selected});
-  if(error)setStatus('Your access review request could not be submitted. Refresh or contact DCDS support.',true);
-  else setStatus('Your request has been recorded. DCDS AI will remain locked until eligibility and required consent checks are completed.');
-  await loadAiEligibility();requestEligibilityButton.disabled=false;requestEligibilityButton.textContent='Submit access review request';
+  const selected=ageBandSelect.value;if(selected!=='18_plus'){setStatus('DCDS AI is currently available only to adults aged 18 or older.',true);return;}
+  requestEligibilityButton.disabled=true;requestEligibilityButton.textContent='Confirming…';
+  const {error}=await client.from('dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:'18_plus'});
+  if(error)setStatus('Your 18+ confirmation could not be saved. Refresh or contact DCDS support.',true);
+  else{
+   setStatus('Your adult AI access confirmation has been recorded.');
+   const approved=await loadAiEligibility();
+   if(approved){
+    await loadResourceIndex();document.getElementById('accountLabel').textContent='Student · Learning Assistant';
+    studentTools.hidden=false;await Promise.all([loadConversationList(),loadLearningMemory()]);
+    configureWelcomeGreeting('student');
+    setStatus('DCDS AI access approved. Your saved conversations are private to this account.');
+   }
+  }
+  requestEligibilityButton.disabled=false;requestEligibilityButton.textContent='Confirm 18+ access';
  }
  ageBandSelect.addEventListener('change',explainAgeChoice);
  requestEligibilityButton.addEventListener('click',submitAiEligibilityRequest);
@@ -851,15 +880,20 @@ async function submitAiEligibilityRequest(){
   if(!guestCaptchaToken){setStatus('Complete the Cloudflare security check before continuing.',true);return;}
   guestContinue.disabled=true;guestContinue.textContent='Opening DCDS AI…';
   try{
+   if(currentUser&&!currentUser.is_anonymous){
+    const {error:signOutError}=await client.auth.signOut({scope:'local'});
+    if(signOutError)throw signOutError;
+    currentUser=null;
+   }
    if(!currentUser){
     const {data,error}=await client.auth.signInAnonymously({options:{captchaToken:guestCaptchaToken}});
     if(error)throw error;currentUser=data?.user??null;
     if(!currentUser)throw new Error('A temporary visitor session could not be created. Please try again.');
    }
-   isGuestSession=true;isPersistentStudent=false;activeConversationId=null;
-   guestAccessPanel.hidden=true;eligibilityPanel.hidden=true;studentTools.hidden=true;historyPanel.hidden=true;memoryPanel.hidden=true;
+   isGuestSession=true;isAdminSession=false;isPersistentStudent=false;activeConversationId=null;
+   guestAccessPanel.hidden=true;adminAgeGate.hidden=true;eligibilityPanel.hidden=true;studentTools.hidden=true;historyPanel.hidden=true;memoryPanel.hidden=true;
    document.getElementById('accountLabel').textContent='Visitor · Public learning access';
-   setChatEnabled(true);await loadResourceIndex();
+   setChatEnabled(true);await loadResourceIndex();configureWelcomeGreeting('visitor');
    setStatus('You are connected as a visitor. This chat is temporary and is not saved to a student account.');
    input.focus();
   }catch(error){
@@ -874,26 +908,43 @@ async function submitAiEligibilityRequest(){
  }
  guestAdultConfirm.addEventListener('change',updateGuestContinueState);
  guestContinue.addEventListener('click',enterGuestAccess);
+ function updateAdminAdultContinueState(){adminAgeContinue.disabled=!adminAdultConfirm.checked;}
+ async function enterAdminAi(){
+  if(!adminAdultConfirm.checked){setStatus('Please confirm that you are 18 or older before continuing.',true);return;}
+  adminAgeGate.hidden=true;isAdminSession=true;setChatEnabled(true);
+  await loadResourceIndex();configureWelcomeGreeting('admin');
+  document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
+  setStatus('Administrator access confirmed for an adult account. This assistant is read-only and cannot change student records, payments or payouts.');
+  input.focus();
+ }
+ adminAdultConfirm.addEventListener('change',updateAdminAdultContinueState);
+ adminAgeContinue.addEventListener('click',enterAdminAi);
  try{
   if(!window.supabase?.createClient){setStatus('The DCDS account service could not load. Check your connection and reload.',true);return;}
   client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
   const {data:{session},error}=await client.auth.getSession();if(error)throw error;
   currentUser=session?.user??null;
   const verified=Boolean(currentUser?.email_confirmed_at||currentUser?.phone_confirmed_at);
-  if(!currentUser||currentUser.is_anonymous||!verified){await showGuestAccess();return;}
-  const {data:adminData,error:adminError}=await client.rpc('is_dcds_admin');
-  if(adminError){document.getElementById('accountLabel').textContent='Access check unavailable';setStatus('We could not verify your DCDS access. Please refresh and try again.',true);return;}
-  const isAdmin=adminData===true;isPersistentStudent=!isAdmin;
-  if(isAdmin){
-   setChatEnabled(true);await loadResourceIndex();
-   document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
-   setStatus('Administrator session verified. This assistant remains read-only and does not change account or payment records.');
+  if(!currentUser||currentUser.is_anonymous||!verified){
+   await showGuestAccess();
   }else{
-   const accessApproved=await loadAiEligibility();
-   if(!accessApproved){document.getElementById('accountLabel').textContent='Student · Age and guardian review';return;}
-   await loadResourceIndex();document.getElementById('accountLabel').textContent='Student · Learning Assistant';
-   studentTools.hidden=false;await Promise.all([loadConversationList(),loadLearningMemory()]);
-   setStatus('DCDS AI access approved. Your saved conversations are private to this account.');
+   const {data:adminData,error:adminError}=await client.rpc('is_dcds_admin');
+   if(adminError){document.getElementById('accountLabel').textContent='Access check unavailable';setStatus('We could not verify your DCDS access. Please refresh and try again.',true);return;}
+   const isAdmin=adminData===true;isPersistentStudent=!isAdmin;
+   if(isAdmin){
+    isAdminSession=true;setChatEnabled(false);adminAgeGate.hidden=false;
+    document.getElementById('accountLabel').textContent='Administrator · 18+ confirmation required';
+    setStatus('DCDS AI is for adults aged 18+ while Gemini is the active provider. Confirm your age to continue.');
+   }else{
+    const accessApproved=await loadAiEligibility();
+    if(!accessApproved){document.getElementById('accountLabel').textContent='Student · Adult age confirmation required';}
+    else{
+     await loadResourceIndex();document.getElementById('accountLabel').textContent='Student · Learning Assistant';
+     studentTools.hidden=false;await Promise.all([loadConversationList(),loadLearningMemory()]);
+     configureWelcomeGreeting('student');
+     setStatus('DCDS AI access approved. Your saved conversations are private to this account.');
+    }
+   }
   }
  }catch(error){setStatus('We could not initialise DCDS AI. '+String(error?.message||'Please refresh and try again.'),true);return;}
 
@@ -952,7 +1003,7 @@ async function submitAiEligibilityRequest(){
   setStatus(attachedFile?'Preparing your image for secure analysis…':'DCDS AI is preparing your answer…');
   const requestBody={message,history:previousHistory};
   if(activeConversationId)requestBody.conversation_id=activeConversationId;
-  if(isGuestSession)requestBody.adult_confirmation=true;
+  if(isGuestSession||isAdminSession)requestBody.adult_confirmation=true;
   try{
    if(attachedFile)requestBody.image={mime_type:attachedFile.type,data:await fileToBase64(attachedFile)};
    const {data,error}=await client.functions.invoke('dcds-ai-chat',{body:requestBody});
@@ -983,6 +1034,7 @@ async function submitAiEligibilityRequest(){
     const note=document.createElement('small');note.className='message-time';note.textContent='Not sent — your draft is still in the message box.';
     userRow.querySelector('div')?.appendChild(note);
    }
+   console.error('DCDS AI send failed without logging message content:',{status:error?.context?.status??null,message:String(error?.message||'').slice(0,240)});
    const messageText=String(error?.message||'').toLowerCase();let serverMessage='',serverCode='';
    try{
     const response=error?.context;
