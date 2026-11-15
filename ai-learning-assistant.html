@@ -605,8 +605,17 @@ async function submitAiEligibilityRequest(){
   requestEligibilityButton.disabled=true;requestEligibilityButton.textContent='Confirming…';
   const {error}=await client.from('dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:'18_plus'});
   if(error)setStatus('Your 18+ confirmation could not be saved. Refresh or contact DCDS support.',true);
-  else setStatus('Your adult AI access confirmation has been recorded.');
-  await loadAiEligibility();requestEligibilityButton.disabled=false;requestEligibilityButton.textContent='Confirm 18+ access';
+  else{
+   setStatus('Your adult AI access confirmation has been recorded.');
+   const approved=await loadAiEligibility();
+   if(approved){
+    await loadResourceIndex();document.getElementById('accountLabel').textContent='Student · Learning Assistant';
+    studentTools.hidden=false;await Promise.all([loadConversationList(),loadLearningMemory()]);
+    configureWelcomeGreeting('student');
+    setStatus('DCDS AI access approved. Your saved conversations are private to this account.');
+   }
+  }
+  requestEligibilityButton.disabled=false;requestEligibilityButton.textContent='Confirm 18+ access';
  }
  ageBandSelect.addEventListener('change',explainAgeChoice);
  requestEligibilityButton.addEventListener('click',submitAiEligibilityRequest);
