@@ -101,11 +101,11 @@ jobs:
               "student AI access requires server-verified adult 18+ eligibility while Gemini is active":
                   'eligibility?.age_band === "18_plus"' in function
                   and "UNDER_18_AI_UNAVAILABLE" in function
-                  and 'eligibility?.age_band === "13_17"' not in function,
+                  and "if (!adultAllowed)" in function,
               "administrator AI requests require an 18+ declaration":
-                  'role === "admin") {' in function and "body.adult_confirmation !== true" in function,
+                  'role === "admin" && body.adult_confirmation !== true' in function,
               "signed-in greetings use profile display name only for personalization":
-                  "accountFirstName" in function and "full_name" in function and "not an authorization signal" in function,
+                  "accountFirstName" in function and "full_name" in function and "ACCOUNT DISPLAY NAME FOR GREETING ONLY" in function,
               "guest platform search excludes private enrolled lessons":
                   'if (role === "student")' in search_helper,
               "guest and student chat history persistence remain separate":
