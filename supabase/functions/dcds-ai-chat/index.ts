@@ -36,7 +36,7 @@ async function loadKnowledge(): Promise<string> {
   const results = await Promise.allSettled(KNOWLEDGE_FILES.map(async (path) => {
     const response = await fetch(new URL(path, RAW_BASE), { signal: AbortSignal.timeout(8000) });
     if (!response.ok) throw new Error("HTTP " + response.status);
-    return "===== " + path + " =====\\n" + await response.text();
+    return "===== " + path + " =====\n" + await response.text();
   }));
 
   const documents = results.flatMap((result) =>
@@ -52,7 +52,7 @@ async function loadKnowledge(): Promise<string> {
   }
 
   const value = documents.length
-    ? documents.join("\\n\\n")
+    ? documents.join("\n\n")
     : "DCDS-specific knowledge files could not be reached for this request. Answer general learning questions normally. For current DCDS-specific policies, course prices, lessons and announcements, rely only on live platform records and clearly say when a fact cannot be confirmed.";
 
   cachedKnowledge = { value, expiresAt: Date.now() + 5 * 60 * 1000 };
@@ -228,9 +228,6 @@ function wantsExternalWebSearch(message: string, role: "student" | "admin" | "gu
 }
 
 Deno.serve(async (request: Request) => {
-  if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (request.method !== "POST") return respond({ success: false, error: "Method not allowed." }, 405);
-
   const requestId = crypto.randomUUID();
   const requestStartedAt = Date.now();
   const respond = (body: unknown, status = 200) => json(
@@ -239,6 +236,9 @@ Deno.serve(async (request: Request) => {
       : body,
     status,
   );
+
+  if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (request.method !== "POST") return respond({ success: false, error: "Method not allowed." }, 405);
 
   const authorization = request.headers.get("Authorization");
   if (!authorization?.startsWith("Bearer ")) {
