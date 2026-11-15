@@ -227,7 +227,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   {name:'Paystack',aliases:['paystack'],href:'https://paystack.com/'}
  ];
 
- const welcomeMessage="Welcome to De Champions Digital Service. I’m DCDS AI, your private learning companion. I can teach digital skills, explain general topics, find approved DCDS information and guide you through lessons available to your verified account. What would you like to learn today?";
+ let welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I’m DCDS AI, your learning companion. I can teach digital skills step by step, explain general topics, find approved DCDS resources and guide you through lessons available to your account. What would you like to learn today?";
 
  function setStatus(message,isError=false){
   statusEl.textContent=message;
@@ -606,6 +606,13 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     document.getElementById('accountLabel').textContent=isAdmin?'Administrator · Access review required':'Student · Access review required';
     return;
    }
+   const metadata=currentUser.user_metadata||{};
+   const studentName=String(metadata.full_name||metadata.name||metadata.display_name||'').replace(/[\\r\\n<>]/g,' ').trim().slice(0,80);
+   welcomeMessage=studentName
+    ? `Hello ${studentName}! 👋 Welcome back to De Champions Digital Service. I’m DCDS AI, your learning companion. I can teach digital skills step by step, explain general topics, find approved DCDS resources and guide you through lessons available to your account. What would you like to learn today?`
+    : 'Hello! 👋 Welcome to De Champions Digital Service. I’m DCDS AI, your learning companion. What would you like to learn today?';
+   messagesEl.replaceChildren();
+   addMessage('assistant',welcomeMessage);
    await loadResourceIndex();
    if(isPersistentStudent){
     document.getElementById('accountLabel').textContent='Student · Learning Assistant';
