@@ -326,7 +326,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 .dcds-showcase-card{overflow:hidden;min-width:0;border:1px solid #e7d9f5;border-radius:19px;background:linear-gradient(155deg,#fff,#fbf7ff);box-shadow:0 8px 24px rgba(61,23,95,.055);transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
 .dcds-showcase-card:hover{transform:translateY(-3px);border-color:#c9a7ef;box-shadow:0 14px 30px rgba(61,23,95,.11)}
 .dcds-showcase-preview{min-height:130px;aspect-ratio:16/9;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;color:#7628d8;background:radial-gradient(circle at 18% 18%,#fff 0,transparent 36%),linear-gradient(135deg,#f2e6ff,#e5d2fb 56%,#f8efff)}
-.dcds-showcase-card.is-video .dcds-showcase-preview{color:#f4e8ff;background:radial-gradient(circle at 80% 10%,rgba(170,112,239,.52),transparent 36%),linear-gradient(135deg,#281040,#58218b)}
+
 .dcds-showcase-preview-icon{display:grid;place-items:center;width:46px;height:46px;border:1px solid currentColor;border-radius:15px;font-size:22px;background:rgba(255,255,255,.28)}
 .dcds-showcase-preview-label{font-size:9px;font-weight:900;letter-spacing:.18em;opacity:.82}
 .dcds-showcase-card-copy{padding:16px}
@@ -539,167 +539,967 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
     <div class="dcds-showcase-intro">
       <span class="dcds-showcase-launch"><span aria-hidden="true">✦</span> NEW DCDS LAUNCH</span>
       <h2 id="dcdsShowcaseTitle">DCDS Creative Showcase</h2>
-      <p>A dedicated space for the creativity, practical projects and digital work connected with DCDS. Explore the categories and discover what can be created through learning.</p>
+      <p>Explore 12 creative categories, each with six dedicated spaces for DCDS projects and portfolio work.</p>
     </div>
     <div class="dcds-showcase-groups">
-      <section class="dcds-showcase-group" aria-labelledby="dcdsImageShowcaseTitle">
+      <section class="dcds-showcase-group" id="showcase-category-graphic-design" aria-labelledby="dcdsShowcaseCategory01">
         <div class="dcds-showcase-group-heading">
-          <div><h3 id="dcdsImageShowcaseTitle">Graphic Design</h3><p>Six dedicated spaces for different kinds of graphic design work.</p></div>
-          <span class="dcds-showcase-count">6 DESIGN SPACES</span>
+          <div><h3 id="dcdsShowcaseCategory01">Graphic Design</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
         </div>
         <div class="dcds-showcase-grid">
-      <article class="dcds-showcase-card is-image" data-showcase-slot="image-01">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">✦</span>
-          <span class="dcds-showcase-preview-label">GRAPHIC DESIGN SPACE</span>
-        </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">01 · IMAGE SHOWCASE</span>
-          <h4>Graphic Design</h4>
-          <p>Flyers, posters, advertisements and visual communication.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
-        </div>
-      </article>
-      <article class="dcds-showcase-card is-image" data-showcase-slot="image-02">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">✦</span>
-          <span class="dcds-showcase-preview-label">IMAGE SPACE</span>
-        </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">02 · IMAGE SHOWCASE</span>
-          <h4>Logo & Brand Identity</h4>
-          <p>Logos, brand systems and business identity designs.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
-        </div>
-      </article>
-      <article class="dcds-showcase-card is-image" data-showcase-slot="image-03">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">✦</span>
-          <span class="dcds-showcase-preview-label">IMAGE SPACE</span>
-        </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">03 · IMAGE SHOWCASE</span>
-          <h4>Social Media Graphics</h4>
-          <p>Campaign graphics, carousel posts and social content.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
-        </div>
-      </article>
-      <article class="dcds-showcase-card is-image" data-showcase-slot="image-04">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">✦</span>
-          <span class="dcds-showcase-preview-label">IMAGE SPACE</span>
-        </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">04 · IMAGE SHOWCASE</span>
-          <h4>Business Cards & Stationery</h4>
-          <p>Website layouts, app screens and dashboard interfaces.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
-        </div>
-      </article>
-      <article class="dcds-showcase-card is-image" data-showcase-slot="image-05">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">✦</span>
-          <span class="dcds-showcase-preview-label">IMAGE SPACE</span>
-        </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">05 · IMAGE SHOWCASE</span>
-          <h4>Thumbnails & Channel Art</h4>
-          <p>AI-assisted artwork, concepts and visual experiments.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
-        </div>
-      </article>
-      <article class="dcds-showcase-card is-image" data-showcase-slot="image-06">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">✦</span>
-          <span class="dcds-showcase-preview-label">IMAGE SPACE</span>
-        </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">06 · IMAGE SHOWCASE</span>
-          <h4>Product & Advertising Designs</h4>
-          <p>YouTube thumbnails, banners and digital covers.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
-        </div>
-      </article>
+          <article class="dcds-showcase-card" data-showcase-slot="graphic-design-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Graphic Design project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="graphic-design-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Graphic Design project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="graphic-design-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Graphic Design project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="graphic-design-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Graphic Design project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="graphic-design-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Graphic Design project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="graphic-design-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Graphic Design project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
         </div>
       </section>
-      <section class="dcds-showcase-group" aria-labelledby="dcdsVideoShowcaseTitle">
+      <section class="dcds-showcase-group" id="showcase-category-video-editing" aria-labelledby="dcdsShowcaseCategory02">
         <div class="dcds-showcase-group-heading">
-          <div><h3 id="dcdsVideoShowcaseTitle">Video Editing</h3><p>Six dedicated spaces for different kinds of video editing work.</p></div>
-          <span class="dcds-showcase-count">6 EDITING SPACES</span>
+          <div><h3 id="dcdsShowcaseCategory02">Video Editing</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
         </div>
         <div class="dcds-showcase-grid">
-      <article class="dcds-showcase-card is-video" data-showcase-slot="video-07">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">▶</span>
-          <span class="dcds-showcase-preview-label">VIDEO EDITING SPACE</span>
+          <article class="dcds-showcase-card" data-showcase-slot="video-editing-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Video Editing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="video-editing-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Video Editing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="video-editing-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Video Editing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="video-editing-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Video Editing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="video-editing-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Video Editing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="video-editing-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Video Editing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
         </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">07 · VIDEO SHOWCASE</span>
-          <h4>Video Editing</h4>
-          <p>Edited videos, reels, explainers and creative showreels.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-ai-video-creativity" aria-labelledby="dcdsShowcaseCategory03">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory03">AI Video Creativity</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
         </div>
-      </article>
-      <article class="dcds-showcase-card is-video" data-showcase-slot="video-08">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">▶</span>
-          <span class="dcds-showcase-preview-label">VIDEO SPACE</span>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="ai-video-creativity-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a AI Video Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-video-creativity-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a AI Video Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-video-creativity-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a AI Video Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-video-creativity-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a AI Video Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-video-creativity-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a AI Video Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-video-creativity-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a AI Video Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
         </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">08 · VIDEO SHOWCASE</span>
-          <h4>Social Media Reels</h4>
-          <p>AI-assisted video concepts and generated scenes.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-ai-tools-prompts" aria-labelledby="dcdsShowcaseCategory04">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory04">Access to ChatGPT Prompts, Claude, Gemini, and Grok</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
         </div>
-      </article>
-      <article class="dcds-showcase-card is-video" data-showcase-slot="video-09">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">▶</span>
-          <span class="dcds-showcase-preview-label">VIDEO SPACE</span>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="ai-tools-prompts-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Access to ChatGPT Prompts, Claude, Gemini, and Grok project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-tools-prompts-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Access to ChatGPT Prompts, Claude, Gemini, and Grok project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-tools-prompts-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Access to ChatGPT Prompts, Claude, Gemini, and Grok project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-tools-prompts-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Access to ChatGPT Prompts, Claude, Gemini, and Grok project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-tools-prompts-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Access to ChatGPT Prompts, Claude, Gemini, and Grok project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-tools-prompts-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Access to ChatGPT Prompts, Claude, Gemini, and Grok project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
         </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">09 · VIDEO SHOWCASE</span>
-          <h4>YouTube Videos</h4>
-          <p>Animated lessons, explainers and illustrated stories.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-ai-image-creativity" aria-labelledby="dcdsShowcaseCategory05">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory05">AI Image Creativity</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
         </div>
-      </article>
-      <article class="dcds-showcase-card is-video" data-showcase-slot="video-10">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">▶</span>
-          <span class="dcds-showcase-preview-label">VIDEO SPACE</span>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="ai-image-creativity-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a AI Image Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-image-creativity-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a AI Image Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-image-creativity-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a AI Image Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-image-creativity-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a AI Image Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-image-creativity-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a AI Image Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="ai-image-creativity-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a AI Image Creativity project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
         </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">10 · VIDEO SHOWCASE</span>
-          <h4>Cinematic Video Edits</h4>
-          <p>Animated titles, logo reveals and visual effects.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-whiteboard-animation" aria-labelledby="dcdsShowcaseCategory06">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory06">Whiteboard Animation</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
         </div>
-      </article>
-      <article class="dcds-showcase-card is-video" data-showcase-slot="video-11">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">▶</span>
-          <span class="dcds-showcase-preview-label">VIDEO SPACE</span>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="whiteboard-animation-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Whiteboard Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="whiteboard-animation-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Whiteboard Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="whiteboard-animation-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Whiteboard Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="whiteboard-animation-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Whiteboard Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="whiteboard-animation-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Whiteboard Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="whiteboard-animation-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Whiteboard Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
         </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">11 · VIDEO SHOWCASE</span>
-          <h4>Explainer & Whiteboard Videos</h4>
-          <p>Short previews introducing DCDS courses and lessons.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-website-designing" aria-labelledby="dcdsShowcaseCategory07">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory07">Website Designing</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
         </div>
-      </article>
-      <article class="dcds-showcase-card is-video" data-showcase-slot="video-12">
-        <div class="dcds-showcase-preview" aria-hidden="true">
-          <span class="dcds-showcase-preview-icon">▶</span>
-          <span class="dcds-showcase-preview-label">VIDEO SPACE</span>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="website-designing-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Website Designing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="website-designing-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Website Designing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="website-designing-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Website Designing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="website-designing-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Website Designing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="website-designing-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Website Designing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="website-designing-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Website Designing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
         </div>
-        <div class="dcds-showcase-card-copy">
-          <span class="dcds-showcase-index">12 · VIDEO SHOWCASE</span>
-          <h4>Motion Graphics & Animation</h4>
-          <p>Practical project demonstrations and learner-created work.</p>
-          <span class="dcds-showcase-empty">Project space reserved</span>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-app-building" aria-labelledby="dcdsShowcaseCategory08">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory08">App Building</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
         </div>
-      </article>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="app-building-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a App Building project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="app-building-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a App Building project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="app-building-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a App Building project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="app-building-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a App Building project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="app-building-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a App Building project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="app-building-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a App Building project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-kids-nursery-rhymes" aria-labelledby="dcdsShowcaseCategory09">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory09">Kids’ Nursery Rhymes</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
+        </div>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="kids-nursery-rhymes-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Kids’ Nursery Rhymes project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="kids-nursery-rhymes-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Kids’ Nursery Rhymes project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="kids-nursery-rhymes-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Kids’ Nursery Rhymes project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="kids-nursery-rhymes-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Kids’ Nursery Rhymes project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="kids-nursery-rhymes-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Kids’ Nursery Rhymes project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="kids-nursery-rhymes-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Kids’ Nursery Rhymes project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-advanced-3d-cartoon-animation" aria-labelledby="dcdsShowcaseCategory10">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory10">Advanced 3D Cartoon Animation</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
+        </div>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="advanced-3d-cartoon-animation-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Advanced 3D Cartoon Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="advanced-3d-cartoon-animation-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Advanced 3D Cartoon Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="advanced-3d-cartoon-animation-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Advanced 3D Cartoon Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="advanced-3d-cartoon-animation-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Advanced 3D Cartoon Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="advanced-3d-cartoon-animation-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Advanced 3D Cartoon Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="advanced-3d-cartoon-animation-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Advanced 3D Cartoon Animation project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-affiliate-marketing" aria-labelledby="dcdsShowcaseCategory11">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory11">Affiliate Marketing</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
+        </div>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="affiliate-marketing-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Affiliate Marketing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="affiliate-marketing-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Affiliate Marketing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="affiliate-marketing-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Affiliate Marketing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="affiliate-marketing-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Affiliate Marketing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="affiliate-marketing-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Affiliate Marketing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="affiliate-marketing-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Affiliate Marketing project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+        </div>
+      </section>
+      <section class="dcds-showcase-group" id="showcase-category-social-media-management" aria-labelledby="dcdsShowcaseCategory12">
+        <div class="dcds-showcase-group-heading">
+          <div><h3 id="dcdsShowcaseCategory12">Social Media Management</h3><p>Six reserved spaces for projects in this creative area.</p></div>
+          <span class="dcds-showcase-count">6 PROJECT SPACES</span>
+        </div>
+        <div class="dcds-showcase-grid">
+          <article class="dcds-showcase-card" data-showcase-slot="social-media-management-01">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 01</span>
+              <h4>Project 1</h4>
+              <p>A reserved space for a Social Media Management project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="social-media-management-02">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 02</span>
+              <h4>Project 2</h4>
+              <p>A reserved space for a Social Media Management project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="social-media-management-03">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 03</span>
+              <h4>Project 3</h4>
+              <p>A reserved space for a Social Media Management project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="social-media-management-04">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 04</span>
+              <h4>Project 4</h4>
+              <p>A reserved space for a Social Media Management project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="social-media-management-05">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 05</span>
+              <h4>Project 5</h4>
+              <p>A reserved space for a Social Media Management project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
+          <article class="dcds-showcase-card" data-showcase-slot="social-media-management-06">
+            <div class="dcds-showcase-preview" aria-hidden="true">
+              <span class="dcds-showcase-preview-icon">✦</span>
+              <span class="dcds-showcase-preview-label">PROJECT SPACE</span>
+            </div>
+            <div class="dcds-showcase-card-copy">
+              <span class="dcds-showcase-index">SPACE 06</span>
+              <h4>Project 6</h4>
+              <p>A reserved space for a Social Media Management project.</p>
+              <span class="dcds-showcase-empty">Project space reserved</span>
+            </div>
+          </article>
         </div>
       </section>
     </div>
