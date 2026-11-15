@@ -367,6 +367,9 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 .dcds-showcase-viewer-media img,.dcds-showcase-viewer-media video{display:block;width:100%;max-height:68vh;object-fit:contain;border-radius:18px;background:#1d102b;box-shadow:0 18px 55px rgba(32,12,50,.18)}
 .dcds-showcase-viewer-empty[hidden]{display:none!important}
 @media(max-width:560px){.dcds-showcase-viewer-media img,.dcds-showcase-viewer-media video{max-height:64vh;border-radius:13px}}
+
+.dcds-showcase-empty.is-viewable{background:#f0e5fa;color:#5c2b86;border:1px solid #e1d0f2}
+.dcds-showcase-card[data-showcase-slot].has-published-project .dcds-showcase-empty{font-weight:800}
 </style>
 </head>
 <body>
@@ -2736,6 +2739,14 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
    const copy=card.querySelector(".dcds-showcase-card-copy p");
    if(heading)heading.textContent=card.dataset.showcaseTitle;
    if(copy){copy.textContent=row.description||"View this DCDS creative project.";copy.hidden=!row.description;}
+   const action=card.querySelector(".dcds-showcase-empty");
+   if(action){
+    action.textContent="Tap to view project";
+    action.classList.add("is-viewable");
+   }
+   card.classList.add("has-published-project");
+   card.setAttribute("aria-label","Tap to view "+card.dataset.showcaseTitle+" in full screen");
+
    const preview=card.querySelector(".dcds-showcase-preview");
    if(!preview)return;
    preview.replaceChildren();preview.classList.add("has-media");
