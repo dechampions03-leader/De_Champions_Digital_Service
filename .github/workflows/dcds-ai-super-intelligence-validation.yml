@@ -106,7 +106,6 @@ jobs:
                   'role === "admin") {' in function and "body.adult_confirmation !== true" in function,
               "signed-in greetings use profile display name only for personalization":
                   "accountFirstName" in function and "full_name" in function and "not an authorization signal" in function,
-                  and "Under-13 DCDS AI access is not available" in function,
               "guest platform search excludes private enrolled lessons":
                   'if (role === "student")' in search_helper,
               "guest and student chat history persistence remain separate":
