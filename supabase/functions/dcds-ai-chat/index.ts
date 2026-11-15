@@ -311,14 +311,12 @@ Deno.serve(async (request: Request) => {
   const isGuest = anonymous || !verifiedContact;
   let role: "student" | "admin" | "guest" = isGuest ? "guest" : "student";
 
-  if (isGuest || role === "admin") {
-    if (body.adult_confirmation !== true) {
-      return json({
-        success: false,
-        error_code: "ADULT_CONFIRMATION_REQUIRED",
-        error: "DCDS AI is currently available only to adults aged 18 or older while the Gemini API is the active provider.",
-      }, 403);
-    }
+  if (isGuest && body.adult_confirmation !== true) {
+    return json({
+      success: false,
+      error_code: "ADULT_CONFIRMATION_REQUIRED",
+      error: "DCDS AI is currently available only to adults aged 18 or older while the Gemini API is the active provider.",
+    }, 403);
   }
 
   if (!isGuest) {
@@ -328,6 +326,14 @@ Deno.serve(async (request: Request) => {
       return json({ success: false, error_code: "ACCESS_CHECK_UNAVAILABLE", error: "The DCDS access check is temporarily unavailable." }, 503);
     }
     if (isAdmin === true) role = "admin";
+  }
+
+  if (role === "admin" && body.adult_confirmation !== true) {
+    return json({
+      success: false,
+      error_code: "ADULT_CONFIRMATION_REQUIRED",
+      error: "Confirm that you are 18 or older before using DCDS AI.",
+    }, 403);
   }
 
   // The Gemini API terms require this AI client to remain adult-only.
