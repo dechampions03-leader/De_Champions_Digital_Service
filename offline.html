@@ -1,2 +1,111 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#35105f"><title>Offline | DCDS</title><style>*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:#f7f3fc;color:#28183a;font:16px system-ui,sans-serif;text-align:center}.card{max-width:420px;padding:32px;border-radius:24px;background:#fff;box-shadow:0 14px 40px #210b3b18}h1{color:#35105f}button{border:0;border-radius:12px;padding:13px 20px;background:#51219b;color:#fff;font-weight:700}</style></head><body><main class="card"><h1>You’re offline</h1><p>DCDS needs an internet connection to load your account and learning content. Please reconnect and try again.</p><button onclick="location.reload()">Try again</button></main></body></html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#35105f">
+<title>Offline | DCDS</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;min-height:100dvh;display:grid;place-items:center;padding:24px;background:#f7f3fc;color:#28183a;font:16px system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;text-align:center}
+.card{width:min(100%,460px);padding:clamp(28px,6vw,42px);border-radius:28px;background:#fff;box-shadow:0 14px 40px #210b3b18}
+.status-icon{width:64px;height:64px;margin:0 auto 18px;border-radius:20px;display:grid;place-items:center;background:#f1e7fc;color:#55258c;font-size:29px}
+h1{margin:0 0 18px;color:#35105f;font-size:clamp(32px,7vw,42px);letter-spacing:-.04em}
+p{margin:0 auto 22px;max-width:340px;color:#3e304c;font-size:clamp(16px,4vw,19px);line-height:1.48}
+button{min-width:160px;min-height:54px;border:0;border-radius:14px;padding:14px 24px;background:#51219b;color:#fff;font:700 16px system-ui,sans-serif;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:10px;transition:transform .18s ease,opacity .18s ease,background .18s ease}
+button:focus-visible{outline:3px solid #b18ade;outline-offset:4px}
+button:active{transform:scale(.98)}
+button:disabled{cursor:wait;opacity:.9}
+.spinner{width:18px;height:18px;border:2.5px solid #ffffff70;border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite}
+.retry-status{min-height:22px;margin:16px auto 0!important;color:#715b88!important;font-size:13px!important;line-height:1.5!important}
+.progress{height:4px;width:100%;overflow:hidden;margin:18px auto 0;border-radius:99px;background:#eee5f6;opacity:0;transition:opacity .2s ease}
+.progress::after{content:"";display:block;width:35%;height:100%;border-radius:99px;background:linear-gradient(90deg,#6a33ae,#c09ae8);transform:translateX(-120%)}
+.card.is-loading .progress{opacity:1}
+.card.is-loading .progress::after{animation:load 1.15s ease-in-out infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes load{to{transform:translateX(310%)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="card" id="offlineCard">
+  <div class="status-icon" aria-hidden="true">⌁</div>
+  <h1>You’re offline</h1>
+  <p id="offlineMessage">DCDS needs an internet connection to load your account and learning content. Reconnect and try again.</p>
+  <button id="retryConnection" type="button">
+    <span id="retryButtonText">Try again</span>
+  </button>
+  <p class="retry-status" id="retryStatus" role="status" aria-live="polite">Tap below to check your connection and reload DCDS.</p>
+  <div class="progress" aria-hidden="true"></div>
+</main>
+<script>
+(()=>{
+ const card=document.getElementById("offlineCard");
+ const button=document.getElementById("retryConnection");
+ const buttonText=document.getElementById("retryButtonText");
+ const status=document.getElementById("retryStatus");
+ const message=document.getElementById("offlineMessage");
+ if(!card||!button||!buttonText||!status)return;
+ let retrying=false;
+
+ function setLoading(loading){
+  card.classList.toggle("is-loading",loading);
+  card.setAttribute("aria-busy",loading?"true":"false");
+  button.disabled=loading;
+  if(loading){
+   button.replaceChildren();
+   const spinner=document.createElement("span");
+   spinner.className="spinner";
+   spinner.setAttribute("aria-hidden","true");
+   const label=document.createElement("span");
+   label.textContent="Reconnecting…";
+   button.append(spinner,label);
+  }else{
+   button.replaceChildren(buttonText);
+   buttonText.textContent="Try again";
+  }
+ }
+
+ button.addEventListener("click",async()=>{
+  if(retrying)return;
+  retrying=true;
+  setLoading(true);
+  status.textContent="Checking your connection…";
+  message.textContent="DCDS is trying to reconnect and reload your page.";
+
+  const requestedUrl=new URL(window.location.href);
+  if(requestedUrl.pathname.endsWith("/offline.html")){
+   requestedUrl.pathname=requestedUrl.pathname.slice(0,-"offline.html".length)+"index.html";
+  }
+  const probeUrl=new URL("./",requestedUrl);
+  probeUrl.searchParams.set("dcds_connection_check",String(Date.now()));
+  const controller=new AbortController();
+  const timeout=window.setTimeout(()=>controller.abort(),10000);
+
+  try{
+   const response=await fetch(probeUrl.href,{
+    method:"GET",
+    cache:"no-store",
+    credentials:"same-origin",
+    signal:controller.signal,
+    headers:{"Accept":"text/html"}
+   });
+   if(!response.ok)throw new Error("The DCDS page could not be reached yet.");
+   status.textContent="Connection restored. Reloading your DCDS page…";
+   message.textContent="You’re back online. DCDS is loading again.";
+   requestedUrl.searchParams.set("dcds_retry",String(Date.now()));
+   window.setTimeout(()=>window.location.replace(requestedUrl.href),350);
+  }catch(error){
+   console.warn("DCDS reconnect check failed:",error);
+   status.textContent="Still offline. Check your internet connection, then tap Try again.";
+   message.textContent="We couldn’t reach DCDS yet. Your account and learning data have not been changed.";
+   setLoading(false);
+   retrying=false;
+  }finally{
+   window.clearTimeout(timeout);
+  }
+ });
+})();
+</script>
+</body>
+</html>
