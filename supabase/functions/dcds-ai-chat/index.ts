@@ -30,12 +30,31 @@ function json(body: unknown, status = 200) {
 
 async function loadKnowledge(): Promise<string> {
   if (cachedKnowledge && cachedKnowledge.expiresAt > Date.now()) return cachedKnowledge.value;
-  const documents = await Promise.all(KNOWLEDGE_FILES.map(async (path) => {
-    const response = await fetch(new URL(path, RAW_BASE), { signal: AbortSignal.timeout(12000) });
-    if (!response.ok) throw new Error("DCDS knowledge source unavailable: " + path);
-    return "===== " + path + " =====\n" + await response.text();
+
+  // Knowledge files enrich DCDS-specific answers, but one unavailable source
+  // must not prevent the tutor from answering general learning questions.
+  const results = await Promise.allSettled(KNOWLEDGE_FILES.map(async (path) => {
+    const response = await fetch(new URL(path, RAW_BASE), { signal: AbortSignal.timeout(8000) });
+    if (!response.ok) throw new Error("HTTP " + response.status);
+    return "===== " + path + " =====\\n" + await response.text();
   }));
-  const value = documents.join("\n\n");
+
+  const documents = results.flatMap((result) =>
+    result.status === "fulfilled" ? [result.value] : []
+  );
+  const unavailable = results.flatMap((result, index) =>
+    result.status === "rejected" ? [KNOWLEDGE_FILES[index]] : []
+  );
+  if (unavailable.length) {
+    console.warn("DCDS AI knowledge sources unavailable; continuing with available sources.", {
+      unavailableSources: unavailable,
+    });
+  }
+
+  const value = documents.length
+    ? documents.join("\\n\\n")
+    : "DCDS-specific knowledge files could not be reached for this request. Answer general learning questions normally. For current DCDS-specific policies, course prices, lessons and announcements, rely only on live platform records and clearly say when a fact cannot be confirmed.";
+
   cachedKnowledge = { value, expiresAt: Date.now() + 5 * 60 * 1000 };
   return value;
 }
@@ -210,11 +229,20 @@ function wantsExternalWebSearch(message: string, role: "student" | "admin" | "gu
 
 Deno.serve(async (request: Request) => {
   if (request.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
-  if (request.method !== "POST") return json({ success: false, error: "Method not allowed." }, 405);
+  if (request.method !== "POST") return respond({ success: false, error: "Method not allowed." }, 405);
+
+  const requestId = crypto.randomUUID();
+  const requestStartedAt = Date.now();
+  const respond = (body: unknown, status = 200) => json(
+    body && typeof body === "object" && !Array.isArray(body)
+      ? { ...(body as Record<string, unknown>), request_id: requestId }
+      : body,
+    status,
+  );
 
   const authorization = request.headers.get("Authorization");
   if (!authorization?.startsWith("Bearer ")) {
-    return json({ success: false, error: "Please sign in to use the DCDS AI assistant." }, 401);
+    return respond({ success: false, error: "Please sign in to use the DCDS AI assistant." }, 401);
   }
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
@@ -227,7 +255,7 @@ Deno.serve(async (request: Request) => {
   const model = Deno.env.get("DCDS_AI_MODEL") || "gemini-3.6-flash";
 
   if (!supabaseUrl || !publishableKey) {
-    return json({ success: false, error: "DCDS authentication is not configured." }, 503);
+    return respond({ success: false, error: "DCDS authentication is not configured." }, 503);
   }
 
   const userClient = createClient(supabaseUrl, publishableKey, {
@@ -237,7 +265,7 @@ Deno.serve(async (request: Request) => {
 
   const { data: { user }, error: userError } = await userClient.auth.getUser();
   if (userError || !user) {
-    return json({ success: false, error: "Your DCDS session is invalid. Please sign in again." }, 401);
+    return respond({ success: false, error: "Your DCDS session is invalid. Please sign in again." }, 401);
   }
 
   const metadata = user.user_metadata && typeof user.user_metadata === "object"
@@ -254,11 +282,11 @@ Deno.serve(async (request: Request) => {
   try {
     const parsed = await request.json();
     if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
-      return json({ success: false, error: "Invalid request body." }, 400);
+      return respond({ success: false, error: "Invalid request body." }, 400);
     }
     body = parsed as Record<string, unknown>;
   } catch {
-    return json({ success: false, error: "Invalid request body." }, 400);
+    return respond({ success: false, error: "Invalid request body." }, 400);
   }
 
   const message = typeof body.message === "string" ? body.message.trim() : "";
@@ -266,7 +294,7 @@ Deno.serve(async (request: Request) => {
   let imageAttachment: { mimeType: string; data: string } | null = null;
   if (rawImage !== undefined && rawImage !== null) {
     if (!rawImage || typeof rawImage !== "object" || Array.isArray(rawImage)) {
-      return json({ success: false, error: "The attached image could not be processed. Please choose it again." }, 400);
+      return respond({ success: false, error: "The attached image could not be processed. Please choose it again." }, 400);
     }
     const image = rawImage as Record<string, unknown>;
     const mimeType = typeof image.mime_type === "string" ? image.mime_type.toLowerCase() : "";
@@ -276,16 +304,16 @@ Deno.serve(async (request: Request) => {
     const maxBase64Length = 4 * Math.ceil(maxImageBytes / 3);
     if (!allowedImageTypes.has(mimeType) || !data || data.length > maxBase64Length
       || data.length % 4 !== 0 || !/^[A-Za-z0-9+/]+={0,2}$/.test(data)) {
-      return json({ success: false, error: "Only JPG, PNG or WEBP images up to 4 MB are supported." }, 400);
+      return respond({ success: false, error: "Only JPG, PNG or WEBP images up to 4 MB are supported." }, 400);
     }
     let decodedImage: string;
     try {
       decodedImage = atob(data);
     } catch {
-      return json({ success: false, error: "The attached image data is invalid. Please choose the image again." }, 400);
+      return respond({ success: false, error: "The attached image data is invalid. Please choose the image again." }, 400);
     }
     if (decodedImage.length > maxImageBytes || btoa(decodedImage) !== data) {
-      return json({ success: false, error: "The attached image exceeds the 4 MB limit or has invalid image data." }, 400);
+      return respond({ success: false, error: "The attached image exceeds the 4 MB limit or has invalid image data." }, 400);
     }
     const isJpeg = mimeType === "image/jpeg" && decodedImage.length >= 3
       && decodedImage.charCodeAt(0) === 0xff && decodedImage.charCodeAt(1) === 0xd8
@@ -295,12 +323,12 @@ Deno.serve(async (request: Request) => {
     const isWebp = mimeType === "image/webp" && decodedImage.length >= 12
       && decodedImage.slice(0, 4) === "RIFF" && decodedImage.slice(8, 12) === "WEBP";
     if (!isJpeg && !isPng && !isWebp) {
-      return json({ success: false, error: "The selected file does not match a supported JPG, PNG or WEBP image." }, 400);
+      return respond({ success: false, error: "The selected file does not match a supported JPG, PNG or WEBP image." }, 400);
     }
     imageAttachment = { mimeType, data };
   }
   if ((!message && !imageAttachment) || message.length > 2500) {
-    return json({ success: false, error: "Enter a message of up to 2,500 characters or attach an image." }, 400);
+    return respond({ success: false, error: "Enter a message of up to 2,500 characters or attach an image." }, 400);
   }
 
   // Public visitor sessions are anonymous Supabase Auth users protected by
@@ -312,7 +340,7 @@ Deno.serve(async (request: Request) => {
   let role: "student" | "admin" | "guest" = isGuest ? "guest" : "student";
 
   if (isGuest && body.adult_confirmation !== true) {
-    return json({
+    return respond({
       success: false,
       error_code: "ADULT_CONFIRMATION_REQUIRED",
       error: "DCDS AI is currently available only to adults aged 18 or older while the Gemini API is the active provider.",
@@ -323,13 +351,13 @@ Deno.serve(async (request: Request) => {
     const { data: isAdmin, error: adminCheckError } = await userClient.rpc("is_dcds_admin");
     if (adminCheckError) {
       console.error("DCDS AI admin-role check failed:", adminCheckError.message);
-      return json({ success: false, error_code: "ACCESS_CHECK_UNAVAILABLE", error: "The DCDS access check is temporarily unavailable." }, 503);
+      return respond({ success: false, error_code: "ACCESS_CHECK_UNAVAILABLE", error: "The DCDS access check is temporarily unavailable." }, 503);
     }
     if (isAdmin === true) role = "admin";
   }
 
   if (role === "admin" && body.adult_confirmation !== true) {
-    return json({
+    return respond({
       success: false,
       error_code: "ADULT_CONFIRMATION_REQUIRED",
       error: "Confirm that you are 18 or older before using DCDS AI.",
@@ -347,7 +375,7 @@ Deno.serve(async (request: Request) => {
 
     if (eligibilityError) {
       console.error("DCDS AI age-access record check failed:", eligibilityError.message);
-      return json({ success: false, error_code: "AGE_CHECK_UNAVAILABLE", error: "DCDS AI age eligibility could not be checked. Please try again later." }, 503);
+      return respond({ success: false, error_code: "AGE_CHECK_UNAVAILABLE", error: "DCDS AI age eligibility could not be checked. Please try again later." }, 503);
     }
 
     const adultAllowed = eligibility?.age_band === "18_plus"
@@ -355,7 +383,7 @@ Deno.serve(async (request: Request) => {
 
     if (!adultAllowed) {
       const under18 = eligibility?.age_band === "13_17" || eligibility?.age_band === "under_13";
-      return json({
+      return respond({
         success: false,
         error_code: under18 ? "UNDER_18_AI_UNAVAILABLE" : "AGE_REVIEW_REQUIRED",
         error: under18
@@ -374,10 +402,10 @@ Deno.serve(async (request: Request) => {
   });
   if (quotaError) {
     console.error("DCDS AI quota check failed:", quotaError.message);
-    return json({ success: false, error_code: "USAGE_CHECK_UNAVAILABLE", error: "The DCDS AI usage check is temporarily unavailable." }, 503);
+    return respond({ success: false, error_code: "USAGE_CHECK_UNAVAILABLE", error: "The DCDS AI usage check is temporarily unavailable." }, 503);
   }
   if (allowed !== true) {
-    return json({
+    return respond({
       success: false,
       error_code: role === "guest" ? "GUEST_RATE_LIMIT" : "USER_RATE_LIMIT",
       error: role === "guest"
@@ -387,26 +415,24 @@ Deno.serve(async (request: Request) => {
   }
 
   if (!geminiApiKey) {
-    return json({
+    console.error("DCDS AI provider key is missing.", { requestId });
+    return respond({
       success: false,
-      error: "AI_NOT_CONFIGURED: the Gemini provider key has not yet been configured in Production Supabase secrets.",
+      error_code: "AI_NOT_CONFIGURED",
+      error: "The DCDS AI provider key is not configured in Production. Please contact DCDS support.",
     }, 503);
   }
 
+  const modelDiscoveryPromise = listAvailableGeminiModels(geminiApiKey);
   console.info("DCDS AI request accepted", {
+    requestId,
     role,
     hasImage: Boolean(imageAttachment),
     messageLength: message.length,
     hasAccountName: Boolean(accountFirstName),
   });
 
-  let knowledge: string;
-  try {
-    knowledge = await loadKnowledge();
-  } catch (error) {
-    console.error("DCDS AI knowledge loading failed:", error);
-    return json({ success: false, error: "The DCDS knowledge foundation is temporarily unavailable." }, 503);
-  }
+  const knowledge = await loadKnowledge();
 
   // Verified student conversations are loaded from owner-scoped Supabase history.
   // Browser-provided history is intentionally ignored for students.
@@ -421,7 +447,7 @@ Deno.serve(async (request: Request) => {
     if (rawConversationId) {
       const uuidPattern = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       if (!uuidPattern.test(rawConversationId)) {
-        return json({ success: false, error: "This conversation link is invalid. Please open a saved DCDS chat again." }, 400);
+        return respond({ success: false, error: "This conversation link is invalid. Please open a saved DCDS chat again." }, 400);
       }
       requestedConversationId = rawConversationId;
       const { data: ownedConversation, error: conversationError } = await userClient
@@ -432,10 +458,10 @@ Deno.serve(async (request: Request) => {
 
       if (conversationError) {
         console.error("DCDS AI conversation ownership lookup failed:", conversationError.message);
-        return json({ success: false, error: "Your saved conversation could not be loaded. Please try again." }, 503);
+        return respond({ success: false, error: "Your saved conversation could not be loaded. Please try again." }, 503);
       }
       if (!ownedConversation) {
-        return json({ success: false, error: "This conversation is unavailable or does not belong to this account." }, 404);
+        return respond({ success: false, error: "This conversation is unavailable or does not belong to this account." }, 404);
       }
 
       const { data: storedMessages, error: historyError } = await userClient
@@ -447,7 +473,7 @@ Deno.serve(async (request: Request) => {
 
       if (historyError) {
         console.error("DCDS AI saved history lookup failed:", historyError.message);
-        return json({ success: false, error: "Your saved conversation history could not be loaded." }, 503);
+        return respond({ success: false, error: "Your saved conversation history could not be loaded." }, 503);
       }
 
       const historyForPrompt = (storedMessages ?? []).reverse().map((row) => ({
@@ -474,7 +500,28 @@ Deno.serve(async (request: Request) => {
   }
 
   const promptMessage = message || "Please analyse the attached image and explain what you can help me with.";
-  const platformSearch = await searchPlatformKnowledge(userClient, user.id, role, promptMessage);
+  const [platformSearch, discoveredModels] = await Promise.all([
+    searchPlatformKnowledge(userClient, user.id, role, promptMessage).catch((error) => {
+      console.warn("DCDS AI live platform search unavailable; continuing with approved knowledge.", {
+        requestId,
+        error: String(error).slice(0, 240),
+      });
+      return {
+        context: "Live DCDS platform search is temporarily unavailable. Use only the approved DCDS knowledge documents supplied; do not invent current platform facts.",
+        sources: [] as DcdsKnowledgeSource[],
+      };
+    }),
+    modelDiscoveryPromise,
+  ]);
+
+  console.info("DCDS AI preparation complete", {
+    requestId,
+    elapsedMs: Date.now() - requestStartedAt,
+    platformSources: platformSearch.sources.length,
+    knowledgeAvailable: knowledge.length > 0,
+    discoveredModelCount: discoveredModels?.length ?? 0,
+  });
+
   const shouldUseGoogleSearch = wantsExternalWebSearch(promptMessage, role);
   const userPrompt = priorContext + promptMessage;
   const geminiUserParts: Array<Record<string, unknown>> = [{
@@ -562,8 +609,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
 
 
 
-  // Discover currently supported models and skip stale IDs before requesting them.
-  const discoveredModels = await listAvailableGeminiModels(geminiApiKey);
+  // Model discovery already ran concurrently with DCDS retrieval preparation.
   const configuredCandidates = discoveredModels
     ? [
       ...(discoveredModels.includes(model) ? [model] : []),
@@ -576,7 +622,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
   );
   if (!modelCandidates.length) {
     const dailyQuotaCooling = [...providerDailyQuotaCooldowns.values()].some((expiresAt) => expiresAt > Date.now());
-    return json({
+    return respond({
       success: false,
       error_code: dailyQuotaCooling ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE",
       error: dailyQuotaCooling
@@ -653,7 +699,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
         lastProviderStatus = 502;
         unavailableModels.push(candidate);
         providerModelCooldowns.set(candidate, Date.now() + 30_000);
-        console.error("DCDS AI provider request failed for", candidate, error);
+        console.error("DCDS AI provider request failed.", { requestId, model: candidate, error: String(error).slice(0, 240) });
         if (attempt + 1 < attempts) {
           await new Promise((resolve) => setTimeout(resolve, 500));
           continue;
@@ -700,7 +746,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
       const isDailyQuota = /requests per day|daily.{0,30}quota|GenerateRequestsPerDayPerProject/i.test(quotaText);
 
       lastProviderStatus = response.status;
-      console.error("DCDS AI provider returned", candidate, response.status, providerError.slice(0, 800));
+      console.error("DCDS AI provider returned an error.", { requestId, model: candidate, status: response.status, details: providerError.slice(0, 500) });
 
       if (response.status === 429 && isDailyQuota) {
         // Honour Google's RetryInfo / human-readable retry hint. If neither is
@@ -735,7 +781,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
       }
 
       if (response.status === 401 || response.status === 403) {
-        return json({
+        return respond({
           success: false,
           error: "The DCDS AI provider credentials need attention. Please contact DCDS support.",
         }, 503);
@@ -755,7 +801,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
         break;
       }
 
-      return json({
+      return respond({
         success: false,
         error: "The DCDS AI could not process this request. Please try again later.",
       }, 502);
@@ -773,10 +819,23 @@ ${platformSearch.context}${savedMemoryInstruction}`;
     const error = dailyQuotaModels.length > 0
       ? "DCDS AI has reached a provider quota or capacity limit. We checked the available fallback models, but they are not currently responding. Please try again later."
       : "DCDS AI is temporarily at capacity. Please try again shortly.";
-    return json({ success: false, error_code: dailyQuotaModels.length > 0 ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE", error }, dailyQuotaModels.length > 0 ? 429 : 503);
+    return respond({ success: false, error_code: dailyQuotaModels.length > 0 ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE", error }, dailyQuotaModels.length > 0 ? 429 : 503);
   }
 
-  const result = await providerResponse.json();
+  let result: Record<string, any>;
+  try {
+    result = await providerResponse.json();
+  } catch (error) {
+    console.error("DCDS AI provider response was not valid JSON.", {
+      requestId,
+      error: String(error).slice(0, 240),
+    });
+    return respond({
+      success: false,
+      error_code: "PROVIDER_BAD_RESPONSE",
+      error: "The AI provider returned an unreadable response. Your draft is safe; please try again.",
+    }, 502);
+  }
   const generatedAnswer = result?.candidates?.[0]?.content?.parts
     ?.map((part: { text?: string }) => typeof part.text === "string" ? part.text : "")
     .join("")
@@ -784,7 +843,7 @@ ${platformSearch.context}${savedMemoryInstruction}`;
 
   if (!generatedAnswer) {
     console.error("DCDS AI provider returned no text candidate.");
-    return json({ success: false, error: "The AI did not return a response. Please rephrase your question." }, 502);
+    return respond({ success: false, error: "The AI did not return a response. Please rephrase your question." }, 502);
   }
 
   const groundingChunks = result?.candidates?.[0]?.groundingMetadata?.groundingChunks ?? [];
@@ -868,7 +927,15 @@ ${platformSearch.context}${savedMemoryInstruction}`;
     }
   }
 
-  return json({
+  console.info("DCDS AI response ready", {
+    requestId,
+    role,
+    model: resolvedModel,
+    elapsedMs: Date.now() - requestStartedAt,
+    historySaved,
+  });
+
+  return respond({
     success: true,
     answer,
     model: resolvedModel,
