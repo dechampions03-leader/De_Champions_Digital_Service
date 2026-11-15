@@ -186,9 +186,12 @@ jobs:
               "natural voice tests are present":
                   "voice-002" in Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8")
                   and "voice-003" in Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"),
-              "image upload UI is connected to the chat request":
-                  "attachImageButton" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
-                  and "requestBody.image" in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
+              "public AI composer removes image upload while retaining microphone dictation":
+                  "voiceButton" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "SpeechRecognition" in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "attachImageButton" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "imageInput" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+                  and "requestBody.image" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
           }
           failures = [name for name, passed in invariants.items() if not passed]
           for name, passed in invariants.items():

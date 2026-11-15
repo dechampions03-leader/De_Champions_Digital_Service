@@ -87,7 +87,7 @@ jobs:
               "Privacy notice explains image attachment processing": "image attachments" in files["privacy"].lower() and "not stored as image files" in files["privacy"],
               "Privacy notice explains optional browser voice processing": "speech-recognition" in files["privacy"] and "raw microphone recording" in files["privacy"],
               "Privacy notice explains optional device voice playback": "device or browser speech-synthesis" in files["privacy"] and "Voice playback is processed locally" in files["privacy"],
-              "DCDS AI page includes image attachment and voice input controls": "attachImageButton" in files["ai"] and "voiceButton" in files["ai"],
+              "DCDS AI composer omits image upload controls and retains microphone input": "voiceButton" in files["ai"] and "SpeechRecognition" in files["ai"] and "attachImageButton" not in files["ai"] and "imageInput" not in files["ai"] and "requestBody.image" not in files["ai"],
               "DCDS AI page provides free device voice playback": "Listen · free voice" in files["ai"] and "speechSynthesis" in files["ai"] and "dcds-ai-speech-session" not in files["ai"],
               "OpenAI voice session is JWT-protected and age-gated": "getUser()" in files["speech"] and "guardian_consent_status" in files["speech"],
               "OpenAI voice API key stays server-side": 'Deno.env.get("OPENAI_API_KEY")' in files["speech"],
