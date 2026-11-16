@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#ffffff">
+<title>My Learning Hub | DCDS</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7628d8;--deep:#21083f;--dark:#451078;--gold:#d4af37;--ink:#28183a;--muted:#756783;--line:#eadff5;--surface:#faf7fd}
+*{box-sizing:border-box}
+html,body{margin:0;width:100%;max-width:100%;min-height:100%;overflow-x:clip;overscroll-behavior-x:none;font-family:'DM Sans',sans-serif;color:var(--ink)}
+body{min-height:100vh;min-height:100dvh;background:linear-gradient(145deg,#fbf9ff,#f1e8fb)}
+a{color:inherit}
+.wrap{width:min(1080px,calc(100% - 28px));margin:0 auto;padding:20px 0 54px}
+header{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.brand{font-size:12px;font-weight:900;letter-spacing:.12em;color:var(--dark)}
+.back{display:inline-flex;align-items:center;justify-content:center;padding:10px 13px;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--dark);font-size:12px;font-weight:800;text-decoration:none}
+.hero{padding:clamp(22px,4vw,36px);border-radius:24px;color:#fff;background:radial-gradient(circle at 88% 8%,#9958d1,transparent 32%),linear-gradient(125deg,#21083f,#451078 58%,#7025b7);box-shadow:0 16px 44px #35105f22}
+.kicker{font-size:10px;letter-spacing:.2em;color:#f3d98e;font-weight:900}
+h1{font:800 clamp(29px,5vw,42px)/1.1 'Playfair Display',serif;margin:10px 0}
+.hero p{margin:0;color:#eadcf8;line-height:1.65;font-size:13px}
+.hero .resume-link{display:inline-flex;margin-top:18px;padding:12px 16px;border-radius:12px;background:#f3d98e;color:#28183a;text-decoration:none;font-weight:900;font-size:13px}
+.grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(260px,.8fr);gap:16px;margin-top:16px}
+.panel{min-width:0;background:#fff;border:1px solid var(--line);border-radius:18px;padding:19px;box-shadow:0 8px 24px #32105f0a}
+.panel h2{font:700 21px 'Playfair Display',serif;color:var(--deep);margin:0 0 7px}
+.sub{font-size:12px;line-height:1.65;color:var(--muted);margin:0 0 15px}
+.course-list{display:grid;gap:10px}
+.course-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:13px;border:1px solid var(--line);border-radius:14px;background:#fdfbff}
+.course-row h3{font:700 16px 'Playfair Display',serif;color:var(--deep);margin:0 0 4px}
+.course-row p{font-size:11px;color:var(--muted);margin:0;line-height:1.5}
+.small-link{flex:0 0 auto;padding:9px 11px;border-radius:10px;background:#f1e5ff;color:var(--dark);text-decoration:none;font-size:11px;font-weight:900}
+.goal-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.goal-number{font:800 27px 'Playfair Display',serif;color:var(--dark)}
+.track{height:11px;background:#eee5f6;border-radius:20px;overflow:hidden;margin:13px 0 8px}
+.track span{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#8d3bdb,#54168e);width:0;transition:width .2s ease}
+.goal-meta{display:flex;justify-content:space-between;gap:8px;color:var(--muted);font-size:11px}
+.goal-form{display:flex;gap:9px;align-items:center;margin-top:15px}
+.goal-form label{font-size:11px;color:var(--muted);font-weight:800}
+.goal-form input{width:75px;min-width:0;padding:10px;border:1px solid var(--line);border-radius:10px;font:700 14px 'DM Sans',sans-serif;color:var(--deep)}
+.button{border:0;border-radius:10px;padding:10px 13px;background:linear-gradient(110deg,#8d3bdb,#54168e);color:#fff;font:800 11px 'DM Sans',sans-serif;cursor:pointer}
+.button:disabled{opacity:.6;cursor:wait}
+.badges{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.badge-card{padding:13px 10px;text-align:center;border:1px solid var(--line);border-radius:14px;background:#fdfbff}
+.badge-card.locked{opacity:.48;filter:grayscale(.7)}
+.badge-icon{font-size:24px;display:block;margin-bottom:7px}
+.badge-card strong{display:block;color:var(--deep);font-size:11px;line-height:1.3}
+.badge-card small{display:block;color:var(--muted);font-size:10px;line-height:1.4;margin-top:5px}
+.history{display:grid;gap:0}
+.history-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 0;border-bottom:1px solid #f0e9f6}
+.history-row:last-child{border-bottom:0}
+.dot{width:9px;height:9px;border-radius:50%;background:#8d3bdb;margin-top:4px;box-shadow:0 0 0 4px #f1e5ff}
+.history-row strong{display:block;color:var(--deep);font-size:12px;line-height:1.4}
+.history-row small{display:block;color:var(--muted);font-size:10px;margin-top:4px}
+.history-row a{color:var(--purple);font-size:10px;font-weight:900;text-decoration:none;white-space:nowrap}
+.notice{padding:14px;border:1px dashed #d9c8e8;border-radius:13px;background:#fff;color:var(--muted);font-size:12px;line-height:1.7}
+.status{font-size:12px;line-height:1.6;color:var(--muted);margin-top:12px}
+@media(max-width:760px){.grid{grid-template-columns:1fr}.badges{grid-template-columns:repeat(2,minmax(0,1fr))}.course-row{align-items:flex-start;flex-direction:column}.small-link{align-self:flex-start}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div class="brand">DE CHAMPIONS DIGITAL SERVICE</div><a class="back" href="student-dashboard.html">← Student Dashboard</a></header>
+<div id="status" class="notice" role="status" aria-live="polite">Checking your secure student session…</div>
+<section id="hub" hidden>
+  <section class="hero">
+    <div class="kicker">YOUR PERSONAL LEARNING SPACE</div>
+    <h1>Keep moving forward.</h1>
+    <p id="welcome">Your learning activity, weekly target and achievements in one place.</p>
+    <div id="resume"></div>
+  </section>
+  <div class="grid">
+    <section class="panel">
+      <h2>▶ Continue learning</h2>
+      <p class="sub">Pick up from the saved lesson in any of your enrolled courses.</p>
+      <div id="courseList" class="course-list"><div class="notice">Loading enrolled courses…</div></div>
+    </section>
+    <section class="panel">
+      <h2>🎯 Weekly learning goal</h2>
+      <p class="sub">Choose how many lessons you want to complete each week. Your progress is counted from lessons you have marked complete.</p>
+      <div class="goal-head"><span class="goal-number" id="goalCount">0 / 3</span><span class="sub" style="margin:0">lessons this week</span></div>
+      <div class="track" role="progressbar" aria-label="Weekly learning goal" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="goalTrack"><span id="goalFill"></span></div>
+      <div class="goal-meta"><span id="goalMessage">Keep going — every lesson counts.</span><span id="goalPercent">0%</span></div>
+      <form class="goal-form" id="goalForm">
+        <label for="weeklyGoal">Weekly target</label>
+        <input id="weeklyGoal" type="number" min="1" max="20" step="1" value="3" required>
+        <button class="button" id="saveGoal" type="submit">Save goal</button>
+      </form>
+      <div class="status" id="goalStatus" aria-live="polite">Your target is private to your student account.</div>
+    </section>
+  </div>
+  <section class="panel" style="margin-top:16px">
+    <h2>🏅 Learning achievements</h2>
+    <p class="sub">Badges are calculated from your existing DCDS lesson, assessment and certificate records. They do not replace official grades or certificates.</p>
+    <div class="badges" id="badges"></div>
+  </section>
+  <section class="panel" style="margin-top:16px">
+    <h2>🕘 Study history</h2>
+    <p class="sub">Your latest completed lessons, recorded by the DCDS learning portal.</p>
+    <div class="history" id="history"></div>
+  </section>
+</section>
+</main>
+<script>
+"use strict";
+const SUPABASE_URL="https://qxsenflgaweeadvggnyp.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+const client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const byId=id=>document.getElementById(id);
+const escapeHtml=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const formatDate=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?"Date unavailable":d.toLocaleString(undefined,{dateStyle:"medium",timeStyle:"short"});};
+const mondayStart=()=>{const d=new Date();d.setHours(0,0,0,0);d.setDate(d.getDate()-((d.getDay()+6)%7));return d;};
+const lessonUrl=(course,lesson)=>"learn.html?course="+encodeURIComponent(course.slug)+"&lesson="+encodeURIComponent(lesson.id)+"#dcds-lesson-"+encodeURIComponent(lesson.id);
+const showError=message=>{byId("status").textContent=message;byId("status").hidden=false;};
+let activeUser=null;
+
+function renderGoal(done,target){
+  const pct=Math.min(100,Math.round(done/target*100));
+  byId("goalCount").textContent=done+" / "+target;
+  byId("goalFill").style.width=pct+"%";
+  byId("goalTrack").setAttribute("aria-valuenow",String(pct));
+  byId("goalPercent").textContent=pct+"%";
+  byId("goalMessage").textContent=done>=target?"Weekly target achieved — excellent work!":"You need "+Math.max(0,target-done)+" more lesson"+(target-done===1?"":"s")+" to reach your target.";
+}
+function renderBadges(lessonCount,passedQuizzes,submittedAssignments,certCount){
+  const items=[
+    ["🌱","First step","Complete your first lesson",lessonCount>=1],
+    ["📘","Five lessons","Complete five lessons",lessonCount>=5],
+    ["🚀","Ten lessons","Complete ten lessons",lessonCount>=10],
+    ["🧠","Quiz achiever","Pass a DCDS quiz",passedQuizzes>=1],
+    ["🛠️","Practical creator","Submit a practical assignment",submittedAssignments>=1],
+    ["🎓","Course finisher","Earn a DCDS certificate",certCount>=1]
+  ];
+  byId("badges").replaceChildren();
+  items.forEach(([icon,title,description,earned])=>{
+    const card=document.createElement("article");card.className="badge-card"+(earned?"":" locked");
+    const iconEl=document.createElement("span");iconEl.className="badge-icon";iconEl.textContent=icon;
+    const strong=document.createElement("strong");strong.textContent=title;
+    const small=document.createElement("small");small.textContent=earned?"Achievement unlocked":description;
+    card.append(iconEl,strong,small);byId("badges").appendChild(card);
+  });
+}
+function renderHistory(rows,lessonMap,courseMap){
+  const box=byId("history");box.replaceChildren();
+  if(!rows.length){box.innerHTML='<div class="notice">Your completed lessons will appear here after you finish and save your first lesson.</div>';return;}
+  rows.slice(0,15).forEach(row=>{
+    const lesson=lessonMap.get(row.lesson_id),course=courseMap.get(row.course_id);
+    const wrap=document.createElement("div");wrap.className="history-row";
+    const dot=document.createElement("span");dot.className="dot";
+    const main=document.createElement("div");
+    const title=document.createElement("strong");title.textContent=(lesson?.lesson_title||"Completed lesson")+" · "+(course?.title||"DCDS Course");
+    const date=document.createElement("small");date.textContent=formatDate(row.completed_at);
+    main.append(title,date);wrap.append(dot,main);
+    if(course&&lesson&&course.slug){const a=document.createElement("a");a.href=lessonUrl(course,lesson);a.textContent="Review";wrap.appendChild(a);}
+    box.appendChild(wrap);
+  });
+}
+function renderCourses(courses,lessons,progress,activityMap){
+  const completedByCourse=new Map();
+  progress.forEach(row=>{if(!completedByCourse.has(row.course_id))completedByCourse.set(row.course_id,new Set());completedByCourse.get(row.course_id).add(row.lesson_id);});
+  const box=byId("courseList");box.replaceChildren();
+  const choices=[];
+  courses.forEach(course=>{
+    const courseLessons=lessons.filter(item=>item.course_id===course.id);
+    const completed=completedByCourse.get(course.id)||new Set();
+    const activity=activityMap.get(course.id);
+    const saved=courseLessons.find(item=>item.id===activity?.lesson_id&&!completed.has(item.id));
+    const next=saved||courseLessons.find(item=>!completed.has(item.id))||courseLessons[courseLessons.length-1]||null;
+    if(next)choices.push({course,lesson:next,activityAt:activity?.last_opened_at||"",finished:courseLessons.length>0&&courseLessons.every(item=>completed.has(item.id))});
+    const row=document.createElement("article");row.className="course-row";
+    const text=document.createElement("div");
+    const h=document.createElement("h3");h.textContent=course.title||"DCDS Course";
+    const p=document.createElement("p");p.textContent=next?(completed.has(next.id)?"All published lessons are complete. You can review the course.":"Next lesson: "+next.lesson_title):"Lessons have not been published for this course yet.";
+    text.append(h,p);row.append(text);
+    if(next){const a=document.createElement("a");a.className="small-link";a.href=lessonUrl(course,next);a.textContent=courseLessons.every(item=>completed.has(item.id))?"Review course":"Continue →";row.appendChild(a);}
+    box.appendChild(row);
+  });
+  choices.sort((a,b)=>new Date(b.activityAt||0)-new Date(a.activityAt||0));
+  const chosen=choices.find(item=>!item.finished)||choices[0];
+  const resume=byId("resume");resume.replaceChildren();
+  if(chosen){
+    const p=document.createElement("p");p.style.cssText="margin:14px 0 0;font-size:13px;font-weight:700;color:#fff";
+    p.textContent="Your next step: "+chosen.course.title+" — "+chosen.lesson.lesson_title;
+    const a=document.createElement("a");a.className="resume-link";a.href=lessonUrl(chosen.course,chosen.lesson);a.textContent=chosen.finished?"Review your course":"Resume this lesson";
+    resume.append(p,a);
+  }else{
+    const p=document.createElement("p");p.style.cssText="margin:16px 0 0;color:#fff;font-size:13px";
+    p.textContent=courses.length?"Your enrolled courses do not have published lessons yet.":"Your learning journey starts when you enrol in a course.";
+    resume.appendChild(p);
+  }
+}
+async function loadHub(){
+  const {data:{session},error:sessionError}=await client.auth.getSession();
+  if(sessionError)throw sessionError;
+  const user=session?.user;
+  if(!user){window.location.replace("index.html?login=required&next="+encodeURIComponent("student-learning-hub.html"));return;}
+  if(!user.email_confirmed_at&&!user.phone_confirmed_at){window.location.replace("index.html?login=required&next="+encodeURIComponent("student-learning-hub.html"));return;}
+  activeUser=user;
+
+  const {data:enrollments,error:enrollmentError}=await client.from("enrollments").select("course_id").eq("user_id",user.id);
+  if(enrollmentError)throw enrollmentError;
+  const courseIds=[...new Set((enrollments||[]).map(item=>item.course_id))];
+  if(!courseIds.length){
+    byId("status").textContent="You do not have an enrolled course yet. Browse the DCDS catalogue to choose your first course.";
+    byId("hub").hidden=false;byId("welcome").textContent="Welcome to your DCDS learning space. Your progress and achievements will appear here when you enrol.";
+    byId("courseList").innerHTML='<div class="notice">No course enrolments found. <a href="index.html#courses">Explore DCDS courses</a>.</div>';
+    renderGoal(0,3);renderBadges(0,0,0,0);renderHistory([],new Map(),new Map());return;
+  }
+  const [coursesRes,lessonsRes,progressRes,activityRes,settingsRes,quizRes,assignmentRes,certRes]=await Promise.all([
+    client.from("courses").select("id,title,slug").in("id",courseIds),
+    client.from("course_lessons").select("id,course_id,lesson_title,lesson_number").in("course_id",courseIds).order("lesson_number",{ascending:true}),
+    client.from("lesson_progress").select("course_id,lesson_id,completed_at").eq("user_id",user.id).in("course_id",courseIds).order("completed_at",{ascending:false}).limit(200),
+    client.from("student_course_activity").select("course_id,lesson_id,last_opened_at").eq("user_id",user.id).in("course_id",courseIds),
+    client.from("student_learning_settings").select("weekly_lesson_goal").eq("user_id",user.id).maybeSingle(),
+    client.from("quiz_attempts").select("id,passed").eq("user_id",user.id).limit(200),
+    client.from("assignment_submissions").select("id,status").eq("user_id",user.id).limit(200),
+    client.from("certificates").select("id,status").eq("user_id",user.id).limit(100)
+  ]);
+  for(const result of [coursesRes,lessonsRes,progressRes,activityRes,settingsRes,quizRes,assignmentRes,certRes])if(result.error)throw result.error;
+  const courses=coursesRes.data||[],lessons=lessonsRes.data||[],progress=progressRes.data||[],activities=activityRes.data||[];
+  const courseMap=new Map(courses.map(item=>[item.id,item]));
+  const lessonMap=new Map(lessons.map(item=>[item.id,item]));
+  const activityMap=new Map(activities.map(item=>[item.course_id,item]));
+  const weeklyStart=mondayStart();
+  const weeklyDone=progress.filter(item=>new Date(item.completed_at)>=weeklyStart).length;
+  const goal=settingsRes.data?.weekly_lesson_goal||3;
+  byId("weeklyGoal").value=String(goal);
+  renderGoal(weeklyDone,goal);
+  byId("welcome").textContent="Welcome back, "+((user.user_metadata?.full_name||user.user_metadata?.name||"Champion").split(/\s+/)[0])+". Your learning activity, weekly target and achievements are together here.";
+  renderCourses(courses,lessons,progress,activityMap);
+  renderHistory(progress,lessonMap,courseMap);
+  renderBadges(progress.length,(quizRes.data||[]).filter(item=>item.passed===true).length,(assignmentRes.data||[]).length,(certRes.data||[]).filter(item=>item.status!=="revoked").length);
+  byId("status").hidden=true;
+  byId("hub").hidden=false;
+}
+byId("goalForm").addEventListener("submit",async event=>{
+  event.preventDefault();
+  if(!activeUser)return;
+  const input=byId("weeklyGoal"),goal=Number(input.value),button=byId("saveGoal");
+  if(!Number.isInteger(goal)||goal<1||goal>20){byId("goalStatus").textContent="Choose a weekly target from 1 to 20 lessons.";return;}
+  button.disabled=true;button.textContent="Saving…";
+  const {error}=await client.from("student_learning_settings").upsert({user_id:activeUser.id,weekly_lesson_goal:goal,updated_at:new Date().toISOString()},{onConflict:"user_id"});
+  button.disabled=false;button.textContent="Save goal";
+  if(error){byId("goalStatus").textContent="Your weekly target could not be saved. Please try again.";return;}
+  const {data}=await client.from("lesson_progress").select("completed_at").eq("user_id",activeUser.id).gte("completed_at",mondayStart().toISOString());
+  renderGoal((data||[]).length,goal);
+  byId("goalStatus").textContent="✓ Your weekly goal has been saved to your DCDS student account.";
+});
+loadHub().catch(error=>{
+  console.error("DCDS Learning Hub load error:",error);
+  showError("The Learning Hub could not load your records right now. Your course enrolments and saved progress have not been changed. Please refresh or return to your Student Dashboard.");
+});
+</script>
+</body>
+</html>
