@@ -1028,6 +1028,8 @@ function displayLessons(lessons) {
     lessons.forEach(lesson => {
         const item = document.createElement("div");
         item.className = "lesson";
+        item.id = "dcds-lesson-" + lesson.id;
+        item.style.scrollMarginTop = "88px";
 
         const heading = document.createElement("h3");
         heading.textContent =
@@ -1289,7 +1291,48 @@ async function loadCourse() {
 
         currentLessons = lessons || [];
         await loadLessonProgress();
+
+        // Resume the saved lesson when available; otherwise select the first incomplete lesson.
+        let resumeLesson = null;
+        if (currentLessons.length) {
+            const requestedLessonId = new URLSearchParams(window.location.search).get("lesson");
+            const { data: savedActivity, error: activityReadError } = await withTimeout(
+                db.from("student_course_activity")
+                  .select("lesson_id")
+                  .eq("user_id", currentUser.id)
+                  .eq("course_id", currentCourse.id)
+                  .maybeSingle()
+            );
+            if (activityReadError) throw activityReadError;
+
+            const requestedLesson = currentLessons.find(lesson => lesson.id === requestedLessonId);
+            const savedLesson = currentLessons.find(lesson =>
+                lesson.id === savedActivity?.lesson_id && !completedLessonIds.has(lesson.id)
+            );
+            resumeLesson = requestedLesson || savedLesson ||
+                currentLessons.find(lesson => !completedLessonIds.has(lesson.id)) ||
+                currentLessons[currentLessons.length - 1];
+
+            const activityTimestamp = new Date().toISOString();
+            const { error: activitySaveError } = await withTimeout(
+                db.from("student_course_activity").upsert({
+                    user_id: currentUser.id,
+                    course_id: currentCourse.id,
+                    lesson_id: resumeLesson.id,
+                    last_opened_at: activityTimestamp,
+                    updated_at: activityTimestamp
+                }, { onConflict: "user_id,course_id" })
+            );
+            if (activitySaveError) throw activitySaveError;
+        }
+
         displayLessons(lessons);
+        if (resumeLesson) {
+            const target = document.getElementById("dcds-lesson-" + resumeLesson.id);
+            if (target) {
+                window.setTimeout(() => target.scrollIntoView({ behavior: "smooth", block: "start" }), 120);
+            }
+        }
 
         // Existing certificates remain visible even if lessons were added later.
         const { data: existingCertificate, error: existingCertificateError } = await withTimeout(
