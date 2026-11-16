@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+
 <meta name="theme-color" content="#ffffff">
 <link rel="manifest" href="./manifest-v4.webmanifest">
 <link rel="icon" href="./assets/dcds-splash-icon-v4-192.png" type="image/png" sizes="192x192">
@@ -293,6 +294,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal],
  transition:none!important;
 }
 </style>
+<link rel="stylesheet" href="./assets/dcds-mobile-fit.css?v=1">
 </head>
 <body class="auth-pending">
 <div class="dcds-refresh-indicator" id="dcdsRefreshIndicator" role="status" aria-live="polite" aria-atomic="true">
@@ -695,7 +697,7 @@ function openCertificate(certificate, studentName, courseTitle) {
     return;
   }
   printWindow.document.open();
-  printWindow.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>DCDS Certificate - ${safeNumber}</title><style>
+  printWindow.document.write(`<!doctype html><html lang="en"><head><meta charset="utf-8"><title>DCDS Certificate - ${safeNumber}</title><style>
     *{box-sizing:border-box}body{margin:0;background:#f3edf8;font-family:Georgia,'Times New Roman',serif;color:#241039;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:25px}.certificate{width:min(1100px,100%);min-height:690px;background:#fffdf8;border:12px double #8b65b0;outline:2px solid #d4af37;outline-offset:-25px;padding:65px 55px;text-align:center;position:relative}.brand{font:900 17px Arial,sans-serif;letter-spacing:5px;color:#64269a}.tag{font:700 10px Arial,sans-serif;letter-spacing:3px;color:#98722a;margin-top:9px}.rule{width:110px;height:3px;background:#d4af37;margin:28px auto}.eyebrow{font:700 13px Arial,sans-serif;letter-spacing:4px;color:#7a5c91;margin-top:35px}.title{font-size:clamp(34px,6vw,58px);color:#35105f;margin:18px 0}.intro{font:16px Arial,sans-serif;color:#665875}.name{font-size:clamp(30px,5vw,48px);font-weight:bold;color:#8a5a13;margin:20px 0 12px;border-bottom:1px solid #d4af37;display:inline-block;padding:0 25px 12px}.course{font-size:25px;color:#35105f;font-weight:bold;margin:16px 0}.body{font:15px/1.8 Arial,sans-serif;color:#62566e;max-width:720px;margin:15px auto}.footer{display:flex;justify-content:space-between;gap:20px;margin-top:65px;text-align:left;font:12px Arial,sans-serif;color:#5f536b}.seal{font:700 11px Arial,sans-serif;color:#77551b;border:2px solid #d4af37;border-radius:50%;width:95px;height:95px;display:flex;align-items:center;justify-content:center;margin:auto;letter-spacing:1px}.verified{font:700 10px Arial,sans-serif;color:#267044;margin-top:10px;letter-spacing:1px}.print{position:fixed;top:15px;right:15px;border:0;border-radius:9px;padding:12px 16px;background:#64269a;color:#fff;font-weight:bold;cursor:pointer}@media print{body{background:#fff;padding:0}.certificate{width:100%;min-height:95vh;break-inside:avoid}.print{display:none}}@page{size:A4 landscape;margin:10mm}
    </style><style id="dcds-scroll-motion">
 /* DCDS scroll motion: additive effects only; existing layout and colours remain untouched. */
