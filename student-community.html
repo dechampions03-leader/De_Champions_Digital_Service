@@ -90,7 +90,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <form id="ageRequestForm" class="form">
 <label>Choose your age band
 <select id="ageBand" required><option value="">Select age band</option><option value="13_17">13–17 years</option><option value="18_plus">18 years or older</option></select></label>
-<div id="guardianField" hidden><label>Verified adult guardian DCDS account UUID<input id="guardianId" maxlength="36" placeholder="Guardian account UUID" autocomplete="off"></label><div class="notice warn">Your guardian must already have a confirmed DCDS account and independently verified 18+ community status. Do not use another student’s account.</div></div>
+<div id="guardianField" hidden><label>One-time code from your parent or legal guardian<input id="guardianCode" minlength="24" maxlength="64" placeholder="Enter your guardian's one-time code" autocomplete="off"></label><div class="notice warn">Ask your parent or legally authorised guardian to sign in to their DCDS account, complete 18+ community age review, and generate a one-time guardian code. It expires after 7 days and can be used once.</div></div>
 <button class="btn" type="submit" id="submitAge">Submit age-band request</button><div id="ageMessage" class="status-line"></div>
 </form>
 <div class="notice danger"><strong>Under-13 protection:</strong> Under-13 accounts cannot join student social chat or live community calls. This is not an optional setting.</div>
@@ -103,8 +103,18 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 </section>
 
 <section id="guardianInbox" class="panel" hidden>
-<h2>Guardian consent requests</h2>
-<p class="sub">These requests are for a young person who nominated your verified adult DCDS account. Confirm only if you are their parent or legally authorised guardian and you understand the community controls.</p>
+<h2>Guardian tools & consent requests</h2>
+<div id="guardianCodePanel" hidden>
+<p class="sub">As a DCDS account with verified 18+ community age, you can generate a one-time code for your child or ward. Share it privately with them. Codes expire after 7 days and can only be used once.</p>
+<button class="btn secondary" type="button" id="generateGuardianCode">Generate one-time guardian code</button>
+<div id="guardianCodeOutput" hidden style="margin-top:10px">
+<label class="small">One-time code — share privately<input id="guardianCodeValue" readonly></label>
+<button class="btn secondary" type="button" id="copyGuardianCode">Copy code</button>
+</div>
+<div id="guardianCodeMessage" class="status-line" role="status"></div>
+<hr>
+</div>
+<p class="sub">Consent requests are for a young person who nominated your verified adult DCDS account. Confirm only if you are their parent or legally authorised guardian and you understand the community controls.</p>
 <div id="guardianRequests" class="stack"></div>
 </section>
 
@@ -244,6 +254,18 @@ async function requireStudent(){
  }
  return true;
 }
+$("generateGuardianCode").addEventListener("click",async()=>{
+ const btn=$("generateGuardianCode");btn.disabled=true;setMsg("guardianCodeMessage","Generating a one-time code…");
+ const {data,error}=await db.rpc("dcds_community_create_guardian_code");
+ btn.disabled=false;if(error){setMsg("guardianCodeMessage","Could not generate a guardian code: "+error.message);return;}
+ $("guardianCodeValue").value=String(data||"");$("guardianCodeOutput").hidden=!data;
+ setMsg("guardianCodeMessage",data?"Code generated. It expires in 7 days and can be used once. Share it privately.":"No code was returned.");
+});
+$("copyGuardianCode").addEventListener("click",async()=>{
+ const code=$("guardianCodeValue").value;if(!code)return;
+ try{await navigator.clipboard.writeText(code);setMsg("guardianCodeMessage","✓ Code copied. Share it privately with your child or ward.");}
+ catch(_){$("guardianCodeValue").focus();$("guardianCodeValue").select();setMsg("guardianCodeMessage","Select and copy the code manually.");}
+});
 async function loadAgeState(){
  const r=await db.from("dcds_community_age_requests").select("id,user_id,age_band,guardian_user_id,guardian_consent_status,status,created_at").eq("user_id",user.id).maybeSingle();
  if(r.error)throw r.error;ageRequest=r.data;
@@ -275,25 +297,27 @@ async function loadAgeState(){
  }
 }
 $("ageRequestForm").addEventListener("submit",async e=>{
- e.preventDefault();const band=$("ageBand").value,guardian=$("guardianId").value.trim();
+ e.preventDefault();
+ const band=$("ageBand").value,guardianCode=$("guardianCode").value.trim();
  if(!["13_17","18_plus"].includes(band)){setMsg("ageMessage","Choose 13–17 or 18+. Under-13 accounts cannot join this community.");return;}
- if(band==="13_17"&&(!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(guardian)||guardian===user.id)){setMsg("ageMessage","Enter a different, valid adult guardian DCDS account UUID.");return;}
+ if(band==="13_17"&&(guardianCode.length<24||guardianCode.length>64)){setMsg("ageMessage","Enter the one-time code generated by your verified adult parent or guardian.");return;}
  const btn=$("submitAge");btn.disabled=true;setMsg("ageMessage","Submitting your community age-band request…");
- const payload={user_id:user.id,age_band:band,guardian_user_id:band==="13_17"?guardian:null,guardian_consent_status:band==="13_17"?"pending":"not_required"};
+ const payload={user_id:user.id,age_band:band,guardian_invite_code:band==="13_17"?guardianCode:null,guardian_user_id:null,guardian_consent_status:band==="13_17"?"pending":"not_required"};
  const r=await db.from("dcds_community_age_requests").insert(payload).select("id").single();
  btn.disabled=false;if(r.error){setMsg("ageMessage","Request could not be saved: "+r.error.message);return;}
- if(band==="13_17"){
-  const consent=await db.from("dcds_community_guardian_consents").insert({age_request_id:r.data.id,student_user_id:user.id,guardian_user_id:guardian,status:"pending"});
-  if(consent.error){setMsg("ageMessage","Age request saved, but guardian consent request could not be created. Contact DCDS support; do not submit another request. "+consent.error.message);return;}
- }
- $("ageRequestForm").reset();$("guardianField").hidden=true;setMsg("ageMessage","✓ Request submitted. DCDS will review age assurance after any required guardian consent.");
+ $("ageRequestForm").reset();$("guardianField").hidden=true;setMsg("ageMessage","✓ Request submitted. Your guardian will receive a consent request in their DCDS account; DCDS will then review your age assurance.");
  await loadAgeState();await loadGuardianInbox();
 });
 async function loadGuardianInbox(){
  const r=await db.from("dcds_community_guardian_consents").select("id,age_request_id,student_user_id,status,guardian_note,created_at").eq("guardian_user_id",user.id).eq("status","pending").order("created_at",{ascending:false});
- if(r.error)throw r.error;guardianRequests=r.data||[];$("guardianInbox").hidden=!guardianRequests.length;
+ if(r.error)throw r.error;guardianRequests=r.data||[];
+ const age=await db.from("dcds_community_age_requests").select("age_band,status,guardian_consent_status").eq("user_id",user.id).maybeSingle();
+ if(age.error)throw age.error;
+ const verifiedAdult=age.data?.age_band==="18_plus"&&age.data?.status==="verified"&&age.data?.guardian_consent_status==="not_required";
+ $("guardianCodePanel").hidden=!verifiedAdult;
+ $("guardianInbox").hidden=!guardianRequests.length&&!verifiedAdult;
  const root=$("guardianRequests");root.replaceChildren();
- if(!guardianRequests.length)return;
+ if(!guardianRequests.length){if(verifiedAdult)showNotice(root,"No guardian consent requests are waiting. You can generate a code above when your child or ward needs one.");return;}
  guardianRequests.forEach(x=>{
   const card=document.createElement("article");card.className="card";
   addText(card,"h3","Guardian consent request");
