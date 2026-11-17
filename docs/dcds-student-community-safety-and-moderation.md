@@ -15,13 +15,14 @@
 Community access is a separate approval from ordinary student registration and from AI usage.
 
 1. A student must have a confirmed, non-anonymous DCDS account.
-2. The account must have an approved record in the existing DCDS age-review process.
-3. Adult membership must match an approved 18+ record.
-4. Teen membership must match a 13–17 record whose guardian consent is independently verified through the existing DCDS process.
-5. Under-13 records are excluded.
-6. A DCDS administrator must separately approve the community-access request.
-7. The database derives the cohort from the approved age-review record; a client cannot choose or edit its own cohort.
+2. The student submits a separate community age-band request. Only 13–17 and 18+ are accepted; no under-13 social account is possible.
+3. A 13–17 student nominates a separately verified adult DCDS account as guardian. The guardian must explicitly approve the community consent request through their own account.
+4. A DCDS administrator performs age assurance and records a private evidence reference. The database will not store a full date of birth or identity-document image.
+5. A teen age request cannot be approved until guardian consent is verified. An adult request must be an 18+ declaration and does not require a guardian.
+6. A DCDS administrator must separately approve the community-access request after the age review is verified.
+7. The database derives the cohort from the independently reviewed community age request; a client cannot choose or edit its own cohort.
 8. Access suspension immediately suspends the user's room memberships.
+9. The community age process is separate from AI eligibility; an AI access restriction or approval does not grant social-community access.
 
 No full date of birth, gender, home address, identity number, or identity-document image is added to the community profile.
 
@@ -98,6 +99,7 @@ DCDS should obtain an appropriate legal/privacy review for the countries in whic
 ## Launch gates
 
 - [ ] Development RLS and storage-policy tests pass.
+- [ ] Independent community age-band and guardian-consent flow is tested; it does not depend on AI access eligibility.
 - [ ] Cross-cohort read/write attempts fail.
 - [ ] Under-13 access attempts fail.
 - [ ] Teen messages remain pending until moderator approval.
