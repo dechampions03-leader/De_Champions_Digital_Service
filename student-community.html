@@ -479,12 +479,13 @@ async function loadPosts(){
  if(r.error){showNotice(root,"Community posts could not be loaded: "+r.error.message);return;}
  root.replaceChildren();if(!r.data?.length){showNotice(root,"The Community Lounge is ready. Ask the first question or share a learning milestone.");return;}
  const ids=r.data.map(x=>x.id);
- const [replyRes,reactionRes,profileRes]=await Promise.all([
+ const [replyRes,reactionRes]=await Promise.all([
   db.from("dcds_community_post_replies").select("id,post_id,author_id,body,status,created_at").in("post_id",ids).order("created_at",{ascending:true}),
-  db.from("dcds_community_post_reactions").select("post_id,user_id,reaction_type").in("post_id",ids),
-  db.from("dcds_community_profiles").select("user_id,display_name").in("user_id",[...new Set(r.data.map(x=>x.author_id))])
+  db.from("dcds_community_post_reactions").select("post_id,user_id,reaction_type").in("post_id",ids)
  ]);
  if(replyRes.error||reactionRes.error){showNotice(root,"Post conversations could not be loaded. Please refresh the Lounge.");return;}
+ const profileIds=[...new Set([...r.data.map(x=>x.author_id),...(replyRes.data||[]).map(x=>x.author_id)])];
+ const profileRes=profileIds.length?await db.from("dcds_community_profiles").select("user_id,display_name").in("user_id",profileIds):{data:[],error:null};
  const repliesBy=new Map(),reactionsBy=new Map(),names=new Map((profileRes.data||[]).map(x=>[x.user_id,x.display_name]));
  (replyRes.data||[]).forEach(x=>{const a=repliesBy.get(x.post_id)||[];a.push(x);repliesBy.set(x.post_id,a);});
  (reactionRes.data||[]).forEach(x=>{const a=reactionsBy.get(x.post_id)||[];a.push(x);reactionsBy.set(x.post_id,a);});
@@ -529,7 +530,7 @@ async function loadPosts(){
    form.append(input,send);
    form.addEventListener("submit",async ev=>{ev.preventDefault();const body=input.value.trim();if(!body)return;if(/https?:\/\/|www\.|t\.me\/|wa\.me\/|bit\.ly\/|tinyurl\.com/i.test(body)){statusLine.textContent="External links are not allowed in comments.";return;}send.disabled=true;const q=await db.from("dcds_community_post_replies").insert({post_id:p.id,author_id:user.id,body});send.disabled=false;if(q.error){statusLine.textContent="Comment could not be added: "+q.error.message;return;}input.value="";statusLine.textContent=access.cohort==="teen_13_17"?"Submitted for moderator review.":"Comment added.";await loadPosts();});
    card.appendChild(form);
-   const reportPost=document.createElement("button");reportPost.className="btn secondary";reportPost.textContent="Report post";reportPost.addEventListener("click",()=>reportContent({type:"post",id:p.id,user:p.author_id,roomId:p.room_id}));card.appendChild(reportPost);
+   if(p.author_id!==user.id){const reportPost=document.createElement("button");reportPost.className="btn secondary";reportPost.textContent="Report post";reportPost.addEventListener("click",()=>reportContent({type:"post",id:p.id,user:p.author_id,roomId:p.room_id}));card.appendChild(reportPost);}
   }else if(p.author_id===user.id){
    addText(card,"p","Your post is waiting for DCDS moderation before it appears to your cohort.","small");
   }
