@@ -160,7 +160,7 @@ jobs:
                   and "const maxModelAttempts = 4" in function,
               "normal DCDS tutoring turns prefer the documented fast Flash-Lite model":
                   'Deno.env.get("DCDS_AI_MODEL") || "gemini-3.5-flash-lite"' in function
-                  and function.indexOf('"gemini-3.5-flash-lite"') < function.indexOf('"gemini-3.8-flash"'),
+                  and function.find('"gemini-3.5-flash-lite"') < function.find('"gemini-3.8-flash"'),
               "provider timeouts are logged separately from HTTP/API errors":
                   'failureType: isTimeout ? "client_timeout" : "network_error"' in function,
               "Google Search is opt-in/freshness-triggered":
