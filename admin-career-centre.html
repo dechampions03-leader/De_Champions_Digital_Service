@@ -73,6 +73,7 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 <div class="row"><label>Years of experience<input id="mentorYears" type="number" min="0" max="60" value="0"></label><label>Timezone<input id="mentorTimezone" maxlength="80" value="Africa/Lagos"></label></div>
 <label>Availability information<textarea id="mentorAvailability" maxlength="500" placeholder="e.g. Two online sessions each month"></textarea></label>
 <label>Public professional profile URL (optional)<input id="mentorUrl" type="url" placeholder="https://…"></label>
+<label class="check"><input id="mentorConsent" type="checkbox"> I confirm this mentor has explicitly agreed to be listed and the public professional details have been checked.</label>
 <label>Initial listing status<select id="mentorStatus"><option value="draft">Draft — not visible to students</option><option value="active">Active — visible to verified students</option></select></label>
 <button class="btn" type="submit">Add mentor to directory</button><div id="mentorMessage" class="status-line" role="status"></div>
 </form>
@@ -93,6 +94,7 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 <div class="row"><label>Location<input id="oppLocation" maxlength="160" placeholder="City / country or Remote"></label><label>Application deadline<input id="oppDeadline" type="date"></label></div>
 <label class="check"><input id="oppRemote" type="checkbox"> This opportunity can be done remotely.</label>
 <label>External application details URL (optional)<input id="oppUrl" type="url" placeholder="https://…"></label>
+<label class="check"><input id="oppVerified" type="checkbox"> I confirm this opportunity, organisation, requirements, deadline and application instructions have been checked.</label>
 <label>Publication status<select id="oppStatus"><option value="draft">Draft</option><option value="published">Publish to students</option></select></label>
 <button class="btn" type="submit">Create opportunity</button><div id="oppMessage" class="status-line" role="status"></div>
 </form>
@@ -142,27 +144,28 @@ async function refreshMetrics(){
  queries.forEach((q,i)=>$(ids[i]).textContent=q.error?"—":String(q.count??0));
 }
 async function loadMentors(){
- const root=$("mentorList"),r=await db.from("dcds_mentors").select("id,display_name,professional_title,biography,expertise,industry,years_experience,status,availability,public_profile_url").order("created_at",{ascending:false});
+ const root=$("mentorList"),r=await db.from("dcds_mentors").select("id,display_name,professional_title,biography,expertise,industry,years_experience,status,availability,public_profile_url,consent_confirmed_at").order("created_at",{ascending:false});
  if(r.error)throw r.error;mentors=r.data||[];root.replaceChildren();
  if(!mentors.length){notice(root,"No mentor profiles have been added. Add a mentor only after confirming their consent and professional details.");return;}
  mentors.forEach(m=>{
   const card=document.createElement("article");card.className="card";
   const meta=document.createElement("div");meta.className="meta";const pill=document.createElement("span");pill.className="pill "+(m.status==="active"?"good":"warn");pill.textContent=labels[m.status]||m.status;meta.append(pill);
   const h=document.createElement("h3");h.textContent=m.display_name+" · "+m.professional_title;
+  const consent=document.createElement("p");consent.className="small";consent.textContent=m.consent_confirmed_at?"Mentor consent recorded: "+dateText(m.consent_confirmed_at):"Mentor consent not yet recorded.";
   const p=document.createElement("p");p.textContent=m.biography;
   const sm=document.createElement("p");sm.className="small";sm.textContent="Industry: "+(m.industry||"Not set")+" · "+Number(m.years_experience)+" years · Expertise: "+(m.expertise||[]).join(", ");
   const edit=document.createElement("div");edit.className="review-grid";
   const statusLabel=document.createElement("label");statusLabel.className="small";statusLabel.textContent="Directory status";const sel=document.createElement("select");sel.className="inline";["draft","active","suspended"].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=labels[v];sel.appendChild(o);});sel.value=m.status;statusLabel.appendChild(sel);
-  const save=document.createElement("button");save.className="btn secondary";save.type="button";save.textContent="Save status";save.addEventListener("click",async()=>{save.disabled=true;const u=await db.from("dcds_mentors").update({status:sel.value,updated_at:new Date().toISOString()}).eq("id",m.id);save.disabled=false;if(u.error){alert("Mentor status could not be saved: "+u.error.message);return;}await loadMentors();await refreshMetrics();});
-  edit.append(statusLabel,save);card.append(meta,h,p,sm,edit);
+  const save=document.createElement("button");save.className="btn secondary";save.type="button";save.textContent="Save status";save.addEventListener("click",async()=>{if(sel.value==="active"&&!confirm("Confirm that this mentor has agreed to be listed and the details have been checked?"))return;save.disabled=true;const now=new Date().toISOString();const u=await db.from("dcds_mentors").update({status:sel.value,consent_confirmed_at:sel.value==="active"?now:m.consent_confirmed_at,consent_confirmed_by:sel.value==="active"?admin.id:null,updated_at:now}).eq("id",m.id);save.disabled=false;if(u.error){alert("Mentor status could not be saved: "+u.error.message);return;}await loadMentors();await refreshMetrics();});
+  edit.append(statusLabel,save);card.append(meta,h,p,sm,consent,edit);
   if(m.availability){const av=document.createElement("p");av.className="small";av.textContent="Availability: "+m.availability;card.appendChild(av);}
   root.appendChild(card);
  });
 }
 $("mentorForm").addEventListener("submit",async e=>{
- e.preventDefault();const url=$("mentorUrl").value.trim();if(!validUrl(url)){message("mentorMessage","Enter a valid http or https profile URL, or leave it blank.");return;}
+ e.preventDefault();const url=$("mentorUrl").value.trim();if(!validUrl(url)){message("mentorMessage","Enter a valid http or https profile URL, or leave it blank.");return;}if($("mentorStatus").value==="active"&&!$("mentorConsent").checked){message("mentorMessage","Confirm mentor consent before activating this profile.");return;}
  const btn=e.submitter;btn.disabled=true;message("mentorMessage","Saving mentor profile…");
- const payload={display_name:$("mentorName").value.trim(),professional_title:$("mentorTitle").value.trim(),biography:$("mentorBio").value.trim(),expertise:splitTags($("mentorExpertise").value),industry:$("mentorIndustry").value.trim(),years_experience:Number($("mentorYears").value)||0,timezone:$("mentorTimezone").value.trim()||"Africa/Lagos",availability:$("mentorAvailability").value.trim(),public_profile_url:url||null,status:$("mentorStatus").value,created_by:admin.id};
+ const mentorStatus=$("mentorStatus").value,now=new Date().toISOString();const payload={display_name:$("mentorName").value.trim(),professional_title:$("mentorTitle").value.trim(),biography:$("mentorBio").value.trim(),expertise:splitTags($("mentorExpertise").value),industry:$("mentorIndustry").value.trim(),years_experience:Number($("mentorYears").value)||0,timezone:$("mentorTimezone").value.trim()||"Africa/Lagos",availability:$("mentorAvailability").value.trim(),public_profile_url:url||null,status:mentorStatus,consent_confirmed_at:mentorStatus==="active"?now:null,consent_confirmed_by:mentorStatus==="active"?admin.id:null,created_by:admin.id};
  const r=await db.from("dcds_mentors").insert(payload);btn.disabled=false;
  if(r.error){message("mentorMessage","Mentor could not be added: "+r.error.message);return;}
  $("mentorForm").reset();$("mentorTimezone").value="Africa/Lagos";$("mentorYears").value="0";message("mentorMessage","✓ Mentor profile added.");await loadMentors();await refreshMetrics();
@@ -198,21 +201,21 @@ $("requestList").addEventListener("submit",async e=>{
  btn.disabled=false;if(r.error){msg.textContent="Update could not be saved: "+r.error.message;return;}msg.textContent="✓ Update saved.";await loadRequests();await refreshMetrics();
 });
 async function loadOpportunities(){
- const root=$("opportunityList"),r=await db.from("dcds_career_opportunities").select("id,opportunity_type,title,organisation,description,requirements,eligibility,location,is_remote,application_url,application_deadline,status,created_at").order("created_at",{ascending:false}).limit(150);
+ const root=$("opportunityList"),r=await db.from("dcds_career_opportunities").select("id,opportunity_type,title,organisation,description,requirements,eligibility,location,is_remote,application_url,application_deadline,status,verified_at,created_at").order("created_at",{ascending:false}).limit(150);
  if(r.error)throw r.error;opportunities=r.data||[];root.replaceChildren();if(!opportunities.length){notice(root,"No career opportunities have been created yet.");return;}
  opportunities.forEach(o=>{
-  const card=document.createElement("article");card.className="card";const meta=document.createElement("div");meta.className="meta";const status=document.createElement("span");status.className="pill "+(o.status==="published"?"good":"warn");status.textContent=labels[o.status]||o.status;const type=document.createElement("span");type.textContent=o.opportunity_type;const deadline=document.createElement("span");deadline.textContent=o.application_deadline?"Deadline "+o.application_deadline:"No deadline";meta.append(status,type,deadline);
+  const card=document.createElement("article");card.className="card";const meta=document.createElement("div");meta.className="meta";const status=document.createElement("span");status.className="pill "+(o.status==="published"?"good":"warn");status.textContent=labels[o.status]||o.status;const type=document.createElement("span");type.textContent=o.opportunity_type;const deadline=document.createElement("span");deadline.textContent=o.application_deadline?"Deadline "+o.application_deadline:"No deadline";meta.append(status,type,deadline);if(o.verified_at){const verified=document.createElement("span");verified.className="pill good";verified.textContent="Verified "+new Date(o.verified_at).toLocaleDateString();meta.appendChild(verified);}
   const h=document.createElement("h3");h.textContent=o.title+" · "+o.organisation;const p=document.createElement("p");p.textContent=o.description;
   const small=document.createElement("p");small.className="small";small.textContent=[o.location,o.is_remote?"Remote":"",o.eligibility].filter(Boolean).join(" · ");
   const row=document.createElement("div");row.className="review-grid";const sel=document.createElement("select");sel.className="inline";["draft","published","closed"].forEach(v=>{const x=document.createElement("option");x.value=v;x.textContent=labels[v];sel.appendChild(x);});sel.value=o.status;
-  const btn=document.createElement("button");btn.type="button";btn.className="btn secondary";btn.textContent="Save status";btn.addEventListener("click",async()=>{btn.disabled=true;const u=await db.from("dcds_career_opportunities").update({status:sel.value,updated_at:new Date().toISOString()}).eq("id",o.id);btn.disabled=false;if(u.error){alert("Opportunity status could not be saved: "+u.error.message);return;}await loadOpportunities();await refreshMetrics();});
+  const btn=document.createElement("button");btn.type="button";btn.className="btn secondary";btn.textContent="Save status";btn.addEventListener("click",async()=>{if(sel.value==="published"&&!confirm("Confirm the organisation, opportunity details, eligibility and deadline have been verified?"))return;btn.disabled=true;const now=new Date().toISOString();const payload={status:sel.value,verified_at:sel.value==="published"?now:o.verified_at,verified_by:sel.value==="published"?admin.id:null,updated_at:now};const u=await db.from("dcds_career_opportunities").update(payload).eq("id",o.id);btn.disabled=false;if(u.error){alert("Opportunity status could not be saved: "+u.error.message);return;}await loadOpportunities();await refreshMetrics();});
   row.append(sel,btn);card.append(meta,h,p,small,row);root.appendChild(card);
  });
 }
 $("opportunityForm").addEventListener("submit",async e=>{
- e.preventDefault();const url=$("oppUrl").value.trim();if(!validUrl(url)){message("oppMessage","Enter a valid http or https application URL, or leave it blank.");return;}
+ e.preventDefault();const url=$("oppUrl").value.trim();if(!validUrl(url)){message("oppMessage","Enter a valid http or https application URL, or leave it blank.");return;}if($("oppStatus").value==="published"&&!$("oppVerified").checked){message("oppMessage","Confirm opportunity verification before publishing this listing.");return;}const deadline=$("oppDeadline").value;if($("oppStatus").value==="published"&&deadline&&deadline<new Date().toISOString().slice(0,10)){message("oppMessage","This deadline has passed. Update it or keep the listing as a draft.");return;}
  const btn=e.submitter;btn.disabled=true;message("oppMessage","Creating opportunity…");
- const r=await db.from("dcds_career_opportunities").insert({opportunity_type:$("oppType").value,title:$("oppTitle").value.trim(),organisation:$("oppOrganisation").value.trim(),description:$("oppDescription").value.trim(),requirements:$("oppRequirements").value.trim(),eligibility:$("oppEligibility").value.trim(),location:$("oppLocation").value.trim(),is_remote:$("oppRemote").checked,application_url:url||null,application_deadline:$("oppDeadline").value||null,status:$("oppStatus").value,created_by:admin.id});
+ const r=await db.from("dcds_career_opportunities").insert({opportunity_type:$("oppType").value,title:$("oppTitle").value.trim(),organisation:$("oppOrganisation").value.trim(),description:$("oppDescription").value.trim(),requirements:$("oppRequirements").value.trim(),eligibility:$("oppEligibility").value.trim(),location:$("oppLocation").value.trim(),is_remote:$("oppRemote").checked,application_url:url||null,application_deadline:$("oppDeadline").value||null,status:$("oppStatus").value,verified_at:$("oppStatus").value==="published"?new Date().toISOString():null,verified_by:$("oppStatus").value==="published"?admin.id:null,created_by:admin.id});
  btn.disabled=false;if(r.error){message("oppMessage","Opportunity could not be saved: "+r.error.message);return;}
  $("opportunityForm").reset();message("oppMessage","✓ Opportunity created. Review its details before publishing.");await loadOpportunities();await refreshMetrics();
 });
