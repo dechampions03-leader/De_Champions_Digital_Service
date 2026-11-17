@@ -1,0 +1,272 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#451078">
+<title>DCDS Professional Learning Centre</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7628d8;--dark:#451078;--deep:#21083f;--gold:#d4af37;--ink:#28183a;--muted:#756783;--line:#eadff5;--surface:#faf7fd;--good:#17683a;--warn:#77551b}
+*{box-sizing:border-box}html,body{margin:0;width:100%;max-width:100%;min-height:100%;overflow-x:clip;font-family:'DM Sans',sans-serif;color:var(--ink)}body{min-height:100vh;min-height:100dvh;background:linear-gradient(145deg,#fbf9ff,#f1e8fb);padding-bottom:24px}a{color:inherit}.wrap{width:min(1120px,calc(100% - 26px));margin:auto;padding:18px 0 45px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:16px}.brand{font-weight:900;font-size:11px;letter-spacing:.13em;color:var(--dark)}.toplinks{display:flex;gap:8px;flex-wrap:wrap}.toplinks a{padding:9px 12px;background:#fff;border:1px solid var(--line);border-radius:11px;text-decoration:none;color:var(--dark);font-size:11px;font-weight:800}
+.hero{background:radial-gradient(circle at 90% 0,#9654ce,transparent 36%),linear-gradient(125deg,#21083f,#451078 58%,#7025b7);color:#fff;border-radius:23px;padding:clamp(23px,4vw,35px);box-shadow:0 16px 42px #35105f20}.kicker{font-size:10px;letter-spacing:.2em;color:#f3d98e;font-weight:900}.hero h1{font:800 clamp(28px,5vw,42px)/1.12 'Playfair Display',serif;margin:10px 0}.hero p{margin:0;color:#eadcf8;max-width:720px;font-size:13px;line-height:1.7}
+.tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:16px 0}.tabs button{min-width:0;border:1px solid var(--line);border-radius:12px;background:#fff;color:var(--dark);padding:12px 8px;font:800 11px 'DM Sans',sans-serif;cursor:pointer}.tabs button[aria-selected=true]{background:linear-gradient(135deg,#f2dc9c,#d6b258);border-color:#ead49a;color:#2d1742}
+.panel{min-width:0;background:#fff;border:1px solid var(--line);border-radius:18px;padding:19px;margin-bottom:15px;box-shadow:0 8px 24px #32105f0a}.panel[hidden]{display:none!important}.panel h2{font:700 22px 'Playfair Display',serif;color:var(--deep);margin:0 0 6px}.sub{font-size:12px;line-height:1.6;color:var(--muted);margin:0 0 15px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.card{min-width:0;border:1px solid var(--line);border-radius:15px;background:linear-gradient(145deg,#fff,#fcf9ff);padding:15px}.card h3{font:700 17px 'Playfair Display',serif;color:var(--deep);margin:0 0 6px}.card p{font-size:12px;line-height:1.65;color:var(--muted);margin:0 0 9px;overflow-wrap:anywhere}.meta{display:flex;gap:7px;align-items:center;flex-wrap:wrap;color:var(--muted);font-size:10px;margin-bottom:8px}.pill{display:inline-flex;padding:5px 8px;background:#f2e8fc;border-radius:99px;color:#56218a;font-size:10px;font-weight:850}.pill.good{background:#e7f8ed;color:var(--good)}.pill.warn{background:#fff2cf;color:var(--warn)}
+.path-courses{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}.path-courses a,.link{display:inline-flex;align-items:center;padding:8px 10px;border:1px solid #e7d7f6;border-radius:10px;background:#f9f4ff;color:#552080;text-decoration:none;font-size:11px;font-weight:800}.button{border:0;border-radius:10px;background:linear-gradient(110deg,#8d3bdb,#54168e);color:#fff;padding:10px 13px;font:800 11px 'DM Sans',sans-serif;cursor:pointer}.button.secondary{background:#f1e5ff;color:var(--dark);border:1px solid #e2d2f3}.button.danger{background:#fff0f0;border:1px solid #f0d1d1;color:#a12e2e}.button:disabled{opacity:.55;cursor:wait}
+.form{display:grid;gap:10px;margin:14px 0}.form label{display:grid;gap:6px;color:var(--dark);font-size:11px;font-weight:850}.form input,.form textarea,.form select{width:100%;min-width:0;border:1px solid #ded0ec;border-radius:10px;padding:11px 12px;background:#fff;color:var(--ink);font:500 13px 'DM Sans',sans-serif}.form textarea{min-height:92px;resize:vertical;line-height:1.55}.form input:focus,.form textarea:focus,.form select:focus{outline:3px solid #ead8ff;border-color:#995bd4}.form .rowfields{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.status{font-size:11px;line-height:1.6;color:var(--muted);margin-top:8px}.notice{padding:13px;border:1px dashed #d9c8e8;border-radius:12px;background:#fdfaff;color:var(--muted);font-size:12px;line-height:1.65}.stack{display:grid;gap:10px}.topic{border:1px solid var(--line);border-radius:14px;padding:14px;background:#fff}.topic h3{font-size:14px;margin:0 0 6px;color:var(--deep)}.topic-body{white-space:pre-wrap;overflow-wrap:anywhere;font-size:12px;color:#51445f;line-height:1.65}.reply{border-left:3px solid #d9b9f3;margin:10px 0 0 8px;padding:8px 10px;background:#fbf8ff;border-radius:0 9px 9px 0}.reply p{font-size:11px;white-space:pre-wrap;line-height:1.55;margin:0;color:#56466a}
+.project-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:11px}.project-card{border:1px solid var(--line);border-radius:14px;padding:13px;background:#fff;min-width:0}.project-card img{width:100%;height:110px;object-fit:cover;border-radius:10px;margin-bottom:8px}.project-card h3{font:700 16px 'Playfair Display',serif;margin:0 0 6px;color:var(--deep)}.project-card a{font-size:11px;color:var(--purple);font-weight:850;overflow-wrap:anywhere}
+.workshop-time{font-size:11px;color:#6e5c80;font-weight:800}.resource{display:flex;justify-content:space-between;gap:12px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:13px;background:#fff}.resource strong{font-size:12px;color:var(--deep)}.resource small{display:block;color:var(--muted);font-size:10px;margin-top:4px}.score-row{display:flex;justify-content:space-between;gap:9px;padding:9px 0;border-bottom:1px solid #f0e9f6;font-size:11px}.score-row:last-child{border-bottom:0}.score-row span:last-child{font-weight:850;color:var(--dark);text-align:right}
+@media(max-width:800px){.tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.project-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:560px){.wrap{width:calc(100% - 20px);padding-top:12px}.toplinks a{font-size:10px;padding:8px 9px}.brand{max-width:150px;line-height:1.4}.tabs{grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.grid,.form .rowfields{grid-template-columns:1fr}.panel{padding:15px}.project-grid{grid-template-columns:1fr}.resource{align-items:flex-start;flex-direction:column}.hero{border-radius:18px}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div class="brand">DE CHAMPIONS DIGITAL SERVICE</div><nav class="toplinks"><a href="student-dashboard.html">Student Dashboard</a><a href="student-learning-hub.html">Learning Hub</a></nav></header>
+<section class="hero"><div class="kicker">LEARN · CONNECT · CREATE · GROW</div><h1>Your Professional Learning Centre</h1><p>Choose a career pathway, learn with your course community, build a portfolio, join live workshops and access your course resources. Your existing grades and certificates remain in your academic records.</p></section>
+<div id="status" class="notice" role="status" aria-live="polite" style="margin-top:15px">Checking your student account…</div>
+<section id="centre" hidden>
+<nav class="tabs" aria-label="Learning Centre sections">
+<button type="button" data-tab="paths" aria-selected="true">🧭 Pathways</button>
+<button type="button" data-tab="community" aria-selected="false">💬 Community</button>
+<button type="button" data-tab="portfolio" aria-selected="false">🖼 Portfolio</button>
+<button type="button" data-tab="workshops" aria-selected="false">📅 Workshops</button>
+<button type="button" data-tab="rubrics" aria-selected="false">📝 Feedback</button>
+<button type="button" data-tab="resources" aria-selected="false">📚 Resources</button>
+</nav>
+<section class="panel" id="tab-paths">
+<h2>Guided Learning Paths</h2><p class="sub">Pick a professional direction. Each pathway connects existing DCDS courses into a suggested learning sequence.</p>
+<div id="paths" class="grid"><div class="notice">Loading pathways…</div></div><div id="pathStatus" class="status" role="status" aria-live="polite"></div>
+</section>
+<section class="panel" id="tab-community" hidden>
+<h2>Course Community</h2><p class="sub">Ask questions and share learning insights with other students enrolled in the same course. New topics and replies are reviewed by DCDS before they become visible to classmates.</p>
+<form id="topicForm" class="form">
+<label>Course<select id="topicCourse" required><option value="">Choose an enrolled course</option></select></label>
+<label>Question or discussion title<input id="topicTitle" minlength="6" maxlength="160" required placeholder="What would you like to understand?"></label>
+<label>Details<textarea id="topicBody" minlength="10" maxlength="8000" required placeholder="Explain what you have tried and where you need help."></textarea></label>
+<button class="button" type="submit">Post for review</button><div id="topicStatus" class="status" role="status" aria-live="polite"></div>
+</form>
+<div id="topics" class="stack"><div class="notice">Loading course discussions…</div></div>
+</section>
+<section class="panel" id="tab-portfolio" hidden>
+<h2>Student Portfolio</h2><p class="sub">Add finished projects using a public project link. Projects remain private or pending review until DCDS approves public sharing. Do not upload confidential client work without permission.</p>
+<form id="projectForm" class="form">
+<label>Project title<input id="projectTitle" minlength="3" maxlength="140" required></label>
+<label>Course<select id="projectCourse"><option value="">Personal project / not course-specific</option></select></label>
+<label>Project summary<textarea id="projectDescription" minlength="10" maxlength="2500" required placeholder="Describe the brief, your role, tools and what you created."></textarea></label>
+<div class="rowfields"><label>Project link<input id="projectUrl" type="url" required placeholder="https://…"></label><label>Preview image link (optional)<input id="projectPreview" type="url" placeholder="https://…"></label></div>
+<label><span><input id="projectPublic" type="checkbox" style="width:auto;margin-right:7px">Request public portfolio visibility after DCDS approval</span></label>
+<button class="button" type="submit">Submit project</button><div id="projectStatus" class="status" role="status" aria-live="polite"></div>
+</form>
+<h3 style="font:700 18px 'Playfair Display',serif;color:var(--deep)">My projects</h3><div id="myProjects" class="project-grid"><div class="notice">Loading your projects…</div></div>
+<h3 style="font:700 18px 'Playfair Display',serif;color:var(--deep);margin-top:22px">Community showcase</h3><p class="sub">Only projects approved for public sharing appear here.</p><div id="publicProjects" class="project-grid"><div class="notice">Loading approved projects…</div></div>
+</section>
+<section class="panel" id="tab-workshops" hidden>
+<h2>Live Workshops & Classes</h2><p class="sub">Browse upcoming DCDS workshops and register with your student account. Meeting links are visible to registered students only.</p>
+<div id="workshops" class="grid"><div class="notice">Loading workshops…</div></div><div id="workshopStatus" class="status" role="status" aria-live="polite"></div>
+</section>
+<section class="panel" id="tab-rubrics" hidden>
+<h2>Assessment Feedback</h2><p class="sub">See the grading criteria and detailed feedback attached to your existing assignment submissions. Your official scores remain in DCDS Academic Records.</p>
+<div id="rubricRecords" class="stack"><div class="notice">Loading assessment feedback…</div></div>
+</section>
+<section class="panel" id="tab-resources" hidden>
+<h2>Course Resources</h2><p class="sub">Access course-linked PDFs, templates, worksheets and other learning materials shared by DCDS. Files open at their published destination.</p>
+<div id="resources" class="stack"><div class="notice">Loading your course materials…</div></div>
+</section>
+</section>
+</main>
+<script>
+"use strict";
+const SUPABASE_URL="https://qxsenflgaweeadvggnyp.supabase.co";
+const SUPABASE_KEY="sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const dateText=value=>{const d=new Date(value);return Number.isNaN(d.getTime())?"Time unavailable":d.toLocaleString();};
+const linkOk=value=>{try{const u=new URL(value);return u.protocol==="https:"||u.protocol==="http:";}catch(_){return false;}};
+let user=null,courses=[],courseIds=[],courseById=new Map(),registered=new Set(),myTopics=[];
+function message(id,text){$(id).textContent=text;}
+function staticNotice(node,text){node.replaceChildren();const p=document.createElement("div");p.className="notice";p.textContent=text;node.appendChild(p);}
+function setTab(name){document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===name)));document.querySelectorAll("[id^=tab-]").forEach(s=>s.hidden=s.id!=="tab-"+name);}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
+function populateCourseSelects(){
+ const options=courses.map(c=>'<option value="'+esc(c.id)+'">'+esc(c.title)+'</option>').join("");
+ $("topicCourse").insertAdjacentHTML("beforeend",options);
+ $("projectCourse").insertAdjacentHTML("beforeend",options);
+}
+async function loadPaths(){
+ const [pathsRes,enrolRes]=await Promise.all([
+  db.from("dcds_learning_paths").select("id,slug,title,summary,career_outcome,course_slugs,milestones").eq("is_published",true).order("sort_order"),
+  db.from("dcds_learning_path_enrollments").select("id,path_id,status").eq("user_id",user.id)
+ ]);
+ if(pathsRes.error)throw pathsRes.error;if(enrolRes.error)throw enrolRes.error;
+ const enrolled=new Map((enrolRes.data||[]).map(x=>[x.path_id,x]));
+ const root=$("paths");root.replaceChildren();
+ if(!pathsRes.data?.length){staticNotice(root,"No learning pathways are published yet. Please check again soon.");return;}
+ pathsRes.data.forEach(path=>{
+  const card=document.createElement("article");card.className="card";
+  const h=document.createElement("h3");h.textContent=path.title;
+  const p=document.createElement("p");p.textContent=path.summary;
+  const outcome=document.createElement("p");outcome.textContent="Outcome: "+path.career_outcome;
+  const state=enrolled.get(path.id);const meta=document.createElement("div");meta.className="meta";
+  const pill=document.createElement("span");pill.className="pill"+(state?" good":"");pill.textContent=state?(state.status==="completed"?"Completed pathway":"Your active pathway"):"Suggested pathway";meta.append(pill);
+  const milestones=document.createElement("ul");milestones.style.cssText="padding-left:18px;margin:8px 0;color:#6d5e7b;font-size:11px;line-height:1.7";
+  (Array.isArray(path.milestones)?path.milestones:[]).forEach(m=>{const li=document.createElement("li");li.textContent=(m.title||"Milestone")+(m.detail?" — "+m.detail:"");milestones.appendChild(li);});
+  const coursesBox=document.createElement("div");coursesBox.className="path-courses";
+  (path.course_slugs||[]).forEach(slug=>{const course=courses.find(c=>c.slug===slug);if(!course)return;const a=document.createElement("a");a.href="learn.html?course="+encodeURIComponent(slug);a.textContent=course.title;a.title="Open "+course.title;coursesBox.appendChild(a);});
+  const btn=document.createElement("button");btn.type="button";btn.className="button";btn.textContent=state?"Continue pathway":"Start this pathway";
+  btn.addEventListener("click",async()=>{btn.disabled=true;const result=await db.from("dcds_learning_path_enrollments").upsert({path_id:path.id,user_id:user.id,status:"active",updated_at:new Date().toISOString()},{onConflict:"path_id,user_id"});btn.disabled=false;if(result.error){message("pathStatus","Could not save your pathway: "+result.error.message);return;}message("pathStatus","Your pathway has been added to your learning plan.");await loadPaths();});
+  card.append(h,p,outcome,meta,milestones,coursesBox,btn);root.appendChild(card);
+ });
+}
+function renderTopics(topics,replies){
+ const root=$("topics");root.replaceChildren();
+ if(!topics.length){staticNotice(root,"No discussion topics are visible yet. Topics and replies are held for DCDS moderation before appearing to classmates.");return;}
+ topics.forEach(topic=>{
+  const card=document.createElement("article");card.className="topic";
+  const heading=document.createElement("h3");heading.textContent=(courseById.get(topic.course_id)?.title||"Course")+" · "+topic.title;
+  const meta=document.createElement("div");meta.className="meta";const pill=document.createElement("span");pill.className="pill"+(topic.status==="published"?" good":" warn");pill.textContent=topic.status==="published"?"Published":"Awaiting review";const date=document.createElement("span");date.textContent=dateText(topic.created_at);meta.append(pill,date);
+  const body=document.createElement("div");body.className="topic-body";body.textContent=topic.body;
+  card.append(heading,meta,body);
+  (replies.get(topic.id)||[]).forEach(reply=>{const r=document.createElement("div");r.className="reply";const p=document.createElement("p");p.textContent=reply.body;const sm=document.createElement("small");sm.textContent=reply.status==="published"?"Class reply": "Your reply is awaiting review";sm.style.cssText="display:block;margin-top:5px;color:#8b79a0;font-size:9px";r.append(p,sm);card.appendChild(r);});
+  if(topic.status!=="published"){root.appendChild(card);return;}
+  const form=document.createElement("form");form.className="form";form.style.marginTop="11px";form.dataset.replyTopic=topic.id;
+  const label=document.createElement("label");label.textContent="Add a helpful reply";const area=document.createElement("textarea");area.required=true;area.minLength=2;area.maxLength=5000;area.placeholder="Share an explanation or a useful learning tip.";label.appendChild(area);
+  const button=document.createElement("button");button.type="submit";button.className="button secondary";button.textContent="Send reply for review";const status=document.createElement("div");status.className="status";form.append(label,button,status);card.appendChild(form);root.appendChild(card);
+ });
+}
+async function loadTopics(){
+ if(!courseIds.length){staticNotice($("topics"),"Enrol in a DCDS course to join its course discussions.");return;}
+ const result=await db.from("dcds_discussion_topics").select("id,course_id,user_id,title,body,status,created_at").in("course_id",courseIds).order("created_at",{ascending:false}).limit(40);
+ if(result.error)throw result.error;myTopics=result.data||[];
+ if(!myTopics.length){renderTopics([],new Map());return;}
+ const replyResult=await db.from("dcds_discussion_replies").select("id,topic_id,user_id,body,status,created_at").in("topic_id",myTopics.map(x=>x.id)).order("created_at");
+ if(replyResult.error)throw replyResult.error;
+ const map=new Map();(replyResult.data||[]).forEach(r=>{if(!map.has(r.topic_id))map.set(r.topic_id,[]);map.get(r.topic_id).push(r);});
+ renderTopics(myTopics,map);
+}
+$("topicForm").addEventListener("submit",async e=>{
+ e.preventDefault();const courseId=$("topicCourse").value,title=$("topicTitle").value.trim(),body=$("topicBody").value.trim();
+ if(!courseIds.includes(courseId)){message("topicStatus","Choose one of your enrolled courses.");return;}
+ const b=e.submitter;b.disabled=true;message("topicStatus","Submitting your topic for review…");
+ const r=await db.from("dcds_discussion_topics").insert({course_id:courseId,user_id:user.id,title,body,status:"pending"});
+ b.disabled=false;if(r.error){message("topicStatus","Topic was not saved: "+r.error.message);return;}
+ $("topicForm").reset();message("topicStatus","✓ Topic submitted. It will appear to classmates after DCDS review.");await loadTopics();
+});
+$("topics").addEventListener("submit",async e=>{
+ const form=e.target.closest("form[data-reply-topic]");if(!form)return;e.preventDefault();
+ const body=form.querySelector("textarea").value.trim(),topicId=form.dataset.replyTopic,btn=form.querySelector("button"),status=form.querySelector(".status");
+ if(!body)return;btn.disabled=true;status.textContent="Sending reply…";
+ const r=await db.from("dcds_discussion_replies").insert({topic_id:topicId,user_id:user.id,body,status:"pending"});
+ btn.disabled=false;if(r.error){status.textContent="Reply was not saved: "+r.error.message;return;}
+ form.reset();status.textContent="✓ Reply submitted for review.";await loadTopics();
+});
+function projectCard(project,owner){
+ const card=document.createElement("article");card.className="project-card";
+ if(project.preview_image_url){const img=document.createElement("img");img.src=project.preview_image_url;img.alt="Project preview";img.loading="lazy";card.appendChild(img);}
+ const h=document.createElement("h3");h.textContent=project.title;
+ const p=document.createElement("p");p.textContent=project.description;
+ const meta=document.createElement("div");meta.className="meta";const pill=document.createElement("span");pill.className="pill"+(project.status==="approved"?" good":project.status==="rejected"?" warn":"");pill.textContent=project.status==="approved"?"Approved":project.status==="rejected"?"Changes requested":"Awaiting review";meta.append(pill);
+ const a=document.createElement("a");a.href=project.project_url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Open project ↗";
+ card.append(h,p,meta,a);
+ if(project.admin_feedback){const note=document.createElement("p");note.textContent="DCDS feedback: "+project.admin_feedback;card.appendChild(note);}
+ if(owner){const del=document.createElement("button");del.type="button";del.className="button danger";del.style.marginTop="10px";del.textContent="Remove project";del.addEventListener("click",async()=>{if(!confirm("Remove this project from your portfolio?"))return;del.disabled=true;const r=await db.from("dcds_student_projects").delete().eq("id",project.id).eq("user_id",user.id);if(r.error){del.disabled=false;message("projectStatus","Could not remove project: "+r.error.message);return;}await loadProjects();});card.appendChild(del);}
+ return card;
+}
+async function loadProjects(){
+ const [mine,pub]=await Promise.all([
+  db.from("dcds_student_projects").select("id,title,description,project_url,preview_image_url,visibility,status,admin_feedback,created_at").eq("user_id",user.id).order("created_at",{ascending:false}).limit(30),
+  db.from("dcds_student_projects").select("id,title,description,project_url,preview_image_url,status").eq("visibility","public").eq("status","approved").order("created_at",{ascending:false}).limit(30)
+ ]);
+ if(mine.error)throw mine.error;if(pub.error)throw pub.error;
+ $("myProjects").replaceChildren();if(!mine.data?.length)staticNotice($("myProjects"),"You have not submitted any projects yet.");else mine.data.forEach(p=>$("myProjects").appendChild(projectCard(p,true)));
+ $("publicProjects").replaceChildren();if(!pub.data?.length)staticNotice($("publicProjects"),"No student projects have been approved for public sharing yet.");else pub.data.forEach(p=>$("publicProjects").appendChild(projectCard(p,false)));
+}
+$("projectForm").addEventListener("submit",async e=>{
+ e.preventDefault();const projectUrl=$("projectUrl").value.trim(),preview=$("projectPreview").value.trim();
+ if(!linkOk(projectUrl)|| (preview&&!linkOk(preview))){message("projectStatus","Use a valid http or https URL for your project and preview image.");return;}
+ const btn=e.submitter;btn.disabled=true;message("projectStatus","Submitting your project…");
+ const payload={user_id:user.id,course_id:$("projectCourse").value||null,title:$("projectTitle").value.trim(),description:$("projectDescription").value.trim(),project_url:projectUrl,preview_image_url:preview||null,visibility:$("projectPublic").checked?"public":"private",status:"pending"};
+ const r=await db.from("dcds_student_projects").insert(payload);btn.disabled=false;
+ if(r.error){message("projectStatus","Project was not saved: "+r.error.message);return;}
+ $("projectForm").reset();message("projectStatus","✓ Project submitted. Public projects appear after DCDS approval.");await loadProjects();
+});
+async function loadWorkshops(){
+ const r=await db.from("dcds_workshops").select("id,course_id,title,description,starts_at,ends_at,timezone,meeting_url,status").eq("status","published").gte("starts_at",new Date().toISOString()).order("starts_at").limit(40);
+ if(r.error)throw r.error;
+ const ids=(r.data||[]).map(x=>x.id);let regs=[];
+ if(ids.length){const rr=await db.from("dcds_workshop_registrations").select("id,workshop_id,status").eq("user_id",user.id).in("workshop_id",ids);if(rr.error)throw rr.error;regs=rr.data||[];}
+ const regMap=new Map(regs.map(x=>[x.workshop_id,x]));const root=$("workshops");root.replaceChildren();
+ if(!r.data?.length){staticNotice(root,"No upcoming workshops are published yet. Check back for the next DCDS live session.");return;}
+ r.data.forEach(w=>{
+  const card=document.createElement("article");card.className="card";const h=document.createElement("h3");h.textContent=w.title;const p=document.createElement("p");p.textContent=w.description;
+  const meta=document.createElement("div");meta.className="meta";const time=document.createElement("span");time.className="workshop-time";time.textContent=dateText(w.starts_at)+" – "+dateText(w.ends_at);meta.append(time);
+  const course=document.createElement("span");course.className="pill";course.textContent=w.course_id?(courseById.get(w.course_id)?.title||"Course workshop"):"All learners";meta.append(course);
+  const reg=regMap.get(w.id);const btn=document.createElement("button");btn.type="button";btn.className="button";btn.textContent=reg?.status==="registered"?"Cancel registration":"Register for workshop";
+  btn.addEventListener("click",async()=>{
+   btn.disabled=true;
+   const result=reg?.status==="registered"
+    ?await db.from("dcds_workshop_registrations").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("id",reg.id)
+    :await db.from("dcds_workshop_registrations").upsert({workshop_id:w.id,user_id:user.id,status:"registered",updated_at:new Date().toISOString()},{onConflict:"workshop_id,user_id"});
+   btn.disabled=false;if(result.error){message("workshopStatus","Registration update failed: "+result.error.message);return;}
+   message("workshopStatus","Your workshop registration has been updated.");await loadWorkshops();
+  });
+  card.append(h,p,meta,btn);
+  if(reg?.status==="registered"){const joined=document.createElement("a");joined.className="link";joined.href=w.meeting_url;joined.target="_blank";joined.rel="noopener noreferrer";joined.textContent="Join registered workshop ↗";card.appendChild(joined);}
+  root.appendChild(card);
+ });
+}
+async function loadRubrics(){
+ const subs=await db.from("assignment_submissions").select("id,assignment_id,score,feedback,status,submitted_at").eq("user_id",user.id).order("submitted_at",{ascending:false}).limit(60);
+ if(subs.error)throw subs.error;const root=$("rubricRecords");root.replaceChildren();
+ if(!subs.data?.length){staticNotice(root,"Your assignment feedback will appear here after you submit practical work.");return;}
+ const assignmentIds=[...new Set(subs.data.map(x=>x.assignment_id))];
+ const [assignments,criteria,scores]=await Promise.all([
+  db.from("assignments").select("id,title,max_score").in("id",assignmentIds),
+  db.from("dcds_assignment_rubric_criteria").select("id,assignment_id,title,description,max_points,sort_order").in("assignment_id",assignmentIds).order("sort_order"),
+  db.from("dcds_assignment_rubric_scores").select("id,submission_id,criterion_id,score,feedback").in("submission_id",subs.data.map(x=>x.id))
+ ]);
+ for(const r of [assignments,criteria,scores])if(r.error)throw r.error;
+ const assignmentMap=new Map((assignments.data||[]).map(x=>[x.id,x]));const scoreMap=new Map((scores.data||[]).map(x=>[x.submission_id+":"+x.criterion_id,x]));
+ subs.data.forEach(s=>{
+  const a=assignmentMap.get(s.assignment_id);const card=document.createElement("article");card.className="card";
+  const h=document.createElement("h3");h.textContent=a?.title||"Assignment";
+  const meta=document.createElement("div");meta.className="meta";const st=document.createElement("span");st.className="pill"+(s.status==="graded"?" good":"");st.textContent=s.status;meta.append(st);
+  if(s.score!==null){const score=document.createElement("span");score.textContent="Overall score: "+Number(s.score)+(a?.max_score?" / "+Number(a.max_score):"");meta.append(score);}
+  card.append(h,meta);
+  const list=(criteria.data||[]).filter(c=>c.assignment_id===s.assignment_id);
+  if(list.length){list.forEach(c=>{const sc=scoreMap.get(s.id+":"+c.id);const row=document.createElement("div");row.className="score-row";const left=document.createElement("span");left.textContent=c.title;const right=document.createElement("span");right.textContent=sc?Number(sc.score)+" / "+Number(c.max_points):"Awaiting score";row.append(left,right);card.appendChild(row);if(sc?.feedback){const fb=document.createElement("p");fb.textContent=sc.feedback;card.appendChild(fb);}});}
+  else {const p=document.createElement("p");p.textContent="No detailed rubric has been published for this assignment.";card.appendChild(p);}
+  if(s.feedback){const fb=document.createElement("p");fb.textContent="Instructor feedback: "+s.feedback;card.appendChild(fb);}
+  root.appendChild(card);
+ });
+}
+async function loadResources(){
+ if(!courseIds.length){staticNotice($("resources"),"Enrol in a course to see its learning materials.");return;}
+ const r=await db.from("course_materials").select("id,course_id,material_title,material_type,google_drive_url").in("course_id",courseIds).order("material_title");
+ if(r.error)throw r.error;const root=$("resources");root.replaceChildren();
+ if(!r.data?.length){staticNotice(root,"No downloadable materials have been published for your enrolled courses yet.");return;}
+ r.data.forEach(x=>{
+  const row=document.createElement("article");row.className="resource";const info=document.createElement("div");const strong=document.createElement("strong");strong.textContent=x.material_title;const small=document.createElement("small");small.textContent=(courseById.get(x.course_id)?.title||"DCDS course")+" · "+(x.material_type||"Learning resource");info.append(strong,small);
+  const a=document.createElement("a");a.className="link";a.href=x.google_drive_url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Open resource ↗";row.append(info,a);root.appendChild(row);
+ });
+}
+async function init(){
+ const {data:{session},error}=await db.auth.getSession();if(error)throw error;
+ user=session?.user;
+ if(!user||user.is_anonymous||(!user.email_confirmed_at&&!user.phone_confirmed_at)){window.location.replace("index.html?login=required&next="+encodeURIComponent("student-learning-centre.html"));return;}
+ const e=await db.from("enrollments").select("course_id").eq("user_id",user.id);if(e.error)throw e.error;courseIds=[...new Set((e.data||[]).map(x=>x.course_id))];
+ if(courseIds.length){const c=await db.from("courses").select("id,title,slug").in("id",courseIds);if(c.error)throw c.error;courses=c.data||[];}
+ courseById=new Map(courses.map(c=>[c.id,c]));populateCourseSelects();
+ $("status").hidden=true;$("centre").hidden=false;
+ const results=await Promise.allSettled([loadPaths(),loadTopics(),loadProjects(),loadWorkshops(),loadRubrics(),loadResources()]);
+ const failed=results.filter(x=>x.status==="rejected");
+ if(failed.length){console.error("DCDS Learning Centre sections failed:",failed);$("status").hidden=false;$("status").textContent="Some Learning Centre sections could not load. Please refresh and try again; your existing grades, certificates and enrolments have not been changed.";}
+}
+init().catch(error=>{console.error("DCDS Learning Centre:",error);$("status").textContent="The Professional Learning Centre could not load. Please return to your Student Dashboard and try again.";});
+</script>
+</body>
+</html>
