@@ -309,7 +309,7 @@ $("ageRequestForm").addEventListener("submit",async e=>{
  await loadAgeState();await loadGuardianInbox();
 });
 async function loadGuardianInbox(){
- const r=await db.from("dcds_community_guardian_consents").select("id,age_request_id,student_user_id,status,guardian_note,created_at").eq("guardian_user_id",user.id).eq("status","pending").order("created_at",{ascending:false});
+ const r=await db.from("dcds_community_guardian_consents").select("id,age_request_id,student_user_id,status,guardian_note,created_at").eq("guardian_user_id",user.id).in("status",["pending","verified"]).order("created_at",{ascending:false});
  if(r.error)throw r.error;guardianRequests=r.data||[];
  const age=await db.from("dcds_community_age_requests").select("age_band,status,guardian_consent_status").eq("user_id",user.id).maybeSingle();
  if(age.error)throw age.error;
@@ -322,6 +322,17 @@ async function loadGuardianInbox(){
   const card=document.createElement("article");card.className="card";
   addText(card,"h3","Guardian consent request");
   addText(card,"p","A DCDS learner account ending "+x.student_user_id.slice(-8)+" has nominated your account as guardian. Confirm only if you are their parent or legally authorised guardian.");
+  if(x.status==="verified"){
+   addText(card,"div","Guardian consent is active","pill good");
+   const revoke=document.createElement("button");revoke.className="btn danger";revoke.textContent="Revoke guardian consent";
+   revoke.addEventListener("click",async()=>{
+    if(!confirm("Revoke this guardian consent? The student's community access and room memberships will be suspended."))return;
+    revoke.disabled=true;const u=await db.from("dcds_community_guardian_consents").update({status:"rejected",confirmed_at:new Date().toISOString(),guardian_note:"Guardian consent revoked in DCDS community settings."}).eq("id",x.id).eq("guardian_user_id",user.id);
+    if(u.error){revoke.disabled=false;alert("Consent could not be revoked: "+u.error.message);return;}
+    await loadGuardianInbox();
+   });
+   card.append(revoke);root.append(card);return;
+  }
   const confirm=document.createElement("label");confirm.className="check";
   const box=document.createElement("input");box.type="checkbox";const span=document.createElement("span");span.textContent="I am this learner's parent or legally authorised guardian, understand the separate teen community, and consent to their access under DCDS supervision.";confirm.append(box,span);card.appendChild(confirm);
   const actions=document.createElement("div");actions.className="actions";
