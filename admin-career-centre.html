@@ -118,8 +118,11 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 </main>
 <script>
 "use strict";
-const SUPABASE_URL="https://qxsenflgaweeadvggnyp.supabase.co";
-const SUPABASE_KEY="sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+// GitHub Pages is the live DCDS site. All other hosts (including Cloudflare previews and local tests) use the isolated Development project.
+const DCDS_PRODUCTION_HOSTS=["dechampions03-leader.github.io","dechampionsdigital.com","www.dechampionsdigital.com"];
+const IS_DCDS_PRODUCTION=DCDS_PRODUCTION_HOSTS.includes(window.location.hostname.toLowerCase());
+const SUPABASE_URL=IS_DCDS_PRODUCTION?"https://qxsenflgaweeadvggnyp.supabase.co":"https://tjgsxbmkpvktlqulbktv.supabase.co";
+const SUPABASE_KEY=IS_DCDS_PRODUCTION?"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP":"sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
 const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
 const $=id=>document.getElementById(id);
 const esc=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
