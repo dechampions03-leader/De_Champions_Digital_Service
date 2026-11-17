@@ -60,6 +60,7 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 <nav class="tabs" aria-label="Community administration">
 <button type="button" data-tab="age" aria-selected="true">🛡 Age review</button>
 <button type="button" data-tab="access" aria-selected="false">✅ Access</button>
+<button type="button" data-tab="profiles" aria-selected="false">👤 Profiles</button>
 <button type="button" data-tab="messages" aria-selected="false">💬 Chat</button>
 <button type="button" data-tab="posts" aria-selected="false">🎨 Projects</button>
 <button type="button" data-tab="reports" aria-selected="false">🚩 Reports</button>
@@ -79,6 +80,12 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 <h2>Community Membership Approval</h2>
 <p class="sub">Approve access only after the independent community age review is verified. Teen requests additionally require a verified guardian-consent record. Approval provisions only the matching age-cohort rooms.</p>
 <div id="accessList" class="stack"><div class="notice">Loading access requests…</div></div>
+</section>
+
+<section class="panel" id="tab-profiles" hidden>
+<h2>Community Profile Approval</h2>
+<p class="sub">A student may request cohort visibility, but cannot approve their own profile. Review the display name, biography, skills and picture for contact details, personal data, harassment, impersonation or unsafe information. Approved profiles are visible only to students in the same age cohort.</p>
+<div id="profileList" class="stack"><div class="notice">Loading profile reviews…</div></div>
 </section>
 
 <section class="panel" id="tab-messages" hidden>
@@ -244,6 +251,25 @@ async function loadAccess(){
   addActions(card,[approve,reject]);root.append(card);
  }
 }
+async function loadProfiles(){
+ const root=$("profileList"),r=await db.from("dcds_community_profiles").select("user_id,display_name,headline,bio,skill_tags,interest_tags,avatar_path,visibility,updated_at").in("visibility",["pending_review","cohort"]).order("updated_at",{ascending:false}).limit(150);
+ if(r.error)throw r.error;root.replaceChildren();if(!r.data?.length){showNotice(root,"No cohort profiles are awaiting review or currently published.");return;}
+ for(const p of r.data){
+  const card=make("article",undefined,"card");const meta=make("div",undefined,"meta");meta.append(cardStatus(p.visibility),make("span","Student "+p.user_id.slice(0,8)),make("span",safeDate(p.updated_at)));card.append(meta);
+  if(p.avatar_path){
+   const s=await db.storage.from("dcds-community-avatars").createSignedUrl(p.avatar_path,180);
+   if(!s.error){const img=document.createElement("img");img.src=s.data.signedUrl;img.alt="Student profile image";img.loading="lazy";img.style.cssText="width:76px;height:76px;border-radius:50%;object-fit:cover;border:1px solid #eadff5";card.appendChild(img);}
+  }
+  card.append(make("h3",p.display_name),make("p",p.headline||"No professional headline"),make("p",p.bio||"No biography"),make("p","Skills: "+(p.skill_tags||[]).join(", "),"small"),make("p","Interests: "+(p.interest_tags||[]).join(", "),"small"));
+  if(p.visibility==="pending_review"){
+   addActions(card,[
+    actionButton("Approve cohort visibility","good",async()=>{const u=await db.from("dcds_community_profiles").update({visibility:"cohort",updated_at:new Date().toISOString()}).eq("user_id",p.user_id);if(u.error)throw u.error;await loadProfiles();}),
+    actionButton("Keep private","danger",async()=>{const u=await db.from("dcds_community_profiles").update({visibility:"private",updated_at:new Date().toISOString()}).eq("user_id",p.user_id);if(u.error)throw u.error;await loadProfiles();})
+   ]);
+  }
+  root.append(card);
+ }
+}
 async function loadMessages(){
  const root=$("messageList"),r=await db.from("dcds_community_messages").select("id,room_id,author_id,body,status,created_at").order("created_at",{ascending:false}).limit(150);
  if(r.error)throw r.error;root.replaceChildren();if(!r.data?.length){showNotice(root,"No community chat messages yet.");return;}
@@ -364,6 +390,7 @@ async function loadAudit(){
 async function loadTab(tab){
  if(tab==="age")await loadAge();
  if(tab==="access")await loadAccess();
+ if(tab==="profiles")await loadProfiles();
  if(tab==="messages")await loadMessages();
  if(tab==="posts")await loadPosts();
  if(tab==="reports")await loadReports();
