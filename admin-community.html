@@ -276,6 +276,10 @@ async function loadProfiles(){
     actionButton("Approve cohort visibility","good",async()=>{const u=await db.from("dcds_community_profiles").update({visibility:"cohort",updated_at:new Date().toISOString()}).eq("user_id",p.user_id);if(u.error)throw u.error;await loadProfiles();}),
     actionButton("Keep private","danger",async()=>{const u=await db.from("dcds_community_profiles").update({visibility:"private",updated_at:new Date().toISOString()}).eq("user_id",p.user_id);if(u.error)throw u.error;await loadProfiles();})
    ]);
+  }else if(p.visibility==="cohort"){
+   addActions(card,[
+    actionButton("Revoke cohort visibility","danger",async()=>{if(!confirm("Hide this profile from other students in the cohort?"))return;const u=await db.from("dcds_community_profiles").update({visibility:"private",updated_at:new Date().toISOString()}).eq("user_id",p.user_id);if(u.error)throw u.error;await loadProfiles();})
+   ]);
   }
   root.append(card);
  }
