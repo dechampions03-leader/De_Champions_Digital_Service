@@ -70,6 +70,17 @@ a.toplink{padding:9px 11px;border:1px solid var(--line);border-radius:10px;backg
 .credential-row,.post-row{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
 .profile-head{display:flex;align-items:center;gap:12px;margin:12px 0}
 #profileAvatar{width:60px;height:60px;border-radius:50%;object-fit:cover;border:1px solid var(--line);background:#eee4fb}
+.directory-tools{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;margin:12px 0}
+.directory-search{width:100%;min-width:0;border:1px solid #ded0ec;border-radius:10px;padding:11px 12px;background:#fff;color:var(--ink);font:500 13px 'DM Sans',sans-serif}
+.directory-card{min-width:0;border:1px solid var(--line);border-radius:14px;padding:14px;background:linear-gradient(145deg,#fff,#fcf9ff);box-shadow:0 5px 16px #32105f08}
+.directory-person{display:flex;align-items:center;gap:11px;min-width:0}
+.directory-avatar{width:58px;height:58px;flex:0 0 58px;border-radius:50%;object-fit:cover;border:1px solid var(--line);background:#eee4fb}
+.directory-person strong{display:block;overflow-wrap:anywhere;color:var(--deep);font-size:14px}
+.directory-headline{font-size:11px;line-height:1.5;color:var(--muted);margin-top:3px;overflow-wrap:anywhere}
+.directory-bio{font-size:12px;line-height:1.65;color:#5e526b;margin:10px 0;white-space:pre-wrap;overflow-wrap:anywhere}
+.directory-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.directory-tag{display:inline-flex;padding:5px 8px;border-radius:999px;background:#f1e5ff;color:#552080;font-size:10px;font-weight:800;max-width:100%;overflow-wrap:anywhere}
+.directory-label{font-size:10px;font-weight:900;letter-spacing:.04em;color:var(--muted);margin-top:9px}
 hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 @media(max-width:760px){.tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
 @media(max-width:560px){.wrap{width:calc(100% - 14px);padding-top:8px}.hero{padding:20px}.tabs{grid-template-columns:repeat(2,minmax(0,1fr));top:3px}.panel{padding:14px}.grid,.form .row{grid-template-columns:1fr}header{align-items:flex-start}.chat-message{max-width:96%}}
@@ -142,11 +153,24 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 </section>
 <nav class="tabs" id="communityTabs" aria-label="Community sections">
 <button type="button" data-tab="lounge" aria-selected="true">📚 Community Lounge</button>
+<button type="button" data-tab="directory" aria-selected="false">🌐 Professional Directory</button>
 <button type="button" data-tab="chat" aria-selected="false">💬 Group Chat</button>
 <button type="button" data-tab="profile" aria-selected="false">👤 My Profile</button>
 <button type="button" data-tab="credentials" aria-selected="false">📄 Credentials</button>
 <button type="button" data-tab="events" aria-selected="false">🎥 Live Events</button>
 </nav>
+
+<section class="panel" id="tab-directory" hidden>
+<h2>DCDS Professional Directory</h2>
+<p class="sub">Discover approved learners and professionals in your own DCDS age cohort. This directory is visible only to signed-in members who have active community access and accepted the current community rules. It is not a public internet directory.</p>
+<div class="notice">Only profiles approved by DCDS appear here. Email addresses, phone numbers, dates of birth, gender, home addresses and private credentials are never displayed. Teen and adult communities remain separate.</div>
+<div class="directory-tools">
+<input class="directory-search" id="directorySearch" type="search" maxlength="100" placeholder="Search names, skills, interests or headlines" aria-label="Search approved community profiles">
+<button class="btn secondary" type="button" id="directoryRefresh">Refresh</button>
+</div>
+<div id="directoryStatus" class="status-line" role="status" aria-live="polite">Loading approved profiles…</div>
+<div id="directoryList" class="grid"><div class="notice">Loading the professional directory…</div></div>
+</section>
 
 <section class="panel" id="tab-chat" hidden>
 <h2>Community Group Chat</h2><p class="sub">Group rooms only — no private student-to-student messages. External links, money requests, password/OTP requests and payment solicitation are not allowed. Teen messages are reviewed before classmates can see them.</p>
@@ -239,13 +263,13 @@ const tagArray=v=>[...new Set(String(v||"").split(",").map(x=>x.trim()).filter(B
 const setMsg=(id,v)=>$(id).textContent=v;
 const showNotice=(node,v)=>{node.replaceChildren();const el=document.createElement("div");el.className="notice";el.textContent=v;node.appendChild(el);};
 const addText=(node,tag,text,cls)=>{const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=text;node.appendChild(el);return el;};
-let user=null,access=null,ageRequest=null,profile=null,rooms=[],currentRoom=null,chatChannel=null,feedChannel=null,guardianRequests=[],registrations=new Set();
+let user=null,access=null,ageRequest=null,profile=null,rooms=[],currentRoom=null,chatChannel=null,feedChannel=null,guardianRequests=[],registrations=new Set(),directoryProfiles=[];
 
 function setTab(tab){
  document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===tab)));
  document.querySelectorAll("[id^=tab-]").forEach(p=>p.hidden=p.id!=="tab-"+tab);
 }
-document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>{setTab(b.dataset.tab);if(b.dataset.tab==="directory")loadDirectory().catch(err=>{console.error("DCDS directory",err);setMsg("directoryStatus","The directory could not be loaded. Your privacy settings have not been changed.");});}));
 $("ageBand").addEventListener("change",()=>{$("guardianField").hidden=$("ageBand").value!=="13_17";});
 async function requireStudent(){
  const {data:{session},error}=await db.auth.getSession();if(error)throw error;
@@ -516,6 +540,66 @@ $("profileForm").addEventListener("submit",async e=>{
  profile=payload;setMsg("profileMessage",visibility==="pending_review"?"✓ Saved. Cohort visibility is pending DCDS approval.":"✓ Profile saved with private visibility.");
  await loadProfile();
 });
+function directoryTagList(items){
+ const values=Array.isArray(items)?items:[];
+ return values.slice(0,10).map(value=>String(value||"").trim()).filter(Boolean);
+}
+function renderDirectory(){
+ const root=$("directoryList");root.replaceChildren();
+ const query=$("directorySearch").value.trim().toLocaleLowerCase();
+ const matches=directoryProfiles.filter(p=>{
+  const haystack=[p.display_name,p.headline,p.bio,...(p.skill_tags||[]),...(p.interest_tags||[])].join(" ").toLocaleLowerCase();
+  return !query||haystack.includes(query);
+ });
+ setMsg("directoryStatus",matches.length+" approved profile"+(matches.length===1?"":"s")+" shown in your age cohort.");
+ if(!matches.length){
+  showNotice(root,query?"No approved profiles match that search. Try another name, skill or interest.":"No approved profiles are available in your cohort yet. Complete your profile and request DCDS approval to be listed.");
+  return;
+ }
+ const staffIds=directoryProfiles.staffIds||new Set();
+ matches.forEach(p=>{
+  const card=document.createElement("article");card.className="directory-card";
+  const person=document.createElement("div");person.className="directory-person";
+  const avatar=document.createElement("img");avatar.className="directory-avatar";avatar.alt="Profile picture for "+p.display_name;avatar.loading="lazy";
+  const initials=String(p.display_name||"D").trim().split(/\\s+/).slice(0,2).map(x=>x.charAt(0)).join("").toUpperCase();
+  avatar.alt="Profile picture for "+p.display_name;
+  avatar.src="data:image/svg+xml;charset=utf-8,"+encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" width="120" height="120" viewBox="0 0 120 120"><rect width="120" height="120" rx="60" fill="#eee4fb"/><text x="60" y="68" text-anchor="middle" font-family="Arial,sans-serif" font-size="38" font-weight="700" fill="#451078">'+initials.replace(/[<>&"']/g,"")+'</text></svg>');
+  const identity=document.createElement("div");identity.style.minWidth="0";
+  addText(identity,"strong",p.display_name);
+  addText(identity,"div",p.headline||"DCDS community member","directory-headline");
+  if(staffIds.has(p.user_id))appendOfficialBadge(identity);
+  person.append(avatar,identity);card.append(person);
+  if(p.bio)addText(card,"p",p.bio.length>420?p.bio.slice(0,417)+"…":p.bio,"directory-bio");
+  const skills=directoryTagList(p.skill_tags),interests=directoryTagList(p.interest_tags);
+  if(skills.length){
+   addText(card,"div","Skills","directory-label");const tags=document.createElement("div");tags.className="directory-tags";
+   skills.forEach(value=>addText(tags,"span",value,"directory-tag"));card.append(tags);
+  }
+  if(interests.length){
+   addText(card,"div","Interests","directory-label");const tags=document.createElement("div");tags.className="directory-tags";
+   interests.forEach(value=>addText(tags,"span",value,"directory-tag"));card.append(tags);
+  }
+  root.append(card);
+  if(p.avatar_path){
+   db.storage.from("dcds-community-avatars").createSignedUrl(p.avatar_path,300).then(s=>{
+    if(!s.error&&s.data?.signedUrl)avatar.src=s.data.signedUrl;
+   }).catch(()=>{});
+  }
+ });
+}
+async function loadDirectory(){
+ const btn=$("directoryRefresh");btn.disabled=true;setMsg("directoryStatus","Loading approved profiles from your protected age cohort…");
+ const r=await db.rpc("dcds_community_directory_profiles",{p_limit:100});
+ btn.disabled=false;
+ if(r.error){showNotice($("directoryList"),"The directory is temporarily unavailable. Please refresh or contact DCDS support.");setMsg("directoryStatus","Directory access was not granted: "+r.error.message);return;}
+ directoryProfiles=r.data||[];
+ const ids=directoryProfiles.map(p=>p.user_id);
+ const staffIds=await getOfficialStaffIds(ids);
+ directoryProfiles.staffIds=staffIds;
+ renderDirectory();
+}
+$("directorySearch").addEventListener("input",renderDirectory);
+$("directoryRefresh").addEventListener("click",()=>loadDirectory().catch(err=>{console.error("DCDS directory refresh",err);setMsg("directoryStatus","Refresh failed. Please try again.");}));
 async function loadCredentials(){
  const root=$("credentialList");const r=await db.from("dcds_community_credentials").select("id,credential_type,title,issuer,issued_year,storage_path,verification_status,review_note,created_at").eq("user_id",user.id).order("created_at",{ascending:false});
  if(r.error){showNotice(root,"Private credentials could not be loaded: "+r.error.message);return;}
