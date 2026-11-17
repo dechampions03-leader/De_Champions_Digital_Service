@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#21083f"><meta name="description" content="DCDS Career and Mentorship administration">
+<title>Career & Mentorship Administration | DCDS</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7628d8;--dark:#451078;--deep:#21083f;--gold:#d4af37;--ink:#28183a;--muted:#756783;--line:#eadff5;--surface:#faf7fd;--good:#17683a;--bad:#9c2f2f}
+*{box-sizing:border-box}html,body{margin:0;width:100%;max-width:100%;min-height:100%;overflow-x:clip;font-family:'DM Sans',sans-serif;color:var(--ink)}
+body{min-height:100vh;min-height:100dvh;background:linear-gradient(145deg,#fbf9ff,#f1e8fb)}
+.wrap{width:min(1200px,calc(100% - 24px));margin:auto;padding:14px 0 42px}
+header{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}
+.brand{font-size:11px;font-weight:900;letter-spacing:.13em;color:var(--dark)}
+header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:#fff;text-decoration:none;color:var(--dark);font-size:11px;font-weight:850}
+.hero{padding:25px;border-radius:22px;color:#fff;background:radial-gradient(circle at 90% 0,#9654ce,transparent 36%),linear-gradient(125deg,#21083f,#451078 62%,#7025b7);box-shadow:0 15px 40px #35105f20}
+.kicker{font-size:10px;letter-spacing:.2em;color:#f3d98e;font-weight:900}.hero h1{font:800 clamp(27px,5vw,38px)/1.08 'Playfair Display',serif;margin:10px 0}.hero p{font-size:13px;line-height:1.7;color:#eadcf8;margin:0;max-width:780px}
+#status{margin:14px 0;padding:13px;border:1px dashed #d9c8e8;border-radius:12px;background:#fff;color:var(--muted);font-size:12px;line-height:1.6}#app[hidden],#status[hidden]{display:none!important}
+.metrics{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:9px;margin:15px 0}
+.metric{min-width:0;border:1px solid var(--line);border-radius:14px;background:#fff;padding:14px}.metric strong{display:block;font:800 25px 'Playfair Display',serif;color:var(--deep)}.metric span{font-size:10px;color:var(--muted);font-weight:800}
+.tabs{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:7px;margin:15px 0;position:sticky;top:5px;z-index:4;padding:5px;border:1px solid var(--line);border-radius:14px;background:#f7f1fc}
+.tabs button{min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--dark);padding:11px 6px;font:800 11px 'DM Sans',sans-serif;cursor:pointer}
+.tabs button[aria-selected=true]{background:linear-gradient(135deg,#f2dc9c,#d6b258);border-color:#ead49a;color:#2d1742}
+.panel{min-width:0;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 24px #32105f0a}.panel[hidden]{display:none!important}.panel h2{font:700 22px 'Playfair Display',serif;color:var(--deep);margin:0 0 7px}
+.sub{font-size:12px;line-height:1.65;color:var(--muted);margin:0 0 14px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.card{min-width:0;border:1px solid var(--line);border-radius:14px;padding:14px;background:linear-gradient(145deg,#fff,#fcf9ff)}
+.card h3{font:700 16px 'Playfair Display',serif;color:var(--deep);margin:0 0 7px}.card p{font-size:12px;line-height:1.65;color:#5e526b;margin:7px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+.meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:10px;color:var(--muted);margin:0 0 8px}
+.pill{display:inline-flex;padding:5px 8px;border-radius:99px;background:#f1e5ff;color:#552080;font-size:10px;font-weight:850}.pill.good{background:#e8f7ed;color:var(--good)}.pill.warn{background:#fff1cc;color:#76551a}
+.form{display:grid;gap:10px;margin:14px 0}.form label{display:grid;gap:6px;font-size:11px;font-weight:850;color:var(--dark)}
+.form input,.form textarea,.form select,.inline{width:100%;min-width:0;border:1px solid #ded0ec;border-radius:10px;padding:10px 11px;background:#fff;color:var(--ink);font:500 12px 'DM Sans',sans-serif}
+.form textarea{min-height:82px;resize:vertical;line-height:1.55}.form .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.btn{border:0;border-radius:10px;padding:10px 13px;background:linear-gradient(110deg,#8d3bdb,#54168e);color:#fff;font:800 11px 'DM Sans',sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn.secondary{background:#f1e5ff;color:var(--dark);border:1px solid #e2d2f3}.btn.good{background:#e8f7ed;color:var(--good);border:1px solid #cbe9d5}.btn.danger{background:#fff0f0;color:var(--bad);border:1px solid #f0d1d1}.btn:disabled{opacity:.55;cursor:wait}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}.stack{display:grid;gap:10px}
+.notice{padding:13px;border:1px dashed #d9c8e8;border-radius:12px;background:#fdfaff;color:var(--muted);font-size:12px;line-height:1.65}
+.status-line{font-size:11px;color:var(--muted);min-height:16px;margin-top:7px;line-height:1.6}.small{font-size:10px;color:var(--muted);line-height:1.55}
+.review-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin-top:10px}
+@media(max-width:900px){.tabs{grid-template-columns:repeat(3,minmax(0,1fr))}.metrics{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.wrap{width:calc(100% - 18px);padding-top:10px}.hero{padding:20px}.tabs{grid-template-columns:repeat(2,minmax(0,1fr));top:4px}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}.panel{padding:14px}.grid,.form .row,.review-grid{grid-template-columns:1fr}header{align-items:flex-start;flex-direction:column}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div class="brand">DCDS ADMINISTRATION · CAREER OPERATIONS</div><a href="student-management.html">← Admin Centre</a></header>
+<section class="hero"><div class="kicker">PROTECTED ADMIN WORKSPACE</div><h1>Career & Mentorship Centre</h1><p>Manage mentor listings, coordinate mentorship requests, publish verified career opportunities, review student applications and monitor consent-based graduate outcomes.</p></section>
+<div id="status" role="status" aria-live="polite">Verifying administrator access…</div>
+<section id="app" hidden>
+<div class="metrics">
+<div class="metric"><strong id="metricProfiles">—</strong><span>Career profiles</span></div>
+<div class="metric"><strong id="metricMentors">—</strong><span>Active mentors</span></div>
+<div class="metric"><strong id="metricRequests">—</strong><span>Open mentor requests</span></div>
+<div class="metric"><strong id="metricOpportunities">—</strong><span>Live opportunities</span></div>
+<div class="metric"><strong id="metricApplications">—</strong><span>Applications to review</span></div>
+</div>
+<nav class="tabs" aria-label="Career administration sections">
+<button type="button" data-tab="mentors" aria-selected="true">🤝 Mentors</button>
+<button type="button" data-tab="requests" aria-selected="false">📅 Mentorship</button>
+<button type="button" data-tab="opportunities" aria-selected="false">🚀 Opportunities</button>
+<button type="button" data-tab="applications" aria-selected="false">📨 Applications</button>
+<button type="button" data-tab="outcomes" aria-selected="false">🏆 Outcomes</button>
+<button type="button" data-tab="overview" aria-selected="false">📊 Overview</button>
+</nav>
+<section class="panel" id="tab-mentors">
+<h2>Mentor Directory</h2><p class="sub">Only publish mentors who have agreed to be listed and whose professional details have been checked. Do not enter private phone numbers or email addresses into public biography fields.</p>
+<form id="mentorForm" class="form">
+<div class="row"><label>Mentor display name<input id="mentorName" minlength="2" maxlength="120" required></label><label>Professional title<input id="mentorTitle" minlength="2" maxlength="140" required placeholder="e.g. Senior Product Designer"></label></div>
+<label>Professional biography<textarea id="mentorBio" minlength="20" maxlength="2500" required></textarea></label>
+<div class="row"><label>Expertise (comma-separated)<input id="mentorExpertise" placeholder="Design systems, branding, client work"></label><label>Industry<input id="mentorIndustry" maxlength="120"></label></div>
+<div class="row"><label>Years of experience<input id="mentorYears" type="number" min="0" max="60" value="0"></label><label>Timezone<input id="mentorTimezone" maxlength="80" value="Africa/Lagos"></label></div>
+<label>Availability information<textarea id="mentorAvailability" maxlength="500" placeholder="e.g. Two online sessions each month"></textarea></label>
+<label>Public professional profile URL (optional)<input id="mentorUrl" type="url" placeholder="https://…"></label>
+<label>Initial listing status<select id="mentorStatus"><option value="draft">Draft — not visible to students</option><option value="active">Active — visible to verified students</option></select></label>
+<button class="btn" type="submit">Add mentor to directory</button><div id="mentorMessage" class="status-line" role="status"></div>
+</form>
+<div id="mentorList" class="grid"><div class="notice">Loading mentors…</div></div>
+</section>
+<section class="panel" id="tab-requests" hidden>
+<h2>Mentorship Requests & Sessions</h2><p class="sub">Review each request, accept or decline it, then add the session date and meeting destination when coordinated. Students see the status and meeting link on their own account.</p>
+<div id="requestList" class="stack"><div class="notice">Loading mentorship requests…</div></div>
+</section>
+<section class="panel" id="tab-opportunities" hidden>
+<h2>Career Opportunities Board</h2><p class="sub">Publish only genuine opportunities with accurate organisation details, eligibility, deadline and application instructions. DCDS does not promise jobs, scholarships or income.</p>
+<form id="opportunityForm" class="form">
+<div class="row"><label>Opportunity type<select id="oppType"><option value="internship">Internship</option><option value="job">Job</option><option value="freelance">Freelance</option><option value="scholarship">Scholarship</option><option value="apprenticeship">Apprenticeship</option></select></label><label>Opportunity title<input id="oppTitle" minlength="3" maxlength="160" required></label></div>
+<label>Organisation / programme name<input id="oppOrganisation" minlength="2" maxlength="160" required></label>
+<label>Description<textarea id="oppDescription" minlength="20" maxlength="5000" required></textarea></label>
+<label>Requirements<textarea id="oppRequirements" maxlength="3000"></textarea></label>
+<label>Eligibility<textarea id="oppEligibility" maxlength="2000"></textarea></label>
+<div class="row"><label>Location<input id="oppLocation" maxlength="160" placeholder="City / country or Remote"></label><label>Application deadline<input id="oppDeadline" type="date"></label></div>
+<label class="check"><input id="oppRemote" type="checkbox"> This opportunity can be done remotely.</label>
+<label>External application details URL (optional)<input id="oppUrl" type="url" placeholder="https://…"></label>
+<label>Publication status<select id="oppStatus"><option value="draft">Draft</option><option value="published">Publish to students</option></select></label>
+<button class="btn" type="submit">Create opportunity</button><div id="oppMessage" class="status-line" role="status"></div>
+</form>
+<div id="opportunityList" class="stack"><div class="notice">Loading opportunities…</div></div>
+</section>
+<section class="panel" id="tab-applications" hidden>
+<h2>Student Applications</h2><p class="sub">Update application status and provide constructive feedback that the student can see. Do not put private internal notes in student-facing feedback.</p>
+<div id="applicationList" class="stack"><div class="notice">Loading applications…</div></div>
+</section>
+<section class="panel" id="tab-outcomes" hidden>
+<h2>Graduate Outcomes</h2><p class="sub">Only records where students consented to anonymous aggregate statistics are counted in the overview. Individual records below are visible only to authorised administrators and the student who submitted them.</p>
+<div id="outcomeSummary" class="grid"></div>
+<div id="outcomeList" class="stack" style="margin-top:12px"><div class="notice">Loading career outcomes…</div></div>
+</section>
+<section class="panel" id="tab-overview" hidden>
+<h2>Career Operations Overview</h2><p class="sub">This area summarises engagement with DCDS career support. It does not claim that a student has been hired unless the student reports the outcome.</p>
+<div id="overviewSummary" class="grid"></div>
+<div class="notice" style="margin-top:12px">Recommended operating practice: verify mentor consent and professional background before activation; verify every opportunity before publishing; respond to mentorship requests promptly; and ask students before using their outcome information in any public success story.</div>
+</section>
+</section>
+</main>
+<script>
+"use strict";
+const SUPABASE_URL="https://qxsenflgaweeadvggnyp.supabase.co";
+const SUPABASE_KEY="sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+const esc=value=>String(value??"").replace(/[&<>"']/g,ch=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[ch]));
+const validUrl=value=>{if(!value)return true;try{const u=new URL(value);return u.protocol==="https:"||u.protocol==="http:";}catch(_){return false;}};
+const dateText=value=>{if(!value)return "Not scheduled";const d=new Date(value);return Number.isNaN(d.getTime())?"Date unavailable":d.toLocaleString();};
+const labels={submitted:"Submitted",reviewing:"Under review",shortlisted:"Shortlisted",interview:"Interview",offered:"Offer received",rejected:"Not selected",withdrawn:"Withdrawn",pending:"Pending",accepted:"Accepted",declined:"Declined",scheduled:"Scheduled",completed:"Completed",cancelled:"Cancelled",draft:"Draft",active:"Active",suspended:"Suspended",published:"Published",closed:"Closed"};
+let admin=null,mentors=[],opportunities=[];
+function message(id,text){$(id).textContent=text;}
+function notice(node,text){node.replaceChildren();const n=document.createElement("div");n.className="notice";n.textContent=text;node.appendChild(n);}
+function splitTags(value){return [...new Set(String(value||"").split(",").map(x=>x.trim()).filter(Boolean))].slice(0,25);}
+function setTab(name){document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===name)));document.querySelectorAll("[id^=tab-]").forEach(s=>s.hidden=s.id!=="tab-"+name);}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
+async function refreshMetrics(){
+ const queries=await Promise.all([
+  db.from("dcds_career_profiles").select("user_id",{count:"exact",head:true}),
+  db.from("dcds_mentors").select("id",{count:"exact",head:true}).eq("status","active"),
+  db.from("dcds_mentorship_requests").select("id",{count:"exact",head:true}).in("status",["pending","accepted","scheduled"]),
+  db.from("dcds_career_opportunities").select("id",{count:"exact",head:true}).eq("status","published"),
+  db.from("dcds_career_applications").select("id",{count:"exact",head:true}).in("status",["submitted","reviewing"])
+ ]);
+ const ids=["metricProfiles","metricMentors","metricRequests","metricOpportunities","metricApplications"];
+ queries.forEach((q,i)=>$(ids[i]).textContent=q.error?"—":String(q.count??0));
+}
+async function loadMentors(){
+ const root=$("mentorList"),r=await db.from("dcds_mentors").select("id,display_name,professional_title,biography,expertise,industry,years_experience,status,availability,public_profile_url").order("created_at",{ascending:false});
+ if(r.error)throw r.error;mentors=r.data||[];root.replaceChildren();
+ if(!mentors.length){notice(root,"No mentor profiles have been added. Add a mentor only after confirming their consent and professional details.");return;}
+ mentors.forEach(m=>{
+  const card=document.createElement("article");card.className="card";
+  const meta=document.createElement("div");meta.className="meta";const pill=document.createElement("span");pill.className="pill "+(m.status==="active"?"good":"warn");pill.textContent=labels[m.status]||m.status;meta.append(pill);
+  const h=document.createElement("h3");h.textContent=m.display_name+" · "+m.professional_title;
+  const p=document.createElement("p");p.textContent=m.biography;
+  const sm=document.createElement("p");sm.className="small";sm.textContent="Industry: "+(m.industry||"Not set")+" · "+Number(m.years_experience)+" years · Expertise: "+(m.expertise||[]).join(", ");
+  const edit=document.createElement("div");edit.className="review-grid";
+  const statusLabel=document.createElement("label");statusLabel.className="small";statusLabel.textContent="Directory status";const sel=document.createElement("select");sel.className="inline";["draft","active","suspended"].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=labels[v];sel.appendChild(o);});sel.value=m.status;statusLabel.appendChild(sel);
+  const save=document.createElement("button");save.className="btn secondary";save.type="button";save.textContent="Save status";save.addEventListener("click",async()=>{save.disabled=true;const u=await db.from("dcds_mentors").update({status:sel.value,updated_at:new Date().toISOString()}).eq("id",m.id);save.disabled=false;if(u.error){alert("Mentor status could not be saved: "+u.error.message);return;}await loadMentors();await refreshMetrics();});
+  edit.append(statusLabel,save);card.append(meta,h,p,sm,edit);
+  if(m.availability){const av=document.createElement("p");av.className="small";av.textContent="Availability: "+m.availability;card.appendChild(av);}
+  root.appendChild(card);
+ });
+}
+$("mentorForm").addEventListener("submit",async e=>{
+ e.preventDefault();const url=$("mentorUrl").value.trim();if(!validUrl(url)){message("mentorMessage","Enter a valid http or https profile URL, or leave it blank.");return;}
+ const btn=e.submitter;btn.disabled=true;message("mentorMessage","Saving mentor profile…");
+ const payload={display_name:$("mentorName").value.trim(),professional_title:$("mentorTitle").value.trim(),biography:$("mentorBio").value.trim(),expertise:splitTags($("mentorExpertise").value),industry:$("mentorIndustry").value.trim(),years_experience:Number($("mentorYears").value)||0,timezone:$("mentorTimezone").value.trim()||"Africa/Lagos",availability:$("mentorAvailability").value.trim(),public_profile_url:url||null,status:$("mentorStatus").value,created_by:admin.id};
+ const r=await db.from("dcds_mentors").insert(payload);btn.disabled=false;
+ if(r.error){message("mentorMessage","Mentor could not be added: "+r.error.message);return;}
+ $("mentorForm").reset();$("mentorTimezone").value="Africa/Lagos";$("mentorYears").value="0";message("mentorMessage","✓ Mentor profile added.");await loadMentors();await refreshMetrics();
+});
+async function loadRequests(){
+ const root=$("requestList"),r=await db.from("dcds_mentorship_requests").select("id,mentor_id,student_user_id,goal,message,preferred_schedule,status,scheduled_at,meeting_url,admin_feedback,created_at").order("created_at",{ascending:false}).limit(150);
+ if(r.error)throw r.error;root.replaceChildren();if(!r.data?.length){notice(root,"No mentorship requests have been received yet.");return;}
+ const mentorMap=new Map(mentors.map(m=>[m.id,m.display_name]));
+ r.data.forEach(x=>{
+  const card=document.createElement("article");card.className="card";
+  const meta=document.createElement("div");meta.className="meta";const pill=document.createElement("span");pill.className="pill "+(["accepted","scheduled","completed"].includes(x.status)?"good":x.status==="declined"?"warn":"");pill.textContent=labels[x.status]||x.status;const when=document.createElement("span");when.textContent="Requested "+dateText(x.created_at);meta.append(pill,when);
+  const h=document.createElement("h3");h.textContent=(mentorMap.get(x.mentor_id)||"Mentor") + " · Student " + x.student_user_id.slice(0,8);
+  const goal=document.createElement("p");goal.textContent=x.goal;
+  const note=document.createElement("p");note.className="small";note.textContent=[x.message,x.preferred_schedule?"Preferred: "+x.preferred_schedule:""].filter(Boolean).join(" · ");
+  const form=document.createElement("form");form.className="form";form.dataset.requestId=x.id;
+  const row=document.createElement("div");row.className="row";
+  const statusLabel=document.createElement("label");statusLabel.textContent="Request status";const status=document.createElement("select");status.className="inline";
+  ["pending","accepted","declined","scheduled","completed","cancelled"].forEach(v=>{const o=document.createElement("option");o.value=v;o.textContent=labels[v];status.appendChild(o);});status.value=x.status;statusLabel.appendChild(status);
+  const dateLabel=document.createElement("label");dateLabel.textContent="Session date and time";const date=document.createElement("input");date.className="inline";date.type="datetime-local";date.value=x.scheduled_at?new Date(x.scheduled_at).toISOString().slice(0,16):"";dateLabel.appendChild(date);row.append(statusLabel,dateLabel);
+  const urlLabel=document.createElement("label");urlLabel.textContent="Meeting URL";const url=document.createElement("input");url.className="inline";url.type="url";url.value=x.meeting_url||"";url.placeholder="https://…";urlLabel.appendChild(url);
+  const feedbackLabel=document.createElement("label");feedbackLabel.textContent="Student-facing DCDS feedback";const feedback=document.createElement("textarea");feedback.className="inline";feedback.value=x.admin_feedback||"";feedback.maxLength=2000;feedbackLabel.appendChild(feedback);
+  const btn=document.createElement("button");btn.className="btn";btn.type="submit";btn.textContent="Save mentorship update";const msg=document.createElement("div");msg.className="status-line";
+  form.append(row,urlLabel,feedbackLabel,btn,msg);card.append(meta,h,goal,note,form);root.appendChild(card);
+ });
+}
+$("requestList").addEventListener("submit",async e=>{
+ const form=e.target.closest("form[data-request-id]");if(!form)return;e.preventDefault();
+ const status=form.querySelector("select").value,date=form.querySelector('input[type="datetime-local"]').value,url=form.querySelector('input[type="url"]').value.trim(),feedback=form.querySelector("textarea").value.trim(),btn=form.querySelector("button"),msg=form.querySelector(".status-line");
+ if(!validUrl(url)){msg.textContent="Please enter a valid http or https meeting link.";return;}
+ const scheduled=date?new Date(date):null;if(date&&Number.isNaN(scheduled.getTime())){msg.textContent="Please check the session date and time.";return;}
+ btn.disabled=true;msg.textContent="Saving session update…";
+ const r=await db.from("dcds_mentorship_requests").update({status,scheduled_at:scheduled?scheduled.toISOString():null,meeting_url:url||null,admin_feedback:feedback||null,updated_at:new Date().toISOString()}).eq("id",form.dataset.requestId);
+ btn.disabled=false;if(r.error){msg.textContent="Update could not be saved: "+r.error.message;return;}msg.textContent="✓ Update saved.";await loadRequests();await refreshMetrics();
+});
+async function loadOpportunities(){
+ const root=$("opportunityList"),r=await db.from("dcds_career_opportunities").select("id,opportunity_type,title,organisation,description,requirements,eligibility,location,is_remote,application_url,application_deadline,status,created_at").order("created_at",{ascending:false}).limit(150);
+ if(r.error)throw r.error;opportunities=r.data||[];root.replaceChildren();if(!opportunities.length){notice(root,"No career opportunities have been created yet.");return;}
+ opportunities.forEach(o=>{
+  const card=document.createElement("article");card.className="card";const meta=document.createElement("div");meta.className="meta";const status=document.createElement("span");status.className="pill "+(o.status==="published"?"good":"warn");status.textContent=labels[o.status]||o.status;const type=document.createElement("span");type.textContent=o.opportunity_type;const deadline=document.createElement("span");deadline.textContent=o.application_deadline?"Deadline "+o.application_deadline:"No deadline";meta.append(status,type,deadline);
+  const h=document.createElement("h3");h.textContent=o.title+" · "+o.organisation;const p=document.createElement("p");p.textContent=o.description;
+  const small=document.createElement("p");small.className="small";small.textContent=[o.location,o.is_remote?"Remote":"",o.eligibility].filter(Boolean).join(" · ");
+  const row=document.createElement("div");row.className="review-grid";const sel=document.createElement("select");sel.className="inline";["draft","published","closed"].forEach(v=>{const x=document.createElement("option");x.value=v;x.textContent=labels[v];sel.appendChild(x);});sel.value=o.status;
+  const btn=document.createElement("button");btn.type="button";btn.className="btn secondary";btn.textContent="Save status";btn.addEventListener("click",async()=>{btn.disabled=true;const u=await db.from("dcds_career_opportunities").update({status:sel.value,updated_at:new Date().toISOString()}).eq("id",o.id);btn.disabled=false;if(u.error){alert("Opportunity status could not be saved: "+u.error.message);return;}await loadOpportunities();await refreshMetrics();});
+  row.append(sel,btn);card.append(meta,h,p,small,row);root.appendChild(card);
+ });
+}
+$("opportunityForm").addEventListener("submit",async e=>{
+ e.preventDefault();const url=$("oppUrl").value.trim();if(!validUrl(url)){message("oppMessage","Enter a valid http or https application URL, or leave it blank.");return;}
+ const btn=e.submitter;btn.disabled=true;message("oppMessage","Creating opportunity…");
+ const r=await db.from("dcds_career_opportunities").insert({opportunity_type:$("oppType").value,title:$("oppTitle").value.trim(),organisation:$("oppOrganisation").value.trim(),description:$("oppDescription").value.trim(),requirements:$("oppRequirements").value.trim(),eligibility:$("oppEligibility").value.trim(),location:$("oppLocation").value.trim(),is_remote:$("oppRemote").checked,application_url:url||null,application_deadline:$("oppDeadline").value||null,status:$("oppStatus").value,created_by:admin.id});
+ btn.disabled=false;if(r.error){message("oppMessage","Opportunity could not be saved: "+r.error.message);return;}
+ $("opportunityForm").reset();message("oppMessage","✓ Opportunity created. Review its details before publishing.");await loadOpportunities();await refreshMetrics();
+});
+async function loadApplications(){
+ const root=$("applicationList"),r=await db.from("dcds_career_applications").select("id,opportunity_id,student_user_id,resume_url,portfolio_url,cover_note,status,admin_feedback,created_at").order("created_at",{ascending:false}).limit(200);
+ if(r.error)throw r.error;root.replaceChildren();if(!r.data?.length){notice(root,"No student applications have been submitted yet.");return;}
+ const ids=[...new Set(r.data.map(x=>x.opportunity_id))];let names=new Map();
+ if(ids.length){const x=await db.from("dcds_career_opportunities").select("id,title,organisation").in("id",ids);if(x.error)throw x.error;names=new Map((x.data||[]).map(o=>[o.id,o]));}
+ r.data.forEach(a=>{
+  const card=document.createElement("article");card.className="card";const o=names.get(a.opportunity_id);
+  const meta=document.createElement("div");meta.className="meta";const pill=document.createElement("span");pill.className="pill "+(["offered","shortlisted","interview"].includes(a.status)?"good":a.status==="rejected"?"warn":"");pill.textContent=labels[a.status]||a.status;const date=document.createElement("span");date.textContent=dateText(a.created_at);meta.append(pill,date);
+  const h=document.createElement("h3");h.textContent=(o?.title||"Opportunity")+(o?.organisation?" · "+o.organisation:"");
+  const student=document.createElement("p");student.className="small";student.textContent="Student account reference: "+a.student_user_id;
+  const note=document.createElement("p");note.textContent=a.cover_note||"No cover note supplied.";
+  const links=document.createElement("div");links.className="actions";
+  [[a.resume_url,"Open CV / Resume"],[a.portfolio_url,"Open portfolio"]].forEach(([url,label])=>{if(url&&validUrl(url)){const l=document.createElement("a");l.className="link";l.href=url;l.target="_blank";l.rel="noopener noreferrer";l.textContent=label+" ↗";links.appendChild(l);}});
+  const form=document.createElement("form");form.className="form";form.dataset.applicationId=a.id;
+  const row=document.createElement("div");row.className="row";
+  const statusLabel=document.createElement("label");statusLabel.textContent="Application status";const sel=document.createElement("select");sel.className="inline";
+  ["submitted","reviewing","shortlisted","interview","offered","rejected","withdrawn"].forEach(v=>{const opt=document.createElement("option");opt.value=v;opt.textContent=labels[v];sel.appendChild(opt);});sel.value=a.status;statusLabel.appendChild(sel);
+  const feedbackLabel=document.createElement("label");feedbackLabel.textContent="Student-facing feedback";const feedback=document.createElement("textarea");feedback.className="inline";feedback.maxLength=2000;feedback.value=a.admin_feedback||"";feedbackLabel.appendChild(feedback);row.append(statusLabel,feedbackLabel);
+  const btn=document.createElement("button");btn.className="btn";btn.type="submit";btn.textContent="Save application update";const msg=document.createElement("div");msg.className="status-line";form.append(row,btn,msg);
+  card.append(meta,h,student,note,links,form);root.appendChild(card);
+ });
+}
+$("applicationList").addEventListener("submit",async e=>{
+ const form=e.target.closest("form[data-application-id]");if(!form)return;e.preventDefault();
+ const status=form.querySelector("select").value,feedback=form.querySelector("textarea").value.trim(),btn=form.querySelector("button"),msg=form.querySelector(".status-line");btn.disabled=true;msg.textContent="Saving application update…";
+ const r=await db.from("dcds_career_applications").update({status,admin_feedback:feedback||null,updated_at:new Date().toISOString()}).eq("id",form.dataset.applicationId);
+ btn.disabled=false;if(r.error){msg.textContent="Application update failed: "+r.error.message;return;}msg.textContent="✓ Student application updated.";await refreshMetrics();
+});
+async function loadOutcomes(){
+ const root=$("outcomeList"),r=await db.from("dcds_graduate_outcomes").select("student_user_id,outcome_type,job_title,organisation,industry,location,employment_type,started_on,consent_to_aggregate,updated_at").order("updated_at",{ascending:false}).limit(150);
+ if(r.error)throw r.error;root.replaceChildren();const consented=(r.data||[]).filter(x=>x.consent_to_aggregate);
+ const groups=new Map();consented.forEach(x=>groups.set(x.outcome_type,(groups.get(x.outcome_type)||0)+1));
+ $("outcomeSummary").replaceChildren();if(!groups.size){notice($("outcomeSummary"),"No students have opted into anonymous outcome reporting yet.");}
+ groups.forEach((n,k)=>{const c=document.createElement("article");c.className="card";const h=document.createElement("h3");h.textContent=String(n);const p=document.createElement("p");p.textContent=k.replaceAll("_"," ");c.append(h,p);$("outcomeSummary").appendChild(c);});
+ if(!r.data?.length){notice(root,"No graduate progress updates have been submitted yet.");return;}
+ r.data.forEach(x=>{
+  const c=document.createElement("article");c.className="card";const meta=document.createElement("div");meta.className="meta";const p1=document.createElement("span");p1.className="pill";p1.textContent=x.consent_to_aggregate?"Consented to anonymous statistics":"Private reporting only";const p2=document.createElement("span");p2.textContent="Updated "+dateText(x.updated_at);meta.append(p1,p2);
+  const h=document.createElement("h3");h.textContent=x.outcome_type.replaceAll("_"," ");const p=document.createElement("p");p.textContent=[x.job_title,x.organisation,x.industry,x.location].filter(Boolean).join(" · ")||"No role or organisation details provided.";
+  const ref=document.createElement("p");ref.className="small";ref.textContent="Student account reference: "+x.student_user_id;
+  c.append(meta,h,p,ref);root.appendChild(c);
+ });
+}
+async function loadOverview(){
+ const r=await db.from("dcds_graduate_outcomes").select("outcome_type,consent_to_aggregate").eq("consent_to_aggregate",true);
+ if(r.error){notice($("overviewSummary"),"Outcome summary could not be loaded.");return;}
+ const byType=new Map();(r.data||[]).forEach(x=>byType.set(x.outcome_type,(byType.get(x.outcome_type)||0)+1));
+ $("overviewSummary").replaceChildren();
+ const total=document.createElement("article");total.className="card";const h=document.createElement("h3");h.textContent=String(r.data?.length||0);const p=document.createElement("p");p.textContent="Students consenting to anonymous outcome reporting";total.append(h,p);$("overviewSummary").appendChild(total);
+ byType.forEach((n,k)=>{const c=document.createElement("article");c.className="card";const a=document.createElement("h3");a.textContent=String(n);const b=document.createElement("p");b.textContent=k.replaceAll("_"," ");c.append(a,b);$("overviewSummary").appendChild(c);});
+}
+async function init(){
+ const {data:{user},error}=await db.auth.getUser();if(error||!user){$("status").textContent="Please sign in using your DCDS administrator account.";return;}
+ const check=await db.from("dcds_admins").select("user_id").eq("user_id",user.id).maybeSingle();if(check.error)throw check.error;if(!check.data){$("status").textContent="Access denied. This workspace is restricted to registered DCDS administrators.";return;}admin=user;
+ $("status").hidden=true;$("app").hidden=false;
+ const first=await Promise.allSettled([loadMentors(),loadOpportunities(),refreshMetrics()]);
+ const failed=first.filter(x=>x.status==="rejected");if(failed.length){console.error("Career administration initial load:",failed);message("mentorMessage","One or more sections could not load. Refresh and check the database permissions.");}
+}
+$("requestList").addEventListener("focusin",()=>{});
+document.addEventListener("click",e=>{
+ const tab=e.target.closest("[data-tab]");if(!tab)return;
+ if(tab.dataset.tab==="requests")loadRequests().catch(err=>notice($("requestList"),"Could not load requests: "+err.message));
+ if(tab.dataset.tab==="applications")loadApplications().catch(err=>notice($("applicationList"),"Could not load applications: "+err.message));
+ if(tab.dataset.tab==="outcomes")loadOutcomes().catch(err=>notice($("outcomeList"),"Could not load outcomes: "+err.message));
+ if(tab.dataset.tab==="overview")loadOverview();
+});
+init().catch(error=>{console.error("DCDS Career Admin:",error);$("status").textContent="The administrator workspace could not load: "+error.message;});
+</script>
+</body></html>
