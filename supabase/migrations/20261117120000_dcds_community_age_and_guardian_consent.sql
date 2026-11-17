@@ -176,11 +176,6 @@ create trigger dcds_community_apply_guardian_consent
 after update of status on public.dcds_community_guardian_consents
 for each row execute function private.dcds_community_apply_guardian_consent();
 
-create table policy_community_age_review_dml_guard (
-  id integer primary key check (id=1)
-);
-drop table policy_community_age_review_dml_guard;
-
 create policy "DCDS admins manage private community age review evidence"
 on public.dcds_community_age_verification_reviews for select to authenticated
 using ((select public.is_dcds_admin()));
