@@ -153,11 +153,6 @@ alter table public.dcds_graduate_outcomes enable row level security;
 
 create policy "Students view own career profile and admins view all"
 on public.dcds_career_profiles for select to authenticated
-using (student_user_id = (select auth.uid()) or (select public.is_dcds_admin()));
--- The profile key is user_id, not student_user_id; keep ownership checks on the key.
-drop policy "Students view own career profile and admins view all" on public.dcds_career_profiles;
-create policy "Students view own career profile and admins view all"
-on public.dcds_career_profiles for select to authenticated
 using (user_id = (select auth.uid()) or (select public.is_dcds_admin()));
 create policy "Verified students create own career profile"
 on public.dcds_career_profiles for insert to authenticated
