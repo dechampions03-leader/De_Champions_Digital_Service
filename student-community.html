@@ -38,7 +38,7 @@ a.toplink{padding:9px 11px;border:1px solid var(--line);border-radius:10px;backg
 .card p{font-size:12px;line-height:1.65;color:#5e526b;margin:7px 0;overflow-wrap:anywhere;white-space:pre-wrap}
 .meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:10px;color:var(--muted);margin:0 0 8px}
 .pill{display:inline-flex;padding:5px 8px;border-radius:99px;background:#f1e5ff;color:#552080;font-size:10px;font-weight:850}
-.pill.good{background:#e8f7ed;color:var(--good)}.pill.warn{background:#fff1cc;color:#76551a}.pill.bad{background:#fff0f0;color:#9c2f2f}
+.pill.good{background:#e8f7ed;color:var(--good)}.pill.warn{background:#fff1cc;color:#76551a}.pill.bad{background:#fff0f0;color:#9c2f2f}.pill.official{background:#f7edc9;color:#684b08;border:1px solid #e6d79b}
 .form{display:grid;gap:10px;margin:14px 0}
 .form label{display:grid;gap:6px;font-size:11px;font-weight:850;color:var(--dark)}
 .form input,.form textarea,.form select{width:100%;min-width:0;border:1px solid #ded0ec;border-radius:10px;padding:11px 12px;background:#fff;color:var(--ink);font:500 13px 'DM Sans',sans-serif}
@@ -374,6 +374,16 @@ $("acceptCommunityRulesBtn").addEventListener("click",async()=>{
  setMsg("communityRulesMessage","✓ Rules accepted. Opening your community…");
  await initializeCommunity();
 });
+async function getOfficialStaffIds(ids){
+ const values=[...new Set((ids||[]).filter(Boolean))];
+ if(!values.length)return new Set();
+ const r=await db.rpc("dcds_community_official_staff_ids",{p_user_ids:values});
+ if(r.error){console.warn("DCDS verified staff lookup unavailable",r.error);return new Set();}
+ return new Set((r.data||[]).map(x=>x.user_id));
+}
+function appendOfficialBadge(parent){
+ const b=document.createElement("span");b.className="pill official";b.textContent="✓ Official DCDS Admin";parent.appendChild(b);
+}
 function clearChatRealtime(){if(chatChannel){db.removeChannel(chatChannel);chatChannel=null;}}
 function clearRealtime(){clearChatRealtime();if(feedChannel){db.removeChannel(feedChannel);feedChannel=null;}}
 async function subscribeCommunityFeed(){
@@ -430,12 +440,14 @@ async function loadMessages(){
  if(!currentRoom)return;
  const root=$("chatMessages");const r=await db.from("dcds_community_messages").select("id,room_id,author_id,body,status,created_at").eq("room_id",currentRoom.id).order("created_at",{ascending:true}).limit(100);
  if(r.error){showNotice(root,"Group messages could not be loaded: "+r.error.message);return;}
- const msgs=r.data||[],ids=[...new Set(msgs.map(x=>x.author_id).filter(x=>x!==user.id))];let names=new Map();
+ const msgs=r.data||[],ids=[...new Set(msgs.map(x=>x.author_id).filter(x=>x!==user.id))],allAuthors=[...new Set(msgs.map(x=>x.author_id))];let names=new Map();
  if(ids.length){const p=await db.from("dcds_community_profiles").select("user_id,display_name").in("user_id",ids);if(!p.error)names=new Map((p.data||[]).map(x=>[x.user_id,x.display_name]));}
+ const staffIds=await getOfficialStaffIds(allAuthors);
  root.replaceChildren();if(!msgs.length){showNotice(root,"No messages in this room yet. Be the first to share a helpful message.");return;}
  msgs.forEach(m=>{
   const box=document.createElement("article");box.className="chat-message"+(m.author_id===user.id?" mine":"");
   const who=document.createElement("div");who.className="who";who.textContent=m.author_id===user.id?"You":(names.get(m.author_id)||"DCDS learner");
+  if(staffIds.has(m.author_id))appendOfficialBadge(who);
   const badge=document.createElement("span");badge.className="pill "+(m.status==="pending"?"warn":"good");badge.textContent=m.status==="pending"?"Awaiting review":m.status==="hidden"?"Hidden":m.status==="removed"?"Removed":"Published";who.appendChild(badge);
   const body=document.createElement("div");body.className="body";body.textContent=m.body;
   const when=document.createElement("div");when.className="when";when.textContent=timeText(m.created_at);
@@ -551,6 +563,7 @@ async function loadPosts(){
  if(replyRes.error||reactionRes.error){showNotice(root,"Post conversations could not be loaded. Please refresh the Lounge.");return;}
  const profileIds=[...new Set([...r.data.map(x=>x.author_id),...(replyRes.data||[]).map(x=>x.author_id)])];
  const profileRes=profileIds.length?await db.from("dcds_community_profiles").select("user_id,display_name").in("user_id",profileIds):{data:[],error:null};
+ const staffIds=await getOfficialStaffIds(profileIds);
  const repliesBy=new Map(),reactionsBy=new Map(),names=new Map((profileRes.data||[]).map(x=>[x.user_id,x.display_name]));
  (replyRes.data||[]).forEach(x=>{const a=repliesBy.get(x.post_id)||[];a.push(x);repliesBy.set(x.post_id,a);});
  (reactionRes.data||[]).forEach(x=>{const a=reactionsBy.get(x.post_id)||[];a.push(x);reactionsBy.set(x.post_id,a);});
@@ -561,7 +574,7 @@ async function loadPosts(){
   const type=document.createElement("span");type.className="pill";type.textContent=postTypes[p.post_type]||"Community post";
   const status=document.createElement("span");status.className="pill "+(p.status==="approved"?"good":"warn");status.textContent=p.status.replaceAll("_"," ");
   const author=document.createElement("span");author.textContent=p.author_id===user.id?"You":(names.get(p.author_id)||"DCDS learner");
-  const room=rooms.find(x=>x.id===p.room_id);meta.append(type,status,author);if(room?.room_type==="course_qna"){const channel=document.createElement("span");channel.className="pill";channel.textContent=room.title;meta.append(channel);}card.append(meta);
+  const room=rooms.find(x=>x.id===p.room_id);meta.append(type,status,author);if(staffIds.has(p.author_id))appendOfficialBadge(meta);if(room?.room_type==="course_qna"){const channel=document.createElement("span");channel.className="pill";channel.textContent=room.title;meta.append(channel);}card.append(meta);
   addText(card,"h3",p.title);if(p.body)addText(card,"p",p.body);
   if(p.attachment_path){const b=document.createElement("button");b.className="btn secondary";b.textContent="View project image";b.addEventListener("click",async()=>{const s=await db.storage.from("dcds-community-posts").createSignedUrl(p.attachment_path,300);if(s.error){alert("Preview unavailable: "+s.error.message);return;}window.open(s.data.signedUrl,"_blank","noopener,noreferrer");});card.appendChild(b);}
   if(p.status==="approved"){
@@ -579,6 +592,7 @@ async function loadPosts(){
    children.forEach(x=>{
     const row=document.createElement("div");row.className="credential-row";
     const who=addText(row,"strong",x.author_id===user.id?"You":(names.get(x.author_id)||"DCDS learner"));
+    if(staffIds.has(x.author_id))appendOfficialBadge(row);
     addText(row,"span",x.status==="visible"?"Published":"Awaiting review","pill "+(x.status==="visible"?"good":"warn"));
     addText(row,"p",x.body);
     if(x.status==="visible"&&x.author_id!==user.id){
