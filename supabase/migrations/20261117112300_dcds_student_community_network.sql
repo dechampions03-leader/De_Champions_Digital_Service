@@ -68,7 +68,7 @@ create index dcds_community_memberships_user_idx
   on public.dcds_community_memberships(user_id,status,room_id);
 
 -- A private helper exposes only a same-cohort boolean, never the other student's age band.
-create or replace function private.dcds_community_same_cohort(p_other_user_id uuid)
+create or replace function private.dcds_community_same_cohort(p_other_user_id text)
 returns boolean
 language sql
 stable
@@ -81,14 +81,14 @@ as $$
     join public.dcds_community_access viewer_access
       on viewer_access.cohort = owner_access.cohort
      and viewer_access.status = 'active'
-    where owner_access.user_id = p_other_user_id
+    where owner_access.user_id::text = p_other_user_id
       and owner_access.status = 'active'
       and viewer_access.user_id = (select auth.uid())
   );
 $$;
-revoke all on function private.dcds_community_same_cohort(uuid) from public,anon;
+revoke all on function private.dcds_community_same_cohort(text) from public,anon;
 grant usage on schema private to authenticated;
-grant execute on function private.dcds_community_same_cohort(uuid) to authenticated;
+grant execute on function private.dcds_community_same_cohort(text) to authenticated;
 
 -- Admin approval provisions only the exact cohort that was independently age-reviewed.
 create or replace function private.dcds_sync_community_access_request()
@@ -193,12 +193,12 @@ create table public.dcds_community_profiles (
   skill_tags text[] not null default '{}',
   interest_tags text[] not null default '{}',
   avatar_path text,
-  visibility text not null default 'cohort' check (visibility in ('cohort','private')),
+  visibility text not null default 'private' check (visibility in ('cohort','private','pending_review')),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now(),
   check (cardinality(skill_tags) <= 20),
   check (cardinality(interest_tags) <= 20),
-  check (avatar_path is null or avatar_path like user_id::text || '/%')
+  check (avatar_path is null or avatar_path like (user_id::text || '/%'))
 );
 create index dcds_community_profiles_visibility_idx
   on public.dcds_community_profiles(visibility,updated_at desc);
@@ -210,7 +210,7 @@ create table public.dcds_community_credentials (
   title text not null check (char_length(trim(title)) between 2 and 160),
   issuer text not null default '' check (char_length(trim(issuer)) <= 160),
   issued_year integer check (issued_year is null or issued_year between 1950 and 2100),
-  storage_path text not null check (storage_path like user_id::text || '/%'),
+  storage_path text not null check (storage_path like (user_id::text || '/%')),
   verification_status text not null default 'pending' check (verification_status in ('pending','verified','rejected')),
   review_note text check (review_note is null or char_length(review_note) <= 500),
   reviewed_by uuid references auth.users(id) on delete set null,
@@ -227,13 +227,15 @@ create table public.dcds_community_posts (
   author_id uuid not null references auth.users(id) on delete cascade,
   title text not null check (char_length(trim(title)) between 3 and 140),
   body text not null default '' check (char_length(body) <= 2500),
-  attachment_path text check (attachment_path is null or attachment_path like author_id::text || '/%'),
+  attachment_path text check (attachment_path is null or attachment_path like (author_id::text || '/%')),
   status text not null default 'pending' check (status in ('pending','approved','hidden','rejected')),
   moderator_note text check (moderator_note is null or char_length(moderator_note) <= 500),
   reviewed_by uuid references auth.users(id) on delete set null,
   reviewed_at timestamptz,
   created_at timestamptz not null default now(),
-  updated_at timestamptz not null default now()
+  updated_at timestamptz not null default now(),
+  constraint dcds_community_posts_no_external_links
+    check (body !~* '(https?://|www\.|t\.me/|wa\.me/|bit\.ly/|tinyurl\.com)')
 );
 create index dcds_community_posts_room_idx
   on public.dcds_community_posts(room_id,status,created_at desc);
@@ -246,7 +248,7 @@ create table public.dcds_community_messages (
   status text not null default 'visible' check (status in ('pending','visible','hidden','removed')),
   created_at timestamptz not null default now(),
   constraint dcds_community_no_external_links
-    check (body !~* '(https?://|www\\.|t\\.me/|wa\\.me/|bit\\.ly/|tinyurl\\.com)')
+    check (body !~* '(https?://|www\.|t\.me/|wa\.me/|bit\.ly/|tinyurl\.com)')
 );
 create index dcds_community_messages_room_idx
   on public.dcds_community_messages(room_id,created_at desc);
@@ -271,7 +273,9 @@ begin
     raise exception 'This community room is unavailable.';
   end if;
 
-  if room_cohort = 'teen_13_17' then
+  if (select public.is_dcds_admin()) then
+    new.status := 'visible';
+  elsif room_cohort = 'teen_13_17' then
     new.status := 'pending';
   else
     new.status := 'visible';
@@ -315,7 +319,7 @@ create table public.dcds_community_reports (
   reporter_user_id uuid not null references auth.users(id) on delete cascade,
   reported_user_id uuid not null references auth.users(id) on delete cascade,
   room_id uuid not null references public.dcds_community_rooms(id) on delete cascade,
-  object_type text not null check (object_type in ('message','post','profile')),
+  object_type text not null check (object_type in ('message','post')),
   object_id uuid not null,
   reason text not null check (reason in ('spam','scam_or_money_request','harassment','impersonation','unsafe_content','other')),
   details text not null default '' check (char_length(details) <= 1500),
@@ -544,13 +548,14 @@ using (
   or (select public.is_dcds_admin())
   or (
     visibility = 'cohort'
-    and (select private.dcds_community_same_cohort(user_id))
+    and (select private.dcds_community_same_cohort(user_id::text))
   )
 );
 create policy "Students create own community profile"
 on public.dcds_community_profiles for insert to authenticated
 with check (
   user_id = (select auth.uid())
+  and visibility in ('private','pending_review')
   and exists (select 1 from public.dcds_community_access a
     where a.user_id = (select auth.uid()) and a.status = 'active')
   and (avatar_path is null or avatar_path like (select auth.uid())::text || '/%')
@@ -560,6 +565,7 @@ on public.dcds_community_profiles for update to authenticated
 using (user_id = (select auth.uid()) or (select public.is_dcds_admin()))
 with check (
   (user_id = (select auth.uid())
+    and visibility in ('private','pending_review')
     and exists (select 1 from public.dcds_community_access a
       where a.user_id = (select auth.uid()) and a.status = 'active')
     and (avatar_path is null or avatar_path like (select auth.uid())::text || '/%'))
@@ -600,6 +606,11 @@ using (
       where m.room_id = dcds_community_posts.room_id
         and m.user_id = (select auth.uid())
         and m.status = 'active'
+    )
+    and not exists (
+      select 1 from public.dcds_community_blocks b
+      where b.blocker_user_id = (select auth.uid())
+        and b.blocked_user_id = dcds_community_posts.author_id
     )
   )
 );
@@ -647,22 +658,17 @@ using (
     and status = 'pending'
   )
 );
-create policy "Room members send messages without external links"
+create policy "Room members and DCDS admins send moderated messages"
 on public.dcds_community_messages for insert to authenticated
 with check (
   author_id = (select auth.uid())
-  and (select private.dcds_is_verified_ai_user())
-  and exists (
+  and ((select public.is_dcds_admin()) or (select private.dcds_is_verified_ai_user()))
+  and ((select public.is_dcds_admin()) or exists (
     select 1 from public.dcds_community_memberships m
     where m.room_id = dcds_community_messages.room_id
       and m.user_id = (select auth.uid())
       and m.status = 'active'
-  )
-  and not exists (
-    select 1 from public.dcds_community_blocks b
-    where b.blocker_user_id = (select auth.uid())
-      and b.blocked_user_id = dcds_community_messages.author_id
-  )
+  ))
 );
 create policy "DCDS admins moderate community messages"
 on public.dcds_community_messages for update to authenticated
@@ -706,14 +712,14 @@ with check (
   and (
     (object_type = 'message' and exists (
       select 1 from public.dcds_community_messages x
-      where x.id = object_id and x.room_id = room_id
-        and x.author_id = reported_user_id and x.status = 'visible'
+      where x.id = dcds_community_reports.object_id and x.room_id = dcds_community_reports.room_id
+        and x.author_id = dcds_community_reports.reported_user_id and x.status = 'visible'
     ))
     or
     (object_type = 'post' and exists (
       select 1 from public.dcds_community_posts x
-      where x.id = object_id and x.room_id = room_id
-        and x.author_id = reported_user_id and x.status = 'approved'
+      where x.id = dcds_community_reports.object_id and x.room_id = dcds_community_reports.room_id
+        and x.author_id = dcds_community_reports.reported_user_id and x.status = 'approved'
     ))
   )
 );
@@ -808,7 +814,7 @@ using (
     split_part(name,'/',1) = (select auth.uid())::text
     or (select public.is_dcds_admin())
     or (
-      (select private.dcds_community_same_cohort(split_part(name,'/',1)::uuid))
+      (select private.dcds_community_same_cohort(split_part(name,'/',1)))
       and exists (
         select 1 from public.dcds_community_profiles p
         where p.user_id::text = split_part(storage.objects.name,'/',1)
