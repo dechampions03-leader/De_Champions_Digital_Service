@@ -78,6 +78,8 @@ header a,.link{display:inline-flex;align-items:center;gap:6px;padding:9px 11px;b
 <section class="panel" id="tab-mentors" hidden>
 <h2>Find a Mentor</h2><p class="sub">Browse DCDS-listed mentors and send a private request describing the guidance you need. Mentorship requests are coordinated by DCDS; a mentor is not assigned until your request is reviewed.</p>
 <div id="mentorList" class="grid"><div class="notice">Loading the mentor directory…</div></div><div id="mentorMessage" class="status-line" role="status"></div>
+<h2 style="margin-top:22px">My Mentorship Requests</h2><p class="sub">Check whether your request is pending, accepted or scheduled. Your private session link appears here when DCDS has arranged it.</p>
+<div id="myMentorRequests" class="stack"><div class="notice">Loading your mentorship requests…</div></div>
 </section>
 <section class="panel" id="tab-opportunities" hidden>
 <h2>Career Opportunities</h2><p class="sub">Explore opportunities curated by DCDS. Always review the organisation, eligibility requirements and deadline before applying. DCDS does not guarantee selection, employment or income.</p>
@@ -144,6 +146,26 @@ async function loadCareerTracks(){
  root.replaceChildren();if(!r.data?.length){notice(root,"No career learning pathways are published yet.");return;}
  r.data.forEach(p=>{const card=document.createElement("article");card.className="card";const h=document.createElement("h3");h.textContent=p.title;const d=document.createElement("p");d.textContent=p.summary;const courses=document.createElement("p");courses.className="small";courses.textContent=(p.course_slugs||[]).join(" · ");const a=document.createElement("a");a.className="btn secondary";a.href="student-learning-centre.html";a.textContent="Explore DCDS learning paths";card.append(h,d,courses,a);root.appendChild(card);});
 }
+async function loadMentorRequests(){
+ const root=$("myMentorRequests");
+ const r=await db.from("dcds_mentorship_requests").select("id,mentor_id,goal,status,scheduled_at,meeting_url,admin_feedback,created_at").eq("student_user_id",user.id).order("created_at",{ascending:false}).limit(40);
+ if(r.error){notice(root,"Your mentorship requests could not be loaded.");return;}
+ root.replaceChildren();if(!r.data?.length){notice(root,"You have not requested a mentor yet.");return;}
+ const ids=[...new Set(r.data.map(x=>x.mentor_id))];let names=new Map();
+ if(ids.length){const m=await db.from("dcds_mentors").select("id,display_name").in("id",ids);if(!m.error)names=new Map((m.data||[]).map(x=>[x.id,x.display_name]));}
+ r.data.forEach(x=>{
+  const card=document.createElement("article");card.className="card";
+  const h=document.createElement("h3");h.textContent=names.get(x.mentor_id)||"DCDS Mentor";
+  const meta=document.createElement("div");meta.className="meta";const pill=document.createElement("span");pill.className="pill "+(["accepted","scheduled","completed"].includes(x.status)?"good":x.status==="declined"?"warn":"");pill.textContent=statusLabel(x.status);const date=document.createElement("span");date.textContent="Requested "+dateText(x.created_at);meta.append(pill,date);
+  const goal=document.createElement("p");goal.textContent=x.goal;
+  card.append(meta,h,goal);
+  if(x.scheduled_at){const when=document.createElement("p");when.className="small";when.textContent="Session: "+dateText(x.scheduled_at);card.appendChild(when);}
+  if(x.admin_feedback){const feedback=document.createElement("p");feedback.textContent="DCDS update: "+x.admin_feedback;card.appendChild(feedback);}
+  if(x.meeting_url&&validUrl(x.meeting_url)&&["accepted","scheduled"].includes(x.status)){const link=document.createElement("a");link.className="btn";link.href=x.meeting_url;link.target="_blank";link.rel="noopener noreferrer";link.textContent="Open mentoring session ↗";card.appendChild(link);}
+  if(["pending","accepted","scheduled"].includes(x.status)){const cancel=document.createElement("button");cancel.className="btn secondary";cancel.type="button";cancel.textContent="Cancel request";cancel.addEventListener("click",async()=>{if(!confirm("Cancel this mentorship request?"))return;cancel.disabled=true;const u=await db.from("dcds_mentorship_requests").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("id",x.id).eq("student_user_id",user.id);if(u.error){cancel.disabled=false;alert("The request could not be cancelled: "+u.error.message);return;}await loadMentorRequests();});card.appendChild(cancel);}
+  root.appendChild(card);
+ });
+}
 async function loadMentors(){
  const root=$("mentorList");const r=await db.from("dcds_mentors").select("id,display_name,professional_title,biography,expertise,industry,years_experience,timezone,availability,public_profile_url").eq("status","active").order("display_name");
  if(r.error){notice(root,"The mentor directory could not be loaded. Please refresh and try again.");return;}
@@ -174,10 +196,10 @@ $("mentorList").addEventListener("submit",async e=>{
  button.disabled=true;status.textContent="Sending your request…";
  const r=await db.from("dcds_mentorship_requests").insert({mentor_id:form.dataset.mentorId,student_user_id:user.id,goal,message:note,preferred_schedule:schedule,status:"pending"});
  button.disabled=false;if(r.error){status.textContent="Your request could not be sent: "+r.error.message;return;}
- form.reset();status.textContent="✓ Request sent. DCDS will review and coordinate the next step.";
+ form.reset();status.textContent="✓ Request sent. DCDS will review and coordinate the next step.";await loadMentorRequests();
 });
 async function loadOpportunities(){
- const root=$("opportunityList");const r=await db.from("dcds_career_opportunities").select("id,opportunity_type,title,organisation,description,requirements,eligibility,location,is_remote,application_url,application_deadline").eq("status","published").order("application_deadline",{ascending:true,nullsFirst:false}).limit(100);
+ const root=$("opportunityList");const today=new Date().toISOString().slice(0,10);const r=await db.from("dcds_career_opportunities").select("id,opportunity_type,title,organisation,description,requirements,eligibility,location,is_remote,application_url,application_deadline").eq("status","published").or("application_deadline.is.null,application_deadline.gte."+today).order("application_deadline",{ascending:true,nullsFirst:false}).limit(100);
  if(r.error){notice(root,"The opportunity board could not be loaded. Please refresh and try again.");return;}
  opportunities=r.data||[];root.replaceChildren();if(!opportunities.length){notice(root,"There are no current opportunities listed. DCDS will add verified listings when partners and opportunities are confirmed.");return;}
  const existing=new Set(applications.filter(a=>a.status!=="withdrawn").map(a=>a.opportunity_id));
@@ -258,7 +280,7 @@ async function init(){
  fillProfile(results[0].data);outcome=results[1].data;
  $("status").hidden=true;$("app").hidden=false;
  await loadOutcome();
- const work=await Promise.allSettled([loadCareerTracks(),loadMentors(),loadApplications()]);
+ const work=await Promise.allSettled([loadCareerTracks(),loadMentors(),loadApplications(),loadMentorRequests()]);
  const bad=work.filter(x=>x.status==="rejected");if(bad.length)console.warn("Some career sections did not load:",bad);
  // Opportunities depend on the application list being known so duplicate applications are not encouraged.
  await loadOpportunities();
