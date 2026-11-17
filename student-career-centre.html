@@ -82,7 +82,7 @@ header a,.link{display:inline-flex;align-items:center;gap:6px;padding:9px 11px;b
 <div id="myMentorRequests" class="stack"><div class="notice">Loading your mentorship requests…</div></div>
 </section>
 <section class="panel" id="tab-opportunities" hidden>
-<h2>Career Opportunities</h2><p class="sub">Explore opportunities curated by DCDS. Always review the organisation, eligibility requirements and deadline before applying. DCDS does not guarantee selection, employment or income.</p>
+<h2>Career Opportunities</h2><p class="sub">Explore opportunities curated by DCDS. Always review the organisation, eligibility requirements and deadline before applying. DCDS does not guarantee selection, employment or income.</p><div class="notice">An application saved here is an expression of interest to DCDS. It is not automatically sent to the employer or scholarship provider. Use any external application link and follow the organisation's instructions as well.</div>
 <div class="track"><span class="pill">Internships</span><span class="pill">Jobs</span><span class="pill">Freelance</span><span class="pill">Scholarships</span><span class="pill">Apprenticeships</span></div>
 <div id="opportunityList" class="stack" style="margin-top:12px"><div class="notice">Loading current opportunities…</div></div><div id="opportunityMessage" class="status-line" role="status"></div>
 </section>
@@ -202,7 +202,7 @@ async function loadOpportunities(){
  const root=$("opportunityList");const today=new Date().toISOString().slice(0,10);const r=await db.from("dcds_career_opportunities").select("id,opportunity_type,title,organisation,description,requirements,eligibility,location,is_remote,application_url,application_deadline").eq("status","published").or("application_deadline.is.null,application_deadline.gte."+today).order("application_deadline",{ascending:true,nullsFirst:false}).limit(100);
  if(r.error){notice(root,"The opportunity board could not be loaded. Please refresh and try again.");return;}
  opportunities=r.data||[];root.replaceChildren();if(!opportunities.length){notice(root,"There are no current opportunities listed. DCDS will add verified listings when partners and opportunities are confirmed.");return;}
- const existing=new Set(applications.filter(a=>a.status!=="withdrawn").map(a=>a.opportunity_id));
+ const existing=new Set(applications.map(a=>a.opportunity_id));
  opportunities.forEach(o=>{
   const card=document.createElement("article");card.className="card";
   const meta=document.createElement("div");meta.className="meta";[o.opportunity_type.replace("_"," "),o.is_remote?"Remote":(o.location||"Location not specified"),o.application_deadline?"Deadline: "+o.application_deadline:"No deadline listed"].forEach(t=>{const span=document.createElement("span");span.className="pill";span.textContent=t;meta.appendChild(span);});
@@ -221,7 +221,7 @@ async function loadOpportunities(){
    const cvLabel=document.createElement("label");cvLabel.textContent="CV / Resume link";const cv=document.createElement("input");cv.type="url";cv.placeholder="https://…";cv.value=$("resumeUrl").value.trim();cvLabel.appendChild(cv);
    const portfolioLabel=document.createElement("label");portfolioLabel.textContent="Portfolio link";const portfolio=document.createElement("input");portfolio.type="url";portfolio.placeholder="https://…";portfolio.value=$("portfolioUrl").value.trim();portfolioLabel.appendChild(portfolio);
    row.append(cvLabel,portfolioLabel);
-   const submit=document.createElement("button");submit.type="submit";submit.className="btn";submit.textContent="Submit application through DCDS";
+   const submit=document.createElement("button");submit.type="submit";submit.className="btn";submit.textContent="Send interest to DCDS";
    const st=document.createElement("div");st.className="status-line";
    form.append(coverLabel,row,submit,st);card.appendChild(form);
   }
