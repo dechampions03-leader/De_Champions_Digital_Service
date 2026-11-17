@@ -219,7 +219,7 @@ const tagArray=v=>[...new Set(String(v||"").split(",").map(x=>x.trim()).filter(B
 const setMsg=(id,v)=>$(id).textContent=v;
 const showNotice=(node,v)=>{node.replaceChildren();const el=document.createElement("div");el.className="notice";el.textContent=v;node.appendChild(el);};
 const addText=(node,tag,text,cls)=>{const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=text;node.appendChild(el);return el;};
-let user=null,access=null,ageRequest=null,profile=null,rooms=[],currentRoom=null,chatChannel=null,guardianRequests=[],registrations=new Set();
+let user=null,access=null,ageRequest=null,profile=null,rooms=[],currentRoom=null,chatChannel=null,feedChannel=null,guardianRequests=[],registrations=new Set();
 
 function setTab(tab){
  document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===tab)));
@@ -329,7 +329,16 @@ $("acceptCommunityRulesBtn").addEventListener("click",async()=>{
  setMsg("communityRulesMessage","✓ Rules accepted. Opening your community…");
  await initializeCommunity();
 });
-function clearRealtime(){if(chatChannel){db.removeChannel(chatChannel);chatChannel=null;}}
+function clearChatRealtime(){if(chatChannel){db.removeChannel(chatChannel);chatChannel=null;}}
+function clearRealtime(){clearChatRealtime();if(feedChannel){db.removeChannel(feedChannel);feedChannel=null;}}
+async function subscribeCommunityFeed(){
+ if(feedChannel)return;
+ feedChannel=db.channel("dcds-community-feed")
+  .on("postgres_changes",{event:"*",schema:"public",table:"dcds_community_posts"},()=>loadPosts())
+  .on("postgres_changes",{event:"*",schema:"public",table:"dcds_community_post_replies"},()=>loadPosts())
+  .on("postgres_changes",{event:"*",schema:"public",table:"dcds_community_post_reactions"},()=>loadPosts())
+  .subscribe();
+}
 async function initializeCommunity(){
  const a=await db.from("dcds_community_access").select("user_id,cohort,status").eq("user_id",user.id).single();
  if(a.error)throw a.error;access=a.data;
@@ -345,6 +354,7 @@ async function initializeCommunity(){
  const q=await db.from("dcds_community_rooms").select("id,slug,cohort,room_type,title,description,sort_order").eq("cohort",access.cohort).eq("is_active",true).order("sort_order");
  if(q.error)throw q.error;rooms=q.data||[];
  await Promise.all([loadProfile(),loadPosts(),loadCredentials(),loadEvents()]);
+ await subscribeCommunityFeed();
  renderRooms();
  if(rooms.length)await selectRoom(rooms[0].id);
 }
@@ -357,7 +367,7 @@ function renderRooms(){
 }
 function refreshRoomButtons(){document.querySelectorAll(".room-btn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.id===currentRoom?.id)));}
 async function selectRoom(id){
- clearRealtime();currentRoom=rooms.find(r=>r.id===id);if(!currentRoom)return;
+ clearChatRealtime();currentRoom=rooms.find(r=>r.id===id);if(!currentRoom)return;
  refreshRoomButtons();$("roomTitle").textContent=currentRoom.title+" · "+(access.cohort==="teen_13_17"?"Teen-only group":"Adult group");
  await loadMessages();
  chatChannel=db.channel("dcds-community-room-"+id)
