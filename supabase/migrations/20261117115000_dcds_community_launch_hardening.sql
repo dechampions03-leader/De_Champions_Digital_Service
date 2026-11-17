@@ -105,8 +105,8 @@ declare
   v_old_status text;
   v_new_status text;
 begin
-  v_old_status := old_json ->> 'status';
-  v_new_status := new_json ->> 'status';
+  v_old_status := coalesce(old_json ->> 'status',old_json ->> 'verification_status');
+  v_new_status := coalesce(new_json ->> 'status',new_json ->> 'verification_status');
 
   if v_old_status is not distinct from v_new_status or (select auth.uid()) is null then
     return new;
