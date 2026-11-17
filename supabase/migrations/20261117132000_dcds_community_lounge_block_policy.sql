@@ -42,12 +42,11 @@ with check (
       and m.status='active'
   )
   and not exists (
-    select 1
-    from public.dcds_community_post_replies parent_reply
+    select 1 from public.dcds_community_posts p
     join public.dcds_community_blocks b
-      on (b.blocker_user_id=(select auth.uid()) and b.blocked_user_id=parent_reply.author_id)
-      or (b.blocker_user_id=parent_reply.author_id and b.blocked_user_id=(select auth.uid()))
-    where false
+      on (b.blocker_user_id=(select auth.uid()) and b.blocked_user_id=p.author_id)
+      or (b.blocker_user_id=p.author_id and b.blocked_user_id=(select auth.uid()))
+    where p.id=dcds_community_post_replies.post_id
   )
 );
 
@@ -93,11 +92,10 @@ with check (
       and m.status='active'
   )
   and not exists (
-    select 1 from public.dcds_community_post_reactions r
-    join public.dcds_community_posts p on p.id=r.post_id
+    select 1 from public.dcds_community_posts p
     join public.dcds_community_blocks b
       on (b.blocker_user_id=(select auth.uid()) and b.blocked_user_id=p.author_id)
       or (b.blocker_user_id=p.author_id and b.blocked_user_id=(select auth.uid()))
-    where r.post_id=dcds_community_post_reactions.post_id
+    where p.id=dcds_community_post_reactions.post_id
   )
 );
