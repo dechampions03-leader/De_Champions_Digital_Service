@@ -109,7 +109,28 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 </section>
 
 <section id="communityArea" hidden>
-<nav class="tabs" aria-label="Community sections">
+<section id="communityTerms" class="panel" hidden>
+<h2>Before entering the DCDS Community</h2>
+<p class="sub">Please read and accept the community rules. DCDS spaces are for learning, respectful collaboration and safe professional networking. Your age cohort is kept separate, group chat is moderated, and live sessions are hosted by authorised DCDS administrators.</p>
+<div class="notice">
+<strong>Community rules</strong>
+<ul>
+<li>Be respectful. No harassment, bullying, hate, threats or impersonation.</li>
+<li>No scams, unofficial money requests, investment promises or selling schemes.</li>
+<li>Never ask for or share passwords, OTPs, payment PINs, bank details or government ID numbers.</li>
+<li>Do not share external links in group chat, private contact details or another person's confidential work.</li>
+<li>Respect age-separated rooms. No attempts to contact or move conversations across age cohorts.</li>
+<li>Use report and block controls when needed. Do not retaliate against someone who reports a concern.</li>
+<li>Project posts and profile visibility may be reviewed by DCDS before classmates can see them.</li>
+<li>Live sessions are scheduled by DCDS. Do not record, screenshot or redistribute a session without explicit permission.</li>
+<li>DCDS may hide content or suspend community access while a safety concern is reviewed. Students may contact DCDS to appeal a decision.</li>
+</ul>
+</div>
+<label class="check" style="margin:14px 0"><input id="acceptCommunityRules" type="checkbox"> I have read and agree to follow the DCDS Community Rules and understand that my access may be restricted for safety reasons.</label>
+<button class="btn" id="acceptCommunityRulesBtn" type="button">Accept rules and enter community</button>
+<div id="communityRulesMessage" class="status-line" role="status"></div>
+</section>
+<nav class="tabs" id="communityTabs" aria-label="Community sections">
 <button type="button" data-tab="chat" aria-selected="true">💬 Group Chat</button>
 <button type="button" data-tab="showcase" aria-selected="false">🎨 Share Work</button>
 <button type="button" data-tab="profile" aria-selected="false">👤 My Profile</button>
@@ -117,7 +138,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <button type="button" data-tab="events" aria-selected="false">🎥 Live Events</button>
 </nav>
 
-<section class="panel" id="tab-chat">
+<section class="panel" id="tab-chat" hidden>
 <h2>Community Group Chat</h2><p class="sub">Group rooms only — no private student-to-student messages. External links, money requests, password/OTP requests and payment solicitation are not allowed. Teen messages are reviewed before classmates can see them.</p>
 <div id="roomList" class="rooms" aria-label="Your community rooms"></div>
 <div id="roomTitle" class="meta"></div>
@@ -293,11 +314,28 @@ $("requestCommunity").addEventListener("click",async()=>{
  setMsg("accessMessage","✓ Request sent. Your rooms will appear after DCDS approval.");await loadAgeState();
 });
 
+$("acceptCommunityRulesBtn").addEventListener("click",async()=>{
+ if(!$("acceptCommunityRules").checked){setMsg("communityRulesMessage","Please tick the agreement box after reading the rules.");return;}
+ const btn=$("acceptCommunityRulesBtn");btn.disabled=true;setMsg("communityRulesMessage","Recording your acceptance…");
+ const r=await db.from("dcds_community_rule_acceptances").insert({user_id:user.id,rules_version:"2026-11-17-v1"});
+ btn.disabled=false;
+ if(r.error){setMsg("communityRulesMessage","Acceptance could not be recorded: "+r.error.message);return;}
+ setMsg("communityRulesMessage","✓ Rules accepted. Opening your community…");
+ await initializeCommunity();
+});
 function clearRealtime(){if(chatChannel){db.removeChannel(chatChannel);chatChannel=null;}}
 async function initializeCommunity(){
  const a=await db.from("dcds_community_access").select("user_id,cohort,status").eq("user_id",user.id).single();
  if(a.error)throw a.error;access=a.data;
  if(!access||access.status!=="active"){showNotice($("status"),"Your community access is not active. Please refresh or contact DCDS.");$("app").hidden=true;return;}
+ const agreement=await db.from("dcds_community_rule_acceptances").select("rules_version").eq("user_id",user.id).eq("rules_version","2026-11-17-v1").maybeSingle();
+ if(agreement.error)throw agreement.error;
+ if(!agreement.data){
+  $("communityTerms").hidden=false;$("communityTabs").hidden=true;
+  document.querySelectorAll("#communityArea .panel[id^='tab-']").forEach(p=>p.hidden=true);
+  return;
+ }
+ $("communityTerms").hidden=true;$("communityTabs").hidden=false;setTab("chat");
  const q=await db.from("dcds_community_rooms").select("id,slug,cohort,room_type,title,description,sort_order").eq("cohort",access.cohort).eq("is_active",true).order("sort_order");
  if(q.error)throw q.error;rooms=q.data||[];
  await Promise.all([loadProfile(),loadPosts(),loadCredentials(),loadEvents()]);
