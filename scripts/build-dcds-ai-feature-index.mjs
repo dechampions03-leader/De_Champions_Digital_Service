@@ -131,17 +131,20 @@ for (const [path, audience] of inbound) {
   if (page.sections.length || page.description) candidates.set(path, page);
 }
 
-const previous = existsSync(OUTPUT) ? JSON.parse(readFileSync(OUTPUT, "utf8")) : { pages: [] };
+const hasPreviousIndex = existsSync(OUTPUT);
+const previous = hasPreviousIndex ? JSON.parse(readFileSync(OUTPUT, "utf8")) : { pages: [] };
 const previousPages = new Map((Array.isArray(previous.pages) ? previous.pages : []).map((page) => [page.path, page]));
 const pages = [...candidates.values()].sort((a, b) => a.path.localeCompare(b.path));
 const recentChanges = [];
 for (const page of pages) {
   const old = previousPages.get(page.path);
   if (!old) {
-    recentChanges.push({
-      type: "new_page", path: page.path, title: page.title,
-      audience: page.audience, added: page.sections.slice(0, 12),
-    });
+    if (hasPreviousIndex) {
+      recentChanges.push({
+        type: "new_page", path: page.path, title: page.title,
+        audience: page.audience, added: page.sections.slice(0, 12),
+      });
+    }
     continue;
   }
   const oldItems = new Set([...(old.sections || []), ...(old.actions || [])]);
