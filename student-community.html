@@ -95,14 +95,18 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 </form>
 <div class="notice danger"><strong>Under-13 protection:</strong> Under-13 accounts cannot join student social chat or live community calls. This is not an optional setting.</div>
 </div>
-<div id="guardianInbox" hidden>
-<hr><h3>Guardian consent requests</h3><p class="sub">These requests are for a young person who nominated your verified adult DCDS account. Only confirm if you are their parent or legally authorised guardian and you understand the community controls.</p>
-<div id="guardianRequests" class="stack"></div>
+
 </div>
 <div id="accessRequestArea" hidden>
 <hr><h3>Request community membership</h3><p class="sub">Your community age review is complete. Submit a separate membership request; an administrator must approve it before rooms become available.</p>
 <button class="btn" id="requestCommunity" type="button">Request DCDS community access</button><div id="accessMessage" class="status-line"></div>
 </div>
+</section>
+
+<section id="guardianInbox" class="panel" hidden>
+<h2>Guardian consent requests</h2>
+<p class="sub">These requests are for a young person who nominated your verified adult DCDS account. Confirm only if you are their parent or legally authorised guardian and you understand the community controls.</p>
+<div id="guardianRequests" class="stack"></div>
 </section>
 
 <section id="communityArea" hidden>
@@ -480,7 +484,6 @@ async function init(){
  $("status").hidden=true;$("app").hidden=false;
  await loadGuardianInbox();
  await loadAgeState();
- if(!$("communityArea").hidden){await initializeCommunity();}
 }
 init().catch(err=>{console.error("DCDS Student Community",err);$("status").hidden=false;$("status").textContent="The community page could not load safely. No community record was changed. Please return to the Student Dashboard or contact DCDS support.";});
 window.addEventListener("pagehide",clearRealtime);
