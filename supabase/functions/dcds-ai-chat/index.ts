@@ -110,8 +110,11 @@ async function loadLiveFeatureIndex(
     if (parsed.schema_version !== "1.0" || !Array.isArray(parsed.pages) || parsed.pages.length > 60) {
       throw new Error("Feature index has an unsupported format.");
     }
-    if (typeof parsed.generated_at !== "string" || typeof parsed.source_commit !== "string") {
-      throw new Error("Feature index is missing release provenance.");
+    if (typeof parsed.generated_at !== "string"
+      || Number.isNaN(Date.parse(parsed.generated_at))
+      || typeof parsed.source_commit !== "string"
+      || !/^[a-f0-9]{40}$/i.test(parsed.source_commit)) {
+      throw new Error("Feature index is missing valid release provenance.");
     }
     cachedFeatureIndex = { value: parsed, expiresAt: now + 3 * 60 * 1000 };
   }
@@ -122,7 +125,9 @@ async function loadLiveFeatureIndex(
     ? new Set(["public", "student"])
     : new Set(["public", "student", "admin"]);
   const pages = cachedFeatureIndex.value.pages.filter((page) =>
-    audience.has(page.audience)
+    Boolean(page)
+    && typeof page === "object"
+    && audience.has(page.audience)
     && safeFeatureText(page.title, 140)
     && typeof page.path === "string"
     && /^[a-z0-9-]+\.html$/i.test(page.path)
@@ -137,7 +142,9 @@ async function loadLiveFeatureIndex(
       .map((item) => safeFeatureText(item, 140)).filter(Boolean).slice(0, 28);
     const links = (Array.isArray(page.links) ? page.links : [])
       .filter((item) => item && typeof item.href === "string"
-        && !/^(?:https?:|mailto:|tel:|javascript:|data:)/i.test(item.href)
+        && /^(?:\.\/)?[a-z0-9_./#?=&%-]+$/i.test(item.href)
+        && !item.href.includes("..")
+        && !item.href.startsWith("//")
         && !/(payment|payout|withdraw|bank|delete-account|access-review|support-ticket|credentials?)/i.test(item.href))
       .map((item) => {
         const label = safeFeatureText(item.label, 120);
