@@ -181,10 +181,12 @@ let cachedGeminiModels: { names: string[]; expiresAt: number } | null = null;
 // whose Standard tier is explicitly listed as Free in Google's published pricing.
 // models.list reports API capability, not whether a model is included in this key's tier.
 const FREE_TIER_MODEL_PREFERENCE = [
+  // Start with Google's fast, cost-efficient Flash-Lite model for normal tutoring turns.
+  // Retain the stronger stable Flash models as strictly free-tier fallbacks.
+  "gemini-3.5-flash-lite",
   "gemini-3.8-flash",
   "gemini-3.7-flash",
   "gemini-3.6-flash",
-  "gemini-3.5-flash-lite",
   "gemini-3.1-flash-lite",
 ] as const;
 const STATIC_DOCUMENTED_MODELS = [...FREE_TIER_MODEL_PREFERENCE];
@@ -256,7 +258,7 @@ Deno.serve(async (request: Request) => {
       catch { return undefined; }
     })();
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-  const model = Deno.env.get("DCDS_AI_MODEL") || "gemini-3.8-flash";
+  const model = Deno.env.get("DCDS_AI_MODEL") || "gemini-3.5-flash-lite";
 
   if (!supabaseUrl || !publishableKey) {
     return respond({ success: false, error: "DCDS authentication is not configured." }, 503);
@@ -702,9 +704,12 @@ ${platformSearch.context}${savedMemoryInstruction}`;
   const dailyQuotaModels: string[] = [];
   const unavailableModels: string[] = [];
 
-  const generationDeadline = Date.now() + 18_000;
+  // The previous 18s total / 7s per-model guard aborted healthy but slower
+  // provider responses before all configured fallbacks could be reached.
+  // Keep the total well below Supabase Edge Function wall-clock limits.
+  const generationDeadline = Date.now() + 52_000;
   let attemptedModels = 0;
-  const maxModelAttempts = 5;
+  const maxModelAttempts = 4;
   const orderedCandidates = shouldUseGoogleSearch
     ? [
       ...modelCandidates.filter((candidate) => GOOGLE_SEARCH_MODELS.has(candidate)),
@@ -733,14 +738,20 @@ ${platformSearch.context}${savedMemoryInstruction}`;
                 ? { tools: [{ google_search: {} }] }
                 : {}),
             }),
-            signal: AbortSignal.timeout(Math.max(1000, Math.min(7000, generationDeadline - Date.now()))),
+            signal: AbortSignal.timeout(Math.max(1000, Math.min(14_000, generationDeadline - Date.now()))),
           },
         );
       } catch (error) {
-        lastProviderStatus = 502;
+        const isTimeout = error instanceof Error && /timeout|timed out|aborted/i.test(error.name + " " + error.message);
+        lastProviderStatus = isTimeout ? 504 : 502;
         unavailableModels.push(candidate);
         providerModelCooldowns.set(candidate, Date.now() + 30_000);
-        console.error("DCDS AI provider request failed.", { requestId, model: candidate, error: String(error).slice(0, 240) });
+        console.error("DCDS AI provider request failed.", {
+          requestId,
+          model: candidate,
+          failureType: isTimeout ? "client_timeout" : "network_error",
+          error: String(error).slice(0, 240),
+        });
         if (attempt + 1 < attempts) {
           await new Promise((resolve) => setTimeout(resolve, 500));
           continue;
