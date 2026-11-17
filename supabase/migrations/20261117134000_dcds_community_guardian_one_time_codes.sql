@@ -108,7 +108,7 @@ returns trigger
 language plpgsql
 security definer
 set search_path = ''
-as $
+as $function$
 begin
   if new.age_band='13_17' then
     insert into public.dcds_community_guardian_consents(
@@ -118,7 +118,7 @@ begin
   end if;
   return new;
 end;
-$;
+$function$;
 revoke all on function private.dcds_community_create_guardian_consent_request() from public,anon,authenticated;
 create trigger dcds_community_create_guardian_consent_request
 after insert on public.dcds_community_age_requests
