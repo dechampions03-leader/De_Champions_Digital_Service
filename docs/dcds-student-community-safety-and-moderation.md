@@ -31,8 +31,10 @@ No full date of birth, gender, home address, identity number, or identity-docume
 ### 13–17
 
 - Teen-only rooms; no adult student memberships.
-- Every student message is saved as pending until an authorised moderator publishes it.
-- Project-showcase posts and image attachments require moderation before classmates can see them.
+- Every student group-chat message and every Lounge comment/reply is saved as pending until an authorised moderator publishes it.
+- Learning questions, project-showcase posts and achievement posts require moderation before classmates can see them.
+- Positive reactions (helpful, celebrate, support) are limited to approved posts within the same age cohort.
+- Course-specific academic discussions remain linked to the existing DCDS learning/discussion centre; the Lounge is the cross-course community feed.
 - No external URLs in chat messages.
 - Teen live sessions require two distinct authorised DCDS administrators (host and co-host).
 - No one-to-one calls, direct messages, call recording, or cross-cohort room.
@@ -102,7 +104,9 @@ DCDS should obtain an appropriate legal/privacy review for the countries in whic
 - [ ] Independent community age-band and guardian-consent flow is tested; it does not depend on AI access eligibility.
 - [ ] Cross-cohort read/write attempts fail.
 - [ ] Under-13 access attempts fail.
-- [ ] Teen messages remain pending until moderator approval.
+- [ ] Teen chat messages and Lounge comments remain pending until moderator approval.
+- [ ] Students cannot publish profile visibility without review.
+- [ ] Community rules acceptance is required before room and feed access.
 - [ ] Students cannot publish profile visibility without review.
 - [ ] Credential files are private and not visible to other students.
 - [ ] Reports, blocks, message removal and account suspension work.
