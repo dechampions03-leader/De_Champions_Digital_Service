@@ -18,7 +18,7 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 .hero{padding:25px;border-radius:22px;color:#fff;background:radial-gradient(circle at 90% 0,#9654ce,transparent 36%),linear-gradient(125deg,#21083f,#451078 62%,#7025b7);box-shadow:0 15px 40px #35105f20}
 .kicker{font-size:10px;letter-spacing:.2em;color:#f3d98e;font-weight:900}.hero h1{font:800 clamp(27px,5vw,38px)/1.08 'Playfair Display',serif;margin:10px 0}.hero p{font-size:13px;line-height:1.7;color:#eadcf8;margin:0;max-width:820px}
 #status{margin:14px 0;padding:13px;border:1px dashed #d9c8e8;border-radius:12px;background:#fff;color:var(--muted);font-size:12px;line-height:1.6}#app[hidden],#status[hidden],.panel[hidden]{display:none!important}
-.metrics{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin:15px 0}
+.metrics{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin:15px 0}
 .metric{min-width:0;border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px}.metric strong{display:block;font:800 23px 'Playfair Display',serif;color:var(--deep)}.metric span{font-size:10px;color:var(--muted);font-weight:800}
 .tabs{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin:15px 0;position:sticky;top:4px;z-index:4;padding:5px;border:1px solid var(--line);border-radius:14px;background:#f7f1fc}
 .tabs button{min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--dark);padding:10px 5px;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
@@ -54,7 +54,8 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 <div class="metric"><strong id="mGuardian">—</strong><span>Guardian consents pending</span></div>
 <div class="metric"><strong id="mAccess">—</strong><span>Access requests pending</span></div>
 <div class="metric"><strong id="mMessages">—</strong><span>Messages to review</span></div>
-<div class="metric"><strong id="mPosts">—</strong><span>Project posts to review</span></div>
+<div class="metric"><strong id="mPosts">—</strong><span>Lounge posts to review</span></div>
+<div class="metric"><strong id="mReplies">—</strong><span>Comments to review</span></div>
 <div class="metric"><strong id="mReports">—</strong><span>Open reports</span></div>
 </div>
 <nav class="tabs" aria-label="Community administration">
@@ -62,7 +63,8 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 <button type="button" data-tab="access" aria-selected="false">✅ Access</button>
 <button type="button" data-tab="profiles" aria-selected="false">👤 Profiles</button>
 <button type="button" data-tab="messages" aria-selected="false">💬 Chat</button>
-<button type="button" data-tab="posts" aria-selected="false">🎨 Projects</button>
+<button type="button" data-tab="posts" aria-selected="false">🎨 Lounge posts</button>
+<button type="button" data-tab="replies" aria-selected="false">🗨 Comments</button>
 <button type="button" data-tab="reports" aria-selected="false">🚩 Reports</button>
 <button type="button" data-tab="credentials" aria-selected="false">📄 Credentials</button>
 <button type="button" data-tab="members" aria-selected="false">👥 Members</button>
@@ -98,6 +100,12 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 <h2>Project Showcase Moderation</h2>
 <p class="sub">Review title, text and optional image before publication to that student's age-separated room. Do not approve confidential client work shared without permission.</p>
 <div id="postList" class="stack"><div class="notice">Loading project posts…</div></div>
+</section>
+
+<section class="panel" id="tab-replies" hidden>
+<h2>Community Lounge Comment Moderation</h2>
+<p class="sub">Teen comments are held for review. Remove links, personal contact details, harassment, scams or requests for payment credentials before publishing.</p>
+<div id="replyList" class="stack"><div class="notice">Loading pending comments…</div></div>
 </section>
 
 <section class="panel" id="tab-reports" hidden>
@@ -174,9 +182,10 @@ async function refreshMetrics(){
   db.from("dcds_community_access_requests").select("id",{count:"exact",head:true}).eq("status","pending"),
   db.from("dcds_community_messages").select("id",{count:"exact",head:true}).eq("status","pending"),
   db.from("dcds_community_posts").select("id",{count:"exact",head:true}).eq("status","pending"),
+  db.from("dcds_community_post_replies").select("id",{count:"exact",head:true}).eq("status","pending"),
   db.from("dcds_community_reports").select("id",{count:"exact",head:true}).in("status",["open","in_review"])
  ]);
- ["mAge","mGuardian","mAccess","mMessages","mPosts","mReports"].forEach((id,i)=>$(id).textContent=qs[i].error?"—":String(qs[i].count??0));
+ ["mAge","mGuardian","mAccess","mMessages","mPosts","mReplies","mReports"].forEach((id,i)=>$(id).textContent=qs[i].error?"—":String(qs[i].count??0));
 }
 function cardStatus(status){
  const cl=["approved","verified","visible","active","resolved"].includes(status)?"good":["rejected","removed","suspended","dismissed"].includes(status)?"bad":"warn";
@@ -290,10 +299,10 @@ async function loadMessages(){
  }
 }
 async function loadPosts(){
- const root=$("postList"),r=await db.from("dcds_community_posts").select("id,room_id,author_id,title,body,attachment_path,status,created_at").order("created_at",{ascending:false}).limit(150);
+ const root=$("postList"),r=await db.from("dcds_community_posts").select("id,room_id,author_id,post_type,title,body,attachment_path,status,created_at").order("created_at",{ascending:false}).limit(150);
  if(r.error)throw r.error;root.replaceChildren();if(!r.data?.length){showNotice(root,"No project posts have been submitted.");return;}
  for(const p of r.data){
-  const card=make("article",undefined,"card");const meta=make("div",undefined,"meta");meta.append(cardStatus(p.status),make("span","Submitted "+safeDate(p.created_at)));card.append(meta,make("h3",p.title),make("p",p.body),make("div","Student "+p.author_id.slice(0,8),"small"));
+  const card=make("article",undefined,"card");const meta=make("div",undefined,"meta");meta.append(cardStatus(p.status),make("span","Submitted "+safeDate(p.created_at)));card.append(meta,make("h3",(p.post_type||"project").replaceAll("_"," ")+" · "+p.title),make("p",p.body),make("div","Student "+p.author_id.slice(0,8),"small"));
   if(p.attachment_path){
    const view=actionButton("Open private image preview","secondary",async()=>{const s=await db.storage.from("dcds-community-posts").createSignedUrl(p.attachment_path,300);if(s.error)throw s.error;window.open(s.data.signedUrl,"_blank","noopener,noreferrer");});card.append(view);
   }
@@ -301,6 +310,24 @@ async function loadPosts(){
    addActions(card,[
     actionButton("Approve post","good",async()=>{const u=await db.from("dcds_community_posts").update({status:"approved",reviewed_by:admin.id,reviewed_at:new Date().toISOString(),moderator_note:"Approved for the student's age-cohort room."}).eq("id",p.id);if(u.error)throw u.error;await loadPosts();await refreshMetrics();}),
     actionButton("Reject post","danger",async()=>{const u=await db.from("dcds_community_posts").update({status:"rejected",reviewed_by:admin.id,reviewed_at:new Date().toISOString(),moderator_note:"Not approved for community publication."}).eq("id",p.id);if(u.error)throw u.error;await loadPosts();await refreshMetrics();})
+   ]);
+  }
+  root.append(card);
+ }
+}
+async function loadReplies(){
+ const root=$("replyList"),r=await db.from("dcds_community_post_replies").select("id,post_id,author_id,body,status,created_at").eq("status","pending").order("created_at",{ascending:true}).limit(200);
+ if(r.error)throw r.error;root.replaceChildren();if(!r.data?.length){showNotice(root,"No comments are waiting for moderation.");return;}
+ const ids=[...new Set(r.data.map(x=>x.post_id))];const posts=await db.from("dcds_community_posts").select("id,title,room_id,post_type").in("id",ids);if(posts.error)throw posts.error;
+ const pmap=new Map((posts.data||[]).map(x=>[x.id,x]));
+ for(const x of r.data){
+  const card=make("article",undefined,"card"),p=pmap.get(x.post_id);
+  const meta=make("div",undefined,"meta");meta.append(cardStatus(x.status),make("span","Student "+x.author_id.slice(0,8)),make("span",safeDate(x.created_at)));card.append(meta);
+  card.append(make("h3",p?.title||"Community post"),make("p",x.body));
+  if(x.status==="pending"){
+   addActions(card,[
+    actionButton("Publish comment","good",async()=>{const u=await db.from("dcds_community_post_replies").update({status:"visible",updated_at:new Date().toISOString()}).eq("id",x.id);if(u.error)throw u.error;await loadReplies();await refreshMetrics();}),
+    actionButton("Remove comment","danger",async()=>{const u=await db.from("dcds_community_post_replies").update({status:"removed",updated_at:new Date().toISOString()}).eq("id",x.id);if(u.error)throw u.error;await loadReplies();await refreshMetrics();})
    ]);
   }
   root.append(card);
@@ -395,6 +422,7 @@ async function loadTab(tab){
  if(tab==="profiles")await loadProfiles();
  if(tab==="messages")await loadMessages();
  if(tab==="posts")await loadPosts();
+ if(tab==="replies")await loadReplies();
  if(tab==="reports")await loadReports();
  if(tab==="credentials")await loadCredentials();
  if(tab==="members")await loadMembers();
