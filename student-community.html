@@ -168,6 +168,7 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <option value="project">Completed project / creative work</option>
 <option value="achievement">Achievement / learning milestone</option>
 </select></label>
+<div id="courseQuestionField" hidden><label>Course Q&A channel<select id="postCourseRoom"><option value="">General Study Help</option></select></label><div class="small">Only courses in which you are enrolled appear here.</div></div>
 <label>Title<input id="postTitle" required minlength="3" maxlength="140" placeholder="Give your post a clear title"></label>
 <label>Tell your community<textarea id="postBody" maxlength="2500" placeholder="Ask your question, explain your project or share what you achieved. Do not include contact details or external links."></textarea></label>
 <label id="postImageLabel">Optional project image (JPEG, PNG or WebP; max 5 MB)<input id="postImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
@@ -395,8 +396,14 @@ async function initializeCommunity(){
   return;
  }
  $("communityTerms").hidden=true;$("communityTabs").hidden=false;setTab("chat");
- const q=await db.from("dcds_community_rooms").select("id,slug,cohort,room_type,title,description,sort_order").eq("cohort",access.cohort).eq("is_active",true).order("sort_order");
+ const membershipRows=await db.from("dcds_community_memberships").select("room_id").eq("user_id",user.id).eq("status","active");
+ if(membershipRows.error)throw membershipRows.error;
+ const roomIds=(membershipRows.data||[]).map(x=>x.room_id);
+ const q=roomIds.length?await db.from("dcds_community_rooms").select("id,slug,cohort,room_type,title,description,sort_order,course_id").eq("cohort",access.cohort).eq("is_active",true).in("id",roomIds).order("sort_order"):{data:[],error:null};
  if(q.error)throw q.error;rooms=q.data||[];
+ const courseSelect=$("postCourseRoom");courseSelect.replaceChildren();
+ const general=document.createElement("option");general.value="";general.textContent="General Study Help";courseSelect.append(general);
+ rooms.filter(x=>x.room_type==="course_qna").forEach(room=>{const o=document.createElement("option");o.value=room.id;o.textContent=room.title;courseSelect.append(o);});
  await Promise.all([loadProfile(),loadPosts(),loadCredentials(),loadEvents()]);
  await subscribeCommunityFeed();
  renderRooms();
@@ -554,7 +561,7 @@ async function loadPosts(){
   const type=document.createElement("span");type.className="pill";type.textContent=postTypes[p.post_type]||"Community post";
   const status=document.createElement("span");status.className="pill "+(p.status==="approved"?"good":"warn");status.textContent=p.status.replaceAll("_"," ");
   const author=document.createElement("span");author.textContent=p.author_id===user.id?"You":(names.get(p.author_id)||"DCDS learner");
-  meta.append(type,status,author);card.append(meta);
+  const room=rooms.find(x=>x.id===p.room_id);meta.append(type,status,author);if(room?.room_type==="course_qna"){const channel=document.createElement("span");channel.className="pill";channel.textContent=room.title;meta.append(channel);}card.append(meta);
   addText(card,"h3",p.title);if(p.body)addText(card,"p",p.body);
   if(p.attachment_path){const b=document.createElement("button");b.className="btn secondary";b.textContent="View project image";b.addEventListener("click",async()=>{const s=await db.storage.from("dcds-community-posts").createSignedUrl(p.attachment_path,300);if(s.error){alert("Preview unavailable: "+s.error.message);return;}window.open(s.data.signedUrl,"_blank","noopener,noreferrer");});card.appendChild(b);}
   if(p.status==="approved"){
@@ -597,6 +604,7 @@ async function loadPosts(){
 }
 $("postType").addEventListener("change",()=>{
  const type=$("postType").value;$("postImageLabel").hidden=type!=="project";
+ $("courseQuestionField").hidden=type!=="question";
  if(type!=="project")$("postImage").value="";
 });
 $("postType").dispatchEvent(new Event("change"));
@@ -604,7 +612,8 @@ $("postForm").addEventListener("submit",async e=>{
  e.preventDefault();
  const type=$("postType").value;
  const roomType=type==="question"?"study_help":type==="achievement"?"general":"project_showcase";
- const room=rooms.find(x=>x.room_type===roomType);
+ const courseRoom=type==="question"&&$("postCourseRoom").value?rooms.find(x=>x.id===$("postCourseRoom").value):null;
+ const room=courseRoom||rooms.find(x=>x.room_type===roomType);
  if(!room){setMsg("postMessage","The matching Community Lounge room is not available.");return;}
  const title=$("postTitle").value.trim(),body=$("postBody").value.trim(),file=$("postImage").files[0];
  if(/https?:\/\/|www\.|t\.me\/|wa\.me\/|bit\.ly\/|tinyurl\.com/i.test(body)){setMsg("postMessage","External links are not allowed in community posts.");return;}
