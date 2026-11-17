@@ -10,17 +10,24 @@ on:
       - "ai-learning-assistant.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
+      - "scripts/build-dcds-ai-feature-index.mjs"
+      - "dcds-ai-feature-index.json"
+      - ".github/workflows/dcds-ai-feature-index.yml"
       - ".github/workflows/dcds-ai-super-intelligence-validation.yml"
   push:
     branches:
       - main
       - feature/dcds-super-intelligence
+      - feat/dcds-live-platform-intelligence
     paths:
       - "supabase/functions/dcds-ai-chat/**"
       - "supabase/functions/dcds-ai-speech-session/**"
       - "ai-learning-assistant.html"
       - "dcds-ai-knowledge-base.json"
       - "ai-config/**"
+      - "scripts/build-dcds-ai-feature-index.mjs"
+      - "dcds-ai-feature-index.json"
+      - ".github/workflows/dcds-ai-feature-index.yml"
       - ".github/workflows/dcds-ai-super-intelligence-validation.yml"
 
 permissions:
@@ -61,6 +68,11 @@ jobs:
           search_helper = function[start:end]
           ai_page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
           submit_handler = ai_page.split("form.addEventListener('submit'", 1)[1].split(" });\n})();", 1)[0]
+
+          feature_script = Path("scripts/build-dcds-ai-feature-index.mjs").read_text(encoding="utf-8")
+          feature_helper_start = function.index("type DcdsFeaturePage")
+          feature_helper_end = function.index("function priorConversationContext", feature_helper_start)
+          feature_helper = function[feature_helper_start:feature_helper_end]
 
           allowed_tables = (
               'from("courses")',
@@ -154,6 +166,36 @@ jobs:
                   "Do not limit useful teaching to facts in the DCDS knowledge files" in function,
               "shared DCDS facts require official source confirmation":
                   "If a DCDS-specific fact cannot be confirmed" in Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8"),
+              "live DCDS feature index is fetched by the AI backend":
+                  "dcds-ai-feature-index.json" in feature_helper
+                  and "loadLiveFeatureIndex(role)" in function,
+              "feature discovery is generated automatically from tracked HTML changes":
+                  'git(["ls-files", "-z"])' in feature_script
+                  and "extractPage(path" in feature_script
+                  and "recent_changes" in feature_script,
+              "feature discovery excludes executable source and hidden markup":
+                  "script|style|svg|template|noscript|iframe|pre|code" in feature_script
+                  and "form values" in feature_script
+                  and "environment" in feature_script,
+              "feature index is filtered by the server-verified caller role":
+                  'new Set(["public"])' in feature_helper
+                  and 'new Set(["public", "student"])' in feature_helper
+                  and 'new Set(["public", "student", "admin"])' in feature_helper,
+              "feature index metadata is bounded and validated":
+                  "120_000" in feature_helper
+                  and "parsed.pages.length > 60" in feature_helper
+                  and "sourceCommit" in feature_helper,
+              "feature index filters secret and personal data terms":
+                  "password" in feature_helper
+                  and "bank" in feature_helper
+                  and "date of birth" in feature_helper,
+              "feature descriptions do not claim hidden backend behaviour":
+                  "do not invent hidden workflows" in function
+                  and "label an interpretation" in function,
+              "private platform implementation and credentials are protected":
+                  "Never disclose API keys" in function
+                  and "database schemas" in function
+                  and "private administrator notes" in function,
               "student memory remains owner-controlled":
                   "dcds_ai_student_memory" in function
                   and "user.id" in function,
@@ -217,6 +259,7 @@ jobs:
               "learning-003", "web-001", "memory-001", "memory-002", "security-002",
               "image-001", "image-002", "voice-001", "voice-002", "voice-003",
               "guest-001", "guest-002", "chat-001", "identity-001",
+              "feature-001", "feature-002", "feature-003", "feature-004", "feature-005", "feature-006",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
