@@ -181,8 +181,11 @@ let cachedGeminiModels: { names: string[]; expiresAt: number } | null = null;
 // whose Standard tier is explicitly listed as Free in Google's published pricing.
 // models.list reports API capability, not whether a model is included in this key's tier.
 const FREE_TIER_MODEL_PREFERENCE = [
+  "gemini-3.8-flash",
+  "gemini-3.7-flash",
   "gemini-3.6-flash",
   "gemini-3.5-flash-lite",
+  "gemini-3.1-flash-lite",
 ] as const;
 const STATIC_DOCUMENTED_MODELS = [...FREE_TIER_MODEL_PREFERENCE];
 const GOOGLE_SEARCH_MODELS = new Set<string>([
@@ -253,7 +256,7 @@ Deno.serve(async (request: Request) => {
       catch { return undefined; }
     })();
   const geminiApiKey = Deno.env.get("GEMINI_API_KEY");
-  const model = Deno.env.get("DCDS_AI_MODEL") || "gemini-3.6-flash";
+  const model = Deno.env.get("DCDS_AI_MODEL") || "gemini-3.8-flash";
 
   if (!supabaseUrl || !publishableKey) {
     return respond({ success: false, error: "DCDS authentication is not configured." }, 503);
@@ -612,8 +615,14 @@ ${platformSearch.context}${savedMemoryInstruction}`;
 
   // Use models.list only to confirm that a documented free-tier model is available.
   // Never append the entire discovered catalogue: it includes paid-only models.
-  const availableFreeTierModels = discoveredModels
+  const discoveredFreeTierModels = discoveredModels
     ? FREE_TIER_MODEL_PREFERENCE.filter((candidate) => discoveredModels.includes(candidate))
+    : [];
+  // If models.list is temporarily stale or omits an allowlisted stable model,
+  // retain only the statically documented free-tier pool rather than selecting
+  // an arbitrary model or leaving the assistant with no candidates.
+  const availableFreeTierModels = discoveredFreeTierModels.length > 0
+    ? discoveredFreeTierModels
     : [...FREE_TIER_MODEL_PREFERENCE];
 
   const configuredModelIsFreeTier = (FREE_TIER_MODEL_PREFERENCE as readonly string[]).includes(model);
@@ -631,7 +640,8 @@ ${platformSearch.context}${savedMemoryInstruction}`;
     ...availableFreeTierModels.filter((candidate) => candidate !== model),
   ];
 
-  const modelCandidates = [...new Set(configuredCandidates)].filter(
+  const uniqueConfiguredCandidates = [...new Set(configuredCandidates)];
+  const modelCandidates = uniqueConfiguredCandidates.filter(
     (candidate) => (providerModelCooldowns.get(candidate) ?? 0) <= Date.now(),
   );
 
@@ -641,13 +651,24 @@ ${platformSearch.context}${savedMemoryInstruction}`;
     discoveredModelCount: discoveredModels?.length ?? 0,
   });
   if (!modelCandidates.length) {
-    const dailyQuotaCooling = [...providerDailyQuotaCooldowns.values()].some((expiresAt) => expiresAt > Date.now());
+    const now = Date.now();
+    const dailyQuotaCooling = uniqueConfiguredCandidates.some(
+      (candidate) => (providerDailyQuotaCooldowns.get(candidate) ?? 0) > now,
+    );
+    const activeCooldowns = uniqueConfiguredCandidates
+      .map((candidate) => providerModelCooldowns.get(candidate) ?? 0)
+      .filter((expiresAt) => expiresAt > now);
+    const retryAfterMs = activeCooldowns.length
+      ? Math.max(1000, Math.min(...activeCooldowns) - now)
+      : 10_000;
+    const retryAfterSeconds = Math.ceil(retryAfterMs / 1000);
     return respond({
       success: false,
-      error_code: dailyQuotaCooling ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE",
+      error_code: dailyQuotaCooling ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_COOLDOWN",
+      retry_after_seconds: retryAfterSeconds,
       error: dailyQuotaCooling
         ? "DCDS AI has reached the available no-cost provider allowance. Your draft is kept in the chat box; please try again after the provider quota resets."
-        : "DCDS AI's documented free-tier models are temporarily unavailable. Your draft is kept in the chat box; please try again shortly.",
+        : `DCDS AI models are briefly cooling down after temporary provider errors. Your draft is kept in the chat box; please retry in about ${retryAfterSeconds} seconds.`,
     }, dailyQuotaCooling ? 429 : 503);
   }
 

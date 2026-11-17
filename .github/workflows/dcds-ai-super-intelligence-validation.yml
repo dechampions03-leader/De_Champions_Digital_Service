@@ -135,16 +135,25 @@ jobs:
               "Gemini model catalogue is discovered dynamically":
                   "https://generativelanguage.googleapis.com/v1beta/models?pageSize=100" in function
                   and "supportedGenerationMethods" in function,
-              "Gemini routing is restricted to explicitly documented free-tier text models":
+              "Gemini routing is restricted to the documented free-tier text model pool":
                   "FREE_TIER_MODEL_PREFERENCE" in function
+                  and '"gemini-3.8-flash"' in function
+                  and '"gemini-3.7-flash"' in function
                   and '"gemini-3.6-flash"' in function
                   and '"gemini-3.5-flash-lite"' in function
-                  and "discoveredModels.filter((candidate) => !MODEL_PREFERENCE.includes(candidate))" not in function
+                  and '"gemini-3.1-flash-lite"' in function
                   and "gemini-4-carbon" not in function
                   and "gemini-4-argon" not in function,
               "Discovered Gemini models cannot bypass the free-tier allowlist":
                   "FREE_TIER_MODEL_PREFERENCE.filter((candidate) => discoveredModels.includes(candidate))" in function
                   and "Never append the entire discovered catalogue: it includes paid-only models." in function,
+              "a stale model catalogue falls back only to documented free-tier models":
+                  "discoveredFreeTierModels.length > 0" in function
+                  and ": [...FREE_TIER_MODEL_PREFERENCE]" in function,
+              "temporary model cooldowns provide a retry interval without misreporting a daily quota":
+                  '"PROVIDER_COOLDOWN"' in function
+                  and "retry_after_seconds" in function
+                  and "retryAfterSeconds" in function,
               "Google Search is opt-in/freshness-triggered":
                   "wantsExternalWebSearch(promptMessage, role)" in function
                   and "google_search: {}" in function,
