@@ -5,6 +5,9 @@
 | Community age cohort and active/suspended status | `dcds_community_access` | Owner and DCDS administrators; same-cohort lookup is exposed only as a boolean helper |
 | Community access request | `dcds_community_access_requests` | Requesting student and DCDS administrators |
 | Room memberships | `dcds_community_memberships` | Student sees own memberships; DCDS administrators manage them |
+| Versioned community-rules acceptance | `dcds_community_rule_acceptances` | Student and DCDS administrators |
+| Lounge comments/replies | `dcds_community_post_replies` | Author, DCDS administrators, and same-room members after approval, subject to blocks |
+| Positive Lounge reactions | `dcds_community_post_reactions` | DCDS administrators and members of the same age-cohort room |
 | Profile display name, bio, skills, interests | `dcds_community_profiles` | Owner, DCDS administrators, and same-cohort students only after profile approval |
 | Profile picture | Private `dcds-community-avatars` bucket | Owner, DCDS administrators, and same-cohort students when profile is approved |
 | Credential metadata and files | `dcds_community_credentials` and private `dcds-community-credentials` bucket | Owner and authorised DCDS administrators only |
