@@ -40,7 +40,7 @@ function safeText(value, max = 220) {
 function cleanHtml(html) {
   return html.replace(/<!--[\s\S]*?-->/g, " ")
     .replace(/<(script|style|svg|template|noscript|iframe|pre|code)\b[^>]*>[\s\S]*?<\/\1>/gi, " ")
-    .replace(/<([a-z][\w:-]*)\b(?=[^>]*(?:\shidden(?:\s|=|>)|\saria-hidden\s*=\s*["']true["']|\sstyle\s*=\s*["'][^"']*display\s*:\s*none))[^>]*>[\s\S]*?<\/\1>/gi, " ");
+    .replace(/<([a-z][\w:-]*)\b(?=[^>]*(?:\saria-hidden\s*=\s*["']true["']|\sstyle\s*=\s*["'][^"']*display\s*:\s*none))[^>]*>[\s\S]*?<\/\1>/gi, " ");
 }
 function explicitAudience(path) {
   if (/^admin-[a-z0-9-]+\.html$/i.test(path)) return "admin";
