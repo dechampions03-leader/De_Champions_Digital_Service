@@ -132,6 +132,7 @@ function renderTopics(topics,replies){
   const body=document.createElement("div");body.className="topic-body";body.textContent=topic.body;
   card.append(heading,meta,body);
   (replies.get(topic.id)||[]).forEach(reply=>{const r=document.createElement("div");r.className="reply";const p=document.createElement("p");p.textContent=reply.body;const sm=document.createElement("small");sm.textContent=reply.status==="published"?"Class reply": "Your reply is awaiting review";sm.style.cssText="display:block;margin-top:5px;color:#8b79a0;font-size:9px";r.append(p,sm);card.appendChild(r);});
+  if(topic.status!=="published"){root.appendChild(card);return;}
   const form=document.createElement("form");form.className="form";form.style.marginTop="11px";form.dataset.replyTopic=topic.id;
   const label=document.createElement("label");label.textContent="Add a helpful reply";const area=document.createElement("textarea");area.required=true;area.minLength=2;area.maxLength=5000;area.placeholder="Share an explanation or a useful learning tip.";label.appendChild(area);
   const button=document.createElement("button");button.type="submit";button.className="button secondary";button.textContent="Send reply for review";const status=document.createElement("div");status.className="status";form.append(label,button,status);card.appendChild(form);root.appendChild(card);
@@ -214,7 +215,7 @@ async function loadWorkshops(){
    message("workshopStatus","Your workshop registration has been updated.");await loadWorkshops();
   });
   card.append(h,p,meta,btn);
-  if(reg?.status==="registered"){const joined=document.createElement("div");joined.className="status";joined.textContent="You are registered. The joining link will be shown here closer to the session.";card.appendChild(joined);}
+  if(reg?.status==="registered"){const joined=document.createElement("a");joined.className="link";joined.href=w.meeting_url;joined.target="_blank";joined.rel="noopener noreferrer";joined.textContent="Join registered workshop ↗";card.appendChild(joined);}
   root.appendChild(card);
  });
 }
