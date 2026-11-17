@@ -127,7 +127,8 @@ header a{display:inline-flex;padding:9px 12px;border:1px solid var(--line);borde
 <label>Description<textarea id="eventDescription" maxlength="2000"></textarea></label>
 <div class="row"><label>Start time<input id="eventStart" type="datetime-local" required></label><label>End time<input id="eventEnd" type="datetime-local" required></label></div>
 <div class="row"><label>Timezone<input id="eventTimezone" maxlength="80" value="Africa/Lagos" required></label><label>Second authorised admin (required for teen sessions)<select id="eventCohost"><option value="">No co-host</option></select></label></div>
-<label>HTTPS meeting URL<input id="eventUrl" type="url" placeholder="https://…" required></label>
+<label>Approved meeting provider URL<input id="eventUrl" type="url" placeholder="https://meet.google.com/… or approved Zoom / Teams / Webex / Jitsi link" required></label>
+<label style="display:flex;align-items:flex-start;gap:8px;font-size:11px;font-weight:700;color:#451078"><input id="eventSafetyConfirmed" type="checkbox" style="width:auto;margin-top:2px"> I checked the official provider domain, enabled its waiting room and host controls, and confirmed the invitation is restricted to this DCDS age cohort.</label>
 <button class="btn" type="submit" id="createEvent">Schedule group event</button><div id="eventMessage" class="status-line"></div>
 </form>
 <div id="eventList" class="stack"><div class="notice">Loading scheduled sessions…</div></div>
@@ -152,7 +153,7 @@ const setMsg=(id,t)=>$(id).textContent=t;
 const safeDate=v=>{const d=new Date(v);return Number.isNaN(d.getTime())?"Time unavailable":d.toLocaleString();};
 const showNotice=(node,t)=>{node.replaceChildren();const n=document.createElement("div");n.className="notice";n.textContent=t;node.append(n);};
 const make=(tag,text,cls)=>{const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;};
-const validHttps=v=>{try{return new URL(v).protocol==="https:"}catch(_){return false}};
+const validMeetingUrl=v=>{try{const u=new URL(v);const h=u.hostname.toLowerCase();return u.protocol==="https:"&&(h==="meet.google.com"||h==="zoom.us"||h.endsWith(".zoom.us")||h==="teams.microsoft.com"||h==="webex.com"||h.endsWith(".webex.com")||h==="meet.jit.si");}catch(_){return false}};
 let admin=null,rooms=[],admins=[];
 function setTab(tab){
  document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===tab)));
@@ -372,7 +373,8 @@ async function loadEvents(){
 $("eventForm").addEventListener("submit",async e=>{
  e.preventDefault();const room=rooms.find(x=>x.id===$("eventRoom").value);if(!room){setMsg("eventMessage","Choose an active room.");return;}
  const start=new Date($("eventStart").value),end=new Date($("eventEnd").value),url=$("eventUrl").value.trim();
- if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<=start||!validHttps(url)){setMsg("eventMessage","Check the date range and enter a valid HTTPS meeting URL.");return;}
+ if(Number.isNaN(start.getTime())||Number.isNaN(end.getTime())||end<=start||!validMeetingUrl(url)){setMsg("eventMessage","Check the date range and use an approved HTTPS meeting provider: Google Meet, Zoom, Microsoft Teams, Webex or Jitsi.");return;}
+ if(!$("eventSafetyConfirmed").checked){setMsg("eventMessage","Confirm the provider domain and waiting-room settings before scheduling.");return;}
  if(room.cohort==="teen_13_17"&&!$("eventCohost").value){setMsg("eventMessage","Teen sessions require a second authorised DCDS administrator as co-host.");return;}
  const btn=$("createEvent");btn.disabled=true;setMsg("eventMessage","Scheduling the group event…");
  const payload={room_id:room.id,title:$("eventTitle").value.trim(),description:$("eventDescription").value.trim(),starts_at:start.toISOString(),ends_at:end.toISOString(),timezone:$("eventTimezone").value.trim(),host_user_id:admin.id,cohost_user_id:$("eventCohost").value||null,status:"scheduled",recording_enabled:false};
