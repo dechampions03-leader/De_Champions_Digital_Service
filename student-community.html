@@ -131,8 +131,8 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 <div id="communityRulesMessage" class="status-line" role="status"></div>
 </section>
 <nav class="tabs" id="communityTabs" aria-label="Community sections">
-<button type="button" data-tab="chat" aria-selected="true">💬 Group Chat</button>
-<button type="button" data-tab="showcase" aria-selected="false">🎨 Share Work</button>
+<button type="button" data-tab="lounge" aria-selected="true">📚 Community Lounge</button>
+<button type="button" data-tab="chat" aria-selected="false">💬 Group Chat</button>
 <button type="button" data-tab="profile" aria-selected="false">👤 My Profile</button>
 <button type="button" data-tab="credentials" aria-selected="false">📄 Credentials</button>
 <button type="button" data-tab="events" aria-selected="false">🎥 Live Events</button>
@@ -149,13 +149,19 @@ hr{border:0;border-top:1px solid var(--line);margin:16px 0}
 </form>
 </section>
 
-<section class="panel" id="tab-showcase" hidden>
-<h2>Student Project Showcase</h2><p class="sub">Share your completed work with your age-separated community. All posts and images are reviewed by DCDS before other students can see them. Do not upload client work without permission.</p>
+<section class="panel" id="tab-lounge" hidden>
+<h2>Student Community Lounge</h2><p class="sub">Ask learning questions, share completed projects and celebrate achievements. Students can comment and react to approved posts within their own age cohort. DCDS reviews posts before publication; teen comments are also reviewed before classmates can see them.</p>
 <form id="postForm" class="form">
-<label>Project title<input id="postTitle" required minlength="3" maxlength="140"></label>
-<label>Tell the group about your work<textarea id="postBody" maxlength="2500" placeholder="What did you build? What did you learn? Avoid contact details and external links."></textarea></label>
-<label>Optional project image<input id="postImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
-<button class="btn" type="submit" id="submitPost">Submit project for review</button><div id="postMessage" class="status-line"></div>
+<label>What would you like to share?
+<select id="postType" required>
+<option value="question">Learning question / discussion</option>
+<option value="project">Completed project / creative work</option>
+<option value="achievement">Achievement / learning milestone</option>
+</select></label>
+<label>Title<input id="postTitle" required minlength="3" maxlength="140" placeholder="Give your post a clear title"></label>
+<label>Tell your community<textarea id="postBody" maxlength="2500" placeholder="Ask your question, explain your project or share what you achieved. Do not include contact details or external links."></textarea></label>
+<label id="postImageLabel">Optional project image (JPEG, PNG or WebP; max 5 MB)<input id="postImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<button class="btn" type="submit" id="submitPost">Submit to the Community Lounge</button><div id="postMessage" class="status-line"></div>
 </form>
 <div id="myPosts" class="stack"></div>
 </section>
@@ -398,7 +404,7 @@ async function reportContent(x){
  const reason=prompt("Choose a report reason: spam, scam_or_money_request, harassment, impersonation, unsafe_content, other");
  if(!["spam","scam_or_money_request","harassment","impersonation","unsafe_content","other"].includes(reason))return;
  const details=prompt("Optional details for DCDS moderators (do not include passwords or financial information).")||"";
- const r=await db.from("dcds_community_reports").insert({reporter_user_id:user.id,reported_user_id:x.user,room_id:currentRoom.id,object_type:x.type,object_id:x.id,reason,details});
+ const r=await db.from("dcds_community_reports").insert({reporter_user_id:user.id,reported_user_id:x.user,room_id:x.roomId||currentRoom?.id,object_type:x.type,object_id:x.id,reason,details});
  alert(r.error?"Report could not be submitted: "+r.error.message:"Your report has been sent privately to DCDS moderators.");
 }
 async function blockUser(id){
@@ -469,28 +475,87 @@ async function uploadPostImage(file){
  if(r.error)throw r.error;return path;
 }
 async function loadPosts(){
- const root=$("myPosts");const r=await db.from("dcds_community_posts").select("id,room_id,author_id,title,body,attachment_path,status,created_at").order("created_at",{ascending:false}).limit(40);
- if(r.error){showNotice(root,"Project posts could not be loaded.");return;}
- root.replaceChildren();if(!r.data?.length){showNotice(root,"No project posts yet. Your first submission will be reviewed by DCDS.");return;}
+ const root=$("myPosts");const r=await db.from("dcds_community_posts").select("id,room_id,author_id,post_type,title,body,attachment_path,status,created_at").order("created_at",{ascending:false}).limit(60);
+ if(r.error){showNotice(root,"Community posts could not be loaded: "+r.error.message);return;}
+ root.replaceChildren();if(!r.data?.length){showNotice(root,"The Community Lounge is ready. Ask the first question or share a learning milestone.");return;}
+ const ids=r.data.map(x=>x.id);
+ const [replyRes,reactionRes,profileRes]=await Promise.all([
+  db.from("dcds_community_post_replies").select("id,post_id,author_id,body,status,created_at").in("post_id",ids).order("created_at",{ascending:true}),
+  db.from("dcds_community_post_reactions").select("post_id,user_id,reaction_type").in("post_id",ids),
+  db.from("dcds_community_profiles").select("user_id,display_name").in("user_id",[...new Set(r.data.map(x=>x.author_id))])
+ ]);
+ if(replyRes.error||reactionRes.error){showNotice(root,"Post conversations could not be loaded. Please refresh the Lounge.");return;}
+ const repliesBy=new Map(),reactionsBy=new Map(),names=new Map((profileRes.data||[]).map(x=>[x.user_id,x.display_name]));
+ (replyRes.data||[]).forEach(x=>{const a=repliesBy.get(x.post_id)||[];a.push(x);repliesBy.set(x.post_id,a);});
+ (reactionRes.data||[]).forEach(x=>{const a=reactionsBy.get(x.post_id)||[];a.push(x);reactionsBy.set(x.post_id,a);});
+ const postTypes={question:"Learning question",project:"Project showcase",achievement:"Achievement"};
  for(const p of r.data){
   const card=document.createElement("article");card.className="post-row";
-  addText(card,"h3",p.title);
-  addText(card,"div",p.status.replaceAll("_"," "),"pill "+(p.status==="approved"?"good":"warn"));
-  addText(card,"p",p.body);
-  if(p.attachment_path){const b=document.createElement("button");b.className="btn secondary";b.textContent="View private project image";b.addEventListener("click",async()=>{const s=await db.storage.from("dcds-community-posts").createSignedUrl(p.attachment_path,300);if(s.error){alert("Preview unavailable: "+s.error.message);return;}window.open(s.data.signedUrl,"_blank","noopener,noreferrer");});card.appendChild(b);}
+  const meta=document.createElement("div");meta.className="meta";
+  const type=document.createElement("span");type.className="pill";type.textContent=postTypes[p.post_type]||"Community post";
+  const status=document.createElement("span");status.className="pill "+(p.status==="approved"?"good":"warn");status.textContent=p.status.replaceAll("_"," ");
+  const author=document.createElement("span");author.textContent=p.author_id===user.id?"You":(names.get(p.author_id)||"DCDS learner");
+  meta.append(type,status,author);card.append(meta);
+  addText(card,"h3",p.title);if(p.body)addText(card,"p",p.body);
+  if(p.attachment_path){const b=document.createElement("button");b.className="btn secondary";b.textContent="View project image";b.addEventListener("click",async()=>{const s=await db.storage.from("dcds-community-posts").createSignedUrl(p.attachment_path,300);if(s.error){alert("Preview unavailable: "+s.error.message);return;}window.open(s.data.signedUrl,"_blank","noopener,noreferrer");});card.appendChild(b);}
+  if(p.status==="approved"){
+   const rx=reactionsBy.get(p.id)||[];const reactionRow=document.createElement("div");reactionRow.className="actions";
+   for(const [kind,label] of [["helpful","Helpful"],["celebrate","Celebrate"],["support","Support"]]){
+    const mine=rx.some(x=>x.user_id===user.id&&x.reaction_type===kind);
+    const count=rx.filter(x=>x.reaction_type===kind).length;
+    const b=document.createElement("button");b.type="button";b.className="btn "+(mine?"good":"secondary");b.textContent=label+" · "+count;
+    b.addEventListener("click",async()=>{b.disabled=true;const q=mine?db.from("dcds_community_post_reactions").delete().eq("post_id",p.id).eq("user_id",user.id).eq("reaction_type",kind):db.from("dcds_community_post_reactions").insert({post_id:p.id,user_id:user.id,reaction_type:kind});if(q.error){alert("Reaction could not be saved: "+q.error.message);b.disabled=false;return;}await loadPosts();});
+    reactionRow.appendChild(b);
+   }
+   card.appendChild(reactionRow);
+   const replyTitle=addText(card,"h4","Comments and answers");
+   const children=repliesBy.get(p.id)||[];
+   children.forEach(x=>{
+    const row=document.createElement("div");row.className="credential-row";
+    const who=addText(row,"strong",x.author_id===user.id?"You":(names.get(x.author_id)||"DCDS learner"));
+    addText(row,"span",x.status==="visible"?"Published":"Awaiting review","pill "+(x.status==="visible"?"good":"warn"));
+    addText(row,"p",x.body);
+    if(x.status==="visible"&&x.author_id!==user.id){
+      const report=document.createElement("button");report.className="btn secondary";report.textContent="Report comment";
+      report.addEventListener("click",()=>reportContent({type:"reply",id:x.id,user:x.author_id,roomId:p.room_id}));
+      row.appendChild(report);
+    }
+    card.appendChild(row);
+   });
+   const form=document.createElement("form");form.className="form";
+   const input=document.createElement("textarea");input.required=true;input.maxLength=1200;input.placeholder="Write a helpful answer or respectful comment…";
+   const send=document.createElement("button");send.type="submit";send.className="btn secondary";send.textContent="Add comment";
+   const statusLine=addText(form,"div","","status-line");
+   form.append(input,send);
+   form.addEventListener("submit",async ev=>{ev.preventDefault();const body=input.value.trim();if(!body)return;if(/https?:\/\/|www\.|t\.me\/|wa\.me\/|bit\.ly\/|tinyurl\.com/i.test(body)){statusLine.textContent="External links are not allowed in comments.";return;}send.disabled=true;const q=await db.from("dcds_community_post_replies").insert({post_id:p.id,author_id:user.id,body});send.disabled=false;if(q.error){statusLine.textContent="Comment could not be added: "+q.error.message;return;}input.value="";statusLine.textContent=access.cohort==="teen_13_17"?"Submitted for moderator review.":"Comment added.";await loadPosts();});
+   card.appendChild(form);
+   const reportPost=document.createElement("button");reportPost.className="btn secondary";reportPost.textContent="Report post";reportPost.addEventListener("click",()=>reportContent({type:"post",id:p.id,user:p.author_id,roomId:p.room_id}));card.appendChild(reportPost);
+  }else if(p.author_id===user.id){
+   addText(card,"p","Your post is waiting for DCDS moderation before it appears to your cohort.","small");
+  }
   root.append(card);
  }
 }
+$("postType").addEventListener("change",()=>{
+ const type=$("postType").value;$("postImageLabel").hidden=type!=="project";
+ if(type!=="project")$("postImage").value="";
+});
+$("postType").dispatchEvent(new Event("change"));
 $("postForm").addEventListener("submit",async e=>{
- e.preventDefault();if(!rooms.some(x=>x.room_type==="project_showcase")){setMsg("postMessage","Your project showcase room is not available.");return;}
+ e.preventDefault();
+ const type=$("postType").value;
+ const roomType=type==="question"?"study_help":type==="achievement"?"general":"project_showcase";
+ const room=rooms.find(x=>x.room_type===roomType);
+ if(!room){setMsg("postMessage","The matching Community Lounge room is not available.");return;}
  const title=$("postTitle").value.trim(),body=$("postBody").value.trim(),file=$("postImage").files[0];
  if(/https?:\/\/|www\.|t\.me\/|wa\.me\/|bit\.ly\/|tinyurl\.com/i.test(body)){setMsg("postMessage","External links are not allowed in community posts.");return;}
- const btn=$("submitPost");btn.disabled=true;setMsg("postMessage","Preparing your project for DCDS review…");
+ if(type!=="project"&&file){setMsg("postMessage","Only project showcase posts can include an image.");return;}
+ const btn=$("submitPost");btn.disabled=true;setMsg("postMessage","Preparing your post for DCDS moderation…");
  let attachment=null;try{attachment=await uploadPostImage(file);}catch(err){btn.disabled=false;setMsg("postMessage","Image upload failed: "+err.message);return;}
- const room=rooms.find(x=>x.room_type==="project_showcase");
- const r=await db.from("dcds_community_posts").insert({room_id:room.id,author_id:user.id,title,body,attachment_path:attachment,status:"pending"});
- btn.disabled=false;if(r.error){setMsg("postMessage","Project post was not saved: "+r.error.message);return;}
- $("postForm").reset();setMsg("postMessage","✓ Submitted. DCDS will review the work before it appears to classmates.");await loadPosts();
+ const r=await db.from("dcds_community_posts").insert({room_id:room.id,author_id:user.id,post_type:type,title,body,attachment_path:attachment,status:"pending"});
+ btn.disabled=false;if(r.error){setMsg("postMessage","Post was not saved: "+r.error.message);return;}
+ $("postForm").reset();$("postType").value="project";$("postType").dispatchEvent(new Event("change"));
+ setMsg("postMessage","✓ Submitted. DCDS will review your post before it appears to classmates.");await loadPosts();
 });
 async function loadEvents(){
  const root=$("eventList");const r=await db.from("dcds_community_live_sessions").select("id,room_id,title,description,starts_at,ends_at,timezone,host_user_id,cohost_user_id,status").eq("status","scheduled").order("starts_at",{ascending:true}).limit(50);
