@@ -1,0 +1,488 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#21083f"><meta name="description" content="DCDS Student Community and Professional Network">
+<title>Student Community | DCDS</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#7628d8;--dark:#451078;--deep:#21083f;--gold:#d4af37;--ink:#28183a;--muted:#756783;--line:#eadff5;--good:#17683a;--bad:#9c2f2f;--surface:#faf7fd}
+*{box-sizing:border-box}html,body{margin:0;width:100%;max-width:100%;min-height:100%;overflow-x:clip;font-family:'DM Sans',sans-serif;color:var(--ink)}
+body{min-height:100vh;min-height:100dvh;background:linear-gradient(145deg,#fbf9ff,#f1e8fb)}
+.wrap{width:min(1160px,calc(100% - 20px));margin:auto;padding:12px 0 36px}
+header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.brand{font:800 12px 'Playfair Display',serif;letter-spacing:.12em;color:var(--dark)}
+header nav{display:flex;gap:7px;flex-wrap:wrap}
+a.toplink{padding:9px 11px;border:1px solid var(--line);border-radius:10px;background:#fff;text-decoration:none;color:var(--dark);font-size:11px;font-weight:850}
+.hero{padding:24px;border-radius:22px;color:#fff;background:radial-gradient(circle at 90% 0,#9654ce,transparent 36%),linear-gradient(125deg,#21083f,#451078 62%,#7025b7);box-shadow:0 15px 40px #35105f20}
+.kicker{font-size:10px;letter-spacing:.2em;color:#f3d98e;font-weight:900}
+.hero h1{font:800 clamp(28px,5vw,40px)/1.08 'Playfair Display',serif;margin:10px 0}
+.hero p{font-size:13px;line-height:1.7;color:#eadcf8;margin:0;max-width:820px}
+#status{margin:14px 0;padding:13px;border:1px dashed #d9c8e8;border-radius:12px;background:#fff;color:var(--muted);font-size:12px;line-height:1.6}
+#app[hidden],#status[hidden],.panel[hidden]{display:none!important}
+.tabs{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:15px 0;position:sticky;top:5px;z-index:5;padding:5px;background:#f7f1fcf2;border:1px solid var(--line);border-radius:14px}
+.tabs button{min-width:0;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--dark);padding:11px 6px;font:800 11px 'DM Sans',sans-serif;cursor:pointer}
+.tabs button[aria-selected=true]{background:linear-gradient(135deg,#f2dc9c,#d6b258);border-color:#ead49a;color:#2d1742}
+.panel{min-width:0;background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:14px;box-shadow:0 8px 24px #32105f0a}
+.panel h2{font:700 22px 'Playfair Display',serif;color:var(--deep);margin:0 0 7px}
+.sub{font-size:12px;line-height:1.65;color:var(--muted);margin:0 0 14px}
+.notice{padding:13px;border:1px dashed #d9c8e8;border-radius:12px;background:#fdfaff;color:var(--muted);font-size:12px;line-height:1.65}
+.notice strong{color:var(--dark)}
+.notice.warn{border-color:#ebd29b;background:#fffaf0;color:#74531b}
+.notice.danger{border-color:#e8bcbc;background:#fff8f8;color:#8d2b2b}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
+.card{min-width:0;border:1px solid var(--line);border-radius:14px;padding:14px;background:linear-gradient(145deg,#fff,#fcf9ff)}
+.card h3{font:700 16px 'Playfair Display',serif;color:var(--deep);margin:0 0 7px}
+.card p{font-size:12px;line-height:1.65;color:#5e526b;margin:7px 0;overflow-wrap:anywhere;white-space:pre-wrap}
+.meta{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:10px;color:var(--muted);margin:0 0 8px}
+.pill{display:inline-flex;padding:5px 8px;border-radius:99px;background:#f1e5ff;color:#552080;font-size:10px;font-weight:850}
+.pill.good{background:#e8f7ed;color:var(--good)}.pill.warn{background:#fff1cc;color:#76551a}.pill.bad{background:#fff0f0;color:#9c2f2f}
+.form{display:grid;gap:10px;margin:14px 0}
+.form label{display:grid;gap:6px;font-size:11px;font-weight:850;color:var(--dark)}
+.form input,.form textarea,.form select{width:100%;min-width:0;border:1px solid #ded0ec;border-radius:10px;padding:11px 12px;background:#fff;color:var(--ink);font:500 13px 'DM Sans',sans-serif}
+.form textarea{min-height:76px;resize:vertical;line-height:1.55}
+.form .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.check{display:flex!important;align-items:center;gap:9px!important;font-weight:700!important}.check input{width:auto!important}
+.btn{border:0;border-radius:10px;padding:10px 13px;background:linear-gradient(110deg,#8d3bdb,#54168e);color:#fff;font:800 11px 'DM Sans',sans-serif;cursor:pointer;text-decoration:none;display:inline-flex;justify-content:center;align-items:center}
+.btn.secondary{background:#f1e5ff;color:var(--dark);border:1px solid #e2d2f3}
+.btn.good{background:#e8f7ed;color:var(--good);border:1px solid #cbe9d5}
+.btn.danger{background:#fff0f0;color:var(--bad);border:1px solid #f0d1d1}
+.btn:disabled{opacity:.55;cursor:wait}
+.actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
+.stack{display:grid;gap:10px}
+.status-line{font-size:11px;line-height:1.6;color:var(--muted);min-height:16px;margin-top:7px}
+.small{font-size:10px;color:var(--muted);line-height:1.55}
+.rooms{display:flex;gap:7px;flex-wrap:wrap;margin:10px 0}
+.room-btn{border:1px solid var(--line);border-radius:999px;background:#fff;padding:9px 12px;color:var(--dark);font:800 11px 'DM Sans',sans-serif;cursor:pointer}
+.room-btn[aria-pressed=true]{background:#4d197d;color:#fff;border-color:#4d197d}
+.chatbox{height:min(440px,52vh);min-height:250px;overflow:auto;border:1px solid var(--line);border-radius:14px;padding:12px;background:#fcfaff;display:flex;flex-direction:column;gap:9px}
+.chat-message{max-width:88%;border:1px solid var(--line);border-radius:13px;padding:10px 12px;background:#fff}
+.chat-message.mine{align-self:flex-end;background:#f1e5ff;border-color:#dfc8f3}
+.chat-message .who{font-size:10px;font-weight:900;color:var(--dark);display:flex;gap:7px;flex-wrap:wrap}
+.chat-message .body{font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere;margin-top:5px}
+.chat-message .when{font-size:9px;color:var(--muted);margin-top:6px}
+.chat-message .actions{margin-top:7px}
+.avatar{width:46px;height:46px;border-radius:50%;object-fit:cover;border:1px solid var(--line);background:#eee4fb}
+.session{border:1px solid var(--line);border-radius:13px;padding:13px;background:#fff}
+.session h3{font:700 15px 'Playfair Display',serif;color:var(--deep);margin:0 0 5px}
+.credential-row,.post-row{border:1px solid var(--line);border-radius:12px;padding:12px;background:#fff}
+.profile-head{display:flex;align-items:center;gap:12px;margin:12px 0}
+#profileAvatar{width:60px;height:60px;border-radius:50%;object-fit:cover;border:1px solid var(--line);background:#eee4fb}
+hr{border:0;border-top:1px solid var(--line);margin:16px 0}
+@media(max-width:760px){.tabs{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:560px){.wrap{width:calc(100% - 14px);padding-top:8px}.hero{padding:20px}.tabs{grid-template-columns:repeat(2,minmax(0,1fr));top:3px}.panel{padding:14px}.grid,.form .row{grid-template-columns:1fr}header{align-items:flex-start}.chat-message{max-width:96%}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<main class="wrap">
+<header><div class="brand">DE CHAMPIONS DIGITAL SERVICE</div><nav><a class="toplink" href="student-dashboard.html">← Student Dashboard</a><a class="toplink" href="student-learning-hub.html">Learning Hub</a></nav></header>
+<section class="hero"><div class="kicker">LEARN · SHARE · SUPPORT · GROW</div><h1>Student Community Network</h1><p>A supervised space for DCDS learners to share work, learn together and join scheduled academy events. Community access is separate from AI access and requires age review plus DCDS approval.</p></section>
+<div id="status" role="status" aria-live="polite">Checking your secure student account…</div>
+<section id="app" hidden>
+<section id="gatePanel" class="panel">
+<h2>Community access and age safety</h2>
+<p class="sub">DCDS keeps teen and adult communities separate. We do not collect a full date of birth, gender, phone number or identity-document image for your community profile.</p>
+<div id="ageState" class="notice">Checking your community eligibility…</div>
+<div id="ageRequestArea" hidden>
+<form id="ageRequestForm" class="form">
+<label>Choose your age band
+<select id="ageBand" required><option value="">Select age band</option><option value="13_17">13–17 years</option><option value="18_plus">18 years or older</option></select></label>
+<div id="guardianField" hidden><label>Verified adult guardian DCDS account UUID<input id="guardianId" maxlength="36" placeholder="Guardian account UUID" autocomplete="off"></label><div class="notice warn">Your guardian must already have a confirmed DCDS account and independently verified 18+ community status. Do not use another student’s account.</div></div>
+<button class="btn" type="submit" id="submitAge">Submit age-band request</button><div id="ageMessage" class="status-line"></div>
+</form>
+<div class="notice danger"><strong>Under-13 protection:</strong> Under-13 accounts cannot join student social chat or live community calls. This is not an optional setting.</div>
+</div>
+<div id="guardianInbox" hidden>
+<hr><h3>Guardian consent requests</h3><p class="sub">These requests are for a young person who nominated your verified adult DCDS account. Only confirm if you are their parent or legally authorised guardian and you understand the community controls.</p>
+<div id="guardianRequests" class="stack"></div>
+</div>
+<div id="accessRequestArea" hidden>
+<hr><h3>Request community membership</h3><p class="sub">Your community age review is complete. Submit a separate membership request; an administrator must approve it before rooms become available.</p>
+<button class="btn" id="requestCommunity" type="button">Request DCDS community access</button><div id="accessMessage" class="status-line"></div>
+</div>
+</section>
+
+<section id="communityArea" hidden>
+<nav class="tabs" aria-label="Community sections">
+<button type="button" data-tab="chat" aria-selected="true">💬 Group Chat</button>
+<button type="button" data-tab="showcase" aria-selected="false">🎨 Share Work</button>
+<button type="button" data-tab="profile" aria-selected="false">👤 My Profile</button>
+<button type="button" data-tab="credentials" aria-selected="false">📄 Credentials</button>
+<button type="button" data-tab="events" aria-selected="false">🎥 Live Events</button>
+</nav>
+
+<section class="panel" id="tab-chat">
+<h2>Community Group Chat</h2><p class="sub">Group rooms only — no private student-to-student messages. External links, money requests, password/OTP requests and payment solicitation are not allowed. Teen messages are reviewed before classmates can see them.</p>
+<div id="roomList" class="rooms" aria-label="Your community rooms"></div>
+<div id="roomTitle" class="meta"></div>
+<div id="chatMessages" class="chatbox" role="log" aria-live="polite"><div class="notice">Choose a group room to begin.</div></div>
+<form id="messageForm" class="form">
+<label>Write to this group<textarea id="messageBody" maxlength="2000" required placeholder="Be kind, useful and respectful. External links are blocked."></textarea></label>
+<button class="btn" id="sendMessage" type="submit">Send group message</button><div class="small">Your group has a server-side message limit. Teen messages remain pending until a moderator approves them.</div><div id="chatStatus" class="status-line" role="status"></div>
+</form>
+</section>
+
+<section class="panel" id="tab-showcase" hidden>
+<h2>Student Project Showcase</h2><p class="sub">Share your completed work with your age-separated community. All posts and images are reviewed by DCDS before other students can see them. Do not upload client work without permission.</p>
+<form id="postForm" class="form">
+<label>Project title<input id="postTitle" required minlength="3" maxlength="140"></label>
+<label>Tell the group about your work<textarea id="postBody" maxlength="2500" placeholder="What did you build? What did you learn? Avoid contact details and external links."></textarea></label>
+<label>Optional project image<input id="postImage" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<button class="btn" type="submit" id="submitPost">Submit project for review</button><div id="postMessage" class="status-line"></div>
+</form>
+<div id="myPosts" class="stack"></div>
+</section>
+
+<section class="panel" id="tab-profile" hidden>
+<h2>My Professional Community Profile</h2><p class="sub">Only your approved age cohort can view an approved community profile. Your email, phone, date of birth, gender and home address are not shown here.</p>
+<div class="profile-head"><img id="profileAvatar" alt="Your profile picture" src="data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs="><div><strong id="profileDisplay">Your community profile</strong><div class="small" id="profileVisibility">Private by default</div></div></div>
+<form id="profileForm" class="form">
+<label>Display name<input id="displayName" required minlength="2" maxlength="60" placeholder="Name students should see"></label>
+<label>Professional headline<input id="profileHeadline" maxlength="140" placeholder="e.g. Student Designer · Digital Creator"></label>
+<label>Short biography<textarea id="profileBio" maxlength="1200" placeholder="Share the professional interests you are comfortable showing to your cohort."></textarea></label>
+<div class="row"><label>Skills (comma-separated)<input id="profileSkills" maxlength="500"></label><label>Interests (comma-separated)<input id="profileInterests" maxlength="500"></label></div>
+<label>Profile picture (JPEG, PNG or WebP; max 3 MB)<input id="avatarFile" type="file" accept="image/jpeg,image/png,image/webp"></label>
+<label>Profile visibility<select id="profileVisibilitySelect"><option value="private">Private — only me and DCDS administrators</option><option value="pending_review">Request cohort visibility — admin approval required</option></select></label>
+<button class="btn" type="submit" id="saveProfile">Save profile</button><div id="profileMessage" class="status-line"></div>
+</form>
+<div class="notice warn">Do not add age, gender, personal phone numbers, email, home address, school address, passwords, OTPs or identity numbers to your public biography.</div>
+</section>
+
+<section class="panel" id="tab-credentials" hidden>
+<h2>My Professional Credentials</h2><p class="sub">Upload relevant course certificates, educational qualifications or professional awards. Files are private and visible only to you and authorised DCDS administrators.</p>
+<div class="notice danger"><strong>Never upload:</strong> passport, government ID, national identity number, bank statement, payment card, password, OTP or confidential family information. DCDS credential review is not a substitute for official identity verification.</div>
+<form id="credentialForm" class="form">
+<label>Credential type<select id="credentialType"><option value="course_certificate">DCDS course certificate</option><option value="academic_qualification">Academic qualification</option><option value="professional_certificate">Professional certificate</option><option value="award">Award</option><option value="other">Other professional credential</option></select></label>
+<label>Credential title<input id="credentialTitle" minlength="2" maxlength="160" required></label>
+<label>Issuer / institution<input id="credentialIssuer" maxlength="160"></label>
+<label>Year issued<input id="credentialYear" type="number" min="1950" max="2100" placeholder="Optional"></label>
+<label>File (PDF, JPEG or PNG; max 8 MB)<input id="credentialFile" type="file" accept="application/pdf,image/jpeg,image/png" required></label>
+<button class="btn" type="submit" id="uploadCredential">Upload private credential</button><div id="credentialMessage" class="status-line"></div>
+</form>
+<div id="credentialList" class="stack"></div>
+</section>
+
+<section class="panel" id="tab-events" hidden>
+<h2>Scheduled DCDS Live Events</h2><p class="sub">Events are scheduled and hosted by authorised DCDS administrators. Teen events have an additional administrator co-host. Recording is disabled. Your meeting link is shown only after you register for an event in your own age cohort.</p>
+<div id="eventList" class="stack"><div class="notice">Loading your age-cohort events…</div></div>
+</section>
+</section>
+</section>
+</main>
+
+<script>
+"use strict";
+const DCDS_PRODUCTION_HOSTS=["dechampions03-leader.github.io","dechampionsdigital.com","www.dechampionsdigital.com"];
+const IS_DCDS_PRODUCTION=DCDS_PRODUCTION_HOSTS.includes(window.location.hostname.toLowerCase());
+const SUPABASE_URL=IS_DCDS_PRODUCTION?"https://qxsenflgaweeadvggnyp.supabase.co":"https://tjgsxbmkpvktlqulbktv.supabase.co";
+const SUPABASE_KEY=IS_DCDS_PRODUCTION?"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP":"sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const dateText=v=>{if(!v)return"Time not set";const d=new Date(v);return Number.isNaN(d.getTime())?"Date unavailable":d.toLocaleString();};
+const validFile=(f,mimes,max)=>!!f&&mimes.includes(f.type)&&f.size>0&&f.size<=max;
+const uidFile=(uid,prefix,ext)=>uid+"/"+prefix+"-"+(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2))+"."+ext;
+const tagArray=v=>[...new Set(String(v||"").split(",").map(x=>x.trim()).filter(Boolean))].slice(0,20);
+const setMsg=(id,v)=>$(id).textContent=v;
+const showNotice=(node,v)=>{node.replaceChildren();const el=document.createElement("div");el.className="notice";el.textContent=v;node.appendChild(el);};
+const addText=(node,tag,text,cls)=>{const el=document.createElement(tag);if(cls)el.className=cls;el.textContent=text;node.appendChild(el);return el;};
+let user=null,access=null,ageRequest=null,profile=null,rooms=[],currentRoom=null,chatChannel=null,guardianRequests=[],registrations=new Set();
+
+function setTab(tab){
+ document.querySelectorAll("[data-tab]").forEach(b=>b.setAttribute("aria-selected",String(b.dataset.tab===tab)));
+ document.querySelectorAll("[id^=tab-]").forEach(p=>p.hidden=p.id!=="tab-"+tab);
+}
+document.querySelectorAll("[data-tab]").forEach(b=>b.addEventListener("click",()=>setTab(b.dataset.tab)));
+$("ageBand").addEventListener("change",()=>{$("guardianField").hidden=$("ageBand").value!=="13_17";});
+async function requireStudent(){
+ const {data:{session},error}=await db.auth.getSession();if(error)throw error;
+ user=session?.user;
+ if(!user||user.is_anonymous||(!user.email_confirmed_at&&!user.phone_confirmed_at)){
+  window.location.replace("index.html?login=required&next="+encodeURIComponent("student-community.html"));return false;
+ }
+ return true;
+}
+async function loadAgeState(){
+ const r=await db.from("dcds_community_age_requests").select("id,user_id,age_band,guardian_user_id,guardian_consent_status,status,created_at").eq("user_id",user.id).maybeSingle();
+ if(r.error)throw r.error;ageRequest=r.data;
+ const node=$("ageState");
+ if(!ageRequest){
+  showNotice(node,"No community age review is on file yet. Choose your age band to begin. Under-13 accounts cannot access social community features.");
+  $("ageRequestArea").hidden=false;$("accessRequestArea").hidden=true;return;
+ }
+ $("ageRequestArea").hidden=true;
+ const statusLabel={pending:"Awaiting DCDS age review",verified:"Community age review verified",rejected:"Age review rejected"}[ageRequest.status]||ageRequest.status;
+ const guard=ageRequest.age_band==="13_17"?" · Guardian consent: "+ageRequest.guardian_consent_status.replaceAll("_"," "):"";
+ showNotice(node,"Age band: "+ageRequest.age_band.replaceAll("_"," ")+" · "+statusLabel+guard);
+ if(ageRequest.status==="verified"){
+  const a=await db.from("dcds_community_access").select("user_id,cohort,status").eq("user_id",user.id).maybeSingle();
+  if(a.error)throw a.error;access=a.data;
+  if(access?.status==="active"){
+   $("gatePanel").hidden=true;$("communityArea").hidden=false;await initializeCommunity();return;
+  }
+  const q=await db.from("dcds_community_access_requests").select("id,status,requested_cohort").eq("user_id",user.id).maybeSingle();
+  if(q.error)throw q.error;
+  if(q.data){
+   showNotice(node,"Your community membership request is "+q.data.status+". A DCDS administrator must approve it before rooms appear.");
+   $("accessRequestArea").hidden=true;
+  }else $("accessRequestArea").hidden=false;
+ }else{
+  $("accessRequestArea").hidden=true;
+  if(ageRequest.status==="pending"&&ageRequest.age_band==="13_17"&&ageRequest.guardian_consent_status==="pending")
+   showNotice(node,"Your guardian must confirm consent from their own verified adult DCDS account. After that, DCDS will complete the private age review.");
+ }
+}
+$("ageRequestForm").addEventListener("submit",async e=>{
+ e.preventDefault();const band=$("ageBand").value,guardian=$("guardianId").value.trim();
+ if(!["13_17","18_plus"].includes(band)){setMsg("ageMessage","Choose 13–17 or 18+. Under-13 accounts cannot join this community.");return;}
+ if(band==="13_17"&&(!/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(guardian)||guardian===user.id)){setMsg("ageMessage","Enter a different, valid adult guardian DCDS account UUID.");return;}
+ const btn=$("submitAge");btn.disabled=true;setMsg("ageMessage","Submitting your community age-band request…");
+ const payload={user_id:user.id,age_band:band,guardian_user_id:band==="13_17"?guardian:null,guardian_consent_status:band==="13_17"?"pending":"not_required"};
+ const r=await db.from("dcds_community_age_requests").insert(payload).select("id").single();
+ btn.disabled=false;if(r.error){setMsg("ageMessage","Request could not be saved: "+r.error.message);return;}
+ if(band==="13_17"){
+  const consent=await db.from("dcds_community_guardian_consents").insert({age_request_id:r.data.id,student_user_id:user.id,guardian_user_id:guardian,status:"pending"});
+  if(consent.error){setMsg("ageMessage","Age request saved, but guardian consent request could not be created. Contact DCDS support; do not submit another request. "+consent.error.message);return;}
+ }
+ $("ageRequestForm").reset();$("guardianField").hidden=true;setMsg("ageMessage","✓ Request submitted. DCDS will review age assurance after any required guardian consent.");
+ await loadAgeState();await loadGuardianInbox();
+});
+async function loadGuardianInbox(){
+ const r=await db.from("dcds_community_guardian_consents").select("id,age_request_id,student_user_id,status,guardian_note,created_at").eq("guardian_user_id",user.id).eq("status","pending").order("created_at",{ascending:false});
+ if(r.error)throw r.error;guardianRequests=r.data||[];$("guardianInbox").hidden=!guardianRequests.length;
+ const root=$("guardianRequests");root.replaceChildren();
+ if(!guardianRequests.length)return;
+ guardianRequests.forEach(x=>{
+  const card=document.createElement("article");card.className="card";
+  addText(card,"h3","Guardian consent request");
+  addText(card,"p","A DCDS learner account ending "+x.student_user_id.slice(-8)+" has nominated your account as guardian. Confirm only if you are their parent or legally authorised guardian.");
+  const confirm=document.createElement("label");confirm.className="check";
+  const box=document.createElement("input");box.type="checkbox";const span=document.createElement("span");span.textContent="I am this learner's parent or legally authorised guardian, understand the separate teen community, and consent to their access under DCDS supervision.";confirm.append(box,span);card.appendChild(confirm);
+  const actions=document.createElement("div");actions.className="actions";
+  const yes=document.createElement("button");yes.className="btn";yes.textContent="Confirm guardian consent";
+  const no=document.createElement("button");no.className="btn danger";no.textContent="Reject request";
+  const msg=addText(card,"div","","status-line");
+  yes.addEventListener("click",async()=>{
+   if(!box.checked){msg.textContent="Please read and confirm the guardian declaration first.";return;}
+   yes.disabled=true;no.disabled=true;
+   const u=await db.from("dcds_community_guardian_consents").update({status:"verified",confirmed_at:new Date().toISOString(),guardian_note:"Guardian consent confirmed in the DCDS community flow."}).eq("id",x.id).eq("guardian_user_id",user.id);
+   if(u.error){yes.disabled=false;no.disabled=false;msg.textContent="Consent could not be confirmed: "+u.error.message;return;}
+   msg.textContent="✓ Guardian consent recorded. DCDS still needs to review the community age request.";await loadGuardianInbox();
+  });
+  no.addEventListener("click",async()=>{
+   if(!confirm("Reject this guardian-consent request?"))return;
+   yes.disabled=true;no.disabled=true;
+   const u=await db.from("dcds_community_guardian_consents").update({status:"rejected",confirmed_at:new Date().toISOString(),guardian_note:"Guardian consent rejected."}).eq("id",x.id).eq("guardian_user_id",user.id);
+   if(u.error){yes.disabled=false;no.disabled=false;msg.textContent="Could not reject request: "+u.error.message;return;}
+   msg.textContent="Request rejected.";await loadGuardianInbox();
+  });
+  actions.append(yes,no);card.append(actions);root.append(card);
+ });
+}
+$("requestCommunity").addEventListener("click",async()=>{
+ const btn=$("requestCommunity");btn.disabled=true;setMsg("accessMessage","Sending community access request…");
+ const cohort=ageRequest?.age_band==="13_17"?"teen_13_17":"adult_18_plus";
+ const r=await db.from("dcds_community_access_requests").insert({user_id:user.id,requested_cohort:cohort,status:"pending"});
+ btn.disabled=false;if(r.error){setMsg("accessMessage","Community access request could not be sent: "+r.error.message);return;}
+ setMsg("accessMessage","✓ Request sent. Your rooms will appear after DCDS approval.");await loadAgeState();
+});
+
+function clearRealtime(){if(chatChannel){db.removeChannel(chatChannel);chatChannel=null;}}
+async function initializeCommunity(){
+ const a=await db.from("dcds_community_access").select("user_id,cohort,status").eq("user_id",user.id).single();
+ if(a.error)throw a.error;access=a.data;
+ if(!access||access.status!=="active"){showNotice($("status"),"Your community access is not active. Please refresh or contact DCDS.");$("app").hidden=true;return;}
+ const q=await db.from("dcds_community_rooms").select("id,slug,cohort,room_type,title,description,sort_order").eq("cohort",access.cohort).eq("is_active",true).order("sort_order");
+ if(q.error)throw q.error;rooms=q.data||[];
+ await Promise.all([loadProfile(),loadPosts(),loadCredentials(),loadEvents()]);
+ renderRooms();
+ if(rooms.length)await selectRoom(rooms[0].id);
+}
+function renderRooms(){
+ const root=$("roomList");root.replaceChildren();
+ rooms.forEach(r=>{
+  const b=document.createElement("button");b.className="room-btn";b.type="button";b.textContent=r.title;b.dataset.id=r.id;b.setAttribute("aria-pressed",String(currentRoom?.id===r.id));
+  b.addEventListener("click",()=>selectRoom(r.id));root.appendChild(b);
+ });
+}
+function refreshRoomButtons(){document.querySelectorAll(".room-btn").forEach(b=>b.setAttribute("aria-pressed",String(b.dataset.id===currentRoom?.id)));}
+async function selectRoom(id){
+ clearRealtime();currentRoom=rooms.find(r=>r.id===id);if(!currentRoom)return;
+ refreshRoomButtons();$("roomTitle").textContent=currentRoom.title+" · "+(access.cohort==="teen_13_17"?"Teen-only group":"Adult group");
+ await loadMessages();
+ chatChannel=db.channel("dcds-community-room-"+id)
+  .on("postgres_changes",{event:"*",schema:"public",table:"dcds_community_messages",filter:"room_id=eq."+id},()=>loadMessages())
+  .subscribe();
+}
+function timeText(v){const d=new Date(v);return Number.isNaN(d.getTime())?"":d.toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"});}
+async function loadMessages(){
+ if(!currentRoom)return;
+ const root=$("chatMessages");const r=await db.from("dcds_community_messages").select("id,room_id,author_id,body,status,created_at").eq("room_id",currentRoom.id).order("created_at",{ascending:true}).limit(100);
+ if(r.error){showNotice(root,"Group messages could not be loaded: "+r.error.message);return;}
+ const msgs=r.data||[],ids=[...new Set(msgs.map(x=>x.author_id).filter(x=>x!==user.id))];let names=new Map();
+ if(ids.length){const p=await db.from("dcds_community_profiles").select("user_id,display_name").in("user_id",ids);if(!p.error)names=new Map((p.data||[]).map(x=>[x.user_id,x.display_name]));}
+ root.replaceChildren();if(!msgs.length){showNotice(root,"No messages in this room yet. Be the first to share a helpful message.");return;}
+ msgs.forEach(m=>{
+  const box=document.createElement("article");box.className="chat-message"+(m.author_id===user.id?" mine":"");
+  const who=document.createElement("div");who.className="who";who.textContent=m.author_id===user.id?"You":(names.get(m.author_id)||"DCDS learner");
+  const badge=document.createElement("span");badge.className="pill "+(m.status==="pending"?"warn":"good");badge.textContent=m.status==="pending"?"Awaiting review":m.status==="hidden"?"Hidden":m.status==="removed"?"Removed":"Published";who.appendChild(badge);
+  const body=document.createElement("div");body.className="body";body.textContent=m.body;
+  const when=document.createElement("div");when.className="when";when.textContent=timeText(m.created_at);
+  box.append(who,body,when);
+  if(m.author_id!==user.id&&m.status==="visible"){
+   const actions=document.createElement("div");actions.className="actions";
+   const report=document.createElement("button");report.className="btn secondary";report.type="button";report.textContent="Report";
+   report.addEventListener("click",()=>reportContent({type:"message",id:m.id,user:m.author_id}));
+   const block=document.createElement("button");block.className="btn danger";block.type="button";block.textContent="Block";
+   block.addEventListener("click",()=>blockUser(m.author_id));
+   actions.append(report,block);box.appendChild(actions);
+  }
+  root.appendChild(box);
+ });
+ root.scrollTop=root.scrollHeight;
+}
+$("messageForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!currentRoom)return;
+ const body=$("messageBody").value.trim();if(!body)return;
+ if(/https?:\/\/|www\.|t\.me\/|wa\.me\/|bit\.ly\/|tinyurl\.com/i.test(body)){setMsg("chatStatus","Links are not permitted in community chat. Share learning resources through approved course channels.");return;}
+ const btn=$("sendMessage");btn.disabled=true;setMsg("chatStatus","Sending to "+currentRoom.title+"…");
+ const r=await db.from("dcds_community_messages").insert({room_id:currentRoom.id,author_id:user.id,body});
+ btn.disabled=false;if(r.error){setMsg("chatStatus","Message was not sent: "+r.error.message);return;}
+ $("messageBody").value="";setMsg("chatStatus",access.cohort==="teen_13_17"?"✓ Submitted for DCDS moderator review.":"✓ Message sent to your group.");await loadMessages();
+});
+async function reportContent(x){
+ const reason=prompt("Choose a report reason: spam, scam_or_money_request, harassment, impersonation, unsafe_content, other");
+ if(!["spam","scam_or_money_request","harassment","impersonation","unsafe_content","other"].includes(reason))return;
+ const details=prompt("Optional details for DCDS moderators (do not include passwords or financial information).")||"";
+ const r=await db.from("dcds_community_reports").insert({reporter_user_id:user.id,reported_user_id:x.user,room_id:currentRoom.id,object_type:x.type,object_id:x.id,reason,details});
+ alert(r.error?"Report could not be submitted: "+r.error.message:"Your report has been sent privately to DCDS moderators.");
+}
+async function blockUser(id){
+ if(!confirm("Block this DCDS community member? Their messages and project posts will be hidden from you."))return;
+ const r=await db.from("dcds_community_blocks").insert({blocker_user_id:user.id,blocked_user_id:id});
+ if(r.error&&r.code!=="23505"){alert("User could not be blocked: "+r.error.message);return;}
+ alert("Member blocked. You can still report harmful or suspicious behaviour to DCDS.");
+ await loadMessages();
+}
+async function loadProfile(){
+ const r=await db.from("dcds_community_profiles").select("user_id,display_name,headline,bio,skill_tags,interest_tags,avatar_path,visibility").eq("user_id",user.id).maybeSingle();
+ if(r.error)throw r.error;profile=r.data;
+ $("displayName").value=profile?.display_name||user.email?.split("@")[0]||"DCDS Student";
+ $("profileHeadline").value=profile?.headline||"";$("profileBio").value=profile?.bio||"";
+ $("profileSkills").value=(profile?.skill_tags||[]).join(", ");$("profileInterests").value=(profile?.interest_tags||[]).join(", ");
+ $("profileVisibilitySelect").value=profile?.visibility==="pending_review"?"pending_review":"private";
+ $("profileDisplay").textContent=profile?.display_name||"Your community profile";
+ $("profileVisibility").textContent=profile?.visibility==="cohort"?"Visible to your approved age cohort":profile?.visibility==="pending_review"?"Cohort visibility awaiting DCDS review":"Private profile";
+ if(profile?.avatar_path){const s=await db.storage.from("dcds-community-avatars").createSignedUrl(profile.avatar_path,900);if(!s.error)$("profileAvatar").src=s.data.signedUrl;}
+}
+$("profileForm").addEventListener("submit",async e=>{
+ e.preventDefault();const name=$("displayName").value.trim();if(name.length<2){setMsg("profileMessage","Enter a display name with at least 2 characters.");return;}
+ const btn=$("saveProfile");btn.disabled=true;setMsg("profileMessage","Saving your profile…");
+ let avatarPath=profile?.avatar_path||null;const file=$("avatarFile").files[0];
+ if(file){
+  if(!validFile(file,["image/jpeg","image/png","image/webp"],3*1024*1024)){btn.disabled=false;setMsg("profileMessage","Choose a JPEG, PNG or WebP image no larger than 3 MB.");return;}
+  const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";const path=uidFile(user.id,"avatar",ext);
+  const up=await db.storage.from("dcds-community-avatars").upload(path,file,{contentType:file.type,upsert:false});
+  if(up.error){btn.disabled=false;setMsg("profileMessage","Profile picture could not be uploaded: "+up.error.message);return;}avatarPath=path;
+ }
+ const visibility=$("profileVisibilitySelect").value;
+ const payload={user_id:user.id,display_name:name,headline:$("profileHeadline").value.trim(),bio:$("profileBio").value.trim(),skill_tags:tagArray($("profileSkills").value),interest_tags:tagArray($("profileInterests").value),avatar_path:avatarPath,visibility,updated_at:new Date().toISOString()};
+ const r=await db.from("dcds_community_profiles").upsert(payload,{onConflict:"user_id"});btn.disabled=false;
+ if(r.error){setMsg("profileMessage","Profile could not be saved: "+r.error.message);return;}
+ profile=payload;setMsg("profileMessage",visibility==="pending_review"?"✓ Saved. Cohort visibility is pending DCDS approval.":"✓ Profile saved with private visibility.");
+ await loadProfile();
+});
+async function loadCredentials(){
+ const root=$("credentialList");const r=await db.from("dcds_community_credentials").select("id,credential_type,title,issuer,issued_year,storage_path,verification_status,review_note,created_at").eq("user_id",user.id).order("created_at",{ascending:false});
+ if(r.error){showNotice(root,"Private credentials could not be loaded: "+r.error.message);return;}
+ root.replaceChildren();if(!r.data?.length){showNotice(root,"No professional credentials have been uploaded yet.");return;}
+ for(const x of r.data){
+  const card=document.createElement("article");card.className="credential-row";const title=addText(card,"strong",x.title);
+  addText(card,"p",[x.credential_type.replaceAll("_"," "),x.issuer,x.issued_year].filter(Boolean).join(" · "));
+  const pill=addText(card,"span",x.verification_status,"pill "+(x.verification_status==="verified"?"good":x.verification_status==="rejected"?"bad":"warn"));
+  if(x.review_note)addText(card,"p","DCDS review: "+x.review_note);
+  const actions=document.createElement("div");actions.className="actions";const download=document.createElement("button");download.className="btn secondary";download.textContent="Open private file";
+  download.addEventListener("click",async()=>{download.disabled=true;const s=await db.storage.from("dcds-community-credentials").createSignedUrl(x.storage_path,300);download.disabled=false;if(s.error){alert("File could not be opened: "+s.error.message);return;}window.open(s.data.signedUrl,"_blank","noopener,noreferrer");});
+  actions.appendChild(download);card.append(actions);root.append(card);
+ }
+}
+$("credentialForm").addEventListener("submit",async e=>{
+ e.preventDefault();const file=$("credentialFile").files[0];if(!validFile(file,["application/pdf","image/jpeg","image/png"],8*1024*1024)){setMsg("credentialMessage","Choose a PDF, JPEG or PNG file no larger than 8 MB.");return;}
+ const btn=$("uploadCredential");btn.disabled=true;setMsg("credentialMessage","Uploading to your private credential folder…");
+ const ext=file.type==="application/pdf"?"pdf":file.type==="image/jpeg"?"jpg":"png";const path=uidFile(user.id,"credential",ext);
+ const up=await db.storage.from("dcds-community-credentials").upload(path,file,{contentType:file.type,upsert:false});
+ if(up.error){btn.disabled=false;setMsg("credentialMessage","Upload failed: "+up.error.message);return;}
+ const year=Number($("credentialYear").value)||null;
+ const r=await db.from("dcds_community_credentials").insert({user_id:user.id,credential_type:$("credentialType").value,title:$("credentialTitle").value.trim(),issuer:$("credentialIssuer").value.trim(),issued_year:year,storage_path:path,verification_status:"pending"});
+ btn.disabled=false;if(r.error){setMsg("credentialMessage","File uploaded privately but metadata could not be saved. Contact DCDS support; do not re-upload. "+r.error.message);return;}
+ $("credentialForm").reset();setMsg("credentialMessage","✓ Credential uploaded privately and queued for DCDS review.");await loadCredentials();
+});
+async function uploadPostImage(file){
+ if(!file)return null;
+ if(!validFile(file,["image/jpeg","image/png","image/webp"],5*1024*1024))throw new Error("Choose a JPEG, PNG or WebP project image no larger than 5 MB.");
+ const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";const path=uidFile(user.id,"project",ext);
+ const r=await db.storage.from("dcds-community-posts").upload(path,file,{contentType:file.type,upsert:false});
+ if(r.error)throw r.error;return path;
+}
+async function loadPosts(){
+ const root=$("myPosts");const r=await db.from("dcds_community_posts").select("id,room_id,author_id,title,body,attachment_path,status,created_at").order("created_at",{ascending:false}).limit(40);
+ if(r.error){showNotice(root,"Project posts could not be loaded.");return;}
+ root.replaceChildren();if(!r.data?.length){showNotice(root,"No project posts yet. Your first submission will be reviewed by DCDS.");return;}
+ for(const p of r.data){
+  const card=document.createElement("article");card.className="post-row";
+  addText(card,"h3",p.title);
+  addText(card,"div",p.status.replaceAll("_"," "),"pill "+(p.status==="approved"?"good":"warn"));
+  addText(card,"p",p.body);
+  if(p.attachment_path){const b=document.createElement("button");b.className="btn secondary";b.textContent="View private project image";b.addEventListener("click",async()=>{const s=await db.storage.from("dcds-community-posts").createSignedUrl(p.attachment_path,300);if(s.error){alert("Preview unavailable: "+s.error.message);return;}window.open(s.data.signedUrl,"_blank","noopener,noreferrer");});card.appendChild(b);}
+  root.append(card);
+ }
+}
+$("postForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!rooms.some(x=>x.room_type==="project_showcase")){setMsg("postMessage","Your project showcase room is not available.");return;}
+ const title=$("postTitle").value.trim(),body=$("postBody").value.trim(),file=$("postImage").files[0];
+ if(/https?:\/\/|www\.|t\.me\/|wa\.me\/|bit\.ly\/|tinyurl\.com/i.test(body)){setMsg("postMessage","External links are not allowed in community posts.");return;}
+ const btn=$("submitPost");btn.disabled=true;setMsg("postMessage","Preparing your project for DCDS review…");
+ let attachment=null;try{attachment=await uploadPostImage(file);}catch(err){btn.disabled=false;setMsg("postMessage","Image upload failed: "+err.message);return;}
+ const room=rooms.find(x=>x.room_type==="project_showcase");
+ const r=await db.from("dcds_community_posts").insert({room_id:room.id,author_id:user.id,title,body,attachment_path:attachment,status:"pending"});
+ btn.disabled=false;if(r.error){setMsg("postMessage","Project post was not saved: "+r.error.message);return;}
+ $("postForm").reset();setMsg("postMessage","✓ Submitted. DCDS will review the work before it appears to classmates.");await loadPosts();
+});
+async function loadEvents(){
+ const root=$("eventList");const r=await db.from("dcds_community_live_sessions").select("id,room_id,title,description,starts_at,ends_at,timezone,host_user_id,cohost_user_id,status").eq("status","scheduled").order("starts_at",{ascending:true}).limit(50);
+ if(r.error){showNotice(root,"Live events could not be loaded: "+r.error.message);return;}
+ root.replaceChildren();if(!r.data?.length){showNotice(root,"No scheduled community live events yet. DCDS administrators will publish sessions here.");return;}
+ const roomsById=new Map(rooms.map(x=>[x.id,x]));
+ const regs=await db.from("dcds_community_live_registrations").select("session_id,status").eq("user_id",user.id);
+ if(!regs.error)registrations=new Set((regs.data||[]).filter(x=>x.status==="registered").map(x=>x.session_id));
+ for(const s of r.data){
+  const card=document.createElement("article");card.className="session";addText(card,"h3",s.title);
+  addText(card,"div",(roomsById.get(s.room_id)?.title||"DCDS group")+" · "+dateText(s.starts_at),"meta");
+  addText(card,"p",s.description);
+  const msg=addText(card,"div","","status-line");
+  if(registrations.has(s.id)){
+   const linkRes=await db.from("dcds_community_live_session_links").select("meeting_url").eq("session_id",s.id).maybeSingle();
+   if(!linkRes.error&&linkRes.data?.meeting_url){
+    const a=document.createElement("a");a.className="btn";a.href=linkRes.data.meeting_url;a.target="_blank";a.rel="noopener noreferrer";a.textContent="Join scheduled session ↗";card.append(a);
+   }else addText(card,"span","Registered · meeting link will appear when the host publishes it.","pill good");
+   const cancel=document.createElement("button");cancel.className="btn secondary";cancel.textContent="Cancel registration";cancel.addEventListener("click",async()=>{cancel.disabled=true;const u=await db.from("dcds_community_live_registrations").update({status:"cancelled",updated_at:new Date().toISOString()}).eq("session_id",s.id).eq("user_id",user.id);cancel.disabled=false;if(u.error){msg.textContent="Could not cancel: "+u.error.message;return;}await loadEvents();});card.appendChild(cancel);
+  }else{
+   const b=document.createElement("button");b.className="btn";b.textContent="Register for this group session";b.addEventListener("click",async()=>{b.disabled=true;const u=await db.from("dcds_community_live_registrations").insert({session_id:s.id,user_id:user.id,status:"registered"});b.disabled=false;if(u.error){msg.textContent="Registration failed: "+u.error.message;return;}await loadEvents();});card.appendChild(b);
+  }
+  root.append(card);
+ }
+}
+async function init(){
+ if(!await requireStudent())return;
+ $("status").hidden=true;$("app").hidden=false;
+ await loadGuardianInbox();
+ await loadAgeState();
+ if(!$("communityArea").hidden){await initializeCommunity();}
+}
+init().catch(err=>{console.error("DCDS Student Community",err);$("status").hidden=false;$("status").textContent="The community page could not load safely. No community record was changed. Please return to the Student Dashboard or contact DCDS support.";});
+window.addEventListener("pagehide",clearRealtime);
+</script>
+</body></html>
