@@ -58,6 +58,10 @@ declare
   v_user_cohort text;
   v_user_status text;
 begin
+  if new.status <> 'active' then
+    return new;
+  end if;
+
   select cohort into v_room_cohort
   from public.dcds_community_rooms
   where id = new.room_id and is_active;
