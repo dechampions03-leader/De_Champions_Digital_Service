@@ -103,5 +103,26 @@ create trigger dcds_community_resolve_guardian_invite
 before insert on public.dcds_community_age_requests
 for each row execute function private.dcds_community_resolve_guardian_invite();
 
+create or replace function private.dcds_community_create_guardian_consent_request()
+returns trigger
+language plpgsql
+security definer
+set search_path = ''
+as $
+begin
+  if new.age_band='13_17' then
+    insert into public.dcds_community_guardian_consents(
+      age_request_id,student_user_id,guardian_user_id,status
+    ) values (new.id,new.user_id,new.guardian_user_id,'pending')
+    on conflict(age_request_id) do nothing;
+  end if;
+  return new;
+end;
+$;
+revoke all on function private.dcds_community_create_guardian_consent_request() from public,anon,authenticated;
+create trigger dcds_community_create_guardian_consent_request
+after insert on public.dcds_community_age_requests
+for each row execute function private.dcds_community_create_guardian_consent_request();
+
 comment on table public.dcds_community_guardian_invite_codes is 'One-time seven-day guardian codes; plaintext is returned once by a verified adult RPC and only a hash is stored.';
 comment on column public.dcds_community_age_requests.guardian_invite_code is 'Transient one-time code input; a BEFORE INSERT trigger resolves it into guardian_user_id and clears it before storage.';
