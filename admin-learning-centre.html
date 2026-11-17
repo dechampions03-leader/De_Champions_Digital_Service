@@ -268,14 +268,14 @@ $("submissionList").addEventListener("click",async e=>{
  const b=e.target.closest("[data-save-grade]");if(!b)return;const submissionId=b.dataset.saveGrade,assignment=assignments.find(a=>a.id===$("rubricAssignment").value);
  const inputs=[...$("submissionList").querySelectorAll('[data-rubric-score][data-submission="'+submissionId+'"]')];
  const scores=[],now=new Date().toISOString();let total=0;
- for(const input of inputs){const score=Number(input.value),criterion=activeCriteria.find(c=>c.id===input.dataset.rubricScore);if(input.value.trim()===""||!criterion||!Number.isFinite(score)||score<0||score>Number(criterion.max_points)){status("grade-message", "");const msg=$("[data-grade-message='"+submissionId+"']");msg.textContent="Enter a valid score for every criterion.";return;}
-  total+=score;scores.push({submission_id:submissionId,criterion_id:criterion.id,score,feedback:$('[data-rubric-feedback="'+criterion.id+'"][data-submission="'+submissionId+'"]').value.trim()||null,graded_by:admin.id,updated_at:now});
+ for(const input of inputs){const score=Number(input.value),criterion=activeCriteria.find(c=>c.id===input.dataset.rubricScore);if(input.value.trim()===""||!criterion||!Number.isFinite(score)||score<0||score>Number(criterion.max_points)){const msg=$("[data-grade-message='"+submissionId+"']");msg.textContent="Enter a valid score for every criterion.";return;}
+  total+=score;scores.push({submission_id:submissionId,criterion_id:criterion.id,score,feedback:document.querySelector('[data-rubric-feedback="'+criterion.id+'"][data-submission="'+submissionId+'"]').value.trim()||null,graded_by:admin.id,updated_at:now});
  }
  if(total>Number(assignment.max_score)){const msg=$("[data-grade-message='"+submissionId+"']");msg.textContent="Rubric total exceeds the assignment maximum.";return;}
  b.disabled=true;const msg=$("[data-grade-message='"+submissionId+"']");msg.textContent="Saving rubric scores…";
  const saved=await db.from("dcds_assignment_rubric_scores").upsert(scores,{onConflict:"submission_id,criterion_id"});
  if(saved.error){b.disabled=false;msg.textContent="Rubric scores not saved: "+saved.error.message;return;}
- const general=$('[data-general-feedback="'+submissionId+'"]').value.trim()||null;
+ const general=document.querySelector('[data-general-feedback="'+submissionId+'"]').value.trim()||null;
  const grade=await db.from("assignment_submissions").update({score:total,feedback:general,status:"graded",graded_by:admin.id,graded_at:now,updated_at:now}).eq("id",submissionId);
  b.disabled=false;if(grade.error){msg.textContent="Rubric saved, but the overall grade update failed: "+grade.error.message;return;}
  msg.textContent="✓ Rubric and total score saved ("+total+" / "+Number(assignment.max_score)+").";
