@@ -326,15 +326,15 @@ async function loadGuardianInbox(){
    addText(card,"div","Guardian consent is active","pill good");
    const revoke=document.createElement("button");revoke.className="btn danger";revoke.textContent="Revoke guardian consent";
    revoke.addEventListener("click",async()=>{
-    if(!confirm("Revoke this guardian consent? The student's community access and room memberships will be suspended."))return;
+    if(!window.confirm("Revoke this guardian consent? The student's community access and room memberships will be suspended."))return;
     revoke.disabled=true;const u=await db.from("dcds_community_guardian_consents").update({status:"rejected",confirmed_at:new Date().toISOString(),guardian_note:"Guardian consent revoked in DCDS community settings."}).eq("id",x.id).eq("guardian_user_id",user.id);
     if(u.error){revoke.disabled=false;alert("Consent could not be revoked: "+u.error.message);return;}
     await loadGuardianInbox();
    });
    card.append(revoke);root.append(card);return;
   }
-  const confirm=document.createElement("label");confirm.className="check";
-  const box=document.createElement("input");box.type="checkbox";const span=document.createElement("span");span.textContent="I am this learner's parent or legally authorised guardian, understand the separate teen community, and consent to their access under DCDS supervision.";confirm.append(box,span);card.appendChild(confirm);
+  const consentLabel=document.createElement("label");consentLabel.className="check";
+  const box=document.createElement("input");box.type="checkbox";const span=document.createElement("span");span.textContent="I am this learner's parent or legally authorised guardian, understand the separate teen community, and consent to their access under DCDS supervision.";consentLabel.append(box,span);card.appendChild(consentLabel);
   const actions=document.createElement("div");actions.className="actions";
   const yes=document.createElement("button");yes.className="btn";yes.textContent="Confirm guardian consent";
   const no=document.createElement("button");no.className="btn danger";no.textContent="Reject request";
@@ -347,7 +347,7 @@ async function loadGuardianInbox(){
    msg.textContent="✓ Guardian consent recorded. DCDS still needs to review the community age request.";await loadGuardianInbox();
   });
   no.addEventListener("click",async()=>{
-   if(!confirm("Reject this guardian-consent request?"))return;
+   if(!window.confirm("Reject this guardian-consent request?"))return;
    yes.disabled=true;no.disabled=true;
    const u=await db.from("dcds_community_guardian_consents").update({status:"rejected",confirmed_at:new Date().toISOString(),guardian_note:"Guardian consent rejected."}).eq("id",x.id).eq("guardian_user_id",user.id);
    if(u.error){yes.disabled=false;no.disabled=false;msg.textContent="Could not reject request: "+u.error.message;return;}
