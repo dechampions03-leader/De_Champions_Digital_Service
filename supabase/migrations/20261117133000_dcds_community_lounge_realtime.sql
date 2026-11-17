@@ -1,0 +1,3 @@
+alter publication supabase_realtime add table public.dcds_community_posts;
+alter publication supabase_realtime add table public.dcds_community_post_replies;
+alter publication supabase_realtime add table public.dcds_community_post_reactions;
