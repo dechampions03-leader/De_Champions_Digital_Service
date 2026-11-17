@@ -1,0 +1,79 @@
+name: DCDS AI Live Feature Discovery
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "**/*.html"
+      - "scripts/build-dcds-ai-feature-index.mjs"
+      - ".github/workflows/dcds-ai-feature-index.yml"
+  push:
+    branches: [main]
+    paths:
+      - "**/*.html"
+      - "scripts/build-dcds-ai-feature-index.mjs"
+      - ".github/workflows/dcds-ai-feature-index.yml"
+
+concurrency:
+  group: dcds-ai-feature-discovery-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Generate and validate safe UI feature metadata
+        run: |
+          node scripts/build-dcds-ai-feature-index.mjs
+          node --input-type=module <<'NODE'
+          import { readFileSync } from "node:fs";
+          const data = JSON.parse(readFileSync("dcds-ai-feature-index.json", "utf8"));
+          if (data.schema_version !== "1.0" || !Array.isArray(data.pages) || !Array.isArray(data.recent_changes)) {
+            throw new Error("DCDS AI feature index has an invalid shape.");
+          }
+          if (data.pages.length > 60 || Buffer.byteLength(JSON.stringify(data)) > 120000) {
+            throw new Error("DCDS AI feature index exceeded its bounds.");
+          }
+          const allowed = new Set(["public", "student", "admin"]);
+          for (const page of data.pages) {
+            if (!allowed.has(page.audience) || !page.title || !page.path || !Array.isArray(page.sections) || !Array.isArray(page.actions)) {
+              throw new Error("Invalid feature record in DCDS AI feature index.");
+            }
+          }
+          console.log("Validated " + data.pages.length + " role-scoped DCDS page records.");
+          NODE
+
+  publish:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: validate
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Refresh the generated feature index
+        run: |
+          node scripts/build-dcds-ai-feature-index.mjs
+          if git diff --quiet -- dcds-ai-feature-index.json; then
+            echo "The DCDS AI feature index is already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add dcds-ai-feature-index.json
+          git commit -m "chore(ai): refresh live feature discovery index"
+          git push origin HEAD:main
