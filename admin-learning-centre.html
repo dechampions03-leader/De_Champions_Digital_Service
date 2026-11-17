@@ -128,8 +128,8 @@ $("pathForm").addEventListener("submit",async e=>{
 });
 $("pathList").addEventListener("click",async e=>{
  const btn=e.target.closest("[data-save-path]");if(!btn)return;const id=btn.dataset.savePath;
- const slugs=[...new Set($("[data-path-slugs='"+id+"']").value.split(",").map(x=>x.trim()).filter(Boolean))];
- const payload={title:$("[data-path-title='"+id+"']").value.trim(),summary:$("[data-path-summary='"+id+"']").value.trim(),career_outcome:$("[data-path-outcome='"+id+"']").value.trim(),course_slugs:slugs,is_published:$("[data-path-published='"+id+"']").value==="true",updated_at:new Date().toISOString()};
+ const slugs=[...new Set(document.querySelector("[data-path-slugs='"+id+"']").value.split(",").map(x=>x.trim()).filter(Boolean))];
+ const payload={title:document.querySelector("[data-path-title='"+id+"']").value.trim(),summary:document.querySelector("[data-path-summary='"+id+"']").value.trim(),career_outcome:document.querySelector("[data-path-outcome='"+id+"']").value.trim(),course_slugs:slugs,is_published:document.querySelector("[data-path-published='"+id+"']").value==="true",updated_at:new Date().toISOString()};
  if(!payload.title||!payload.summary||!payload.career_outcome||!slugs.length){alert("Complete the title, summary, outcome and course slugs.");return;}
  btn.disabled=true;const r=await db.from("dcds_learning_paths").update(payload).eq("id",id);btn.disabled=false;
  if(r.error){alert("Pathway update failed: "+r.error.message);return;}await loadPaths();
@@ -172,7 +172,7 @@ async function loadProjects(){
 }
 $("projectModeration").addEventListener("click",async e=>{
  const b=e.target.closest("[data-project-status]");if(!b)return;
- const id=b.dataset.projectStatus,feedback=$("[data-project-feedback='"+id+"']").value.trim();
+ const id=b.dataset.projectStatus,feedback=document.querySelector("[data-project-feedback='"+id+"']").value.trim();
  b.disabled=true;const r=await db.from("dcds_student_projects").update({status:b.dataset.next,admin_feedback:feedback||null,reviewed_by:admin.id,reviewed_at:new Date().toISOString(),updated_at:new Date().toISOString()}).eq("id",id);
  b.disabled=false;if(r.error){alert("Project review could not be saved: "+r.error.message);return;}await loadProjects();
 });
@@ -268,11 +268,11 @@ $("submissionList").addEventListener("click",async e=>{
  const b=e.target.closest("[data-save-grade]");if(!b)return;const submissionId=b.dataset.saveGrade,assignment=assignments.find(a=>a.id===$("rubricAssignment").value);
  const inputs=[...$("submissionList").querySelectorAll('[data-rubric-score][data-submission="'+submissionId+'"]')];
  const scores=[],now=new Date().toISOString();let total=0;
- for(const input of inputs){const score=Number(input.value),criterion=activeCriteria.find(c=>c.id===input.dataset.rubricScore);if(input.value.trim()===""||!criterion||!Number.isFinite(score)||score<0||score>Number(criterion.max_points)){const msg=$("[data-grade-message='"+submissionId+"']");msg.textContent="Enter a valid score for every criterion.";return;}
+ for(const input of inputs){const score=Number(input.value),criterion=activeCriteria.find(c=>c.id===input.dataset.rubricScore);if(input.value.trim()===""||!criterion||!Number.isFinite(score)||score<0||score>Number(criterion.max_points)){const msg=document.querySelector("[data-grade-message='"+submissionId+"']");msg.textContent="Enter a valid score for every criterion.";return;}
   total+=score;scores.push({submission_id:submissionId,criterion_id:criterion.id,score,feedback:document.querySelector('[data-rubric-feedback="'+criterion.id+'"][data-submission="'+submissionId+'"]').value.trim()||null,graded_by:admin.id,updated_at:now});
  }
- if(total>Number(assignment.max_score)){const msg=$("[data-grade-message='"+submissionId+"']");msg.textContent="Rubric total exceeds the assignment maximum.";return;}
- b.disabled=true;const msg=$("[data-grade-message='"+submissionId+"']");msg.textContent="Saving rubric scores…";
+ if(total>Number(assignment.max_score)){const msg=document.querySelector("[data-grade-message='"+submissionId+"']");msg.textContent="Rubric total exceeds the assignment maximum.";return;}
+ b.disabled=true;const msg=document.querySelector("[data-grade-message='"+submissionId+"']");msg.textContent="Saving rubric scores…";
  const saved=await db.from("dcds_assignment_rubric_scores").upsert(scores,{onConflict:"submission_id,criterion_id"});
  if(saved.error){b.disabled=false;msg.textContent="Rubric scores not saved: "+saved.error.message;return;}
  const general=document.querySelector('[data-general-feedback="'+submissionId+'"]').value.trim()||null;
