@@ -214,6 +214,15 @@ const $=id=>document.getElementById(id);
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const dateText=v=>{if(!v)return"Time not set";const d=new Date(v);return Number.isNaN(d.getTime())?"Date unavailable":d.toLocaleString();};
 const validFile=(f,mimes,max)=>!!f&&mimes.includes(f.type)&&f.size>0&&f.size<=max;
+async function verifyFileSignature(file){
+ if(!file)return false;
+ const bytes=new Uint8Array(await file.slice(0,16).arrayBuffer());
+ if(file.type==="image/jpeg")return bytes[0]===0xff&&bytes[1]===0xd8&&bytes[2]===0xff;
+ if(file.type==="image/png")return bytes.length>=8&&bytes[0]===0x89&&bytes[1]===0x50&&bytes[2]===0x4e&&bytes[3]===0x47&&bytes[4]===0x0d&&bytes[5]===0x0a&&bytes[6]===0x1a&&bytes[7]===0x0a;
+ if(file.type==="image/webp")return bytes.length>=12&&String.fromCharCode(...bytes.slice(0,4))==="RIFF"&&String.fromCharCode(...bytes.slice(8,12))==="WEBP";
+ if(file.type==="application/pdf")return String.fromCharCode(...bytes.slice(0,5))==="%PDF-";
+ return false;
+}
 const uidFile=(uid,prefix,ext)=>uid+"/"+prefix+"-"+(crypto.randomUUID?crypto.randomUUID():Date.now()+"-"+Math.random().toString(16).slice(2))+"."+ext;
 const tagArray=v=>[...new Set(String(v||"").split(",").map(x=>x.trim()).filter(Boolean))].slice(0,20);
 const setMsg=(id,v)=>$(id).textContent=v;
@@ -441,6 +450,7 @@ $("profileForm").addEventListener("submit",async e=>{
  let avatarPath=profile?.avatar_path||null;const file=$("avatarFile").files[0];
  if(file){
   if(!validFile(file,["image/jpeg","image/png","image/webp"],3*1024*1024)){btn.disabled=false;setMsg("profileMessage","Choose a JPEG, PNG or WebP image no larger than 3 MB.");return;}
+  if(!await verifyFileSignature(file)){btn.disabled=false;setMsg("profileMessage","The image file does not match its claimed file type.");return;}
   const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";const path=uidFile(user.id,"avatar",ext);
   const up=await db.storage.from("dcds-community-avatars").upload(path,file,{contentType:file.type,upsert:false});
   if(up.error){btn.disabled=false;setMsg("profileMessage","Profile picture could not be uploaded: "+up.error.message);return;}avatarPath=path;
@@ -468,7 +478,9 @@ async function loadCredentials(){
 }
 $("credentialForm").addEventListener("submit",async e=>{
  e.preventDefault();const file=$("credentialFile").files[0];if(!validFile(file,["application/pdf","image/jpeg","image/png"],8*1024*1024)){setMsg("credentialMessage","Choose a PDF, JPEG or PNG file no larger than 8 MB.");return;}
- const btn=$("uploadCredential");btn.disabled=true;setMsg("credentialMessage","Uploading to your private credential folder…");
+ const btn=$("uploadCredential");btn.disabled=true;setMsg("credentialMessage","Checking credential file…");
+ if(!await verifyFileSignature(file)){btn.disabled=false;setMsg("credentialMessage","The file content does not match the selected PDF/JPEG/PNG type.");return;}
+ setMsg("credentialMessage","Uploading to your private credential folder…");
  const ext=file.type==="application/pdf"?"pdf":file.type==="image/jpeg"?"jpg":"png";const path=uidFile(user.id,"credential",ext);
  const up=await db.storage.from("dcds-community-credentials").upload(path,file,{contentType:file.type,upsert:false});
  if(up.error){btn.disabled=false;setMsg("credentialMessage","Upload failed: "+up.error.message);return;}
@@ -480,6 +492,7 @@ $("credentialForm").addEventListener("submit",async e=>{
 async function uploadPostImage(file){
  if(!file)return null;
  if(!validFile(file,["image/jpeg","image/png","image/webp"],5*1024*1024))throw new Error("Choose a JPEG, PNG or WebP project image no larger than 5 MB.");
+ if(!await verifyFileSignature(file))throw new Error("Project image content does not match its claimed file type.");
  const ext=file.type==="image/jpeg"?"jpg":file.type==="image/png"?"png":"webp";const path=uidFile(user.id,"project",ext);
  const r=await db.storage.from("dcds-community-posts").upload(path,file,{contentType:file.type,upsert:false});
  if(r.error)throw r.error;return path;
