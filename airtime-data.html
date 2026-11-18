@@ -380,7 +380,7 @@ async function loadHistory(){
    sub.textContent=[order.recipient,order.plan,date,"Ref "+String(order.reference||"").slice(0,16)+"…"].filter(Boolean).join(" · ");
    const status=document.createElement("span");status.className="history-status";status.dataset.status=order.status||"unknown";
    const statusNames={successful:"Delivered",processing:"Processing delivery",paid:"Payment confirmed",pending_payment:"Awaiting payment",refund_required:"Refund review",needs_review:"Support review",failed:"Not completed",cancelled:"Cancelled"};
-   status.textContent=statusNames[order.status]||"Status pending";
+   status.textContent=(order.status==="processing"&&["ERROR","NOT_FOUND"].includes(String(order.provider_status||"").toUpperCase()))?"Provider confirmation missing":(statusNames[order.status]||"Status pending");
    main.append(title,sub,status);
    const amount=document.createElement("div");amount.className="history-amount";amount.textContent="₦"+Number(order.amount||0).toLocaleString("en-NG",{maximumFractionDigits:2});
    item.append(main,amount);
