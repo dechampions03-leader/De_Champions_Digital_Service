@@ -212,40 +212,54 @@ Deno.serve(async (req: Request) => {
     }).select("id,tx_ref,amount,currency").single();
     if (insertError || !order) throw insertError || new Error("Could not create the VTU order.");
 
-    const flwResponse = await fetch("https://api.flutterwave.com/v3/payments", {
-      method: "POST",
-      headers: {
-        Authorization: "Bearer " + flutterwaveKey,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
-      body: JSON.stringify({
+    let flwResponse: Response;
+    try {
+      flwResponse = await fetch("https://api.flutterwave.com/v3/payments", {
+        method: "POST",
+        headers: {
+          Authorization: "Bearer " + flutterwaveKey,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          tx_ref: txRef,
+          amount: order.amount,
+          currency: "NGN",
+          redirect_url: SITE_URL + "/vtu-payment-return.html",
+          session_duration: 60,
+          max_retry_attempt: 3,
+          customer: {
+            email: user.email,
+            name: clean(user.user_metadata?.full_name, 100) || user.email,
+            phonenumber: phone,
+          },
+          meta: {
+            dcds_order_type: "airtime_data",
+            dcds_vtu_order_id: order.id,
+            dcds_user_id: user.id,
+            service_type: serviceType,
+            network,
+          },
+          customizations: {
+            title: "DCDS Airtime & Data",
+            description: serviceType === "data" ? dataPlanName : network.toUpperCase() + " airtime top-up",
+            logo: SITE_URL + "/assets/dcds-splash-icon-v4-192.png",
+          },
+        }),
+        signal: AbortSignal.timeout(20000),
+      });
+    } catch {
+      await db.from("dcds_vtu_orders").update({
+        status: "needs_review",
+        last_error: "Flutterwave checkout creation timed out or could not be confirmed.",
+        updated_at: new Date().toISOString(),
+      }).eq("id", order.id).eq("status", "pending_payment");
+      return reply(req, {
+        success: false,
+        error: "We could not confirm whether Flutterwave created this checkout. Do not retry or make another payment until DCDS support checks this reference.",
         tx_ref: txRef,
-        amount: order.amount,
-        currency: "NGN",
-        redirect_url: SITE_URL + "/vtu-payment-return.html",
-        session_duration: 60,
-        max_retry_attempt: 3,
-        customer: {
-          email: user.email,
-          name: clean(user.user_metadata?.full_name, 100) || user.email,
-          phonenumber: phone,
-        },
-        meta: {
-          dcds_order_type: "airtime_data",
-          dcds_vtu_order_id: order.id,
-          dcds_user_id: user.id,
-          service_type: serviceType,
-          network,
-        },
-        customizations: {
-          title: "DCDS Airtime & Data",
-          description: serviceType === "data" ? dataPlanName : network.toUpperCase() + " airtime top-up",
-          logo: SITE_URL + "/assets/dcds-splash-icon-v4-192.png",
-        },
-      }),
-      signal: AbortSignal.timeout(20000),
-    });
+      }, 502);
+    }
     const flw = await flwResponse.json().catch(() => null);
     if (!flwResponse.ok || flw?.status !== "success" || typeof flw?.data?.link !== "string") {
       await db.from("dcds_vtu_orders").update({
