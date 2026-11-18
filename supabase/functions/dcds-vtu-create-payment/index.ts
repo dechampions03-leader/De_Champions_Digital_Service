@@ -277,8 +277,10 @@ Deno.serve(async (req: Request) => {
           amount: order.amount,
           currency: "NGN",
           redirect_url: SITE_URL + "/vtu-payment-return.html",
-          session_duration: 60,
-          max_retry_attempt: 3,
+          configuration: {
+            session_duration: 60,
+            max_retry_attempt: 3,
+          },
           customer: {
             email: user.email,
             name: clean(user.user_metadata?.full_name, 100) || user.email,
