@@ -225,8 +225,8 @@ Deno.serve(async (req: Request) => {
       : null;
     let providerOutcome = resultStatus(providerData);
 
-    if (providerData?.status === "success" ||
-      ["SUCCESS", "SUCCESSFUL", "COMPLETED"].includes(providerOutcome)) {
+    if (providerData && (providerData.status === "success" ||
+      ["SUCCESS", "SUCCESSFUL", "COMPLETED"].includes(providerOutcome))) {
       const { data: fulfilled, error: fulfilledError } = await db.from("dcds_vtu_orders").update({
         status: "successful",
         provider_status: providerOutcome || "SUCCESSFUL",
