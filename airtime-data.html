@@ -184,7 +184,7 @@ function renderPlans(){
  });
 }
 function canCheckout(){
- const phoneValid=/^0[789]\\d{9}$/.test($("phoneNumber").value.trim());
+ const phoneValid=/^0[789]\d{9}$/.test($("phoneNumber").value.trim());
  const productValid=state.type==="data"
   ? !!state.selected&&state.plans.some(p=>p.id===state.selected.id&&p.network===state.network)
   : Number.isInteger(Number(state.airtimeAmount))&&Number(state.airtimeAmount)>=50&&Number(state.airtimeAmount)<=50000&&Object.prototype.hasOwnProperty.call(state.discounts,state.network);
