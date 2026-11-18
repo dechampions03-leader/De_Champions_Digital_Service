@@ -95,8 +95,13 @@ Deno.serve(async (req: Request) => {
   if (!path) return reply({ success: false, error: "Unsupported read-only action." }, 400);
 
   try {
+    const key = Deno.env.get("OPLUG_API_KEY");
+    if (!key) return reply({ success: false, error: "Oplug catalogue is not configured for this environment." }, 503);
     const response = await fetch(base + path, {
-      headers: { Accept: "application/json" },
+      headers: {
+        Authorization: "Token " + key,
+        Accept: "application/json",
+      },
       signal: AbortSignal.timeout(10000),
     });
     const upstream = await response.json().catch(() => null);
