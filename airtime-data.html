@@ -142,9 +142,10 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
     <div class="summary-row"><span>Network</span><strong id="summaryNetwork">MTN</strong></div>
     <div class="summary-row"><span>Phone number</span><strong id="summaryPhone">Not entered</strong></div>
     <div class="summary-row"><span>Selected plan</span><strong id="summaryPlan">Choose a plan</strong></div>
-    <div class="summary-total"><span>Provider rate (reference)</span><strong id="summaryPrice">—</strong></div>
-    <button class="checkout" id="checkoutButton" type="button" disabled>Secure checkout · coming next</button>
-    <div class="secure-note">Purchasing is not enabled yet. This preview does not charge your card, debit your bank or deliver a top-up. DCDS is completing provider and payment settlement setup first.</div>
+    <div class="summary-total"><span>Amount to pay (NGN)</span><strong id="summaryPrice">—</strong></div>
+    <button class="checkout" id="checkoutButton" type="button" disabled>Continue to Flutterwave</button>
+    <p class="muted" id="checkoutMessage" role="status" aria-live="polite">Sign in to DCDS, choose a valid number and select a bundle to continue.</p>
+    <div class="secure-note">Pay for each order directly through Flutterwave. There is no DCDS wallet or stored balance. Data bundle prices currently use the live Oplug provider rate; airtime is charged at the selected face value. Your top-up is sent only after Flutterwave confirms payment.</div>
    </section>
    <section class="card side-card"><h3>How it works</h3><ul><li>Choose airtime or data.</li><li>Select your network and enter the recipient number.</li><li>Review the exact plan and price.</li><li>Complete secure payment once checkout is activated.</li></ul></section>
    <section class="card side-card"><h3>Live catalogue</h3><p class="muted" id="catalogMessage">Connecting to the wholesale catalogue…</p><div class="price-note">Provider rates can change. The final DCDS retail price and any DCDS bonus will be shown before payment is enabled.</div></section>
@@ -182,12 +183,26 @@ function renderPlans(){
   b.append(copy,price);b.addEventListener("click",()=>{state.selected=p;renderPlans();updateSummary();});root.append(b);
  });
 }
+function canCheckout(){
+ const phoneValid=/^0[789]\\d{9}$/.test($("phoneNumber").value.trim());
+ const productValid=state.type==="data"
+  ? !!state.selected&&state.plans.some(p=>p.id===state.selected.id&&p.network===state.network)
+  : Number.isInteger(Number(state.airtimeAmount))&&Number(state.airtimeAmount)>=50&&Number(state.airtimeAmount)<=50000&&Object.prototype.hasOwnProperty.call(state.discounts,state.network);
+ return !!db&&phoneValid&&productValid;
+}
+function updateCheckoutState(){
+ const button=$("checkoutButton");
+ if(!button||button.dataset.loading==="true")return;
+ button.disabled=!canCheckout();
+ button.textContent=button.disabled?"Enter number and choose a plan":"Continue to Flutterwave";
+}
 function updateSummary(){
  $("summaryService").textContent=state.type==="data"?"Data bundle":"Airtime top-up";
  $("summaryNetwork").textContent=networkName(state.network);
  $("summaryPhone").textContent=$("phoneNumber").value.trim()||"Not entered";
  $("summaryPlan").textContent=state.type==="data"?(state.selected?.plan||"Choose a plan"):"Airtime ₦"+Number(state.airtimeAmount).toLocaleString("en-NG");
  $("summaryPrice").textContent=state.type==="data"&&state.selected?money(state.selected.amount):state.type==="airtime"?money(state.airtimeAmount):"—";
+ updateCheckoutState();
 }
 function setType(type){
  state.type=type;state.selected=null;
@@ -200,6 +215,47 @@ $("dataTab").addEventListener("click",()=>setType("data"));$("airtimeTab").addEv
 $("phoneNumber").addEventListener("input",updateSummary);$("planSearch").addEventListener("input",renderPlans);
 $("airtimeAmount").addEventListener("input",()=>{const n=Number($("airtimeAmount").value);if(Number.isFinite(n)&&n>=50&&n<=50000)state.airtimeAmount=n;document.querySelectorAll(".amount-choice").forEach(b=>b.setAttribute("aria-pressed",String(Number(b.dataset.amount)===state.airtimeAmount)));updateSummary();});
 document.querySelectorAll(".amount-choice").forEach(b=>b.addEventListener("click",()=>{state.airtimeAmount=Number(b.dataset.amount);$("airtimeAmount").value=String(state.airtimeAmount);document.querySelectorAll(".amount-choice").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));updateSummary();}));
+async function startCheckout(){
+ if(!canCheckout()){
+  $("checkoutMessage").textContent="Enter a valid Nigerian phone number and choose an available plan or airtime amount.";
+  return;
+ }
+ const button=$("checkoutButton");
+ button.dataset.loading="true";button.disabled=true;button.textContent="Connecting to Flutterwave…";
+ $("checkoutMessage").textContent="Checking your DCDS sign-in and preparing your secure payment. No top-up is sent before payment confirmation.";
+ try{
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  if(sessionError||!sessionData?.session){
+   $("checkoutMessage").textContent="Please sign in through Student Login on the DCDS homepage, then return here to purchase.";
+   return;
+  }
+  const payload={
+   service_type:state.type,
+   network:state.network,
+   phone:$("phoneNumber").value.trim(),
+   request_id:crypto.randomUUID(),
+   ...(state.type==="data"?{plan_id:state.selected.id}:{amount:Number(state.airtimeAmount)})
+  };
+  const {data,error}=await db.functions.invoke("dcds-vtu-create-payment",{body:payload});
+  if(error)throw error;
+  if(!data?.success||typeof data.payment_link!=="string"){
+   $("checkoutMessage").textContent=(data?.error||"Flutterwave could not start checkout.")+(data?.tx_ref?" Reference: "+data.tx_ref+". Do not retry until this reference has been checked.":"");
+   return;
+  }
+  const paymentUrl=new URL(data.payment_link);
+  if(paymentUrl.protocol!=="https:"||paymentUrl.hostname!=="checkout.flutterwave.com")throw new Error("The payment provider returned an unexpected checkout address. Please contact DCDS support.");
+  $("checkoutMessage").textContent="Secure Flutterwave checkout is ready. Redirecting…";
+  window.location.assign(paymentUrl.href);
+ }catch(error){
+  console.error("DCDS VTU checkout:",error);
+  $("checkoutMessage").textContent="We could not confirm that checkout was created. Do not pay again; contact DCDS support before retrying.";
+ }finally{
+  button.dataset.loading="false";
+  updateCheckoutState();
+ }
+}
+$("checkoutButton").addEventListener("click",startCheckout);
+
 async function loadCatalog(){
  if(!db){setCatalogStatus("Catalogue unavailable");$("catalogMessage").textContent="The DCDS connection could not be initialised. Please reload the page.";return;}
  try{
@@ -240,12 +296,12 @@ async function loadCatalog(){
 
   if(!state.plans.length)throw new Error("The provider returned no active data bundles.");
   setCatalogStatus("Live catalogue loaded",true);
-  $("catalogMessage").textContent=state.plans.length+" live data options loaded. Prices shown are Oplug provider reference rates, not final DCDS retail prices.";
+  $("catalogMessage").textContent=state.plans.length+" live data bundles loaded. Data is charged at the displayed Oplug rate; airtime is charged at face value. Each order is paid separately through Flutterwave—no wallet is used.";
   renderPlans();updateSummary();
  }catch(error){
   console.warn("DCDS Oplug catalogue unavailable:",error);
   setCatalogStatus("Live plans unavailable");
-  $("catalogMessage").textContent="The live Oplug catalogue could not be reached. No sample prices are being substituted. Please try again later.";
+  $("catalogMessage").textContent="The live Oplug catalogue could not be reached. No sample prices are being substituted and checkout remains unavailable. Please try again later.";
   $("planList").textContent="";
   const empty=document.createElement("div");empty.className="empty-plans";empty.textContent="Live data plans are temporarily unavailable. Refresh to try again.";$("planList").append(empty);
  }
