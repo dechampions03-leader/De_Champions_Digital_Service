@@ -295,11 +295,20 @@ Deno.serve(async (req: Request) => {
       return successResponse(req, refundOrder || current, "refund_required", "Payment was received, but the provider reports a failed top-up. DCDS support must arrange your refund.");
     }
 
-    // Keep uncertain outcomes in processing. Never tell the customer to pay again.
+    // Keep uncertain outcomes in processing. The customer can safely check again:
+    // every replay above uses the same persisted request-id and identical payload.
+    // Oplug documents same-key/same-payload requests as idempotent.
+    const lookupMessage = safeText(statusPayload?.message, 180);
+    const isNotFound = oplugStatus === "ERROR" && /transaction not found/i.test(lookupMessage);
     const { data: pending, error: pendingError } = await db.from("dcds_vtu_orders").update({
-      provider_status: oplugStatus || "UNKNOWN",
-      provider_response: statusPayload || providerData,
-      last_error: "Provider result is not yet final; reconciliation is required.",
+      provider_status: isNotFound ? "NOT_FOUND" : (oplugStatus || "UNKNOWN"),
+      provider_response: {
+        purchase_response: providerData,
+        status_lookup: statusPayload,
+      },
+      last_error: isNotFound
+        ? "Oplug did not find this request-id during status lookup. The order remains paid and requires idempotent provider reconciliation; do not collect payment again."
+        : "Provider result is not yet final; reconciliation is required. Do not collect payment again.",
       updated_at: new Date().toISOString(),
     }).eq("id", current.id).eq("status", "processing").select("*").maybeSingle();
     if (pendingError) throw pendingError;

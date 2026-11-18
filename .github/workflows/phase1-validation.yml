@@ -16,6 +16,7 @@ on:
       - "supabase/functions/dcds-oplug-readonly/**"
       - "supabase/functions/dcds-vtu-create-payment/**"
       - "supabase/functions/dcds-vtu-process-payment/**"
+      - "supabase/functions/dcds-vtu-history/**"
       - "supabase/functions/flutterwave-webhook/**"
       - "airtime-data.html"
       - "vtu-payment-return.html"
@@ -78,6 +79,8 @@ jobs:
         run: deno check supabase/functions/dcds-vtu-create-payment/index.ts
       - name: Type-check DCDS VTU verified payment and fulfilment endpoint
         run: deno check supabase/functions/dcds-vtu-process-payment/index.ts
+      - name: Type-check authenticated DCDS VTU purchase history endpoint
+        run: deno check supabase/functions/dcds-vtu-history/index.ts
       - name: Type-check shared Flutterwave webhook
         run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Verify DCDS Airtime and Data safety boundaries
@@ -99,6 +102,10 @@ jobs:
               "Oplug purchase uses persisted request-id and idempotency key": '"request-id": String(current.oplug_request_id)' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and '"Idempotency-Key"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8"),
               "Flutterwave webhook routes VTU payments to fulfilment": 'dcds-vtu-process-payment' in Path("supabase/functions/flutterwave-webhook/index.ts").read_text(encoding="utf-8"),
               "return page invokes the VTU payment processor": 'dcds-vtu-process-payment' in Path("vtu-payment-return.html").read_text(encoding="utf-8"),
+              "network buttons display all four supplied carrier SVG logos": all((Path("assets/network-logos") / name).is_file() for name in ["mtn.svg", "airtel.svg", "glo.svg", "9mobile.svg"]) and all(f'./assets/network-logos/{name}.svg' in page for name in ["mtn", "airtel", "glo", "9mobile"]),
+              "checkout call-to-action stays visually bright with no opacity dimming": ".checkout:disabled" in page and "opacity:1" in page[page.index(".checkout{"):page.index(".secure-note{")],
+              "authenticated transaction history UI uses server history endpoint": 'functions.invoke("dcds-vtu-history"' in page and 'id="purchaseHistory"' in page,
+              "history retry uses the existing Flutterwave transaction and order reference": 'dcds-vtu-process-payment' in page and 'transaction_id:order.transaction_id' in page and 'tx_ref:order.reference' in page and 'async function recheckHistoryOrder' in page,
               "only allowlisted Nigerian networks enter the returned catalogue": 'new Set(["mtn","airtel","glo","9mobile"])' in fn and "NETWORKS.has(p.network)" in fn,
               "catalogue endpoint is read-only and rejects unexpected actions": 'const allowedCatalog = new Map([' in fn and '["data_plans", "/data_plans"]' in fn and 'base + "/airtime"' not in fn and 'base + "/data"' not in fn,
               "preview hosts select the isolated Development Supabase project": 'tjgsxbmkpvktlqulbktv.supabase.co' in page and 'IS_DCDS_PRODUCTION' in page,

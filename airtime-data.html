@@ -53,11 +53,12 @@ h2{margin:6px 0 6px;color:#351052;font:800 25px 'Playfair Display',serif}
 .network{min-width:0;min-height:76px;border:1px solid #e8dff0;border-radius:15px;background:#fff;display:grid;place-items:center;gap:5px;padding:10px 5px;cursor:pointer;transition:.16s}
 .network:hover{transform:translateY(-2px);border-color:#c7a5e5}
 .network[aria-pressed="true"]{border:2px solid #7b36bf;background:linear-gradient(145deg,#fff,#f5ecff);box-shadow:0 5px 16px #6a2da515}
-.network-mark{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:#f3ebfb;color:#582080;font-size:10px;font-weight:950}
-.network[data-network="mtn"] .network-mark{background:#ffed55;color:#231d00}
-.network[data-network="airtel"] .network-mark{background:#fbe1e7;color:#c21d35}
-.network[data-network="glo"] .network-mark{background:#dff7e8;color:#13834e}
-.network[data-network="9mobile"] .network-mark{background:#e1f3e7;color:#16754a}
+.network-logo{display:block;width:62px;height:38px;max-width:82%;object-fit:contain}
+.network[data-network="mtn"] .network-logo{width:68px}
+.network[data-network="airtel"] .network-logo{width:38px}
+.network[data-network="glo"] .network-logo{width:38px}
+.network[data-network="9mobile"] .network-logo{width:38px}
+
 .network span:last-child{font-size:10px;font-weight:850;color:#503663;white-space:nowrap}
 input,select{width:100%;min-width:0;height:48px;border:1px solid #e5d9ef;border-radius:12px;padding:0 13px;background:#fff;color:#2b1b3d;outline:none}
 input:focus,select:focus{border-color:#9a6ac5;box-shadow:0 0 0 3px #7628d815}
@@ -79,8 +80,32 @@ input::placeholder{color:#a99bb4}
 .summary-total{display:flex;justify-content:space-between;align-items:end;gap:12px;padding:17px 0 10px}
 .summary-total span{color:#786782;font-size:11px;font-weight:800}
 .summary-total strong{color:#542080;font-size:25px;letter-spacing:-.04em}
-.checkout{width:100%;min-height:52px;margin-top:14px;border:0;border-radius:14px;background:linear-gradient(120deg,#d7b45a,#f0d88e);color:#34184d;font-size:13px;font-weight:950;cursor:not-allowed;opacity:.72}
+.checkout{width:100%;min-height:52px;margin-top:14px;border:0;border-radius:14px;background:linear-gradient(115deg,#f1cd69,#ffe293);color:#351052;font-size:13px;font-weight:950;cursor:pointer;opacity:1;border:1px solid #d8b64f;box-shadow:0 9px 22px #d2ad4b55;transition:transform .15s ease,filter .15s ease,box-shadow .15s ease}
+.checkout:disabled{cursor:not-allowed;opacity:1;background:linear-gradient(115deg,#f6df9b,#fff0bd);color:#604a24;border-color:#ead8a2;box-shadow:0 5px 13px #d2ad4b22}
+.checkout:not(:disabled):hover{filter:brightness(1.04);transform:translateY(-1px);box-shadow:0 12px 25px #d2ad4b70}
+.checkout:not(:disabled):active{transform:translateY(0);filter:brightness(.98)}
+
 .secure-note{margin-top:12px;padding:12px;border:1px solid #efe3bf;border-radius:12px;background:#fffaf0;color:#806a39;font-size:10px;line-height:1.65}
+.history-card{margin-top:18px;padding:clamp(18px,3vw,26px)}
+.history-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.history-head h3{margin:4px 0 0;color:#351052;font:800 22px 'Playfair Display',serif}
+.history-refresh{min-height:40px;padding:0 14px;border:1px solid #d7c2e8;border-radius:12px;background:#f5ecff;color:#55217e;font-size:11px;font-weight:900;cursor:pointer}
+.history-refresh:disabled{opacity:.7;cursor:wait}
+.history-list{display:grid;gap:10px;margin-top:16px}
+.history-item{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px 14px;align-items:center;padding:14px;border:1px solid #ece2f3;border-radius:14px;background:linear-gradient(140deg,#fff,#fcf8ff)}
+.history-main strong{display:block;color:#45225f;font-size:13px}
+.history-sub{margin-top:4px;color:#867690;font-size:10px;line-height:1.6}
+.history-amount{color:#4b1d72;font-size:15px;font-weight:950;text-align:right}
+.history-status{display:inline-flex;align-items:center;gap:6px;margin-top:6px;padding:5px 8px;border-radius:999px;background:#f4edfb;color:#674286;font-size:9px;font-weight:900}
+.history-status[data-status="successful"]{background:#e8f7ef;color:#197449}
+.history-status[data-status="processing"],.history-status[data-status="paid"]{background:#fff5d8;color:#805d12}
+.history-status[data-status="refund_required"],.history-status[data-status="needs_review"]{background:#fff0e8;color:#9b4c24}
+.history-status[data-status="failed"],.history-status[data-status="cancelled"]{background:#fce9ec;color:#9c3447}
+.history-actions{display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;grid-column:1/-1}
+.history-check{padding:8px 11px;border:1px solid #d6b45c;border-radius:10px;background:#ffedb4;color:#45265c;font-size:10px;font-weight:900;cursor:pointer}
+.history-check:disabled{opacity:.65;cursor:wait}
+.history-empty{padding:17px;border:1px dashed #dfd0eb;border-radius:13px;background:#fcf9ff;color:#887795;font-size:11px;line-height:1.7}
+@media(max-width:580px){.history-card{padding:15px}.history-head h3{font-size:20px}.history-item{grid-template-columns:minmax(0,1fr) auto;padding:12px}.history-amount{font-size:14px}}
 .side-stack{display:grid;gap:14px}
 .side-card{padding:20px}
 .side-card h3{margin:0 0 9px;color:#351052;font:800 20px 'Playfair Display',serif}
@@ -103,7 +128,7 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
 <body>
 <header class="topbar"><div class="topbar-inner">
  <a class="brand" href="index.html"><img src="./assets/dcds-splash-icon-v4-192.png" alt=""><span><strong>DE CHAMPIONS</strong><small>DIGITAL SERVICE</small></span></a>
- <div class="top-actions"><a class="top-link" href="index.html">← Home</a><a class="top-link primary" href="student-dashboard.html">My Account ↗</a></div>
+ <div class="top-actions"><a class="top-link" href="index.html">← Home</a><a class="top-link" href="#purchaseHistory">History ↘</a><a class="top-link primary" href="student-dashboard.html">My Account ↗</a></div>
 </div></header>
 <main class="wrap">
  <section class="hero">
@@ -117,10 +142,10 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
    <div class="section-head"><div><span class="kicker">DCDS QUICK TOP-UP</span><h2 id="buyTitle">What would you like to buy?</h2><p class="muted">Choose a service and enter the number you want to recharge.</p></div><span class="status-pill" id="catalogStatus"><i class="status-dot"></i> Checking live plans</span></div>
    <div class="tabs" role="tablist" aria-label="Choose top-up type"><button class="tab" id="dataTab" role="tab" aria-selected="true" type="button">📶 Buy Data</button><button class="tab" id="airtimeTab" role="tab" aria-selected="false" type="button">📱 Buy Airtime</button></div>
    <div class="field"><label>Select your network</label><div class="network-grid" id="networkGrid">
-    <button class="network" data-network="mtn" aria-pressed="true" type="button"><span class="network-mark">MTN</span><span>MTN</span></button>
-    <button class="network" data-network="airtel" aria-pressed="false" type="button"><span class="network-mark">A</span><span>Airtel</span></button>
-    <button class="network" data-network="glo" aria-pressed="false" type="button"><span class="network-mark">G</span><span>Glo</span></button>
-    <button class="network" data-network="9mobile" aria-pressed="false" type="button"><span class="network-mark">9</span><span>9mobile</span></button>
+    <button class="network" data-network="mtn" aria-label="MTN" aria-pressed="true" type="button"><img class="network-logo" src="./assets/network-logos/mtn.svg" alt="MTN logo"><span>MTN</span></button>
+    <button class="network" data-network="airtel" aria-label="Airtel" aria-pressed="false" type="button"><img class="network-logo" src="./assets/network-logos/airtel.svg" alt="Airtel logo"><span>Airtel</span></button>
+    <button class="network" data-network="glo" aria-label="Glo" aria-pressed="false" type="button"><img class="network-logo" src="./assets/network-logos/glo.svg" alt="Glo logo"><span>Glo</span></button>
+    <button class="network" data-network="9mobile" aria-label="9mobile" aria-pressed="false" type="button"><img class="network-logo" src="./assets/network-logos/9mobile.svg" alt="9mobile logo"><span>9mobile</span></button>
    </div></div>
    <div class="field"><label for="phoneNumber">Recipient phone number</label><input id="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" maxlength="14" placeholder="08012345678"></div>
    <div id="dataFields">
@@ -144,13 +169,21 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
     <div class="summary-row"><span>Selected plan</span><strong id="summaryPlan">Choose a plan</strong></div>
     <div class="summary-total"><span>Amount to pay (NGN)</span><strong id="summaryPrice">—</strong></div>
     <button class="checkout" id="checkoutButton" type="button" disabled>Continue to Flutterwave</button>
-    <p class="muted" id="checkoutMessage" role="status" aria-live="polite">Sign in to DCDS, choose a valid number and select a bundle to continue.</p>
+    <p class="muted" id="checkoutMessage" role="status" aria-live="polite">Review the recipient, network and amount, then continue to secure Flutterwave checkout.</p>
     <div class="secure-note">Pay for each order directly through Flutterwave. There is no DCDS wallet or stored balance. Data bundle prices currently use the live Oplug provider rate; airtime is charged at the selected face value. Your top-up is sent only after Flutterwave confirms payment.</div>
    </section>
-   <section class="card side-card"><h3>How it works</h3><ul><li>Choose airtime or data.</li><li>Select your network and enter the recipient number.</li><li>Review the exact plan and price.</li><li>Complete secure payment once checkout is activated.</li></ul></section>
+   <section class="card side-card"><h3>How it works</h3><ul><li>Choose airtime or data.</li><li>Select your network and enter the recipient number.</li><li>Review the exact plan and price.</li><li>Pay securely through Flutterwave. Delivery starts after payment is confirmed.</li></ul></section>
    <section class="card side-card"><h3>Live catalogue</h3><p class="muted" id="catalogMessage">Connecting to the wholesale catalogue…</p><div class="price-note">Provider prices are refreshed from Oplug before checkout. Data is charged at the displayed provider rate; airtime is paid at the selected face value. Each purchase is paid directly through Flutterwave—no DCDS wallet is used.</div></section>
   </aside>
  </div>
+ <section class="card history-card" id="purchaseHistory" aria-labelledby="historyTitle">
+  <div class="history-head">
+   <div><span class="kicker">YOUR DCDS ORDERS</span><h3 id="historyTitle">Transaction history</h3><p class="muted">See your recent airtime and data purchases, payment status and delivery updates.</p></div>
+   <button class="history-refresh" type="button" id="refreshHistory">↻ Refresh history</button>
+  </div>
+  <p class="muted" id="historyMessage" role="status" aria-live="polite">Checking your recent purchases…</p>
+  <div class="history-list" id="historyList"><div class="history-empty">Your recent purchases will appear here after you sign in.</div></div>
+ </section>
  <section class="steps" aria-label="DCDS top-up benefits"><article class="step"><b>01</b><h3>Clear choices</h3><p>Network and plan details are easy to compare before you order.</p></article><article class="step"><b>02</b><h3>Price transparency</h3><p>Provider reference rates are separated from the final DCDS customer price.</p></article><article class="step"><b>03</b><h3>Protected checkout</h3><p>Payments and delivery will be confirmed by the server, not trusted from a browser message.</p></article></section>
  <footer>© 2026 De Champions Digital Service.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
 </main>
@@ -306,6 +339,90 @@ async function loadCatalog(){
   const empty=document.createElement("div");empty.className="empty-plans";empty.textContent="Live data plans are temporarily unavailable. Refresh to try again.";$("planList").append(empty);
  }
 }
-setType("data");updateSummary();loadCatalog();
+async function loadHistory(){
+ const button=$("refreshHistory");
+ const root=$("historyList");
+ const message=$("historyMessage");
+ if(!db){
+  message.textContent="The DCDS connection is unavailable. Reload the page to try again.";
+  return;
+ }
+ if(button){button.disabled=true;button.textContent="Refreshing…";}
+ message.textContent="Loading your recent purchases…";
+ try{
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  if(sessionError)throw sessionError;
+  if(!sessionData?.session){
+   message.textContent="Sign in to DCDS to view your purchase history. Your orders are private to your account.";
+   root.replaceChildren();
+   const empty=document.createElement("div");empty.className="history-empty";empty.textContent="Your airtime and data purchases will appear here after you sign in.";
+   root.append(empty);
+   return;
+  }
+  const {data,error}=await db.functions.invoke("dcds-vtu-history",{body:{}});
+  if(error)throw error;
+  if(!data?.success||!Array.isArray(data.orders))throw new Error(data?.error||"Purchase history could not be loaded.");
+  root.replaceChildren();
+  if(!data.orders.length){
+   message.textContent="No Airtime & Data purchases yet.";
+   const empty=document.createElement("div");empty.className="history-empty";empty.textContent="Your completed and pending purchases will appear here. Each order is paid directly through Flutterwave—there is no wallet.";
+   root.append(empty);
+   return;
+  }
+  message.textContent=data.orders.length+" recent order"+(data.orders.length===1?"":"s")+" found.";
+  for(const order of data.orders){
+   const item=document.createElement("article");item.className="history-item";
+   const main=document.createElement("div");main.className="history-main";
+   const title=document.createElement("strong");
+   title.textContent=(order.service_type==="data"?"Data bundle":"Airtime top-up")+" · "+String(order.network||"").toUpperCase();
+   const sub=document.createElement("div");sub.className="history-sub";
+   const date=order.created_at?new Date(order.created_at).toLocaleString("en-NG",{dateStyle:"medium",timeStyle:"short"}):"Date unavailable";
+   sub.textContent=[order.recipient,order.plan,date,"Ref "+String(order.reference||"").slice(0,16)+"…"].filter(Boolean).join(" · ");
+   const status=document.createElement("span");status.className="history-status";status.dataset.status=order.status||"unknown";
+   const statusNames={successful:"Delivered",processing:"Processing delivery",paid:"Payment confirmed",pending_payment:"Awaiting payment",refund_required:"Refund review",needs_review:"Support review",failed:"Not completed",cancelled:"Cancelled"};
+   status.textContent=(order.status==="processing"&&["ERROR","NOT_FOUND"].includes(String(order.provider_status||"").toUpperCase()))?"Provider confirmation missing":(statusNames[order.status]||"Status pending");
+   main.append(title,sub,status);
+   const amount=document.createElement("div");amount.className="history-amount";amount.textContent="₦"+Number(order.amount||0).toLocaleString("en-NG",{maximumFractionDigits:2});
+   item.append(main,amount);
+   if(order.status==="processing"&&order.transaction_id&&order.reference){
+    const actions=document.createElement("div");actions.className="history-actions";
+    const check=document.createElement("button");check.className="history-check";check.type="button";check.textContent="Check delivery again";
+    check.addEventListener("click",()=>recheckHistoryOrder(order,check));
+    actions.append(check);item.append(actions);
+   }
+   root.append(item);
+  }
+ }catch(error){
+  console.error("DCDS purchase history:",error);
+  message.textContent="We could not load your history right now. Tap Refresh history to try again.";
+  if(!root.children.length){const empty=document.createElement("div");empty.className="history-empty";empty.textContent="Purchase history is temporarily unavailable.";root.append(empty);}
+ }finally{
+  if(button){button.disabled=false;button.textContent="↻ Refresh history";}
+ }
+}
+async function recheckHistoryOrder(order,button){
+ if(!db||button.disabled)return;
+ button.disabled=true;button.textContent="Checking Oplug…";
+ $("historyMessage").textContent="Rechecking the existing order using its original Oplug request ID. No new payment will be created.";
+ try{
+  const {data,error}=await db.functions.invoke("dcds-vtu-process-payment",{
+   body:{transaction_id:order.transaction_id,tx_ref:order.reference}
+  });
+  if(error)throw error;
+  if(data?.status==="successful")$("historyMessage").textContent="Top-up delivered successfully. Your history has been updated.";
+  else if(data?.status==="processing")$("historyMessage").textContent="Oplug still has this order processing. Please do not pay again.";
+  else if(data?.status==="refund_required")$("historyMessage").textContent="The provider reports a failed delivery after payment. This order needs DCDS refund review.";
+  else $("historyMessage").textContent=data?.error||data?.message||"The order is still being checked. Do not pay again.";
+ }catch(error){
+  console.error("DCDS Oplug order reconciliation:",error);
+  $("historyMessage").textContent="Could not check delivery right now. Your payment record remains saved; please do not pay again.";
+ }finally{
+  button.disabled=false;button.textContent="Check delivery again";
+  await loadHistory();
+ }
+}
+$("refreshHistory").addEventListener("click",loadHistory);
+
+setType("data");updateSummary();loadCatalog();loadHistory();
 </script>
 </body></html>
