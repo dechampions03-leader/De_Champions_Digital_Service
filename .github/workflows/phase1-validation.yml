@@ -14,7 +14,11 @@ on:
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-vtu-catalog/**"
       - "supabase/functions/dcds-oplug-readonly/**"
+      - "supabase/functions/dcds-vtu-create-payment/**"
+      - "supabase/functions/dcds-vtu-process-payment/**"
+      - "supabase/functions/flutterwave-webhook/**"
       - "airtime-data.html"
+      - "vtu-payment-return.html"
       - "index.html"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
@@ -70,6 +74,12 @@ jobs:
         run: deno check supabase/functions/dcds-vtu-catalog/index.ts
       - name: Type-check Oplug read-only catalogue endpoint
         run: deno check supabase/functions/dcds-oplug-readonly/index.ts
+      - name: Type-check DCDS VTU Flutterwave checkout endpoint
+        run: deno check supabase/functions/dcds-vtu-create-payment/index.ts
+      - name: Type-check DCDS VTU verified payment and fulfilment endpoint
+        run: deno check supabase/functions/dcds-vtu-process-payment/index.ts
+      - name: Type-check shared Flutterwave webhook
+        run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Verify DCDS Airtime and Data safety boundaries
         shell: bash
         run: |
@@ -81,8 +91,14 @@ jobs:
           checks = {
               "home page links to the new Airtime & Data landing page": 'href="airtime-data.html"' in home,
               "landing page loads the server catalogue rather than hardcoding prices": 'functions.invoke("dcds-oplug-readonly"' in page and "₦285" not in page and "₦280" not in page,
-              "checkout is visibly disabled until payment and provider delivery are implemented": 'id="checkoutButton"' in page and 'disabled' in page and "Purchasing is not enabled yet" in page,
+              "checkout uses a separate Flutterwave pay-per-order endpoint": 'functions.invoke("dcds-vtu-create-payment"' in page and 'checkout.flutterwave.com' in page,
+              "checkout is direct payment, not a customer wallet": "There is no DCDS wallet or stored balance" in page and "wallet" not in fn.lower(),
               "provider API key is only read server-side": 'Deno.env.get("OPLUG_API_KEY")' in fn and "OPLUG_API_KEY" not in page,
+              "VTU order table has isolated RLS and no client grants": "dcds_vtu_orders" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8") and "enable row level security" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8").lower() and "from public, anon, authenticated" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8"),
+              "fulfilment verifies Flutterwave before Oplug purchase": 'transactions/' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and 'status !== "successful"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and '"/data"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and '"/airtime"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8"),
+              "Oplug purchase uses persisted request-id and idempotency key": '"request-id": String(current.oplug_request_id)' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and '"Idempotency-Key"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8"),
+              "Flutterwave webhook routes VTU payments to fulfilment": 'dcds-vtu-process-payment' in Path("supabase/functions/flutterwave-webhook/index.ts").read_text(encoding="utf-8"),
+              "return page invokes the VTU payment processor": 'dcds-vtu-process-payment' in Path("vtu-payment-return.html").read_text(encoding="utf-8"),
               "only allowlisted Nigerian networks enter the returned catalogue": 'new Set(["mtn","airtel","glo","9mobile"])' in fn and "NETWORKS.has(p.network)" in fn,
               "catalogue endpoint is read-only and rejects unexpected actions": 'const allowedCatalog = new Map([' in fn and '["data_plans", "/data_plans"]' in fn and 'base + "/airtime"' not in fn and 'base + "/data"' not in fn,
               "preview hosts select the isolated Development Supabase project": 'tjgsxbmkpvktlqulbktv.supabase.co' in page and 'IS_DCDS_PRODUCTION' in page,
