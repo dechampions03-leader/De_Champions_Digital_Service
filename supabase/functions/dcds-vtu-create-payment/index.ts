@@ -162,6 +162,22 @@ Deno.serve(async (req: Request) => {
       providerCost = Math.round(amount * (1 - safeDiscount / 100) * 100) / 100;
     }
 
+    // Verify provider float before accepting a customer's Flutterwave payment.
+    const balanceResponse = await fetch("https://www.oplug.com.ng/api/v1/balance", {
+      headers: oplugHeaders,
+      signal: AbortSignal.timeout(12000),
+    });
+    const balancePayload = await balanceResponse.json().catch(() => null);
+    const providerBalance = money(balancePayload?.user?.balance);
+    if (!balanceResponse.ok || balancePayload?.status !== "success" ||
+      String(balancePayload?.user?.status || "").toLowerCase() !== "active" ||
+      !Number.isFinite(providerBalance)) {
+      return reply(req, { success: false, error: "Oplug could not confirm DCDS reseller availability. No payment has been started." }, 503);
+    }
+    if (providerBalance < providerCost) {
+      return reply(req, { success: false, error: "This top-up is temporarily unavailable because the provider cannot confirm enough fulfilment balance. No payment has been started." }, 409);
+    }
+
     // A retry with the same client request key must reuse the original checkout,
     // never create a second payable order.
     const { data: existing, error: existingError } = await db
@@ -183,6 +199,41 @@ Deno.serve(async (req: Request) => {
         return reply(req, { success: true, payment_link: existing.payment_link, tx_ref: existing.tx_ref, reused: true });
       }
       return reply(req, { success: false, error: "This checkout request is already being processed. Check your order status before trying again.", tx_ref: existing.tx_ref }, 409);
+    }
+
+    // Prevent a fresh request-id from creating another charge while this user
+    // has an existing unpaid, paid, processing or unresolved order.
+    const { data: openOrder, error: openOrderError } = await db
+      .from("dcds_vtu_orders")
+      .select("service_type,network,recipient_phone,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .eq("user_id", user.id)
+      .in("status", ["pending_payment", "paid", "processing", "needs_review"])
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle();
+    if (openOrderError) throw openOrderError;
+    if (openOrder) {
+      const sameOrder = openOrder.service_type === serviceType &&
+        openOrder.network === network &&
+        openOrder.recipient_phone === phone &&
+        openOrder.data_plan_id === dataPlanId &&
+        Number(openOrder.amount) === amount &&
+        (serviceType !== "airtime" || Number(openOrder.airtime_amount) === airtimeAmount);
+      if (openOrder.status === "pending_payment" && sameOrder && openOrder.payment_link) {
+        return reply(req, {
+          success: true,
+          payment_link: openOrder.payment_link,
+          tx_ref: openOrder.tx_ref,
+          reused: true,
+          message: "Your existing Flutterwave checkout has been reopened. Do not create another payment.",
+        });
+      }
+      return reply(req, {
+        success: false,
+        error: "You already have an Airtime & Data order awaiting payment or delivery. Check that order before starting another purchase.",
+        tx_ref: openOrder.tx_ref,
+        status: openOrder.status,
+      }, 409);
     }
 
     const suffix = crypto.randomUUID().replaceAll("-", "").toUpperCase();
