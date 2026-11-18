@@ -105,7 +105,7 @@ jobs:
               "network buttons display all four supplied carrier SVG logos": all((Path("assets/network-logos") / name).is_file() for name in ["mtn.svg", "airtel.svg", "glo.svg", "9mobile.svg"]) and all(f'./assets/network-logos/{name}.svg' in page for name in ["mtn", "airtel", "glo", "9mobile"]),
               "checkout call-to-action stays visually bright with no opacity dimming": ".checkout:disabled" in page and "opacity:1" in page[page.index(".checkout{"):page.index(".secure-note{")],
               "authenticated transaction history UI uses server history endpoint": 'functions.invoke("dcds-vtu-history"' in page and 'id="purchaseHistory"' in page,
-              "history retry uses existing transaction and does not create a new checkout": 'dcds-vtu-process-payment' in page and 'request_id:crypto.randomUUID()' in page and page.index('async function recheckHistoryOrder') < page.index('async function startCheckout'),
+              "history retry uses the existing Flutterwave transaction and order reference": 'dcds-vtu-process-payment' in page and 'transaction_id:order.transaction_id' in page and 'tx_ref:order.reference' in page and 'async function recheckHistoryOrder' in page,
               "only allowlisted Nigerian networks enter the returned catalogue": 'new Set(["mtn","airtel","glo","9mobile"])' in fn and "NETWORKS.has(p.network)" in fn,
               "catalogue endpoint is read-only and rejects unexpected actions": 'const allowedCatalog = new Map([' in fn and '["data_plans", "/data_plans"]' in fn and 'base + "/airtime"' not in fn and 'base + "/data"' not in fn,
               "preview hosts select the isolated Development Supabase project": 'tjgsxbmkpvktlqulbktv.supabase.co' in page and 'IS_DCDS_PRODUCTION' in page,
