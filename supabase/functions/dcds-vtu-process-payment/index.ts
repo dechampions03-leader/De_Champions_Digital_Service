@@ -136,6 +136,16 @@ Deno.serve(async (req: Request) => {
       return reply(req, { success: false, status: "needs_review", error: "Payment details require a DCDS support review. No duplicate top-up will be sent." }, 409);
     }
 
+    if (order.flutterwave_transaction_id &&
+      String(order.flutterwave_transaction_id) !== verifiedId) {
+      await db.from("dcds_vtu_orders").update({
+        status: "needs_review",
+        last_error: "A different Flutterwave transaction ID was already attached to this order.",
+        updated_at: new Date().toISOString(),
+      }).eq("id", order.id).in("status", ["pending_payment", "paid", "processing"]);
+      return reply(req, { success: false, status: "needs_review", error: "A different payment transaction is already recorded for this order. DCDS support must review it; do not pay again." }, 409);
+    }
+
     if (providerStatus !== "successful") {
       if (["failed", "cancelled", "canceled", "reversed"].includes(providerStatus)) {
         await db.from("dcds_vtu_orders").update({
