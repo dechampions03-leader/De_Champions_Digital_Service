@@ -1,0 +1,215 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#35105f">
+<meta name="description" content="Buy mobile airtime and data through De Champions Digital Service.">
+<title>DCDS Airtime &amp; Data</title>
+<link rel="icon" href="./assets/dcds-splash-icon-v4-192.png" type="image/png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--purple:#7628d8;--deep:#21083f;--dark:#451078;--gold:#e4c16d;--ink:#28183a;--muted:#776b83;--line:#eadff2;--paper:#fff;--wash:#faf6ff;--green:#16734b}
+*{box-sizing:border-box}
+html{min-height:100%;background:#faf6ff;overflow-x:clip}
+body{margin:0;min-height:100vh;min-height:100dvh;background:radial-gradient(ellipse at 5% 0%,#efe2ff 0,transparent 28%),linear-gradient(150deg,#fcfaff,#f5edff 55%,#fffaf0);color:var(--ink);font-family:'DM Sans',sans-serif;overflow-x:clip}
+a{color:inherit;text-decoration:none}button,input,select{font:inherit}
+.topbar{position:sticky;top:0;z-index:20;background:#ffffffed;border-bottom:1px solid var(--line);backdrop-filter:blur(16px)}
+.topbar-inner{width:min(1120px,calc(100% - 32px));min-height:76px;margin:auto;display:flex;align-items:center;justify-content:space-between;gap:14px}
+.brand{display:flex;align-items:center;gap:11px;min-width:0}
+.brand img{width:44px;height:44px;object-fit:contain;border-radius:13px;box-shadow:0 7px 18px #58228b20}
+.brand strong{display:block;color:#351052;font-size:12px;letter-spacing:.04em}
+.brand small{display:block;margin-top:3px;color:#8751b9;font-size:9px;font-weight:800;letter-spacing:.19em}
+.top-actions{display:flex;gap:9px;align-items:center}
+.top-link{padding:10px 13px;border:1px solid #e4d5f1;border-radius:12px;background:#fff;color:#542080;font-size:12px;font-weight:800}
+.top-link.primary{background:#f1e5ff;border-color:#e7d7f7}
+.wrap{width:min(1120px,calc(100% - 32px));margin:auto;padding:28px 0 66px}
+.hero{position:relative;overflow:hidden;border-radius:28px;padding:clamp(25px,5vw,48px);background:radial-gradient(circle at 88% 12%,#a65ce5 0,transparent 32%),radial-gradient(circle at 2% 100%,#6322a2 0,transparent 37%),linear-gradient(125deg,#21083f,#542080 58%,#7b35b8);color:#fff;box-shadow:0 22px 60px #38115c24}
+.hero:after{content:"";position:absolute;width:300px;height:300px;border:1px solid #ffffff23;border-radius:50%;right:-115px;bottom:-200px;box-shadow:0 0 0 35px #ffffff09,0 0 0 70px #ffffff07}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border:1px solid #ffffff3a;border-radius:999px;background:#ffffff13;color:#ffe8a7;font-size:10px;font-weight:900;letter-spacing:.18em}
+.hero h1{position:relative;z-index:1;max-width:750px;margin:17px 0 12px;font:800 clamp(34px,6vw,58px)/1.06 'Playfair Display',serif;letter-spacing:-.035em}
+.hero h1 em{color:#f4d98a;font-style:italic}
+.hero p{position:relative;z-index:1;max-width:680px;margin:0;color:#eee1fa;font-size:15px;line-height:1.8}
+.hero-points{position:relative;z-index:1;display:flex;flex-wrap:wrap;gap:9px;margin-top:23px}
+.hero-point{padding:8px 11px;border:1px solid #ffffff2d;border-radius:999px;background:#ffffff12;color:#f7edff;font-size:11px;font-weight:750}
+.page-grid{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(270px,.65fr);gap:18px;align-items:start;margin-top:20px}
+.card{min-width:0;border:1px solid var(--line);border-radius:22px;background:#fff;box-shadow:0 12px 34px #39115d0a}
+.buy-card{padding:clamp(17px,3vw,26px)}
+.section-head{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.kicker{color:#8b51c0;font-size:9px;font-weight:900;letter-spacing:.18em}
+h2{margin:6px 0 6px;color:#351052;font:800 25px 'Playfair Display',serif}
+.muted{color:var(--muted);font-size:12px;line-height:1.7}
+.status-pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 10px;border:1px solid #e9dff1;border-radius:999px;background:#fcf9ff;color:#7a4a9e;font-size:10px;font-weight:850}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#d9ad4c}
+.tabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:6px;margin:20px 0 19px;border:1px solid #eaddf2;border-radius:16px;background:#faf6ff}
+.tab{min-height:48px;border:0;border-radius:12px;background:transparent;color:#765e8a;font-weight:850;font-size:13px;cursor:pointer}
+.tab[aria-selected="true"]{background:linear-gradient(120deg,#6627a6,#873ddb);color:#fff;box-shadow:0 6px 16px #6128b82c}
+.field{display:grid;gap:8px;margin:15px 0}
+.field label{color:#4a315e;font-size:11px;font-weight:850}
+.network-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:9px}
+.network{min-width:0;min-height:76px;border:1px solid #e8dff0;border-radius:15px;background:#fff;display:grid;place-items:center;gap:5px;padding:10px 5px;cursor:pointer;transition:.16s}
+.network:hover{transform:translateY(-2px);border-color:#c7a5e5}
+.network[aria-pressed="true"]{border:2px solid #7b36bf;background:linear-gradient(145deg,#fff,#f5ecff);box-shadow:0 5px 16px #6a2da515}
+.network-mark{display:grid;place-items:center;width:31px;height:31px;border-radius:10px;background:#f3ebfb;color:#582080;font-size:10px;font-weight:950}
+.network[data-network="mtn"] .network-mark{background:#ffed55;color:#231d00}
+.network[data-network="airtel"] .network-mark{background:#fbe1e7;color:#c21d35}
+.network[data-network="glo"] .network-mark{background:#dff7e8;color:#13834e}
+.network[data-network="9mobile"] .network-mark{background:#e1f3e7;color:#16754a}
+.network span:last-child{font-size:10px;font-weight:850;color:#503663;white-space:nowrap}
+input,select{width:100%;min-width:0;height:48px;border:1px solid #e5d9ef;border-radius:12px;padding:0 13px;background:#fff;color:#2b1b3d;outline:none}
+input:focus,select:focus{border-color:#9a6ac5;box-shadow:0 0 0 3px #7628d815}
+input::placeholder{color:#a99bb4}
+.amount-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.amount-choice{min-height:42px;border:1px solid #e7dcf0;border-radius:11px;background:#fff;color:#67438a;font-size:12px;font-weight:850;cursor:pointer}
+.amount-choice[aria-pressed="true"]{border-color:#7b36bf;background:#f3e9ff;color:#542080}
+.plan-list{display:grid;gap:8px;max-height:330px;overflow:auto;padding-right:2px}
+.plan-option{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:12px;border:1px solid #e9dff1;border-radius:13px;background:#fff;text-align:left;cursor:pointer}
+.plan-option[aria-pressed="true"]{border:2px solid #7b36bf;background:#fbf7ff}
+.plan-option strong{display:block;color:#3e2058;font-size:12px}
+.plan-option small{display:block;margin-top:3px;color:#8d7b9a;font-size:10px}
+.plan-price{flex:0 0 auto;color:#542080;font-size:13px;font-weight:900}
+.empty-plans{padding:17px;border:1px dashed #d9c7e8;border-radius:13px;background:#fcf9ff;color:#887795;font-size:11px;line-height:1.65}
+.summary{padding:20px;background:linear-gradient(145deg,#fff,#fcf8ff)}
+.summary h3{margin:0;color:#351052;font:800 21px 'Playfair Display',serif}
+.summary-row{display:flex;justify-content:space-between;gap:10px;padding:12px 0;border-bottom:1px solid #efe7f4;color:#7c6d88;font-size:11px}
+.summary-row strong{color:#4a2864;text-align:right}
+.summary-total{display:flex;justify-content:space-between;align-items:end;gap:12px;padding:17px 0 10px}
+.summary-total span{color:#786782;font-size:11px;font-weight:800}
+.summary-total strong{color:#542080;font-size:25px;letter-spacing:-.04em}
+.checkout{width:100%;min-height:52px;margin-top:14px;border:0;border-radius:14px;background:linear-gradient(120deg,#d7b45a,#f0d88e);color:#34184d;font-size:13px;font-weight:950;cursor:not-allowed;opacity:.72}
+.secure-note{margin-top:12px;padding:12px;border:1px solid #efe3bf;border-radius:12px;background:#fffaf0;color:#806a39;font-size:10px;line-height:1.65}
+.side-stack{display:grid;gap:14px}
+.side-card{padding:20px}
+.side-card h3{margin:0 0 9px;color:#351052;font:800 20px 'Playfair Display',serif}
+.side-card ul{margin:9px 0 0;padding-left:18px;color:#786986;font-size:11px;line-height:1.8}
+.price-note{padding:13px;border-radius:13px;background:#f6effd;color:#6d4b86;font-size:10px;line-height:1.65}
+.notice{display:flex;gap:10px;align-items:flex-start;margin-top:14px;padding:13px;border:1px solid #e8dcf0;border-radius:13px;background:#fbf8ff;color:#765f87;font-size:10px;line-height:1.6}
+.notice b{color:#4c2868}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin-top:20px}
+.step{padding:17px;border:1px solid var(--line);border-radius:16px;background:#ffffffc9}
+.step b{display:grid;place-items:center;width:28px;height:28px;border-radius:9px;background:#f2e8ff;color:#6426a4;font-size:11px}
+.step h3{margin:10px 0 5px;color:#482465;font-size:12px}
+.step p{margin:0;color:#897b95;font-size:10px;line-height:1.65}
+footer{text-align:center;padding:24px 10px 6px;color:#998aa4;font-size:10px;letter-spacing:.04em}
+footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
+[hidden]{display:none!important}
+@media(max-width:820px){.page-grid{grid-template-columns:1fr}.side-stack{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:580px){.topbar-inner{min-height:66px}.brand img{width:39px;height:39px}.brand strong{font-size:10px}.brand small{font-size:8px}.top-link{padding:9px 10px;font-size:10px}.wrap{width:calc(100% - 22px);padding-top:17px}.hero{border-radius:21px;padding:23px 19px}.hero h1{font-size:36px}.hero p{font-size:13px}.network-grid{gap:7px}.network{min-height:70px}.network span:last-child{font-size:9px}.buy-card{padding:15px;border-radius:18px}.section-head{display:block}.status-pill{margin-top:9px}.side-stack{grid-template-columns:1fr}.steps{grid-template-columns:1fr;gap:9px}.step{display:grid;grid-template-columns:30px 1fr;column-gap:10px;align-items:start}.step b{grid-row:span 2}.step h3{margin:1px 0 3px}.amount-grid{grid-template-columns:repeat(4,1fr)}}
+</style>
+</head>
+<body>
+<header class="topbar"><div class="topbar-inner">
+ <a class="brand" href="index.html"><img src="./assets/dcds-splash-icon-v4-192.png" alt=""><span><strong>DE CHAMPIONS</strong><small>DIGITAL SERVICE</small></span></a>
+ <div class="top-actions"><a class="top-link" href="index.html">← Home</a><a class="top-link primary" href="student-dashboard.html">My Account ↗</a></div>
+</div></header>
+<main class="wrap">
+ <section class="hero">
+  <span class="eyebrow">✦ SIMPLE. FAST. CONNECTED.</span>
+  <h1>Airtime &amp; Data,<br><em>the DCDS way.</em></h1>
+  <p>Top up your phone with a clean, simple experience. Choose your network, pick a bundle or airtime amount, and review your order before payment.</p>
+  <div class="hero-points"><span class="hero-point">📶 MTN</span><span class="hero-point">🔴 Airtel</span><span class="hero-point">🟢 Glo</span><span class="hero-point">💚 9mobile</span><span class="hero-point">₦ Nigerian Naira</span></div>
+ </section>
+ <div class="page-grid">
+  <section class="card buy-card" aria-labelledby="buyTitle">
+   <div class="section-head"><div><span class="kicker">DCDS QUICK TOP-UP</span><h2 id="buyTitle">What would you like to buy?</h2><p class="muted">Choose a service and enter the number you want to recharge.</p></div><span class="status-pill" id="catalogStatus"><i class="status-dot"></i> Checking live plans</span></div>
+   <div class="tabs" role="tablist" aria-label="Choose top-up type"><button class="tab" id="dataTab" role="tab" aria-selected="true" type="button">📶 Buy Data</button><button class="tab" id="airtimeTab" role="tab" aria-selected="false" type="button">📱 Buy Airtime</button></div>
+   <div class="field"><label>Select your network</label><div class="network-grid" id="networkGrid">
+    <button class="network" data-network="mtn" aria-pressed="true" type="button"><span class="network-mark">MTN</span><span>MTN</span></button>
+    <button class="network" data-network="airtel" aria-pressed="false" type="button"><span class="network-mark">A</span><span>Airtel</span></button>
+    <button class="network" data-network="glo" aria-pressed="false" type="button"><span class="network-mark">G</span><span>Glo</span></button>
+    <button class="network" data-network="9mobile" aria-pressed="false" type="button"><span class="network-mark">9</span><span>9mobile</span></button>
+   </div></div>
+   <div class="field"><label for="phoneNumber">Recipient phone number</label><input id="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" maxlength="14" placeholder="08012345678"></div>
+   <div id="dataFields">
+    <div class="field"><label for="planSearch">Choose a data bundle</label><input id="planSearch" type="search" placeholder="Search plans e.g. 1GB, 5GB, 30 days"></div>
+    <div class="plan-list" id="planList"><div class="empty-plans">Loading available plans from the provider catalogue…</div></div>
+   </div>
+   <div id="airtimeFields" hidden>
+    <div class="field"><label>Choose an airtime amount</label><div class="amount-grid" id="amountGrid">
+     <button class="amount-choice" type="button" data-amount="100" aria-pressed="true">₦100</button><button class="amount-choice" type="button" data-amount="200" aria-pressed="false">₦200</button><button class="amount-choice" type="button" data-amount="500" aria-pressed="false">₦500</button><button class="amount-choice" type="button" data-amount="1000" aria-pressed="false">₦1,000</button>
+    </div></div>
+    <div class="field"><label for="airtimeAmount">Or enter another amount (₦)</label><input id="airtimeAmount" type="number" min="50" max="50000" step="50" value="100" inputmode="numeric"></div>
+   </div>
+   <div class="notice" role="note"><span>🔒</span><span><b>Your number is used only to process the top-up.</b><br>Always check the network and phone number before a purchase is submitted.</span></div>
+  </section>
+  <aside class="side-stack">
+   <section class="card summary">
+    <span class="kicker">ORDER PREVIEW</span><h3>Review your top-up</h3>
+    <div class="summary-row"><span>Service</span><strong id="summaryService">Data bundle</strong></div>
+    <div class="summary-row"><span>Network</span><strong id="summaryNetwork">MTN</strong></div>
+    <div class="summary-row"><span>Phone number</span><strong id="summaryPhone">Not entered</strong></div>
+    <div class="summary-row"><span>Selected plan</span><strong id="summaryPlan">Choose a plan</strong></div>
+    <div class="summary-total"><span>Provider rate (reference)</span><strong id="summaryPrice">—</strong></div>
+    <button class="checkout" id="checkoutButton" type="button" disabled>Secure checkout · coming next</button>
+    <div class="secure-note">Purchasing is not enabled yet. This preview does not charge your card, debit your bank or deliver a top-up. DCDS is completing provider and payment settlement setup first.</div>
+   </section>
+   <section class="card side-card"><h3>How it works</h3><ul><li>Choose airtime or data.</li><li>Select your network and enter the recipient number.</li><li>Review the exact plan and price.</li><li>Complete secure payment once checkout is activated.</li></ul></section>
+   <section class="card side-card"><h3>Live catalogue</h3><p class="muted" id="catalogMessage">Connecting to the wholesale catalogue…</p><div class="price-note">Provider rates can change. The final DCDS retail price and any DCDS bonus will be shown before payment is enabled.</div></section>
+  </aside>
+ </div>
+ <section class="steps" aria-label="DCDS top-up benefits"><article class="step"><b>01</b><h3>Clear choices</h3><p>Network and plan details are easy to compare before you order.</p></article><article class="step"><b>02</b><h3>Price transparency</h3><p>Provider reference rates are separated from the final DCDS customer price.</p></article><article class="step"><b>03</b><h3>Protected checkout</h3><p>Payments and delivery will be confirmed by the server, not trusted from a browser message.</p></article></section>
+ <footer>© 2026 De Champions Digital Service.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
+</main>
+<script>
+const SUPABASE_URL="https://qxsenflgaweeadvggnyp.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY="sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}}):null;
+const $=id=>document.getElementById(id);
+const state={type:"data",network:"mtn",plans:[],selected:null,airtimeAmount:100,discounts:{}};
+const money=n=>Number.isFinite(Number(n))?"₦"+Number(n).toLocaleString("en-NG",{maximumFractionDigits:2}):"—";
+const networkName=n=>({mtn:"MTN",airtel:"Airtel",glo:"Glo","9mobile":"9mobile"}[n]||n);
+function setCatalogStatus(text,ok=false){$("catalogStatus").innerHTML='<i class="status-dot" style="background:'+(ok?"#1d9b68":"#d9ad4c")+'"></i> '+text;}
+function renderPlans(){
+ const q=$("planSearch").value.trim().toLowerCase();
+ const list=state.plans.filter(p=>p.network===state.network&&(!q||(p.plan+" "+p.validity+" "+p.type).toLowerCase().includes(q)));
+ const root=$("planList");root.replaceChildren();
+ if(!list.length){const empty=document.createElement("div");empty.className="empty-plans";empty.textContent=q?"No plan matches that search for "+networkName(state.network)+".":"No live plans are available for this network right now.";root.append(empty);return;}
+ list.sort((a,b)=>a.amount-b.amount||a.plan.localeCompare(b.plan)).forEach(p=>{
+  const b=document.createElement("button");b.type="button";b.className="plan-option";b.setAttribute("aria-pressed",String(state.selected?.id===p.id));
+  const copy=document.createElement("span");const title=document.createElement("strong");title.textContent=p.plan;const meta=document.createElement("small");meta.textContent=[p.type,p.validity].filter(Boolean).join(" · ")||"Data bundle";copy.append(title,meta);
+  const price=document.createElement("span");price.className="plan-price";price.textContent=money(p.amount);
+  b.append(copy,price);b.addEventListener("click",()=>{state.selected=p;renderPlans();updateSummary();});root.append(b);
+ });
+}
+function updateSummary(){
+ $("summaryService").textContent=state.type==="data"?"Data bundle":"Airtime top-up";
+ $("summaryNetwork").textContent=networkName(state.network);
+ $("summaryPhone").textContent=$("phoneNumber").value.trim()||"Not entered";
+ $("summaryPlan").textContent=state.type==="data"?(state.selected?.plan||"Choose a plan"):"Airtime ₦"+Number(state.airtimeAmount).toLocaleString("en-NG");
+ $("summaryPrice").textContent=state.type==="data"&&state.selected?money(state.selected.amount):state.type==="airtime"?money(state.airtimeAmount):"—";
+}
+function setType(type){
+ state.type=type;state.selected=null;
+ $("dataTab").setAttribute("aria-selected",String(type==="data"));$("airtimeTab").setAttribute("aria-selected",String(type==="airtime"));
+ $("dataFields").hidden=type!=="data";$("airtimeFields").hidden=type!=="airtime";
+ updateSummary();
+}
+document.querySelectorAll(".network").forEach(b=>b.addEventListener("click",()=>{state.network=b.dataset.network;document.querySelectorAll(".network").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));state.selected=null;renderPlans();updateSummary();}));
+$("dataTab").addEventListener("click",()=>setType("data"));$("airtimeTab").addEventListener("click",()=>setType("airtime"));
+$("phoneNumber").addEventListener("input",updateSummary);$("planSearch").addEventListener("input",renderPlans);
+$("airtimeAmount").addEventListener("input",()=>{const n=Number($("airtimeAmount").value);if(Number.isFinite(n)&&n>=50&&n<=50000)state.airtimeAmount=n;document.querySelectorAll(".amount-choice").forEach(b=>b.setAttribute("aria-pressed",String(Number(b.dataset.amount)===state.airtimeAmount)));updateSummary();});
+document.querySelectorAll(".amount-choice").forEach(b=>b.addEventListener("click",()=>{state.airtimeAmount=Number(b.dataset.amount);$("airtimeAmount").value=String(state.airtimeAmount);document.querySelectorAll(".amount-choice").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));updateSummary();}));
+async function loadCatalog(){
+ if(!db){setCatalogStatus("Catalogue unavailable");$("catalogMessage").textContent="The DCDS connection could not be initialised. Please reload the page.";return;}
+ try{
+  const {data,error}=await db.functions.invoke("dcds-vtu-catalog",{body:{action:"catalog"}});
+  if(error)throw error;
+  if(!data?.success||!Array.isArray(data.plans))throw new Error(data?.error||"Provider catalogue is unavailable.");
+  state.plans=data.plans.filter(p=>["mtn","airtel","glo","9mobile"].includes(p.network)&&p.id&&p.plan&&Number(p.amount)>0);
+  state.discounts=data.airtimeDiscounts||{};
+  setCatalogStatus("Live catalogue loaded",true);
+  $("catalogMessage").textContent=state.plans.length+" live data options loaded from the supplier catalogue. Prices shown are provider reference prices, not final DCDS retail prices.";
+  renderPlans();updateSummary();
+ }catch(error){
+  console.warn("DCDS live VTU catalogue unavailable:",error);
+  setCatalogStatus("Live plans unavailable");
+  $("catalogMessage").textContent="The live provider catalogue could not be reached. No sample prices are being substituted. Please try again later.";
+  $("planList").innerHTML='<div class="empty-plans">Live data plans are temporarily unavailable. Refresh to try again.</div>';
+ }
+}
+setType("data");updateSummary();loadCatalog();
+</script>
+</body></html>

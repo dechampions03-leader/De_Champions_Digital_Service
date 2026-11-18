@@ -12,6 +12,9 @@ on:
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/flutterwave-webhook/**"
       - "supabase/functions/dcds-create-account/**"
+      - "supabase/functions/dcds-vtu-catalog/**"
+      - "airtime-data.html"
+      - "index.html"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
   pull_request:
@@ -24,6 +27,9 @@ on:
       - "supabase/functions/dcds-international-payout/**"
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/dcds-create-account/**"
+      - "supabase/functions/dcds-vtu-catalog/**"
+      - "airtime-data.html"
+      - "index.html"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
 
@@ -58,6 +64,31 @@ jobs:
         run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Type-check DCDS account creation function
         run: deno check supabase/functions/dcds-create-account/index.ts
+      - name: Type-check DCDS VTU catalogue endpoint
+        run: deno check supabase/functions/dcds-vtu-catalog/index.ts
+      - name: Verify DCDS Airtime and Data safety boundaries
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          page = Path("airtime-data.html").read_text(encoding="utf-8")
+          fn = Path("supabase/functions/dcds-vtu-catalog/index.ts").read_text(encoding="utf-8")
+          home = Path("index.html").read_text(encoding="utf-8")
+          checks = {
+              "home page links to the new Airtime & Data landing page": 'href="airtime-data.html"' in home,
+              "landing page loads the server catalogue rather than hardcoding prices": 'functions.invoke("dcds-vtu-catalog"' in page and "₦285" not in page and "₦280" not in page,
+              "checkout is visibly disabled until payment and provider delivery are implemented": 'id="checkoutButton"' in page and 'disabled' in page and "Purchasing is not enabled yet" in page,
+              "provider API key is only read server-side": 'Deno.env.get("DCDS_VTU_PROVIDER_API_KEY")' in fn and "DCDS_VTU_PROVIDER_API_KEY" not in page,
+              "only allowlisted Nigerian networks enter the returned catalogue": 'new Set(["mtn","airtel","glo","9mobile"])' in fn,
+              "catalogue endpoint is read-only and rejects unexpected actions": 'body?.action!=="catalog"' in fn and '/api/v1/data_plans' in fn,
+              "provider failure does not substitute invented prices": "No sample prices are being substituted" in page and "Live data plans are temporarily unavailable" in page,
+          }
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} DCDS VTU safety checks failed.")
+          PY
       - name: Verify Phase 1 migration invariants
         shell: bash
         run: |
