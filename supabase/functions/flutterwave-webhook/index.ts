@@ -226,6 +226,44 @@ Deno.serve(async (req: Request) => {
       auth: { persistSession: false, autoRefreshToken: false },
     });
 
+    // VTU orders are isolated from course orders and use their own idempotent
+    // fulfilment path. The processor re-verifies the Flutterwave transaction
+    // and sends the Oplug request with the persisted provider request-id.
+    const { data: vtuOrder, error: vtuLookupError } = await db
+      .from("dcds_vtu_orders")
+      .select("id,tx_ref")
+      .eq("tx_ref", txRef)
+      .maybeSingle();
+
+    if (vtuLookupError) {
+      console.error("VTU order lookup failed:", vtuLookupError.message);
+      return json({ error: "Could not verify VTU order" }, 500);
+    }
+
+    if (vtuOrder) {
+      const fulfilmentResponse = await fetch(
+        supabaseUrl + "/functions/v1/dcds-vtu-process-payment",
+        {
+          method: "POST",
+          headers: {
+            Authorization: "Bearer " + serviceRoleKey,
+            apikey: serviceRoleKey,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ transaction_id: verifiedId, tx_ref: txRef }),
+          signal: AbortSignal.timeout(30000),
+        },
+      );
+      const fulfilment = await fulfilmentResponse.json().catch(() => null);
+      if (!fulfilmentResponse.ok && fulfilment?.status !== "processing" &&
+          fulfilment?.status !== "successful" && fulfilment?.status !== "refund_required" &&
+          fulfilment?.status !== "failed") {
+        console.error("VTU fulfilment did not complete:", fulfilment?.status || "unknown");
+        return json({ error: "VTU fulfilment requires reconciliation" }, 500);
+      }
+      return json({ received: true, processed: true, service: "airtime_data", status: fulfilment?.status || "processing" });
+    }
+
     const { data: order, error: orderError } = await db
       .from("orders")
       .select("id,user_id,course_id,amount,currency,status,tx_ref")
