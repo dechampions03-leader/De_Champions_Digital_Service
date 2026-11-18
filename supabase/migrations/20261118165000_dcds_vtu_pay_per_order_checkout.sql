@@ -59,6 +59,11 @@ create index if not exists dcds_vtu_user_created_idx
 create index if not exists dcds_vtu_status_created_idx
   on public.dcds_vtu_orders(status, created_at desc);
 
+-- A customer may only have one unresolved top-up checkout at a time.
+create unique index if not exists dcds_vtu_one_open_order_per_user_uidx
+  on public.dcds_vtu_orders(user_id)
+  where status in ('pending_payment','paid','processing','needs_review');
+
 alter table public.dcds_vtu_orders enable row level security;
 
 -- All writes and reads go through authenticated server-side Edge Functions.
