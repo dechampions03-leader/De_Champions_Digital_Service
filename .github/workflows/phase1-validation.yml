@@ -13,6 +13,7 @@ on:
       - "supabase/functions/flutterwave-webhook/**"
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-vtu-catalog/**"
+      - "supabase/functions/dcds-oplug-readonly/**"
       - "airtime-data.html"
       - "index.html"
       - "supabase/migrations/**"
@@ -28,6 +29,7 @@ on:
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-vtu-catalog/**"
+      - "supabase/functions/dcds-oplug-readonly/**"
       - "airtime-data.html"
       - "index.html"
       - "supabase/migrations/**"
@@ -64,23 +66,27 @@ jobs:
         run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Type-check DCDS account creation function
         run: deno check supabase/functions/dcds-create-account/index.ts
-      - name: Type-check DCDS VTU catalogue endpoint
+      - name: Type-check legacy DCDS VTU catalogue endpoint
         run: deno check supabase/functions/dcds-vtu-catalog/index.ts
+      - name: Type-check Oplug read-only catalogue endpoint
+        run: deno check supabase/functions/dcds-oplug-readonly/index.ts
       - name: Verify DCDS Airtime and Data safety boundaries
         shell: bash
         run: |
           python3 - <<'PY'
           from pathlib import Path
           page = Path("airtime-data.html").read_text(encoding="utf-8")
-          fn = Path("supabase/functions/dcds-vtu-catalog/index.ts").read_text(encoding="utf-8")
+          fn = Path("supabase/functions/dcds-oplug-readonly/index.ts").read_text(encoding="utf-8")
           home = Path("index.html").read_text(encoding="utf-8")
           checks = {
               "home page links to the new Airtime & Data landing page": 'href="airtime-data.html"' in home,
-              "landing page loads the server catalogue rather than hardcoding prices": 'functions.invoke("dcds-vtu-catalog"' in page and "₦285" not in page and "₦280" not in page,
+              "landing page loads the server catalogue rather than hardcoding prices": 'functions.invoke("dcds-oplug-readonly"' in page and "₦285" not in page and "₦280" not in page,
               "checkout is visibly disabled until payment and provider delivery are implemented": 'id="checkoutButton"' in page and 'disabled' in page and "Purchasing is not enabled yet" in page,
-              "provider API key is only read server-side": 'Deno.env.get("DCDS_VTU_PROVIDER_API_KEY")' in fn and "DCDS_VTU_PROVIDER_API_KEY" not in page,
-              "only allowlisted Nigerian networks enter the returned catalogue": 'new Set(["mtn","airtel","glo","9mobile"])' in fn,
-              "catalogue endpoint is read-only and rejects unexpected actions": 'body?.action!=="catalog"' in fn and '/api/v1/data_plans' in fn,
+              "provider API key is only read server-side": 'Deno.env.get("OPLUG_API_KEY")' in fn and "OPLUG_API_KEY" not in page,
+              "only allowlisted Nigerian networks enter the returned catalogue": 'new Set(["mtn","airtel","glo","9mobile"])' in fn and "NETWORKS.has(p.network)" in fn,
+              "catalogue endpoint is read-only and rejects unexpected actions": 'const allowedCatalog = new Map([' in fn and '["data_plans", "/data_plans"]' in fn and 'base + "/airtime"' not in fn and 'base + "/data"' not in fn,
+              "preview hosts select the isolated Development Supabase project": 'tjgsxbmkpvktlqulbktv.supabase.co' in page and 'IS_DCDS_PRODUCTION' in page,
+              "admin balance requires a verified DCDS admin session": 'auth.getUser()' in fn and 'rpc("is_dcds_admin")' in fn,
               "provider failure does not substitute invented prices": "No sample prices are being substituted" in page and "Live data plans are temporarily unavailable" in page,
           }
           failures = [name for name, passed in checks.items() if not passed]
