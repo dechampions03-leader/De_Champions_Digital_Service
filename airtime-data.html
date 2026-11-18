@@ -154,9 +154,17 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
  <footer>© 2026 De Champions Digital Service.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
 </main>
 <script>
-const SUPABASE_URL="https://qxsenflgaweeadvggnyp.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY="sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
-const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true}}):null;
+// Match the app's existing environment routing: GitHub Pages is Production;
+ // Cloudflare preview hosts use the isolated Development project.
+const DCDS_PRODUCTION_HOSTS=["dechampions03-leader.github.io","dechampionsdigital.com","www.dechampionsdigital.com"];
+const IS_DCDS_PRODUCTION=DCDS_PRODUCTION_HOSTS.includes(window.location.hostname.toLowerCase());
+const SUPABASE_URL=IS_DCDS_PRODUCTION
+ ? "https://qxsenflgaweeadvggnyp.supabase.co"
+ : "https://tjgsxbmkpvktlqulbktv.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY=IS_DCDS_PRODUCTION
+ ? "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP"
+ : "sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
+const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 const $=id=>document.getElementById(id);
 const state={type:"data",network:"mtn",plans:[],selected:null,airtimeAmount:100,discounts:{}};
 const money=n=>Number.isFinite(Number(n))?"₦"+Number(n).toLocaleString("en-NG",{maximumFractionDigits:2}):"—";
@@ -195,19 +203,51 @@ document.querySelectorAll(".amount-choice").forEach(b=>b.addEventListener("click
 async function loadCatalog(){
  if(!db){setCatalogStatus("Catalogue unavailable");$("catalogMessage").textContent="The DCDS connection could not be initialised. Please reload the page.";return;}
  try{
-  const {data,error}=await db.functions.invoke("dcds-vtu-catalog",{body:{action:"catalog"}});
-  if(error)throw error;
-  if(!data?.success||!Array.isArray(data.plans))throw new Error(data?.error||"Provider catalogue is unavailable.");
-  state.plans=data.plans.filter(p=>["mtn","airtel","glo","9mobile"].includes(p.network)&&p.id&&p.plan&&Number(p.amount)>0);
-  state.discounts=data.airtimeDiscounts||{};
+  const [plansResult,networksResult]=await Promise.all([
+   db.functions.invoke("dcds-oplug-readonly",{body:{action:"data_plans"}}),
+   db.functions.invoke("dcds-oplug-readonly",{body:{action:"networks"}})
+  ]);
+  if(plansResult.error)throw plansResult.error;
+  if(networksResult.error)throw networksResult.error;
+  const plansPayload=plansResult.data;
+  const networksPayload=networksResult.data;
+  if(!plansPayload?.success||!Array.isArray(plansPayload.data?.plans))throw new Error(plansPayload?.error||"The provider data catalogue is unavailable.");
+  if(!networksPayload?.success||!Array.isArray(networksPayload.data?.networks))throw new Error(networksPayload?.error||"The provider network catalogue is unavailable.");
+
+  const normalizeNetwork=(name,id)=>{
+   const n=String(name||"").trim().toLowerCase();
+   const byId={1:"mtn",2:"glo",3:"9mobile",4:"airtel"};
+   if(n.includes("mtn"))return "mtn";
+   if(n.includes("glo"))return "glo";
+   if(n.includes("9mobile")||n.includes("9 mobile"))return "9mobile";
+   if(n.includes("airtel"))return "airtel";
+   return byId[Number(id)]||"";
+  };
+  state.plans=plansPayload.data.plans.map(p=>({
+   id:String(p.id??""),
+   network:normalizeNetwork(p.network,p.network_id),
+   networkId:Number(p.network_id)||null,
+   plan:String(p.plan??""),
+   amount:Number(p.amount),
+   validity:String(p.validity??""),
+   type:String(p.type??"")
+  })).filter(p=>p.id&&p.plan&&["mtn","airtel","glo","9mobile"].includes(p.network)&&Number.isFinite(p.amount)&&p.amount>0);
+
+  state.discounts=Object.fromEntries(networksPayload.data.networks.map(n=>{
+   const slug=normalizeNetwork(n.code||n.name,n.id);
+   return [slug,String(n.airtime_discount||"")];
+  }).filter(([slug])=>slug));
+
+  if(!state.plans.length)throw new Error("The provider returned no active data bundles.");
   setCatalogStatus("Live catalogue loaded",true);
-  $("catalogMessage").textContent=state.plans.length+" live data options loaded from the supplier catalogue. Prices shown are provider reference prices, not final DCDS retail prices.";
+  $("catalogMessage").textContent=state.plans.length+" live data options loaded. Prices shown are Oplug provider reference rates, not final DCDS retail prices.";
   renderPlans();updateSummary();
  }catch(error){
-  console.warn("DCDS live VTU catalogue unavailable:",error);
+  console.warn("DCDS Oplug catalogue unavailable:",error);
   setCatalogStatus("Live plans unavailable");
-  $("catalogMessage").textContent="The live provider catalogue could not be reached. No sample prices are being substituted. Please try again later.";
-  $("planList").innerHTML='<div class="empty-plans">Live data plans are temporarily unavailable. Refresh to try again.</div>';
+  $("catalogMessage").textContent="The live Oplug catalogue could not be reached. No sample prices are being substituted. Please try again later.";
+  $("planList").textContent="";
+  const empty=document.createElement("div");empty.className="empty-plans";empty.textContent="Live data plans are temporarily unavailable. Refresh to try again.";$("planList").append(empty);
  }
 }
 setType("data");updateSummary();loadCatalog();
