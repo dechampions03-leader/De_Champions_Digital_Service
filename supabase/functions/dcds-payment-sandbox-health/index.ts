@@ -22,7 +22,7 @@ Deno.serve(async (req: Request) => {
 
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
   const secret = Deno.env.get("FLW_SECRET_KEY") || "";
-  const webhookHash = Deno.env.get("FLW_TEST_WEBHOOK_HASH") || "";
+  const webhookHash = Deno.env.get("FLW_TEST_WEBHOOK_HASH") || Deno.env.get("FLW_WEBHOOK_HASH") || "";
   const serviceRole = Deno.env.get("DCDS_SERVICE_ROLE_KEY") || Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") || "";
   const checks = {
     development_project: supabaseUrl === "https://tjgsxbmkpvktlqulbktv.supabase.co",
