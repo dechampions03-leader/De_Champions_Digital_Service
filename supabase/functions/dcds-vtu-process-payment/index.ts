@@ -188,7 +188,7 @@ Deno.serve(async (req: Request) => {
     // This legacy column stores the VTpass request_id. A single paid -> processing
     // claim may submit /pay; every subsequent invocation performs /requery only.
     const DEFAULT_DATA_SERVICES: Record<string, string> = {
-      mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet",
+      mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet", smile: "smile-direct",
     };
     const ALLOWED_DATA_SERVICES: Record<string, string[]> = {
       mtn: ["mtn-data"],
@@ -196,6 +196,7 @@ Deno.serve(async (req: Request) => {
       glo: ["glo-data", "glo-sme-data"],
       "9mobile": ["etisalat-data", "9mobile-sme-data"],
       spectranet: ["spectranet"],
+      smile: ["smile-direct"],
     };
     const AIRTIME_SERVICES: Record<string, string> = {
       mtn: "mtn",
@@ -266,7 +267,9 @@ Deno.serve(async (req: Request) => {
         amount: Number(current.amount),
       };
       if (current.service_type === "data") {
-        payload.billersCode = String(current.recipient_phone);
+        payload.billersCode = current.network === "smile"
+          ? String(current.provider_billers_code || "")
+          : String(current.recipient_phone);
         payload.variation_code = storedVariationCode;
       }
       providerResponse = await fetch(vtpassBase + "/pay", {
