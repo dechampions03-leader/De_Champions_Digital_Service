@@ -94,6 +94,10 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: message }, conflict ? 409 : 400);
     }
 
+    const amount = Number(checkout.amount);
+    if (checkout.currency !== "NGN" || !Number.isSafeInteger(amount) || amount <= 0 || amount > 2147483647) {
+      return respond({ success: false, error: "The Development NGN amount is invalid for Flutterwave hosted checkout. No payment was started." }, 409);
+    }
     const siteUrl = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
     const returnUrl = supabaseUrl.replace(/\/+$/, "") + "/functions/v1/dcds-course-payment-return";
     const flutterwaveResponse = await fetch("https://api.flutterwave.com/v3/payments", {
@@ -105,7 +109,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         tx_ref: checkout.tx_ref,
-        amount: Number(checkout.amount),
+        amount,
         currency: checkout.currency || "NGN",
         redirect_url: returnUrl,
         configuration: {
