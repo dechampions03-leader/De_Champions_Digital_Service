@@ -6,6 +6,7 @@ const NETWORKS = [
   { id: 2, name: "Glo", code: "glo", airtime_discount: "0" },
   { id: 3, name: "9mobile", code: "9mobile", airtime_discount: "0" },
   { id: 4, name: "Airtel", code: "airtel", airtime_discount: "0" },
+  { id: 5, name: "Spectranet", code: "spectranet", airtime_discount: "0" },
 ] as const;
 const DATA_SERVICES = [
   { network: "mtn", networkId: 1, serviceID: "mtn-data" },
@@ -13,6 +14,8 @@ const DATA_SERVICES = [
   { network: "glo", networkId: 2, serviceID: "glo-data" },
   { network: "glo", networkId: 2, serviceID: "glo-sme-data" },
   { network: "9mobile", networkId: 3, serviceID: "etisalat-data" },
+  { network: "9mobile", networkId: 3, serviceID: "9mobile-sme-data" },
+  { network: "spectranet", networkId: 5, serviceID: "spectranet" },
 ] as const;
 
 function allowedOrigin(origin: string | null): boolean {
@@ -91,7 +94,7 @@ async function fetchVariations(service: { network: string; networkId: number; se
     const plan = clean(item?.name, 120);
     const amount = Number(item?.variation_amount);
     const validity = (plan.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i) || [""])[0];
-    return { id: serviceID + "::" + id, service_id: serviceID, variation_code: id, network, network_id: networkId, plan, amount, validity, type: serviceID === "glo-sme-data" ? "SME data" : "Data bundle" };
+    return { id: serviceID + "::" + id, service_id: serviceID, variation_code: id, network, network_id: networkId, plan, amount, validity, type: ["glo-sme-data", "9mobile-sme-data"].includes(serviceID) ? "SME data" : "Data bundle" };
   }).filter((item: { id: string; plan: string; amount: number }) =>
     item.id && item.plan && Number.isFinite(item.amount) && item.amount > 0 &&
     !/\b(?:calls?|minutes?|voice|talk\s*more)\b/i.test(item.plan)
@@ -144,7 +147,7 @@ Deno.serve(async (req: Request) => {
     }
     const data = {
       status: "success",
-      network_reference: { MTN: 1, GLO: 2, "9MOBILE": 3, AIRTEL: 4 },
+      network_reference: { MTN: 1, GLO: 2, "9MOBILE": 3, AIRTEL: 4, SPECTRANET: 5 },
       plans: allPlans,
       networks: NETWORKS,
     };
