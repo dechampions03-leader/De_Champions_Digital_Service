@@ -71,6 +71,11 @@ Deno.serve(async (req: Request) => {
     const flutterwaveKey = Deno.env.get("FLW_SECRET_KEY") || "";
     const vtpassApiKey = Deno.env.get("VTPASS_API_KEY") || "";
     const vtpassPublicKey = Deno.env.get("VTPASS_PUBLIC_KEY") || "";
+    const vtpassBase = (Deno.env.get("VTPASS_API_BASE_URL") || "https://sandbox.vtpass.com/api").replace(/\/+$/, "");
+    const vtpassHost = new URL(vtpassBase);
+    if (vtpassHost.protocol !== "https:" || !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname)) {
+      return reply(req, { success: false, error: "VTpass API base URL is not valid." }, 503);
+    }
     if (!supabaseUrl || !adminKey || !flutterwaveKey || !vtpassApiKey || !vtpassPublicKey) {
       return reply(req, { success: false, error: "Airtime & Data checkout is not fully configured yet. Please contact DCDS support." }, 503);
     }
@@ -113,7 +118,7 @@ Deno.serve(async (req: Request) => {
       const requestedPlanId = clean(body.plan_id, 100);
       if (!requestedPlanId) return reply(req, { success: false, error: "Select a data bundle first." }, 400);
       const serviceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data" } as Record<string, string>)[network];
-      const catalogueResponse = await fetch("https://sandbox.vtpass.com/api/service-variations?serviceID=" + encodeURIComponent(serviceID), {
+      const catalogueResponse = await fetch(vtpassBase + "/service-variations?serviceID=" + encodeURIComponent(serviceID), {
         headers: { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" },
         signal: AbortSignal.timeout(12000),
       });
