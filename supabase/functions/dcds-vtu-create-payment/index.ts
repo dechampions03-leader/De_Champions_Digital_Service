@@ -108,7 +108,7 @@ Deno.serve(async (req: Request) => {
     const serviceType = body.service_type === "airtime" ? "airtime" : body.service_type === "data" ? "data" : "";
     const network = clean(body.network, 20).toLowerCase();
     const networkId = NETWORKS[network];
-    const phone = network === "international" ? normalizeInternationalPhone(body.phone) : normalizePhone(body.phone);
+    const phone = (network === "international" || network === "smile") ? normalizeInternationalPhone(body.phone) : normalizePhone(body.phone);
     const customerEmail = clean(body.customer_email, 180).toLowerCase();
     const customerPhone = normalizeInternationalPhone(body.customer_phone);
     const smileEmail = clean(body.smile_email, 180).toLowerCase();
