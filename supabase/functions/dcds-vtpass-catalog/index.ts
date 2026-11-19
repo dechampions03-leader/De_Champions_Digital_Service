@@ -57,6 +57,12 @@ function apiHeaders(): HeadersInit {
   if (!apiKey || !publicKey) throw new Error("VTpass GET credentials are not configured.");
   return { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" };
 }
+function smileBasicHeaders(): HeadersInit {
+  const email = Deno.env.get("VTPASS_EMAIL") || "";
+  const password = Deno.env.get("VTPASS_PASSWORD") || "";
+  if (!email || !password) throw new Error("VTpass Smile Basic Authentication credentials are not configured.");
+  return { Authorization: "Basic " + btoa(email + ":" + password), "Content-Type": "application/json", Accept: "application/json" };
+}
 async function requireSignedIn(req: Request): Promise<{ ok: true } | { error: string; status: number }> {
   const authorization = req.headers.get("Authorization") || "";
   if (!authorization.startsWith("Bearer ")) return { error: "Sign in required.", status: 401 };
@@ -104,7 +110,7 @@ async function requireAdmin(req: Request): Promise<{ ok: true } | { error: strin
 async function fetchVariations(service: { network: string; networkId: number; serviceID: string }) {
   const { network, networkId, serviceID } = service;
   const response = await fetch(BASE + "/service-variations?serviceID=" + encodeURIComponent(serviceID), {
-    headers: apiHeaders(),
+    headers: serviceID === "smile-direct" ? smileBasicHeaders() : apiHeaders(),
     signal: AbortSignal.timeout(12000),
   });
   const payload = await response.json().catch(() => null);
@@ -154,12 +160,7 @@ Deno.serve(async (req: Request) => {
       }
       const verifyResponse = await fetch(base + "/merchant-verify/smile/email", {
         method: "POST",
-        headers: {
-          "api-key": Deno.env.get("VTPASS_API_KEY") || "",
-          "secret-key": Deno.env.get("VTPASS_SECRET_KEY") || "",
-          "Content-Type": "application/json",
-          Accept: "application/json",
-        },
+        headers: smileBasicHeaders(),
         body: JSON.stringify({ billersCode: email, serviceID: "smile-direct" }),
         signal: AbortSignal.timeout(12000),
       });
