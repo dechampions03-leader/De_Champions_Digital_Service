@@ -93,7 +93,8 @@ async function fetchVariations(network: string, networkId: number) {
     const validity = (plan.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i) || [""])[0];
     return { id, network, network_id: networkId, plan, amount, validity, type: "Data bundle" };
   }).filter((item: { id: string; plan: string; amount: number }) =>
-    item.id && item.plan && Number.isFinite(item.amount) && item.amount >= 50
+    item.id && item.plan && Number.isFinite(item.amount) && item.amount >= 50 &&
+    !/\b(?:calls?|minutes?|voice|talk\s*more)\b/i.test(item.plan)
   );
 }
 
