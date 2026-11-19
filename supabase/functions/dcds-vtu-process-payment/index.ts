@@ -205,11 +205,25 @@ Deno.serve(async (req: Request) => {
       "9mobile": "etisalat",
       international: "foreign-airtime",
     };
-    const vtpassBase = (Deno.env.get("VTPASS_API_BASE_URL") || "https://sandbox.vtpass.com/api").replace(/\/+$/, "");
-    const vtpassHost = new URL(vtpassBase);
-    if (vtpassHost.protocol !== "https:" || !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname)) {
-      return reply(req, { success: false, status: "needs_review", error: "VTpass API base URL is not valid. Do not pay again; contact DCDS support." }, 503);
+    const vtpassBaseValue = (Deno.env.get("VTPASS_API_BASE_URL") || "").trim();
+    if (!vtpassBaseValue) {
+      return reply(req, { success: false, status: "needs_review", error: "VTpass is not configured. Do not pay again; DCDS must set the explicit live provider URL and reconcile this order." }, 503);
     }
+    let vtpassHost: URL;
+    try {
+      vtpassHost = new URL(vtpassBaseValue);
+    } catch {
+      return reply(req, { success: false, status: "needs_review", error: "VTpass API base URL is invalid. Do not pay again; contact DCDS support." }, 503);
+    }
+    if (
+      vtpassHost.protocol !== "https:" ||
+      !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname) ||
+      !["/api", "/api/"].includes(vtpassHost.pathname) ||
+      vtpassHost.username || vtpassHost.password || vtpassHost.search || vtpassHost.hash
+    ) {
+      return reply(req, { success: false, status: "needs_review", error: "VTpass API base URL must be the official HTTPS /api endpoint. Do not pay again; contact DCDS support." }, 503);
+    }
+    const vtpassBase = vtpassHost.origin + "/api";
     const storedProviderCost = Number(current.provider_cost);
     if (!Number.isFinite(storedProviderCost) || storedProviderCost <= 0) {
       await db.from("dcds_vtu_orders").update({
