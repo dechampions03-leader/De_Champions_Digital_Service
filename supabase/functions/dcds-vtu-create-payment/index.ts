@@ -122,6 +122,7 @@ Deno.serve(async (req: Request) => {
     let dataPlanType: string | null = null;
     let dataValidity: string | null = null;
     let airtimeAmount: number | null = null;
+    let internationalMetadata: Record<string, unknown> | null = null;
 
     if (serviceType === "data") {
       const requestedPlanId = clean(body.plan_id, 100);
@@ -215,11 +216,17 @@ Deno.serve(async (req: Request) => {
       }
       airtimeAmount = amount;
       providerCost = amount;
-      dataPlanName = clean(variation.name, 120);
-      dataPlanId = "foreign-airtime::" + variationCode;
-      dataPlanType = "International airtime";
-      const matchValidity = dataPlanName.match(/(?:\\d+\\s*(?:hours?|hrs?|days?|weeks?|months?))/i);
-      dataValidity = matchValidity?.[0] || null;
+      internationalMetadata = {
+        country_code: countryCode,
+        country_name: clean(country.name, 80),
+        product_type_id: productTypeId,
+        product_type_name: clean(productType.name, 80),
+        operator_id: operatorId,
+        operator_name: clean(operator.name, 100),
+        variation_code: variationCode,
+        plan_name: clean(variation.name, 120),
+        customer_phone: customerPhone,
+      };
     } else {
       const requestedAmount = money(body.amount);
       if (!Number.isInteger(requestedAmount) || requestedAmount < 50 || requestedAmount > 50000) {
@@ -245,12 +252,7 @@ Deno.serve(async (req: Request) => {
         existing.recipient_phone === phone &&
         existing.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
         existing.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
-        JSON.stringify(existing.provider_metadata || null) === JSON.stringify(network === "international" ? {
-          country_code: clean(body.country_code, 3).toUpperCase(),
-          product_type_id: Number(body.product_type_id),
-          operator_id: clean(String(body.operator_id ?? ""), 30),
-          variation_code: clean(body.variation_code, 80),
-        } : null) &&
+        JSON.stringify(existing.provider_metadata || null) === JSON.stringify(internationalMetadata) &&
         existing.data_plan_id === dataPlanId &&
         Number(existing.amount) === amount &&
         (serviceType !== "airtime" || Number(existing.airtime_amount) === airtimeAmount);
@@ -265,7 +267,7 @@ Deno.serve(async (req: Request) => {
     // has an existing unpaid, paid, processing or unresolved order.
     const { data: openOrder, error: openOrderError } = await db
       .from("dcds_vtu_orders")
-      .select("service_type,network,recipient_phone,provider_billers_code,provider_email,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .select("service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .in("status", ["pending_payment", "paid", "processing", "needs_review"])
       .order("created_at", { ascending: false })
@@ -278,12 +280,7 @@ Deno.serve(async (req: Request) => {
         openOrder.recipient_phone === phone &&
         openOrder.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
         openOrder.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
-        JSON.stringify(openOrder.provider_metadata || null) === JSON.stringify(network === "international" ? {
-          country_code: clean(body.country_code, 3).toUpperCase(),
-          product_type_id: Number(body.product_type_id),
-          operator_id: clean(String(body.operator_id ?? ""), 30),
-          variation_code: clean(body.variation_code, 80),
-        } : null) &&
+        JSON.stringify(openOrder.provider_metadata || null) === JSON.stringify(internationalMetadata) &&
         openOrder.data_plan_id === dataPlanId &&
         Number(openOrder.amount) === amount &&
         (serviceType !== "airtime" || Number(openOrder.airtime_amount) === airtimeAmount);
@@ -320,14 +317,7 @@ Deno.serve(async (req: Request) => {
       recipient_phone: phone,
       provider_billers_code: network === "smile" ? smileAccountId : null,
       provider_email: network === "smile" ? smileEmail : network === "international" ? customerEmail : null,
-      provider_metadata: network === "international" ? {
-        country_code: clean(body.country_code, 3).toUpperCase(),
-        product_type_id: Number(body.product_type_id),
-        operator_id: clean(String(body.operator_id ?? ""), 30),
-        variation_code: clean(body.variation_code, 80),
-        customer_phone: customerPhone,
-        plan_name: clean(body.variation_name, 120),
-      } : null,
+      provider_metadata: internationalMetadata,
       data_plan_id: dataPlanId,
       data_plan_name: dataPlanName,
       data_plan_type: dataPlanType,
