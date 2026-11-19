@@ -243,12 +243,19 @@ Deno.serve(async (req: Request) => {
     if (current.status === "failed" || current.status === "cancelled") return successResponse(req, current, current.status, "This checkout was not completed.");
     if (current.status !== "processing") return successResponse(req, current, current.status, "Your order is being checked.");
 
-    const postHeaders = {
-      "api-key": vtpassApiKey,
-      "secret-key": vtpassSecretKey,
-      "Content-Type": "application/json",
-      Accept: "application/json",
-    };
+    const postHeaders: HeadersInit = current.network === "smile"
+      ? (() => {
+          const email = Deno.env.get("VTPASS_EMAIL") || "";
+          const password = Deno.env.get("VTPASS_PASSWORD") || "";
+          if (!email || !password) throw new Error("VTpass Smile Basic Authentication credentials are not configured.");
+          return { Authorization: "Basic " + btoa(email + ":" + password), "Content-Type": "application/json", Accept: "application/json" };
+        })()
+      : {
+          "api-key": vtpassApiKey,
+          "secret-key": vtpassSecretKey,
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        };
     const storedPlanId = String(current.data_plan_id || "");
     const [storedServiceID, storedVariationCode] = storedPlanId.includes("::")
       ? storedPlanId.split("::", 2)
