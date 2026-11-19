@@ -135,7 +135,7 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
   <span class="eyebrow">✦ SIMPLE. FAST. CONNECTED.</span>
   <h1>Airtime &amp; Data,<br><em>the DCDS way.</em></h1>
   <p>Top up your phone with a clean, simple experience. Choose your network, pick a bundle or airtime amount, and review your order before payment.</p>
-  <div class="hero-points"><span class="hero-point">📶 MTN</span><span class="hero-point">🔴 Airtel</span><span class="hero-point">🟢 Glo</span><span class="hero-point">💚 9mobile</span><span class="hero-point">₦ Nigerian Naira</span></div>
+  <div class="hero-points"><span class="hero-point">📶 MTN</span><span class="hero-point">🔴 Airtel</span><span class="hero-point">🟢 Glo</span><span class="hero-point">💚 9mobile</span><span class="hero-point">📡 Spectranet</span><span class="hero-point">₦ Nigerian Naira</span></div>
  </section>
  <div class="page-grid">
   <section class="card buy-card" aria-labelledby="buyTitle">
@@ -146,6 +146,7 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
     <button class="network" data-network="airtel" aria-label="Airtel" aria-pressed="false" type="button"><img class="network-logo" src="./assets/network-logos/airtel.svg" alt="Airtel logo"><span>Airtel</span></button>
     <button class="network" data-network="glo" aria-label="Glo" aria-pressed="false" type="button"><img class="network-logo" src="./assets/network-logos/glo.svg" alt="Glo logo"><span>Glo</span></button>
     <button class="network" data-network="9mobile" aria-label="9mobile" aria-pressed="false" type="button"><img class="network-logo" src="./assets/network-logos/9mobile.svg" alt="9mobile logo"><span>9mobile</span></button>
+    <button class="network" data-network="spectranet" aria-label="Spectranet data" aria-pressed="false" type="button"><span class="network-logo" aria-hidden="true">S</span><span>Spectranet</span></button>
    </div></div>
    <div class="field"><label for="phoneNumber">Recipient phone number</label><input id="phoneNumber" type="tel" inputmode="tel" autocomplete="tel" maxlength="14" placeholder="08012345678"></div>
    <div id="dataFields">
@@ -202,7 +203,7 @@ const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL
 const $=id=>document.getElementById(id);
 const state={type:"data",network:"mtn",plans:[],selected:null,airtimeAmount:100,discounts:{}};
 const money=n=>Number.isFinite(Number(n))?"₦"+Number(n).toLocaleString("en-NG",{maximumFractionDigits:2}):"—";
-const networkName=n=>({mtn:"MTN",airtel:"Airtel",glo:"Glo","9mobile":"9mobile"}[n]||n);
+const networkName=n=>({mtn:"MTN",airtel:"Airtel",glo:"Glo","9mobile":"9mobile",spectranet:"Spectranet"}[n]||n);
 function setCatalogStatus(text,ok=false){$("catalogStatus").innerHTML='<i class="status-dot" style="background:'+(ok?"#1d9b68":"#d9ad4c")+'"></i> '+text;}
 function renderPlans(){
  const q=$("planSearch").value.trim().toLowerCase();
@@ -220,7 +221,7 @@ function canCheckout(){
  const phoneValid=/^0[789]\d{9}$/.test($("phoneNumber").value.trim());
  const productValid=state.type==="data"
   ? !!state.selected&&state.plans.some(p=>p.id===state.selected.id&&p.network===state.network)
-  : Number.isInteger(Number(state.airtimeAmount))&&Number(state.airtimeAmount)>=50&&Number(state.airtimeAmount)<=50000&&Object.prototype.hasOwnProperty.call(state.discounts,state.network);
+  : ["mtn","airtel","glo","9mobile"].includes(state.network)&&Number.isInteger(Number(state.airtimeAmount))&&Number(state.airtimeAmount)>=50&&Number(state.airtimeAmount)<=50000&&Object.prototype.hasOwnProperty.call(state.discounts,state.network);
  return !!db&&phoneValid&&productValid;
 }
 function updateCheckoutState(){
@@ -239,11 +240,22 @@ function updateSummary(){
 }
 function setType(type){
  state.type=type;state.selected=null;
+ if(type==="airtime"&&state.network==="spectranet")state.network="mtn";
  $("dataTab").setAttribute("aria-selected",String(type==="data"));$("airtimeTab").setAttribute("aria-selected",String(type==="airtime"));
  $("dataFields").hidden=type!=="data";$("airtimeFields").hidden=type!=="airtime";
- updateSummary();
+ document.querySelectorAll(".network").forEach(b=>{
+  const dataOnly=b.dataset.network==="spectranet";
+  b.disabled=type==="airtime"&&dataOnly;
+  b.setAttribute("aria-pressed",String(b.dataset.network===state.network));
+ });
+ renderPlans();updateSummary();
 }
-document.querySelectorAll(".network").forEach(b=>b.addEventListener("click",()=>{state.network=b.dataset.network;document.querySelectorAll(".network").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));state.selected=null;renderPlans();updateSummary();}));
+document.querySelectorAll(".network").forEach(b=>b.addEventListener("click",()=>{
+ if(state.type==="airtime"&&b.dataset.network==="spectranet")return;
+ state.network=b.dataset.network;
+ document.querySelectorAll(".network").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));
+ state.selected=null;renderPlans();updateSummary();
+}));
 $("dataTab").addEventListener("click",()=>setType("data"));$("airtimeTab").addEventListener("click",()=>setType("airtime"));
 $("phoneNumber").addEventListener("input",updateSummary);$("planSearch").addEventListener("input",renderPlans);
 $("airtimeAmount").addEventListener("input",()=>{const n=Number($("airtimeAmount").value);if(Number.isFinite(n)&&n>=50&&n<=50000)state.airtimeAmount=n;document.querySelectorAll(".amount-choice").forEach(b=>b.setAttribute("aria-pressed",String(Number(b.dataset.amount)===state.airtimeAmount)));updateSummary();});
@@ -297,11 +309,12 @@ async function loadCatalog(){
   if(!catalogue?.success||!Array.isArray(catalogue.data?.plans)||!Array.isArray(catalogue.data?.networks))throw new Error(catalogue?.error||"The VTpass catalogue is unavailable.");
   const normalizeNetwork=(name,id)=>{
    const n=String(name||"").trim().toLowerCase();
-   const byId={1:"mtn",2:"glo",3:"9mobile",4:"airtel"};
+   const byId={1:"mtn",2:"glo",3:"9mobile",4:"airtel",5:"spectranet"};
    if(n.includes("mtn"))return "mtn";
    if(n.includes("glo"))return "glo";
    if(n.includes("9mobile")||n.includes("9 mobile"))return "9mobile";
    if(n.includes("airtel"))return "airtel";
+   if(n.includes("spectranet"))return "spectranet";
    return byId[Number(id)]||"";
   };
   state.plans=catalogue.data.plans.map(p=>({
@@ -312,7 +325,7 @@ async function loadCatalog(){
    amount:Number(p.amount),
    validity:String(p.validity??""),
    type:String(p.type??"")
-  })).filter(p=>p.id&&p.plan&&["mtn","airtel","glo","9mobile"].includes(p.network)&&Number.isFinite(p.amount)&&p.amount>0);
+  })).filter(p=>p.id&&p.plan&&["mtn","airtel","glo","9mobile","spectranet"].includes(p.network)&&Number.isFinite(p.amount)&&p.amount>0);
   state.discounts=Object.fromEntries(catalogue.data.networks.map(n=>{
    const slug=normalizeNetwork(n.code||n.name,n.id);
    return [slug,String(n.airtime_discount||"0")];
