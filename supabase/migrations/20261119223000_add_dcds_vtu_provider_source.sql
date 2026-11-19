@@ -17,7 +17,7 @@ BEGIN
     ALTER TABLE public.dcds_vtu_orders
       RENAME COLUMN oplug_request_id TO provider_request_id;
   END IF;
-END
+END;
 $cutover$;
 
 DO $cutover$
@@ -27,7 +27,7 @@ BEGIN
     ALTER TABLE public.dcds_vtu_orders
       RENAME CONSTRAINT dcds_vtu_orders_oplug_request_id_key TO dcds_vtu_orders_provider_request_id_key;
   END IF;
-END
+END;
 $cutover$;
 
 ALTER TABLE public.dcds_vtu_orders
