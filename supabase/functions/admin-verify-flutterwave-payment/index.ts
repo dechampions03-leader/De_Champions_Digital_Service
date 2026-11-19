@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://dechampions03-leader.github.io",
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Vary": "Origin",
@@ -20,7 +20,9 @@ Deno.serve(async (req: Request) => {
 
   try {
     const origin = req.headers.get("Origin");
-    if (origin && origin !== "https://dechampions03-leader.github.io") {
+    const allowedDevPreview = origin === "https://dcds-dev-auth-preview.pages.dev" ||
+      Boolean(origin && /^https:\/\/[a-z0-9-]+\.dcds-dev-auth-preview\.pages\.dev$/i.test(origin));
+    if (origin && !allowedDevPreview) {
       return respond({ success: false, error: "Origin not allowed." }, 403);
     }
 
@@ -29,6 +31,10 @@ Deno.serve(async (req: Request) => {
     const flutterwaveKey = Deno.env.get("FLW_SECRET_KEY");
     if (!supabaseUrl || !serviceKey || !flutterwaveKey) {
       return respond({ success: false, error: "Payment verification configuration is incomplete." }, 503);
+    }
+    // The Development verifier must never query or act on live transactions.
+    if (!flutterwaveKey.startsWith("FLWSECK_TEST-")) {
+      return respond({ success: false, error: "Development payment verification requires a Flutterwave TEST secret key." }, 503);
     }
 
     const authorization = req.headers.get("Authorization");
