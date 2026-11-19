@@ -250,11 +250,48 @@ Deno.serve(async (req: Request) => {
       providerCost = requestedAmount;
     }
 
+    const customerCurrency = clean(body.currency || "NGN", 3).toUpperCase();
+    if (!["NGN", "USD", "GBP", "EUR"].includes(customerCurrency)) {
+      return reply(req, { success: false, error: "This checkout currency is not currently supported." }, 400);
+    }
+
+    // VTpass prices and settles in NGN. Convert only the customer-facing charge
+    // using a server-fetched daily reference rate; never trust a browser rate.
+    let fxRate = 1;
+    let fxRateDate: string | null = null;
+    let fxRateSource = "DCDS-NGN-BASELINE";
+    if (customerCurrency !== "NGN") {
+      const rateResponse = await fetch(
+        "https://api.frankfurter.dev/v2/rate/NGN/" + customerCurrency,
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) },
+      );
+      const rateData = await rateResponse.json().catch(() => null);
+      const parsedDate = typeof rateData?.date === "string" ? new Date(rateData.date + "T00:00:00Z") : null;
+      const ageDays = parsedDate && Number.isFinite(parsedDate.getTime())
+        ? (Date.now() - parsedDate.getTime()) / 86400000 : Number.POSITIVE_INFINITY;
+      fxRate = Number(rateData?.rate);
+      if (!rateResponse.ok || rateData?.base !== "NGN" || rateData?.quote !== customerCurrency ||
+        !Number.isFinite(fxRate) || fxRate <= 0 || ageDays < -1 || ageDays > 4) {
+        return reply(req, { success: false, error: "A fresh reference exchange rate is unavailable for this currency. Please choose NGN or try again later." }, 503);
+      }
+      fxRateDate = rateData.date;
+      fxRateSource = "Frankfurter reference rates (api.frankfurter.dev)";
+    }
+    const providerCostNgn = money(providerCost);
+    if (!Number.isFinite(providerCostNgn) || providerCostNgn <= 0) {
+      return reply(req, { success: false, error: "The VTpass provider price is invalid. No payment has been started." }, 502);
+    }
+    amount = money(providerCostNgn * fxRate);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return reply(req, { success: false, error: "The converted checkout amount is invalid. No payment has been started." }, 502);
+    }
+    if (serviceType === "airtime") airtimeAmount = providerCostNgn;
+
     // A retry with the same client request key must reuse the original checkout,
     // never create a second payable order.
     const { data: existing, error: existingError } = await db
       .from("dcds_vtu_orders")
-      .select("id,user_id,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .select("id,user_id,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,currency,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .eq("client_request_id", clientRequestId)
       .maybeSingle();
@@ -267,7 +304,7 @@ Deno.serve(async (req: Request) => {
         existing.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
         JSON.stringify(existing.provider_metadata || null) === JSON.stringify(internationalMetadata) &&
         existing.data_plan_id === dataPlanId &&
-        Number(existing.amount) === amount &&
+        Number(existing.amount) === amount && existing.currency === customerCurrency &&
         (serviceType !== "airtime" || Number(existing.airtime_amount) === airtimeAmount);
       if (!samePayload) return reply(req, { success: false, error: "This checkout request key was already used for different purchase details." }, 409);
       if (existing.status === "pending_payment" && existing.payment_link) {
@@ -280,7 +317,7 @@ Deno.serve(async (req: Request) => {
     // has an existing unpaid, paid, processing or unresolved order.
     const { data: openOrder, error: openOrderError } = await db
       .from("dcds_vtu_orders")
-      .select("service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .select("service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,currency,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .in("status", ["pending_payment", "paid", "processing", "needs_review"])
       .order("created_at", { ascending: false })
@@ -295,7 +332,7 @@ Deno.serve(async (req: Request) => {
         openOrder.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
         JSON.stringify(openOrder.provider_metadata || null) === JSON.stringify(internationalMetadata) &&
         openOrder.data_plan_id === dataPlanId &&
-        Number(openOrder.amount) === amount &&
+        Number(openOrder.amount) === amount && openOrder.currency === customerCurrency &&
         (serviceType !== "airtime" || Number(openOrder.airtime_amount) === airtimeAmount);
       if (openOrder.status === "pending_payment" && sameOrder && openOrder.payment_link) {
         return reply(req, {
@@ -337,8 +374,12 @@ Deno.serve(async (req: Request) => {
       data_validity: dataValidity,
       airtime_amount: airtimeAmount,
       amount,
-      provider_cost: providerCost,
-      currency: "NGN",
+      provider_cost: providerCostNgn,
+      provider_cost_currency: "NGN",
+      currency: customerCurrency,
+      fx_rate: fxRate,
+      fx_rate_date: fxRateDate,
+      fx_rate_source: fxRateSource,
       tx_ref: txRef,
       oplug_request_id: vtpassRequestId, // Legacy column retained for compatibility; stores the VTpass request ID.
       checkout_expires_at: expiresAt,
@@ -358,7 +399,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           tx_ref: txRef,
           amount: order.amount,
-          currency: "NGN",
+          currency: customerCurrency,
           redirect_url: SITE_URL + "/vtu-payment-return.html",
           configuration: {
             session_duration: 60,
@@ -411,7 +452,7 @@ Deno.serve(async (req: Request) => {
       .eq("id", order.id);
     if (linkSaveError) console.error("Could not persist VTU checkout link:", linkSaveError.message);
 
-    return reply(req, { success: true, payment_link: flw.data.link, tx_ref: txRef, amount: order.amount, currency: "NGN" });
+    return reply(req, { success: true, payment_link: flw.data.link, tx_ref: txRef, amount: order.amount, currency: customerCurrency, fx_rate_date: fxRateDate });
   } catch (error) {
     console.error("DCDS VTU checkout creation failed:", error instanceof Error ? error.message : "Unknown error");
     return reply(req, { success: false, error: "Unable to start checkout. No airtime or data purchase has been submitted." }, 500);
