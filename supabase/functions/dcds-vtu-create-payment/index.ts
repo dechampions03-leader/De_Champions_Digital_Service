@@ -255,37 +255,10 @@ Deno.serve(async (req: Request) => {
       return reply(req, { success: false, error: "This checkout currency is not currently supported." }, 400);
     }
 
-    // VTpass prices and settles in NGN. Convert only the customer-facing charge
-    // using a server-fetched daily reference rate; never trust a browser rate.
-    let fxRate = 1;
-    let fxRateDate: string | null = null;
-    let fxRateSource = "DCDS-NGN-BASELINE";
-    if (customerCurrency !== "NGN") {
-      const rateResponse = await fetch(
-        "https://api.frankfurter.dev/v2/rate/NGN/" + customerCurrency,
-        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) },
-      );
-      const rateData = await rateResponse.json().catch(() => null);
-      const parsedDate = typeof rateData?.date === "string" ? new Date(rateData.date + "T00:00:00Z") : null;
-      const ageDays = parsedDate && Number.isFinite(parsedDate.getTime())
-        ? (Date.now() - parsedDate.getTime()) / 86400000 : Number.POSITIVE_INFINITY;
-      fxRate = Number(rateData?.rate);
-      if (!rateResponse.ok || rateData?.base !== "NGN" || rateData?.quote !== customerCurrency ||
-        !Number.isFinite(fxRate) || fxRate <= 0 || ageDays < -1 || ageDays > 4) {
-        return reply(req, { success: false, error: "A fresh reference exchange rate is unavailable for this currency. Please choose NGN or try again later." }, 503);
-      }
-      fxRateDate = rateData.date;
-      fxRateSource = "Frankfurter reference rates (api.frankfurter.dev)";
-    }
     const providerCostNgn = money(providerCost);
     if (!Number.isFinite(providerCostNgn) || providerCostNgn <= 0) {
       return reply(req, { success: false, error: "The VTpass provider price is invalid. No payment has been started." }, 502);
     }
-    amount = money(providerCostNgn * fxRate);
-    if (!Number.isFinite(amount) || amount <= 0) {
-      return reply(req, { success: false, error: "The converted checkout amount is invalid. No payment has been started." }, 502);
-    }
-    if (serviceType === "airtime") airtimeAmount = providerCostNgn;
 
     // A retry with the same client request key must reuse the original checkout,
     // never create a second payable order.
@@ -350,6 +323,38 @@ Deno.serve(async (req: Request) => {
         status: openOrder.status,
       }, 409);
     }
+
+    // VTpass prices and settles in NGN. Convert only the customer-facing charge
+    // using a server-fetched daily reference rate; never trust a browser rate.
+    let fxRate = 1;
+    let fxRateDate: string | null = null;
+    let fxRateSource = "DCDS-NGN-BASELINE";
+    if (customerCurrency !== "NGN") {
+      const rateResponse = await fetch(
+        "https://api.frankfurter.dev/v2/rate/NGN/" + customerCurrency,
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) },
+      );
+      const rateData = await rateResponse.json().catch(() => null);
+      const parsedDate = typeof rateData?.date === "string" ? new Date(rateData.date + "T00:00:00Z") : null;
+      const ageDays = parsedDate && Number.isFinite(parsedDate.getTime())
+        ? (Date.now() - parsedDate.getTime()) / 86400000 : Number.POSITIVE_INFINITY;
+      fxRate = Number(rateData?.rate);
+      if (!rateResponse.ok || rateData?.base !== "NGN" || rateData?.quote !== customerCurrency ||
+        !Number.isFinite(fxRate) || fxRate <= 0 || ageDays < -1 || ageDays > 4) {
+        return reply(req, { success: false, error: "A fresh reference exchange rate is unavailable for this currency. Please choose NGN or try again later." }, 503);
+      }
+      fxRateDate = rateData.date;
+      fxRateSource = "Frankfurter reference rates (api.frankfurter.dev)";
+    }
+    const providerCostNgn = money(providerCost);
+    if (!Number.isFinite(providerCostNgn) || providerCostNgn <= 0) {
+      return reply(req, { success: false, error: "The VTpass provider price is invalid. No payment has been started." }, 502);
+    }
+    amount = money(providerCostNgn * fxRate);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return reply(req, { success: false, error: "The converted checkout amount is invalid. No payment has been started." }, 502);
+    }
+    if (serviceType === "airtime") airtimeAmount = providerCostNgn;
 
     const suffix = crypto.randomUUID().replaceAll("-", "").toUpperCase();
     const txRef = "DCDSVTU" + suffix;
