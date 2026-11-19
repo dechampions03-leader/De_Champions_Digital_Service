@@ -56,7 +56,7 @@ permissions:
 
 concurrency:
   group: phase1-validation-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   edge-function-checks:
