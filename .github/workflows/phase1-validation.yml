@@ -34,8 +34,13 @@ on:
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-vtu-catalog/**"
+      - "supabase/functions/dcds-vtpass-catalog/**"
       - "supabase/functions/dcds-oplug-readonly/**"
+      - "supabase/functions/dcds-vtu-create-payment/**"
+      - "supabase/functions/dcds-vtu-process-payment/**"
+      - "supabase/functions/dcds-vtu-history/**"
       - "airtime-data.html"
+      - "vtu-payment-return.html"
       - "index.html"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
@@ -102,13 +107,19 @@ jobs:
               "checkout remains direct pay-per-order with no customer wallet": "There is no DCDS wallet or stored balance" in page,
               "VTpass catalogue reads keys server-side only": 'Deno.env.get("VTPASS_API_KEY")' in fn and 'Deno.env.get("VTPASS_PUBLIC_KEY")' in fn and "VTPASS_API_KEY" not in page,
               "VTpass GET catalogue uses API and public key headers": '"api-key": apiKey' in fn and '"public-key": publicKey' in fn and '"/service-variations?serviceID="' in fn,
-              "four official data service IDs are mapped": all(x in fn for x in ["mtn-data","airtel-data","glo-data","etisalat-data"]),
+              "four official network data services plus Glo SME are mapped": all(x in fn for x in ["mtn-data","airtel-data","glo-data","glo-sme-data","etisalat-data"]),
+              "catalogue includes low-price positive VTpass variations": "item.amount > 0" in fn and "item.amount >= 50" not in fn,
+              "Glo SME variation IDs retain their provider service ID": 'serviceID + "::" + id' in fn and 'serviceID === "glo-sme-data"' in fn,
+              "catalogue tolerates one optional product endpoint being unavailable": "Promise.allSettled" in fn,
               "VTpass admin balance requires verified DCDS administrator": 'auth.getUser()' in fn and 'rpc("is_dcds_admin")' in fn and '"/balance"' in fn,
-              "checkout revalidates exact VTpass variation server-side": 'service-variations?serviceID=' in create and 'item.variation_code' in create and 'variation_amount' in create,
+              "checkout revalidates exact VTpass service and variation server-side": 'service-variations?serviceID=' in create and 'item.variation_code' in create and 'variation_amount' in create and 'glo-sme-data' in create,
+              "checkout permits provider-priced data below airtime minimum": 'requestedServiceID + "::" + requestedVariationCode' in create and "requestedAmount < 50" in create,
               "checkout request IDs begin with Africa/Lagos date and minute": 'timeZone: "Africa/Lagos"' in create and 'vtpassRequestId' in create,
               "VTpass POST credentials remain server-side": 'Deno.env.get("VTPASS_SECRET_KEY")' in process and '"secret-key": vtpassSecretKey' in process and "VTPASS_SECRET_KEY" not in page,
               "fulfilment verifies Flutterwave before VTpass purchase": 'transactions/' in process and 'providerStatus !== "successful"' in process and 'vtpassBase + "/pay"' in process,
               "subsequent fulfilment retries use requery only": 'vtpassBase + "/requery"' in process and 'Never submit /pay a second time' in process,
+              "fulfilment preserves the exact selected VTpass service and variation": 'storedServiceID' in process and 'storedVariationCode' in process and 'glo-sme-data' in process,
+              "documented terminal VTpass failures enter refund review": all(code in process for code in ['"010"','"011"','"012"','"013"','"016"','"017"','"018"','"023"','"027"','"028"','"034"','"035"','"040"','"091"']),
               "provider delivery requires delivered transaction status": 'transactionStatus === "delivered"' in process,
               "ambiguous VTpass responses remain processing": 'status: "processing"' in process and "never submit another purchase" in process,
               "VTU order table retains isolated RLS and no client grants": "dcds_vtu_orders" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8") and "enable row level security" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8").lower() and "from public, anon, authenticated" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8"),
