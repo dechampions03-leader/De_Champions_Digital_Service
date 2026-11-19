@@ -166,7 +166,7 @@ Deno.serve(async (req: Request) => {
   }
 
   // Dedicated test-mode webhook hash prevents accidental reuse of a live hash.
-  const secretHash = Deno.env.get("FLW_TEST_WEBHOOK_HASH");
+  const secretHash = Deno.env.get("FLW_TEST_WEBHOOK_HASH") || Deno.env.get("FLW_WEBHOOK_HASH");
   const flwSecret = Deno.env.get("FLW_SECRET_KEY");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
