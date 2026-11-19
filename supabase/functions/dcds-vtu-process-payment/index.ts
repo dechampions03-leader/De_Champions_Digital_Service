@@ -187,11 +187,11 @@ Deno.serve(async (req: Request) => {
 
     // This legacy column stores the VTpass request_id. A single paid -> processing
     // claim may submit /pay; every subsequent invocation performs /requery only.
-    const DATA_SERVICES: Record<string, string> = {
-      mtn: "mtn-data",
-      airtel: "airtel-data",
-      glo: "glo-data",
-      "9mobile": "etisalat-data",
+    const DEFAULT_DATA_SERVICES: Record<string, string> = {
+      mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data",
+    };
+    const ALLOWED_DATA_SERVICES: Record<string, string[]> = {
+      mtn: ["mtn-data"], airtel: ["airtel-data"], glo: ["glo-data", "glo-sme-data"], "9mobile": ["etisalat-data"],
     };
     const AIRTIME_SERVICES: Record<string, string> = {
       mtn: "mtn",
@@ -243,10 +243,14 @@ Deno.serve(async (req: Request) => {
       "Content-Type": "application/json",
       Accept: "application/json",
     };
-    const serviceID = current.service_type === "data"
-      ? DATA_SERVICES[String(current.network)]
-      : AIRTIME_SERVICES[String(current.network)];
-    if (!serviceID) throw new Error("Unsupported VTpass network for this purchase.");
+    const storedPlanId = String(current.data_plan_id || "");
+    const [storedServiceID, storedVariationCode] = storedPlanId.includes("::")
+      ? storedPlanId.split("::", 2)
+      : [DEFAULT_DATA_SERVICES[String(current.network)] || "", storedPlanId];
+    const serviceID = current.service_type === "data" ? storedServiceID : AIRTIME_SERVICES[String(current.network)];
+    if (!serviceID || (current.service_type === "data" && !ALLOWED_DATA_SERVICES[String(current.network)]?.includes(serviceID))) {
+      throw new Error("Unsupported VTpass service for this purchase.");
+    }
 
     let providerResponse: Response | null = null;
     let providerData: Record<string, unknown> | null = null;
@@ -259,7 +263,7 @@ Deno.serve(async (req: Request) => {
       };
       if (current.service_type === "data") {
         payload.billersCode = String(current.recipient_phone);
-        payload.variation_code = String(current.data_plan_id);
+        payload.variation_code = storedVariationCode;
       }
       providerResponse = await fetch(vtpassBase + "/pay", {
         method: "POST",
@@ -287,7 +291,8 @@ Deno.serve(async (req: Request) => {
     const transactionReference = safeText(String(txContent?.transactionId || providerData?.requestId || ""), 120) || requestId;
     // Only VTpass's documented terminal purchase outcomes trigger the refund-review path.
     // Other codes and unclear outcomes remain pending for requery/support review.
-    const explicitFailureCodes = new Set(["016", "040", "091"]);
+    // Terminal VTpass purchase failures require refund handling after customer payment.
+    const explicitFailureCodes = new Set(["010", "011", "012", "013", "016", "017", "018", "023", "027", "028", "034", "035", "040", "091"]);
     const updateFields = {
       provider_status: providerCode + (transactionStatus ? ":" + transactionStatus : ""),
       provider_reference: transactionReference,
