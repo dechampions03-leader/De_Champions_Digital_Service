@@ -148,7 +148,7 @@ Deno.serve(async (req: Request) => {
       dataPlanType = requestedServiceID === "glo-sme-data" ? "SME data" : "Data bundle";
       const matchValidity = dataPlanName.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i);
       dataValidity = matchValidity?.[0] || null;
-      if (!amount || !dataPlanName) return reply(req, { success: false, error: "VTpass returned an invalid price for this bundle." }, 502);
+      if (!Number.isFinite(amount) || amount <= 0 || !dataPlanName) return reply(req, { success: false, error: "VTpass returned an invalid price for this bundle." }, 502);
     } else {
       const requestedAmount = money(body.amount);
       if (!Number.isInteger(requestedAmount) || requestedAmount < 50 || requestedAmount > 50000) {
