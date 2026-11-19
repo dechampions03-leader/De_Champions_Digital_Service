@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SITE_URL = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
-const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4, spectranet: 5, smile: 6 };
+const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4, spectranet: 5, smile: 6, international: 7 };
 
 function secret(name: string): string {
   const direct = Deno.env.get(name);
@@ -47,13 +47,18 @@ function normalizePhone(value: unknown): string {
   else if (phone.startsWith("234")) phone = "0" + phone.slice(3);
   return /^0[789][0-9]{9}$/.test(phone) ? phone : "";
 }
+function normalizeInternationalPhone(value: unknown): string {
+  const raw = String(value ?? "").replace(/[\s()-]/g, "");
+  const digits = raw.startsWith("+") ? "+" + raw.slice(1).replace(/\D/g, "") : raw.replace(/\D/g, "");
+  return /^\+?[0-9]{7,15}$/.test(digits) ? digits : "";
+}
 function normalizeNetwork(value: unknown, id?: unknown): string {
   const name = clean(value, 30).toLowerCase();
   if (name.includes("mtn")) return "mtn";
   if (name.includes("glo")) return "glo";
   if (name.includes("9mobile") || name.includes("9 mobile")) return "9mobile";
   if (name.includes("airtel")) return "airtel";
-  return ({ 1: "mtn", 2: "glo", 3: "9mobile", 4: "airtel", 5: "spectranet", 6: "smile" } as Record<number, string>)[Number(id)] || "";
+  return ({ 1: "mtn", 2: "glo", 3: "9mobile", 4: "airtel", 5: "spectranet", 6: "smile", 7: "international" } as Record<number, string>)[Number(id)] || "";
 }
 function money(value: unknown): number {
   const n = Number(value);
@@ -100,11 +105,12 @@ Deno.serve(async (req: Request) => {
     const serviceType = body.service_type === "airtime" ? "airtime" : body.service_type === "data" ? "data" : "";
     const network = clean(body.network, 20).toLowerCase();
     const networkId = NETWORKS[network];
-    const phone = normalizePhone(body.phone);
+    const phone = network === "international" ? normalizeInternationalPhone(body.phone) : normalizePhone(body.phone);
+    const customerEmail = clean(body.customer_email, 180).toLowerCase();
     const smileEmail = clean(body.smile_email, 180).toLowerCase();
     const smileAccountId = clean(body.smile_account_id, 40);
     const clientRequestId = clean(body.request_id, 80);
-    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && ["spectranet", "smile"].includes(network)) || (network === "smile" && serviceType !== "data") || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
+    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && ["spectranet", "smile"].includes(network)) || (network === "smile" && serviceType !== "data") || (network === "international" && (serviceType !== "airtime" || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customerEmail))) || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
       return reply(req, { success: false, error: "Choose a valid service and network, enter a valid Nigerian phone number, and try again." }, 400);
     }
 
@@ -172,6 +178,47 @@ Deno.serve(async (req: Request) => {
           return reply(req, { success: false, error: "The selected Smile account could not be verified for this email. Please verify again." }, 409);
         }
       }
+    } else if (network === "international") {
+      const countryCode = clean(body.country_code, 3).toUpperCase();
+      const productTypeId = Number(body.product_type_id);
+      const operatorId = clean(String(body.operator_id ?? ""), 30);
+      const variationCode = clean(body.variation_code, 80);
+      if (!/^[A-Z]{2,3}$/.test(countryCode) || !Number.isInteger(productTypeId) || productTypeId <= 0 || !/^\\d+$/.test(operatorId) || !variationCode) {
+        return reply(req, { success: false, error: "Choose a valid country, product type, operator and top-up option." }, 400);
+      }
+      const getHeaders = { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" };
+      const [countriesResponse, typesResponse, operatorsResponse, variationsResponse] = await Promise.all([
+        fetch(vtpassBase + "/get-international-airtime-countries", { headers: getHeaders, signal: AbortSignal.timeout(12000) }),
+        fetch(vtpassBase + "/get-international-airtime-product-types?code=" + encodeURIComponent(countryCode), { headers: getHeaders, signal: AbortSignal.timeout(12000) }),
+        fetch(vtpassBase + "/get-international-airtime-operators?code=" + encodeURIComponent(countryCode) + "&product_type_id=" + productTypeId, { headers: getHeaders, signal: AbortSignal.timeout(12000) }),
+        fetch(vtpassBase + "/service-variations?serviceID=foreign-airtime&operator_id=" + encodeURIComponent(operatorId) + "&product_type_id=" + productTypeId, { headers: getHeaders, signal: AbortSignal.timeout(12000) }),
+      ]);
+      const [countriesData, typesData, operatorsData, variationsData] = await Promise.all([
+        countriesResponse.json().catch(() => null), typesResponse.json().catch(() => null),
+        operatorsResponse.json().catch(() => null), variationsResponse.json().catch(() => null),
+      ]);
+      const country = countriesData?.content?.countries?.find((x: Record<string, unknown>) => String(x.code).toUpperCase() === countryCode);
+      const productType = typesData?.content?.find((x: Record<string, unknown>) => Number(x.product_type_id) === productTypeId);
+      const operator = operatorsData?.content?.find((x: Record<string, unknown>) => String(x.operator_id) === operatorId);
+      const variations = variationsData?.content?.variations ?? variationsData?.content?.varations;
+      const variation = Array.isArray(variations) ? variations.find((x: Record<string, unknown>) => String(x.variation_code) === variationCode) : null;
+      if (!countriesResponse.ok || !typesResponse.ok || !operatorsResponse.ok || !variationsResponse.ok ||
+        countriesData?.response_description !== "000" || typesData?.response_description !== "000" ||
+        operatorsData?.response_description !== "000" || variationsData?.response_description !== "000" ||
+        !country || !productType || !operator || !variation) {
+        return reply(req, { success: false, error: "The selected international top-up option could not be verified with VTpass. Refresh the options and try again." }, 409);
+      }
+      amount = money(variation.variation_amount);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return reply(req, { success: false, error: "VTpass has not supplied a fixed NGN charge for this international option. This option cannot be purchased safely yet." }, 409);
+      }
+      airtimeAmount = amount;
+      providerCost = amount;
+      dataPlanName = clean(variation.name, 120);
+      dataPlanId = "foreign-airtime::" + variationCode;
+      dataPlanType = "International airtime";
+      const matchValidity = dataPlanName.match(/(?:\\d+\\s*(?:hours?|hrs?|days?|weeks?|months?))/i);
+      dataValidity = matchValidity?.[0] || null;
     } else {
       const requestedAmount = money(body.amount);
       if (!Number.isInteger(requestedAmount) || requestedAmount < 50 || requestedAmount > 50000) {
@@ -186,7 +233,7 @@ Deno.serve(async (req: Request) => {
     // never create a second payable order.
     const { data: existing, error: existingError } = await db
       .from("dcds_vtu_orders")
-      .select("id,user_id,service_type,network,recipient_phone,provider_billers_code,provider_email,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .select("id,user_id,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .eq("client_request_id", clientRequestId)
       .maybeSingle();
@@ -196,7 +243,13 @@ Deno.serve(async (req: Request) => {
         existing.network === network &&
         existing.recipient_phone === phone &&
         existing.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
-        existing.provider_email === (network === "smile" ? smileEmail : null) &&
+        existing.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
+        JSON.stringify(existing.provider_metadata || null) === JSON.stringify(network === "international" ? {
+          country_code: clean(body.country_code, 3).toUpperCase(),
+          product_type_id: Number(body.product_type_id),
+          operator_id: clean(String(body.operator_id ?? ""), 30),
+          variation_code: clean(body.variation_code, 80),
+        } : null) &&
         existing.data_plan_id === dataPlanId &&
         Number(existing.amount) === amount &&
         (serviceType !== "airtime" || Number(existing.airtime_amount) === airtimeAmount);
@@ -223,7 +276,13 @@ Deno.serve(async (req: Request) => {
         openOrder.network === network &&
         openOrder.recipient_phone === phone &&
         openOrder.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
-        openOrder.provider_email === (network === "smile" ? smileEmail : null) &&
+        openOrder.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
+        JSON.stringify(openOrder.provider_metadata || null) === JSON.stringify(network === "international" ? {
+          country_code: clean(body.country_code, 3).toUpperCase(),
+          product_type_id: Number(body.product_type_id),
+          operator_id: clean(String(body.operator_id ?? ""), 30),
+          variation_code: clean(body.variation_code, 80),
+        } : null) &&
         openOrder.data_plan_id === dataPlanId &&
         Number(openOrder.amount) === amount &&
         (serviceType !== "airtime" || Number(openOrder.airtime_amount) === airtimeAmount);
@@ -259,7 +318,13 @@ Deno.serve(async (req: Request) => {
       network_id: networkId,
       recipient_phone: phone,
       provider_billers_code: network === "smile" ? smileAccountId : null,
-      provider_email: network === "smile" ? smileEmail : null,
+      provider_email: network === "smile" ? smileEmail : network === "international" ? customerEmail : null,
+      provider_metadata: network === "international" ? {
+        country_code: clean(body.country_code, 3).toUpperCase(),
+        product_type_id: Number(body.product_type_id),
+        operator_id: clean(String(body.operator_id ?? ""), 30),
+        variation_code: clean(body.variation_code, 80),
+      } : null,
       data_plan_id: dataPlanId,
       data_plan_name: dataPlanName,
       data_plan_type: dataPlanType,
