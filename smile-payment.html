@@ -30,9 +30,9 @@
 <div class="grid">
 <div class="field"><label for="contactPhone">Your contact phone</label><input id="contactPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+1 202 555 0100"></div>
 <div class="field"><label>Selected bundle (provider price in NGN)</label><input id="selectedPlan" readonly placeholder="Choose a Smile bundle"></div>
-<div class="field"><label for="checkoutCurrency">Payment currency</label><select id="checkoutCurrency"><option value="NGN">NGN — Nigerian naira</option><option value="USD">USD — US dollar</option><option value="GBP">GBP — British pound</option><option value="EUR">EUR — euro</option></select></div>
+<div class="field"><label for="checkoutCurrency">Payment currency</label><select id="checkoutCurrency"><option value="NGN">NGN — Nigerian naira</option><option value="USD" disabled>USD — coming soon</option><option value="GBP" disabled>GBP — coming soon</option><option value="EUR" disabled>EUR — coming soon</option></select></div>
 </div>
-<div class="note">Your selected Smile account ID receives the bundle. The contact phone is supplied as the customer contact number. Foreign-currency estimates use daily reference rates with no DCDS FX markup; the server confirms the final amount before Flutterwave checkout. No purchase is submitted until payment is confirmed.</div><p id="fxEstimate" class="small" role="status" aria-live="polite">Choose a Smile bundle to see the estimated checkout amount.</p>
+<div class="note">Your selected Smile account ID receives the bundle. The contact phone is supplied as the customer contact number. Flutterwave checkout is currently NGN-only. USD, GBP and EUR will be enabled after the decimal-capable Flutterwave V4 checkout has passed sandbox testing.</div><p id="fxEstimate" class="small" role="status" aria-live="polite">Choose a Smile bundle to see the estimated checkout amount.</p>
 <button id="checkout" class="primary" type="button" disabled>Continue to Flutterwave</button>
 <div id="checkoutStatus" class="status" role="status" aria-live="polite"></div>
 </section>
