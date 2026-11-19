@@ -1,5 +1,5 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { validateFlutterwaveCourseTransaction } from "../_shared/flutterwave-course-payment.ts";
+import { validateFlutterwaveCourseTransaction } from "./flutterwave-course-payment.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "https://dechampions03-leader.github.io",
