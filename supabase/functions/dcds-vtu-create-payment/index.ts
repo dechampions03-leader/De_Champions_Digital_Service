@@ -127,8 +127,11 @@ Deno.serve(async (req: Request) => {
       if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) {
         return reply(req, { success: false, error: "The VTpass data catalogue is temporarily unavailable. No payment has been started." }, 502);
       }
-      const plan = variations.find((item: Record<string, unknown>) => String(item.variation_code) === requestedPlanId);
-      if (!plan) return reply(req, { success: false, error: "That bundle is no longer available on this network. Refresh the catalogue and select another plan." }, 409);
+      const plan = variations.find((item: Record<string, unknown>) =>
+        String(item.variation_code) === requestedPlanId &&
+        !/\b(?:calls?|minutes?|voice|talk\s*more)\b/i.test(String(item.name || ""))
+      );
+      if (!plan) return reply(req, { success: false, error: "That data bundle is unavailable or is not a data product. Refresh the catalogue and select a valid data plan." }, 409);
       amount = money(plan.variation_amount);
       providerCost = amount;
       dataPlanId = requestedPlanId;
