@@ -53,7 +53,7 @@ function refreshCheckout(){
 }
 function renderPlans(items){
  const root=$("plans");root.replaceChildren();selected=null;
- const priced=items.filter(x=>/\\btop[\\s-]?up\\b/i.test(String(x.name||""))&&Number(x.amount)>0&&String(x.fixed_price).toLowerCase()==="yes");
+ const priced=items.filter(x=>/\btop[\s-]?up\b/i.test(String(x.name||""))&&Number(x.amount)>0&&String(x.fixed_price).toLowerCase()==="yes");
  if(!priced.length){const note=document.createElement("div");note.className="note";note.textContent="VTpass has not returned any fixed-price options in NGN for this operator. No checkout will be offered for zero-priced or unquoted options.";root.append(note);refreshCheckout();return;}
  for(const p of priced){
   const b=document.createElement("button");b.type="button";b.className="plan";b.setAttribute("aria-pressed","false");
