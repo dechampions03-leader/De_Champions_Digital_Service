@@ -10,7 +10,7 @@ on:
     paths:
       - "supabase/functions/create-payment/**"
       - "supabase/functions/verify-payment/**"
-      - "supabase/functions/_shared/flutterwave-course-payment.ts"
+      - "supabase/functions/verify-payment/flutterwave-course-payment.ts"
       - "supabase/migrations/**dcds_student_flutterwave_checkout_finalize.sql"
       - ".github/workflows/dcds-ngn-payment-validation.yml"
 
@@ -28,7 +28,7 @@ jobs:
         with:
           deno-version: v2.x
       - name: Test Flutterwave course transaction validation
-        run: deno test supabase/functions/_shared/flutterwave-course-payment.test.ts
+        run: deno test supabase/functions/verify-payment/flutterwave-course-payment.test.ts
       - name: Type-check hosted checkout functions
         run: |
           deno check supabase/functions/create-payment/index.ts
