@@ -148,7 +148,8 @@ jobs:
               "preview hosts select the isolated Development Supabase project": 'tjgsxbmkpvktlqulbktv.supabase.co' in page and 'IS_DCDS_PRODUCTION' in page,
               "provider failure does not substitute invented prices": "No sample prices are being substituted" in page and "Live data plans are temporarily unavailable" in page,
               "checkout requires an explicit VTpass base URL and does not default production to sandbox": 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in create and 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in process and 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in fn and "https://sandbox.vtpass.com/api" not in create + process + fn,
-              "VTpass base URL is restricted to official HTTPS /api hosts": all(x in create and x in process and x in fn for x in ['vtpassHost.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','vtpassHost.pathname','vtpassHost.password','vtpassHost.search','vtpassHost.hash']),
+              "VTpass checkout and fulfilment base URLs use official HTTPS /api hosts": all(x in create and x in process for x in ['vtpassHost.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','vtpassHost.pathname','vtpassHost.password','vtpassHost.search','vtpassHost.hash']),
+              "VTpass catalogue base URL is restricted to the official HTTPS /api endpoint": all(x in fn for x in ['parsed.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','parsed.pathname','parsed.password','parsed.search','parsed.hash']),
           }
           failures = [name for name, passed in checks.items() if not passed]
           for name, passed in checks.items():
