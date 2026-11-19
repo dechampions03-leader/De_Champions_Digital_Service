@@ -229,7 +229,7 @@ Deno.serve(async (req: Request) => {
     if (action === "international_variations") {
       const operatorId = clean(body.operator_id, 30);
       const productTypeId = Number(body.product_type_id);
-      if (!/^\\d+$/.test(operatorId) || !Number.isInteger(productTypeId) || productTypeId <= 0) {
+      if (!/^\d+$/.test(operatorId) || !Number.isInteger(productTypeId) || productTypeId <= 0) {
         return reply(req, { success: false, error: "Choose a valid international operator and product type." }, 400);
       }
       const url = base + "/service-variations?serviceID=foreign-airtime&operator_id=" + encodeURIComponent(operatorId) + "&product_type_id=" + productTypeId;
