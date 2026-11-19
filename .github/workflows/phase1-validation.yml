@@ -71,11 +71,11 @@ jobs:
         run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Type-check DCDS account creation function
         run: deno check supabase/functions/dcds-create-account/index.ts
-      - name: Type-check legacy DCDS VTU catalogue endpoint
+      - name: Type-check retired legacy VTU catalogue endpoint
         run: deno check supabase/functions/dcds-vtu-catalog/index.ts
       - name: Type-check VTpass catalogue endpoint
         run: deno check supabase/functions/dcds-vtpass-catalog/index.ts
-      - name: Type-check retired Oplug endpoint
+      - name: Type-check retired legacy supplier endpoint
         run: deno check supabase/functions/dcds-oplug-readonly/index.ts
       - name: Type-check DCDS VTU Flutterwave checkout endpoint
         run: deno check supabase/functions/dcds-vtu-create-payment/index.ts
