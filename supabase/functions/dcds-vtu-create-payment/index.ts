@@ -210,7 +210,8 @@ Deno.serve(async (req: Request) => {
         !operator || !variation || !/\\btop[\\s-]?up\\b/i.test(String(variation.name || "")) || String(variation.fixedPrice).toLowerCase() !== "yes") {
         return reply(req, { success: false, error: "The selected international top-up option could not be verified as a fixed-price mobile top-up with VTpass. Refresh the options and try again." }, 409);
       }
-      amount = money(variation.variation_amount);
+      const providerCharge = Number(variation.charged_amount ?? variation.variation_amount);
+      amount = money(providerCharge);
       if (!Number.isFinite(amount) || amount <= 0) {
         return reply(req, { success: false, error: "VTpass has not supplied a fixed NGN charge for this international option. This option cannot be purchased safely yet." }, 409);
       }
