@@ -6,6 +6,9 @@ on:
       - feature/phase1-security-reliability
     paths:
       - "supabase/functions/create-payment/**"
+      - "supabase/functions/dcds-course-payment-return/**"
+      - "supabase/functions/dcds-payment-sandbox-health/**"
+      - "payment-sandbox.html"
       - "supabase/functions/admin-verify-flutterwave-payment/**"
       - "supabase/functions/dcds-process-payout/**"
       - "supabase/functions/dcds-international-payout/**"
@@ -59,6 +62,10 @@ jobs:
           deno-version: v2.x
       - name: Type-check create-payment
         run: deno check supabase/functions/create-payment/index.ts
+      - name: Type-check Development payment return page
+        run: deno check supabase/functions/dcds-course-payment-return/index.ts
+      - name: Type-check Development payment sandbox readiness endpoint
+        run: deno check supabase/functions/dcds-payment-sandbox-health/index.ts
       - name: Type-check admin Flutterwave verifier
         run: deno check supabase/functions/admin-verify-flutterwave-payment/index.ts
       - name: Type-check payout processor
@@ -118,6 +125,37 @@ jobs:
           if failures:
               raise SystemExit(f"{len(failures)} DCDS VTU safety checks failed.")
           PY
+      - name: Verify NGN-only sandbox payment gates
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          create = Path("supabase/functions/create-payment/index.ts").read_text(encoding="utf-8")
+          webhook = Path("supabase/functions/flutterwave-webhook/index.ts").read_text(encoding="utf-8")
+          verify = Path("supabase/functions/admin-verify-flutterwave-payment/index.ts").read_text(encoding="utf-8")
+          ret = Path("supabase/functions/dcds-course-payment-return/index.ts").read_text(encoding="utf-8")
+          health = Path("supabase/functions/dcds-payment-sandbox-health/index.ts").read_text(encoding="utf-8")
+          page = Path("payment-sandbox.html").read_text(encoding="utf-8")
+          checks = {
+              "checkout rejects any non-NGN currency": 'requestedCurrency !== "NGN"' in create,
+              "checkout requires a Flutterwave TEST secret": 'startsWith("FLWSECK_TEST-")' in create,
+              "V3 amount must be an integer within int32": 'Number.isSafeInteger(amount)' in create and 'amount > 2147483647' in create,
+              "checkout uses the Development callback": 'functions/v1/dcds-course-payment-return' in create,
+              "webhook requires the test secret and dedicated test hash": 'FLW_TEST_WEBHOOK_HASH' in webhook and 'startsWith("FLWSECK_TEST-")' in webhook,
+              "admin verifier requires the test secret": 'startsWith("FLWSECK_TEST-")' in verify,
+              "health check reveals no key values": 'flutterwave_test_secret' in health and 'FLW_SECRET_KEY' in health and 'JSON.stringify(secret)' not in health,
+              "sandbox page uses the isolated Development project": 'tjgsxbmkpvktlqulbktv.supabase.co' in page and 'sb_publishable_' in page,
+              "sandbox page does not collect card numbers, CVV or PIN": all(x not in page.lower() for x in ['autocomplete="cc-number"', 'name="card_number"', 'name="cvv"', 'name="pin"']),
+              "sandbox page calls the server-side checkout only": 'functions.invoke("create-payment"' in page and 'window.location.assign(data.payment_link)' in page,
+              "return page does not trust URL status as proof": 'This return page is not proof of payment' in ret,
+          }
+          for label, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + label)
+          failures = [label for label, passed in checks.items() if not passed]
+          if failures:
+              raise SystemExit(f"{len(failures)} NGN sandbox release checks failed.")
+          PY
+
       - name: Verify Phase 1 migration invariants
         shell: bash
         run: |
