@@ -165,12 +165,13 @@ Deno.serve(async (req: Request) => {
     return json({ error: "Method not allowed" }, 405);
   }
 
-  const secretHash = Deno.env.get("FLW_WEBHOOK_HASH") || Deno.env.get("FLW_SECRET_HASH");
+  // Dedicated test-mode webhook hash prevents accidental reuse of a live hash.
+  const secretHash = Deno.env.get("FLW_TEST_WEBHOOK_HASH");
   const flwSecret = Deno.env.get("FLW_SECRET_KEY");
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-  if (!secretHash || !flwSecret || !supabaseUrl || !serviceRoleKey) {
+  if (!secretHash || !flwSecret || !flwSecret.startsWith("FLWSECK_TEST-") || !supabaseUrl || !serviceRoleKey) {
     console.error("Webhook configuration is incomplete.");
     return json({ error: "Webhook is not configured" }, 500);
   }
