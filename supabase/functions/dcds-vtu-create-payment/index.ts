@@ -346,10 +346,6 @@ Deno.serve(async (req: Request) => {
       fxRateDate = rateData.date;
       fxRateSource = "Frankfurter reference rates (api.frankfurter.dev)";
     }
-    const providerCostNgn = money(providerCost);
-    if (!Number.isFinite(providerCostNgn) || providerCostNgn <= 0) {
-      return reply(req, { success: false, error: "The VTpass provider price is invalid. No payment has been started." }, 502);
-    }
     amount = money(providerCostNgn * fxRate);
     if (!Number.isFinite(amount) || amount <= 0) {
       return reply(req, { success: false, error: "The converted checkout amount is invalid. No payment has been started." }, 502);
