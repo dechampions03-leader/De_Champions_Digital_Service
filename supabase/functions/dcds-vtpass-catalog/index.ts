@@ -239,7 +239,9 @@ Deno.serve(async (req: Request) => {
         return reply(req, { success: false, error: "International top-up options are unavailable for this operator." }, 502);
       }
       return reply(req, { success: true, variations: variations.map((x: Record<string, unknown>) => ({
-        code: clean(x.variation_code, 80), name: clean(x.name, 120), amount: Number(x.variation_amount),
+        code: clean(x.variation_code, 80), name: clean(x.name, 120),
+        amount: Number(x.charged_amount ?? x.variation_amount),
+        charged_amount: Number(x.charged_amount), variation_amount: Number(x.variation_amount),
         fixed_price: clean(x.fixedPrice, 8), rate: Number(x.variation_rate),
       })).filter((x: { code: string; name: string }) => x.code && x.name) });
     }
