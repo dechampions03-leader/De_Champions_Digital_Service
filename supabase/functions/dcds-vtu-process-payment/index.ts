@@ -54,7 +54,7 @@ function successResponse(req: Request, order: Record<string, unknown>, status: s
       reference: order.tx_ref,
       service_type: order.service_type,
       network: String(order.network || "").toUpperCase(),
-      recipient: String(order.recipient_phone || "").replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2"),
+      recipient: (() => { const phone = String(order.recipient_phone || "").replace(/\\s/g, ""); return phone.length >= 7 ? phone.slice(0, 3) + "****" + phone.slice(-3) : ""; })(),
       plan: order.data_plan_name || (order.provider_metadata && typeof order.provider_metadata === "object" ? (order.provider_metadata as Record<string, unknown>).plan_name || null : null),
       amount: order.amount,
       currency: order.currency || "NGN",
