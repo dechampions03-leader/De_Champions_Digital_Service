@@ -5,6 +5,7 @@ on:
     branches:
       - feature/phase1-security-reliability
       - feature/vtpass-provider-migration
+      - feature/dcds-global-vtu-currency
     paths:
       - "supabase/functions/create-payment/**"
       - "supabase/functions/admin-verify-flutterwave-payment/**"
@@ -153,6 +154,36 @@ jobs:
           if failures:
               raise SystemExit(f"{len(failures)} DCDS VTU safety checks failed.")
           PY
+      - name: Verify global VTU currency and NGN provider-cost separation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          create = Path("supabase/functions/dcds-vtu-create-payment/index.ts").read_text(encoding="utf-8")
+          process = Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8")
+          migration = Path("supabase/migrations/20261119220000_add_global_vtu_checkout_currency.sql").read_text(encoding="utf-8")
+          pages = {name: Path(name).read_text(encoding="utf-8") for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html", "vtu-payment-return.html"]}
+          checks = {
+              "checkout accepts only explicitly supported currencies": '["NGN", "USD", "GBP", "EUR"]' in create,
+              "FX quote is fetched server-side and never accepted from the browser": "/v2/rate/NGN/" in create and "body.fx_rate" not in create,
+              "FX quote is checked for pair, positive rate and freshness": 'rateData?.base !== "NGN"' in create and "ageDays > 4" in create and "fxRate <= 0" in create,
+              "customer price and NGN provider cost are stored separately": "provider_cost: providerCostNgn" in create and 'provider_cost_currency: "NGN"' in create and "currency: customerCurrency" in create,
+              "retry returns the existing checkout without depending on a fresh FX fetch": create.index("maybeSingle();", create.index("const customerCurrency")) < create.index('"/v2/rate/NGN/"'),
+              "VTpass fulfilment uses the saved NGN provider cost": "amount: Number(current.provider_cost)" in process,
+              "provider cost currency is checked before fulfilment": "provider_cost_currency" in process and '"NGN"' in process,
+              "Flutterwave verification matches the stored order currency": 'currency !== String(order.currency || "NGN").toUpperCase()' in process,
+              "migration adds quote snapshot and provider currency fields": all(x in migration for x in ["fx_rate", "fx_rate_date", "fx_rate_source", "provider_cost_currency"]),
+              "migration preserves NGN provider settlement and allows approved customer currencies": "provider_cost_currency = 'NGN'" in migration and "ARRAY['NGN','USD','GBP','EUR']" in migration,
+              "all VTU checkout pages send a selected currency": all('currency:' in pages[name] for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html"]),
+              "customer order history and return page display stored currency": 'formatCurrency(Number(order.amount' in pages["airtime-data.html"] and 'currency:String(order.currency' in pages["vtu-payment-return.html"],
+          }
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} global VTU currency checks failed.")
+          PY
+
       - name: Verify Phase 1 migration invariants
         shell: bash
         run: |
