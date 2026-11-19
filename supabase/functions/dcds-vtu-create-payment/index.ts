@@ -206,8 +206,9 @@ Deno.serve(async (req: Request) => {
       if (!countriesResponse.ok || !typesResponse.ok || !operatorsResponse.ok || !variationsResponse.ok ||
         countriesData?.response_description !== "000" || typesData?.response_description !== "000" ||
         operatorsData?.response_description !== "000" || variationsData?.response_description !== "000" ||
-        !country || !productType || !operator || !variation) {
-        return reply(req, { success: false, error: "The selected international top-up option could not be verified with VTpass. Refresh the options and try again." }, 409);
+        !country || !productType || !String(productType.name || "").toLowerCase().includes("top up") ||
+        !operator || !variation || String(variation.fixedPrice).toLowerCase() !== "yes") {
+        return reply(req, { success: false, error: "The selected international top-up option could not be verified as a fixed-price mobile top-up with VTpass. Refresh the options and try again." }, 409);
       }
       amount = money(variation.variation_amount);
       if (!Number.isFinite(amount) || amount <= 0) {
