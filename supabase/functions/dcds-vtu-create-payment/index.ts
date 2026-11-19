@@ -186,7 +186,7 @@ Deno.serve(async (req: Request) => {
     // never create a second payable order.
     const { data: existing, error: existingError } = await db
       .from("dcds_vtu_orders")
-      .select("id,user_id,service_type,network,recipient_phone,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .select("id,user_id,service_type,network,recipient_phone,provider_billers_code,provider_email,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .eq("client_request_id", clientRequestId)
       .maybeSingle();
@@ -195,6 +195,8 @@ Deno.serve(async (req: Request) => {
       const samePayload = existing.service_type === serviceType &&
         existing.network === network &&
         existing.recipient_phone === phone &&
+        existing.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
+        existing.provider_email === (network === "smile" ? smileEmail : null) &&
         existing.data_plan_id === dataPlanId &&
         Number(existing.amount) === amount &&
         (serviceType !== "airtime" || Number(existing.airtime_amount) === airtimeAmount);
@@ -209,7 +211,7 @@ Deno.serve(async (req: Request) => {
     // has an existing unpaid, paid, processing or unresolved order.
     const { data: openOrder, error: openOrderError } = await db
       .from("dcds_vtu_orders")
-      .select("service_type,network,recipient_phone,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .select("service_type,network,recipient_phone,provider_billers_code,provider_email,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .in("status", ["pending_payment", "paid", "processing", "needs_review"])
       .order("created_at", { ascending: false })
@@ -220,6 +222,8 @@ Deno.serve(async (req: Request) => {
       const sameOrder = openOrder.service_type === serviceType &&
         openOrder.network === network &&
         openOrder.recipient_phone === phone &&
+        openOrder.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
+        openOrder.provider_email === (network === "smile" ? smileEmail : null) &&
         openOrder.data_plan_id === dataPlanId &&
         Number(openOrder.amount) === amount &&
         (serviceType !== "airtime" || Number(openOrder.airtime_amount) === airtimeAmount);
