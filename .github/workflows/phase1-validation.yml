@@ -107,6 +107,7 @@ jobs:
           fn = Path("supabase/functions/dcds-vtpass-catalog/index.ts").read_text(encoding="utf-8")
           create = Path("supabase/functions/dcds-vtu-create-payment/index.ts").read_text(encoding="utf-8")
           process = Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8")
+          provider_migration = Path("supabase/migrations/20261119223000_add_dcds_vtu_provider_source.sql").read_text(encoding="utf-8")
           home = Path("index.html").read_text(encoding="utf-8")
           checks = {
               "home page links to the new Airtime & Data landing page": 'href="airtime-data.html"' in home,
@@ -150,6 +151,124 @@ jobs:
               "checkout requires an explicit VTpass base URL and does not default production to sandbox": 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in create and 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in process and 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in fn and "https://sandbox.vtpass.com/api" not in create + process + fn,
               "VTpass checkout and fulfilment base URLs use official HTTPS /api hosts": all(x in create and x in process for x in ['vtpassHost.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','vtpassHost.pathname','vtpassHost.password','vtpassHost.search','vtpassHost.hash']),
               "VTpass catalogue base URL is restricted to the official HTTPS /api endpoint": all(x in fn for x in ['parsed.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','parsed.pathname','parsed.password','parsed.search','parsed.hash']),
+              "new VTpass purchases are explicitly tagged for provider routing": 'provider: "vtpass"' in create and 'existing.provider === "vtpass"' in create and 'openOrder.provider === "vtpass"' in create,
+              "legacy Oplug orders are identified separately from VTpass request IDs": "provider text" in provider_migration and "WHEN oplug_request_id ~ '^[0-9]{12}[A-Za-z0-9]+          }
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} DCDS VTU safety checks failed.")
+          PY
+      - name: Verify global VTU currency and NGN provider-cost separation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          create = Path("supabase/functions/dcds-vtu-create-payment/index.ts").read_text(encoding="utf-8")
+          process = Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8")
+          migration = Path("supabase/migrations/20261119220000_add_global_vtu_checkout_currency.sql").read_text(encoding="utf-8")
+          pages = {name: Path(name).read_text(encoding="utf-8") for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html", "vtu-payment-return.html"]}
+          checks = {
+              "checkout accepts only explicitly supported currencies": '["NGN", "USD", "GBP", "EUR"]' in create,
+              "FX quote is fetched server-side and never accepted from the browser": "/v2/rate/NGN/" in create and "body.fx_rate" not in create,
+              "FX quote is checked for pair, positive rate and freshness": 'rateData?.base !== "NGN"' in create and "ageDays > 4" in create and "fxRate <= 0" in create,
+              "customer price and NGN provider cost are stored separately": "provider_cost: providerCostNgn" in create and 'provider_cost_currency: "NGN"' in create and "currency: customerCurrency" in create,
+              "retry returns the existing checkout without depending on a fresh FX fetch": create.index(".maybeSingle();", create.index("const customerCurrency")) < create.index("api.frankfurter.dev/v2/rate/NGN/"),
+              "VTpass /pay never receives the customer checkout amount": 'amount: Number(current.provider_cost)' in process and 'amount: Number(current.amount)' not in process,
+              "foreign checkout is blocked until decimal-capable V4 is implemented": 'if (customerCurrency !== "NGN")' in create and "V3 Standard Checkout documents amount as int32" in create,
+              "foreign currency choices remain visibly disabled until V4 is ready": all(all(f'<option value="{currency}" disabled>' in pages[name] for currency in ["USD", "GBP", "EUR"]) for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html"]),
+              "VTpass fulfilment uses the saved NGN provider cost": "amount: Number(current.provider_cost)" in process,
+              "provider cost currency is checked before fulfilment": "provider_cost_currency" in process and '"NGN"' in process,
+              "Flutterwave verification matches the stored order currency": 'currency !== String(order.currency || "NGN").toUpperCase()' in process,
+              "migration adds quote snapshot and provider currency fields": all(x in migration for x in ["fx_rate", "fx_rate_date", "fx_rate_source", "provider_cost_currency"]),
+              "migration preserves NGN provider settlement and allows approved customer currencies": "provider_cost_currency = 'NGN'" in migration and "ARRAY['NGN','USD','GBP','EUR']" in migration,
+              "all VTU checkout pages send a selected currency": all('currency:' in pages[name] for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html"]),
+              "customer order history and return page display stored currency": 'formatCurrency(Number(order.amount' in pages["airtime-data.html"] and 'currency:String(order.currency' in pages["vtu-payment-return.html"],
+          }
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} global VTU currency checks failed.")
+          PY
+
+      - name: Verify Phase 1 migration invariants
+        shell: bash
+        run: |
+          test -f supabase/migrations/20261110000100_phase1_security_reliability.sql
+          grep -q "email_confirmed_at" supabase/functions/create-payment/index.ts
+          grep -q "dcds_create_checkout_order" supabase/functions/create-payment/index.ts
+          grep -q "provider_transfer_id" supabase/functions/dcds-process-payout/index.ts
+          grep -qi "on delete restrict" supabase/migrations/20261110000100_phase1_security_reliability.sql
+          test -f supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          test -f supabase/migrations/20261111113000_dcds_payment_verification_audit_event.sql
+          grep -q "admin_approve_manual_bank_payment" supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          grep -q "dcds-payment-receipts" supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          grep -q "verify_by_reference" supabase/functions/admin-verify-flutterwave-payment/index.ts
+
+      - name: Verify pending checkout reconciliation safeguards
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          migration = Path("supabase/migrations/20261112081327_dcds_pending_checkout_reconciliation.sql").read_text(encoding="utf-8")
+          create_payment = Path("supabase/functions/create-payment/index.ts").read_text(encoding="utf-8")
+          admin_verify = Path("supabase/functions/admin-verify-flutterwave-payment/index.ts").read_text(encoding="utf-8")
+          admin_page = Path("student-management.html").read_text(encoding="utf-8")
+
+          checks = {
+              "new orders have a persisted checkout expiry": "checkout_expires_at" in migration and "p_checkout_expires_at" in create_payment,
+              "local expiry is recorded but never auto-fails an order": "checkout_expires_at" in migration and "SET status = 'failed'" not in migration.split("CREATE OR REPLACE FUNCTION public.admin_release_pending_flutterwave_checkout", 1)[0],
+              "legacy and expired pending orders remain blocked until provider review": "checkout_expires_at timestamptz" in migration and "Legacy and expired pending orders deliberately remain blocking" in migration,
+              "new Flutterwave sessions have provider-side timeout and link expiry": "session_duration: 60" in create_payment and "max_retry_attempt: 3" in create_payment and "link_expiration: checkoutExpiresAt.toISOString()" in create_payment,
+              "reconciliation checks are written to the audit trail": 'event_type: "flutterwave_reconciliation_checked"' in admin_verify and "'flutterwave_reconciliation_checked'" in migration,
+              "not-found or failed provider checks do not automatically release the order": 'outcome = referenceNotFound ? "not_found" : "unconfirmed"' in admin_verify and 'outcome = terminalFailure' in admin_verify and "order_unchanged: true" in admin_verify,
+              "release requires the latest recent provider check and a closed/expired link": "interval '2 hours'" in migration and "p_confirm_link_disabled" in migration and "v_link_expired" in migration and "ORDER BY e.created_at DESC" in migration and "v_check.details ->> 'outcome' NOT IN ('not_found','failed')" in migration,
+              "release is blocked when a non-failed payment or linked enrolment exists": "p.status <> 'failed'" in migration and "e.order_id = p_order_id" in migration,
+              "release creates an auditable administrator event": "'pending_checkout_released'" in migration and "administrator_confirmation_note" in migration,
+              "admin UI exposes the guarded release action": 'action:"release_pending"' in admin_page and "Release checkout as unpaid" in admin_page,
+              "new checkout-order RPC remains service-role only": "REVOKE ALL ON FUNCTION public.dcds_create_checkout_order(uuid,uuid,text,text,timestamptz)" in migration and "TO service_role" in migration,
+          }
+
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} pending-checkout reconciliation checks failed.")
+          PY
+
+      - name: Require RLS on every new public table
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import glob
+          import re
+          import sys
+
+          files = sorted(glob.glob("supabase/migrations/*.sql"))
+          failures = []
+          created_pattern = r'(?im)^\s*CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+(?:"?public"?\s*\.\s*)?"?([A-Za-z_][A-Za-z0-9_]*)"?'
+          for path in files:
+              with open(path, encoding="utf-8") as source:
+                  sql = source.read()
+              created = re.findall(created_pattern, sql)
+              for table in created:
+                  rls_pattern = (
+                      rf'(?im)^\s*ALTER\s+TABLE(?:\s+IF\s+EXISTS)?\s+'
+                      rf'(?:"?public"?\s*\.\s*)?"?{re.escape(table)}"?'
+                      rf'\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\s*;'
+                  )
+                  if not re.search(rls_pattern, sql):
+                      failures.append(f"{path}: {table} is created without explicit RLS enablement")
+          if failures:
+              print("\n".join(failures))
+              sys.exit(1)
+          print(f"Verified explicit RLS enablement for all new public tables across {len(files)} migration files.")
+          PY
+ THEN 'vtpass'" in provider_migration and "ELSE 'oplug'" in provider_migration,
+              "legacy Oplug processing orders use status lookup without resubmitting the purchase": 'providerSource === "oplug"' in process and 'const legacyVerifyUrl = "https://www.oplug.com.ng/api/v1/verify-transaction?' in process and "if (submitLegacyPurchase)" in process,
+              "legacy Oplug and VTpass credentials are separated by provider source": 'if (!oplugKey)' in process and 'if (!vtpassApiKey || !vtpassSecretKey)' in process and 'providerSource !== "vtpass"' in process,
           }
           failures = [name for name, passed in checks.items() if not passed]
           for name, passed in checks.items():
