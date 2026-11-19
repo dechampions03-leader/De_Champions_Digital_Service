@@ -135,8 +135,11 @@ Deno.serve(async (req: Request) => {
 
     const allPlans: Record<string, unknown>[] = [];
     if (action !== "networks") {
-      const results = await Promise.all(DATA_SERVICES.map((service) => fetchVariations(service)));
-      results.forEach((plans) => allPlans.push(...plans));
+      const results = await Promise.allSettled(DATA_SERVICES.map((service) => fetchVariations(service)));
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") allPlans.push(...result.value);
+        else console.warn("VTpass catalogue service unavailable:", DATA_SERVICES[index].serviceID);
+      });
       if (!allPlans.length) return reply(req, { success: false, error: "VTpass returned no active Nigerian data plans." }, 502);
     }
     const data = {
