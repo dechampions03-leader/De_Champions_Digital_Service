@@ -19,6 +19,7 @@ on:
       - "supabase/functions/dcds-vtu-create-payment/**"
       - "supabase/functions/dcds-vtu-process-payment/**"
       - "supabase/functions/dcds-vtu-history/**"
+      - "supabase/functions/dcds-vtpass-sandbox-test/**"
       - "supabase/functions/flutterwave-webhook/**"
       - "airtime-data.html"
       - "smile-payment.html"
@@ -91,6 +92,8 @@ jobs:
         run: deno check supabase/functions/dcds-vtu-process-payment/index.ts
       - name: Type-check authenticated DCDS VTU purchase history endpoint
         run: deno check supabase/functions/dcds-vtu-history/index.ts
+      - name: Type-check admin-only VTpass Sandbox smoke test
+        run: deno check supabase/functions/dcds-vtpass-sandbox-test/index.ts
       - name: Type-check shared Flutterwave webhook
         run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Verify DCDS Airtime and Data safety boundaries
