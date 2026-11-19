@@ -49,8 +49,10 @@
     const approved = regionalAmount(slug);
     return approved ? formatValue(approved.amount, currency) : format(amount);
   }
-  function canCheckout(slug) {
-    return currency === "NGN" || !!regionalAmount(slug);
+  function canCheckout() {
+    // V3 hosted checkout is retained for NGN only during this staged release.
+    // Foreign prices remain display-only until the complete V4 migration is approved.
+    return currency === "NGN";
   }
   function approvedCount() {
     return Object.keys(regionalPrices).filter(key => key.endsWith(":" + currency)).length;
@@ -61,8 +63,8 @@
       if (!Number.isFinite(base)) return;
       const slug = node.dataset.dcdsCourseSlug || "";
       node.textContent = slug ? formatCourse(base, slug) : format(base);
-      if (slug && currency !== "NGN" && !canCheckout(slug)) {
-        node.title = "Indicative conversion only. This course does not yet have an approved " + currency + " checkout price.";
+      if (slug && currency !== "NGN") {
+        node.title = "Foreign-currency checkout is temporarily paused. This displayed price is for reference only; switch to NGN to pay.";
       } else {
         node.removeAttribute("title");
       }
@@ -77,7 +79,7 @@
     const note = document.getElementById("dcdsCurrencyDisclaimer");
     if (note) note.textContent = currency === "NGN"
       ? "Prices are shown in Nigerian naira. Flutterwave checkout uses the approved NGN course price."
-      : "Approved " + currency + " prices are shown where available. Other amounts are indicative conversions only and cannot be used for checkout until DCDS activates an approved price. Your final payment remains subject to Flutterwave's currency and account support.";
+      : "Approved " + currency + " prices may be shown for reference, but foreign-currency checkout is temporarily paused while DCDS prepares a complete, secure Flutterwave payment-version migration. Switch to NGN to pay. No order is created for a foreign-currency selection.";
     const generalButton = document.getElementById("generalCourseBuy");
     if (generalButton && !generalButton.textContent.includes("CONTINUE LEARNING")) {
       generalButton.textContent = "Get the General Course — " + formatCourse(103000, "general-course");
