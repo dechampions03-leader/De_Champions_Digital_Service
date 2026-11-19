@@ -148,6 +148,13 @@ jobs:
               "VTpass checkout and fulfilment base URLs use official HTTPS /api hosts": all(x in create and x in process for x in ['vtpassHost.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','vtpassHost.pathname','vtpassHost.password','vtpassHost.search','vtpassHost.hash']),
               "VTpass catalogue base URL is restricted to the official HTTPS /api endpoint": all(x in fn for x in ['parsed.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','parsed.pathname','parsed.password','parsed.search','parsed.hash']),
               "new VTpass purchases are explicitly tagged for provider routing": 'provider: "vtpass"' in create and 'existing.provider === "vtpass"' in create and 'openOrder.provider === "vtpass"' in create,
+          }
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} DCDS VTU safety checks failed.")
+          PY
       - name: Verify global VTU currency and NGN provider-cost separation
         shell: bash
         run: |
@@ -254,13 +261,6 @@ jobs:
               print("\n".join(failures))
               sys.exit(1)
           print(f"Verified explicit RLS enablement for all new public tables across {len(files)} migration files.")
-          PY
-          }
-          failures = [name for name, passed in checks.items() if not passed]
-          for name, passed in checks.items():
-              print(("PASS " if passed else "FAIL ") + name)
-          if failures:
-              raise SystemExit(f"{len(failures)} DCDS VTU safety checks failed.")
           PY
       - name: Verify global VTU currency and NGN provider-cost separation
         shell: bash
