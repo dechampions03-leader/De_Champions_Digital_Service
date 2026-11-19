@@ -144,7 +144,12 @@ Deno.serve(async (req: Request) => {
         return reply(req, { success: false, error: "That data product is not supported for the selected network." }, 400);
       }
       const catalogueResponse = await fetch(vtpassBase + "/service-variations?serviceID=" + encodeURIComponent(requestedServiceID), {
-        headers: { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" },
+        headers: network === "smile"
+          ? (() => {
+            if (!vtpassEmail || !vtpassPassword) throw new Error("VTpass Smile Basic Authentication credentials are not configured.");
+            return { Authorization: "Basic " + btoa(vtpassEmail + ":" + vtpassPassword), Accept: "application/json" };
+          })()
+          : { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" },
         signal: AbortSignal.timeout(12000),
       });
       const catalogue = await catalogueResponse.json().catch(() => null);
