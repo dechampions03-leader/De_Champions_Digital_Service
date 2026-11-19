@@ -72,8 +72,9 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const adminSecret = adminKey();
     const flwSecret = Deno.env.get("FLW_SECRET_KEY") || "";
-    const oplugKey = Deno.env.get("OPLUG_API_KEY") || "";
-    if (!supabaseUrl || !adminSecret || !flwSecret || !oplugKey) {
+    const vtpassApiKey = Deno.env.get("VTPASS_API_KEY") || "";
+    const vtpassSecretKey = Deno.env.get("VTPASS_SECRET_KEY") || "";
+    if (!supabaseUrl || !adminSecret || !flwSecret || !vtpassApiKey || !vtpassSecretKey) {
       return reply(req, { success: false, error: "Airtime & Data processing is not fully configured. Please contact DCDS support." }, 503);
     }
 
@@ -184,135 +185,157 @@ Deno.serve(async (req: Request) => {
     if (current.status === "needs_review") return successResponse(req, current, "needs_review", "DCDS support is reviewing this transaction.");
     if (current.status === "failed" || current.status === "cancelled") return successResponse(req, current, current.status, "This checkout was not completed.");
 
-    // One worker wins the paid -> processing transition. Other calls can safely
-    // replay the same Oplug request-id because Oplug guarantees idempotency for
-    // the same request-id and same payload.
+    // This legacy column stores the VTpass request_id. A single paid -> processing
+    // claim may submit /pay; every subsequent invocation performs /requery only.
+    const DATA_SERVICES: Record<string, string> = {
+      mtn: "mtn-data",
+      airtel: "airtel-data",
+      glo: "glo-data",
+      "9mobile": "etisalat-data",
+    };
+    const AIRTIME_SERVICES: Record<string, string> = {
+      mtn: "mtn",
+      airtel: "airtel",
+      glo: "glo",
+      "9mobile": "etisalat",
+    };
+    const vtpassBase = (Deno.env.get("VTPASS_API_BASE_URL") || "https://sandbox.vtpass.com/api").replace(/\/+$/, "");
+    const vtpassHost = new URL(vtpassBase);
+    if (vtpassHost.protocol !== "https:" || !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname)) {
+      return reply(req, { success: false, status: "needs_review", error: "VTpass API base URL is not valid. Do not pay again; contact DCDS support." }, 503);
+    }
+    const requestId = String(current.oplug_request_id || "");
+    if (!/^\d{12}[A-Za-z0-9]+$/.test(requestId)) {
+      await db.from("dcds_vtu_orders").update({
+        status: "needs_review",
+        last_error: "Stored VTpass request ID is not in the required format.",
+        updated_at: new Date().toISOString(),
+      }).eq("id", current.id).in("status", ["paid", "processing"]);
+      return reply(req, { success: false, status: "needs_review", error: "The transaction reference requires support review. Do not pay again." }, 409);
+    }
+
+    let shouldSubmitPurchase = false;
     if (current.status === "paid") {
       const { data: claimed, error: claimError } = await db.from("dcds_vtu_orders").update({
         status: "processing",
         purchase_started_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }).eq("id", order.id).eq("status", "paid").select("*").maybeSingle();
+      }).eq("id", current.id).eq("status", "paid").select("*").maybeSingle();
       if (claimError) throw claimError;
-      if (claimed) current = claimed;
-      else {
-        const { data: refreshed, error: refreshError } = await db.from("dcds_vtu_orders").select("*").eq("id", order.id).single();
+      if (claimed) {
+        current = claimed;
+        shouldSubmitPurchase = true;
+      } else {
+        const { data: refreshed, error: refreshError } = await db.from("dcds_vtu_orders").select("*").eq("id", current.id).single();
         if (refreshError) throw refreshError;
         current = refreshed;
       }
     }
-    if (current.status !== "processing") {
-      return successResponse(req, current, current.status, "Your order is being checked.");
-    }
+    if (current.status === "successful") return successResponse(req, current, "successful", "Your top-up has already been completed.");
+    if (current.status === "refund_required") return successResponse(req, current, "refund_required", "Payment was received but VTpass did not complete the top-up. DCDS support must arrange your refund.");
+    if (current.status === "needs_review") return successResponse(req, current, "needs_review", "DCDS support is reviewing this transaction.");
+    if (current.status === "failed" || current.status === "cancelled") return successResponse(req, current, current.status, "This checkout was not completed.");
+    if (current.status !== "processing") return successResponse(req, current, current.status, "Your order is being checked.");
 
-    const purchasePayload: Record<string, unknown> = {
-      network: Number(current.network_id),
-      phone: String(current.recipient_phone),
-      bypass: false,
-      "request-id": String(current.oplug_request_id),
+    const postHeaders = {
+      "api-key": vtpassApiKey,
+      "secret-key": vtpassSecretKey,
+      "Content-Type": "application/json",
+      Accept: "application/json",
     };
-    const endpoint = current.service_type === "data" ? "/data" : "/airtime";
-    if (current.service_type === "data") purchasePayload.data_plan = String(current.data_plan_id);
-    else {
-      purchasePayload.amount = String(current.airtime_amount);
-      purchasePayload.type = "VTU";
+    const serviceID = current.service_type === "data"
+      ? DATA_SERVICES[String(current.network)]
+      : AIRTIME_SERVICES[String(current.network)];
+    if (!serviceID) throw new Error("Unsupported VTpass network for this purchase.");
+
+    let providerResponse: Response | null = null;
+    let providerData: Record<string, unknown> | null = null;
+    if (shouldSubmitPurchase) {
+      const payload: Record<string, unknown> = {
+        request_id: requestId,
+        serviceID,
+        phone: String(current.recipient_phone),
+        amount: Number(current.amount),
+      };
+      if (current.service_type === "data") {
+        payload.billersCode = String(current.recipient_phone);
+        payload.variation_code = String(current.data_plan_id);
+      }
+      providerResponse = await fetch(vtpassBase + "/pay", {
+        method: "POST",
+        headers: postHeaders,
+        body: JSON.stringify(payload),
+        signal: AbortSignal.timeout(20000),
+      }).catch(() => null);
+      providerData = providerResponse ? await providerResponse.json().catch(() => null) : null;
+    } else {
+      // Never submit /pay a second time after the first request may have reached VTpass.
+      providerResponse = await fetch(vtpassBase + "/requery", {
+        method: "POST",
+        headers: postHeaders,
+        body: JSON.stringify({ request_id: requestId }),
+        signal: AbortSignal.timeout(15000),
+      }).catch(() => null);
+      providerData = providerResponse ? await providerResponse.json().catch(() => null) : null;
     }
 
-    const purchaseResponse = await fetch("https://www.oplug.com.ng/api/v1" + endpoint, {
-      method: "POST",
-      headers: {
-        Authorization: "Token " + oplugKey,
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        "Idempotency-Key": String(current.oplug_request_id),
-      },
-      body: JSON.stringify(purchasePayload),
-      signal: AbortSignal.timeout(18000),
-    }).catch(() => null);
-
-    let providerData: Record<string, unknown> | null = purchaseResponse
-      ? await purchaseResponse.json().catch(() => null)
-      : null;
-    let providerOutcome = resultStatus(providerData);
-
-    if (providerData && (providerData.status === "success" ||
-      ["SUCCESS", "SUCCESSFUL", "COMPLETED"].includes(providerOutcome))) {
-      const { data: fulfilled, error: fulfilledError } = await db.from("dcds_vtu_orders").update({
-        status: "successful",
-        provider_status: providerOutcome || "SUCCESSFUL",
-        provider_reference: safeText(providerData["request-id"] || providerData.reference, 120) || String(current.oplug_request_id),
-        provider_response: providerData,
-        fulfilled_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        last_error: null,
-      }).eq("id", current.id).eq("status", "processing").select("*").maybeSingle();
-      if (fulfilledError) throw fulfilledError;
-      if (fulfilled) return successResponse(req, fulfilled, "successful", "Payment confirmed. Your top-up was sent successfully.");
-    }
-
-    if (["FAILED", "FAILURE", "REJECTED"].includes(providerOutcome)) {
-      const { data: refundOrder, error: refundError } = await db.from("dcds_vtu_orders").update({
-        status: "refund_required",
-        provider_status: providerOutcome,
-        provider_response: providerData,
-        last_error: "The Oplug provider did not complete the purchase after Flutterwave payment.",
-        updated_at: new Date().toISOString(),
-      }).eq("id", current.id).eq("status", "processing").select("*").maybeSingle();
-      if (refundError) throw refundError;
-      return successResponse(req, refundOrder || current, "refund_required", "Payment was received, but the network provider did not complete the top-up. DCDS support must arrange your refund.");
-    }
-
-    // Resolve timeouts or ambiguous provider responses using Oplug's transaction lookup.
-    const verifyUrl = "https://www.oplug.com.ng/api/v1/verify-transaction?request-id=" + encodeURIComponent(String(current.oplug_request_id));
-    const statusResponse = await fetch(verifyUrl, {
-      headers: { Authorization: "Token " + oplugKey, Accept: "application/json" },
-      signal: AbortSignal.timeout(12000),
-    }).catch(() => null);
-    const statusPayload = statusResponse ? await statusResponse.json().catch(() => null) : null;
-    const oplugStatus = resultStatus(statusPayload);
-    if (["SUCCESS", "SUCCESSFUL", "COMPLETED"].includes(oplugStatus)) {
-      const { data: fulfilled, error: fulfilledError } = await db.from("dcds_vtu_orders").update({
-        status: "successful",
-        provider_status: oplugStatus,
-        provider_reference: safeText(statusPayload["request-id"] || statusPayload.reference, 120) || String(current.oplug_request_id),
-        provider_response: statusPayload,
-        fulfilled_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-        last_error: null,
-      }).eq("id", current.id).eq("status", "processing").select("*").maybeSingle();
-      if (fulfilledError) throw fulfilledError;
-      return successResponse(req, fulfilled || current, "successful", "Payment confirmed. Your top-up was sent successfully.");
-    }
-    if (["FAILED", "FAILURE", "REJECTED"].includes(oplugStatus)) {
-      const { data: refundOrder, error: refundError } = await db.from("dcds_vtu_orders").update({
-        status: "refund_required",
-        provider_status: oplugStatus,
-        provider_response: statusPayload,
-        last_error: "Oplug reports that the paid purchase failed.",
-        updated_at: new Date().toISOString(),
-      }).eq("id", current.id).eq("status", "processing").select("*").maybeSingle();
-      if (refundError) throw refundError;
-      return successResponse(req, refundOrder || current, "refund_required", "Payment was received, but the provider reports a failed top-up. DCDS support must arrange your refund.");
-    }
-
-    // Keep uncertain outcomes in processing. The customer can safely check again:
-    // every replay above uses the same persisted request-id and identical payload.
-    // Oplug documents same-key/same-payload requests as idempotent.
-    const lookupMessage = safeText(statusPayload?.message, 180);
-    const isNotFound = oplugStatus === "ERROR" && /transaction not found/i.test(lookupMessage);
-    const { data: pending, error: pendingError } = await db.from("dcds_vtu_orders").update({
-      provider_status: isNotFound ? "NOT_FOUND" : (oplugStatus || "UNKNOWN"),
-      provider_response: {
-        purchase_response: providerData,
-        status_lookup: statusPayload,
-      },
-      last_error: isNotFound
-        ? "Oplug did not find this request-id during status lookup. The order remains paid and requires idempotent provider reconciliation; do not collect payment again."
-        : "Provider result is not yet final; reconciliation is required. Do not collect payment again.",
+    const providerCode = safeText(providerData?.code, 8);
+    const txContent = providerData?.content && typeof providerData.content === "object"
+      ? (providerData.content as Record<string, unknown>).transactions as Record<string, unknown> | undefined
+      : undefined;
+    const transactionStatus = safeText(txContent?.status, 30).toLowerCase();
+    const transactionReference = safeText(String(txContent?.transactionId || providerData?.requestId || ""), 120) || requestId;
+    const explicitFailureCodes = new Set([
+      "010", "011", "012", "013", "016", "017", "018", "019",
+      "021", "022", "023", "024", "027", "028", "030", "031",
+      "032", "034", "035", "040", "083", "085", "087",
+    ]);
+    const updateFields = {
+      provider_status: providerCode + (transactionStatus ? ":" + transactionStatus : ""),
+      provider_reference: transactionReference,
+      provider_response: providerData || { http_status: providerResponse?.status || null, response_received: false },
       updated_at: new Date().toISOString(),
+    };
+
+    if (providerData && ["000", "001"].includes(providerCode) && transactionStatus === "delivered") {
+      const { data: fulfilled, error: fulfilledError } = await db.from("dcds_vtu_orders").update({
+        ...updateFields,
+        status: "successful",
+        fulfilled_at: new Date().toISOString(),
+        last_error: null,
+      }).eq("id", current.id).eq("status", "processing").select("*").maybeSingle();
+      if (fulfilledError) throw fulfilledError;
+      return successResponse(req, fulfilled || current, "successful", "Payment confirmed. VTpass reports that your top-up was delivered.");
+    }
+
+    if (providerCode && explicitFailureCodes.has(providerCode)) {
+      const { data: refundOrder, error: refundError } = await db.from("dcds_vtu_orders").update({
+        ...updateFields,
+        status: "refund_required",
+        last_error: "VTpass returned a terminal purchase failure (code " + providerCode + "). Customer payment is confirmed; DCDS support must arrange a refund.",
+      }).eq("id", current.id).eq("status", "processing").select("*").maybeSingle();
+      if (refundError) throw refundError;
+      return successResponse(req, refundOrder || current, "refund_required", "Payment was received, but VTpass did not complete the top-up. DCDS support must arrange your refund.");
+    }
+
+    const { data: pending, error: pendingError } = await db.from("dcds_vtu_orders").update({
+      ...updateFields,
+      status: "processing",
+      last_error: providerCode === "044"
+        ? "VTpass reports this request is resolved and requires supplier/support clarification."
+        : "VTpass has not confirmed delivery yet. Retries use requery only and never submit another purchase.",
     }).eq("id", current.id).eq("status", "processing").select("*").maybeSingle();
     if (pendingError) throw pendingError;
-    return successResponse(req, pending || current, "processing", "Your payment is confirmed. Your top-up is still being processed—please do not pay again.");
+    if (providerCode === "044") {
+      await db.from("dcds_vtu_orders").update({
+        status: "needs_review",
+        last_error: "VTpass reports transaction resolved; manual supplier clarification is required.",
+        updated_at: new Date().toISOString(),
+      }).eq("id", current.id).eq("status", "processing");
+      return successResponse(req, pending || current, "needs_review", "VTpass has marked this transaction resolved. DCDS support is reviewing it; please do not pay again.");
+    }
+    return successResponse(req, pending || current, "processing", "Your payment is confirmed. VTpass has not confirmed delivery yet. Please do not pay again; DCDS will recheck this same transaction.");
+
   } catch (error) {
     console.error("DCDS VTU payment fulfilment error:", error instanceof Error ? error.message : "Unknown error");
     return reply(req, { success: false, status: "needs_review", error: "Your payment status is being checked. Do not pay again; contact DCDS support if this message remains." }, 500);
