@@ -61,6 +61,16 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: "Please select a valid payment currency." }, 400);
     }
 
+    // Phase 1 deliberately keeps course checkout on the existing NGN hosted flow.
+    // Foreign-currency card checkout stays closed until Flutterwave V4 is integrated
+    // and verified; reject before creating an order or payment link.
+    if (requestedCurrency !== "NGN") {
+      return respond({
+        success: false,
+        error: "Foreign-currency card checkout is temporarily unavailable while DCDS completes its secure V4 integration. Select NGN for now; no order or charge was created.",
+      }, 503);
+    }
+
     // The database selects the authoritative active regional price and creates
     // the order with its expiry atomically. The browser never supplies a payment amount.
     const txRef = `DCDS-${crypto.randomUUID()}`;
@@ -79,6 +89,18 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: message }, conflict ? 409 : 400);
     }
 
+    const checkoutAmount = Number(checkout.amount);
+    if (!Number.isSafeInteger(checkoutAmount) || checkoutAmount <= 0 || checkoutAmount > 2147483647) {
+      await supabase.from("orders").update({
+        status: "failed",
+        updated_at: new Date().toISOString(),
+      }).eq("id", checkout.id).eq("status", "pending");
+      return respond({
+        success: false,
+        error: "This NGN course price cannot be represented safely by the current Flutterwave hosted-checkout API. No payment was started. Contact DCDS support.",
+      }, 422);
+    }
+
     const siteUrl = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
     const flutterwaveResponse = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
@@ -89,7 +111,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         tx_ref: checkout.tx_ref,
-        amount: Number(checkout.amount),
+        amount: checkoutAmount,
         currency: checkout.currency || "NGN",
         redirect_url: `${siteUrl}/payment-return.html`,
         configuration: {
