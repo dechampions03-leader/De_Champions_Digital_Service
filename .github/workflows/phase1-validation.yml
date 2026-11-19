@@ -19,6 +19,7 @@ on:
       - "supabase/functions/dcds-vtu-history/**"
       - "supabase/functions/flutterwave-webhook/**"
       - "airtime-data.html"
+      - "smile-payment.html"
       - "vtu-payment-return.html"
       - "index.html"
       - "supabase/migrations/**"
@@ -40,6 +41,7 @@ on:
       - "supabase/functions/dcds-vtu-process-payment/**"
       - "supabase/functions/dcds-vtu-history/**"
       - "airtime-data.html"
+      - "smile-payment.html"
       - "vtu-payment-return.html"
       - "index.html"
       - "supabase/migrations/**"
@@ -108,6 +110,9 @@ jobs:
               "VTpass catalogue reads keys server-side only": 'Deno.env.get("VTPASS_API_KEY")' in fn and 'Deno.env.get("VTPASS_PUBLIC_KEY")' in fn and "VTPASS_API_KEY" not in page,
               "VTpass GET catalogue uses API and public key headers": '"api-key": apiKey' in fn and '"public-key": publicKey' in fn and '"/service-variations?serviceID="' in fn,
               "mobile, SME, Spectranet and Smile data services are mapped": all(x in fn for x in ["mtn-data","airtel-data","glo-data","glo-sme-data","etisalat-data","9mobile-sme-data","spectranet","smile-direct"]),
+              "Smile email verification endpoint is present": 'merchant-verify/smile/email' in fn and 'action === "verify_smile"' in fn,
+              "Smile checkout re-verifies account email and selected AccountId": 'merchant-verify/smile/email' in create and 'provider_billers_code' in create and 'provider_email' in create,
+              "Smile UI requires verification and a selected linked account": 'action:"verify_smile"' in page and 'smile_account_id' in page and 'smile_email' in page,
               "Smile email verification endpoint is present": 'merchant-verify/smile/email' in fn and 'action === "verify_smile"' in fn,
               "catalogue includes low-price positive VTpass variations": "item.amount > 0" in fn and "item.amount >= 50" not in fn,
               "Glo and 9mobile SME variation IDs retain their provider service ID": 'serviceID + "::" + id' in fn and 'includes(serviceID)' in fn and "9mobile-sme-data" in fn,
