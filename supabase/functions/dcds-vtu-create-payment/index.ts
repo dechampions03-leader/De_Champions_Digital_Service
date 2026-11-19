@@ -117,8 +117,17 @@ Deno.serve(async (req: Request) => {
     if (serviceType === "data") {
       const requestedPlanId = clean(body.plan_id, 100);
       if (!requestedPlanId) return reply(req, { success: false, error: "Select a data bundle first." }, 400);
-      const serviceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data" } as Record<string, string>)[network];
-      const catalogueResponse = await fetch(vtpassBase + "/service-variations?serviceID=" + encodeURIComponent(serviceID), {
+      const defaultServiceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data" } as Record<string, string>)[network];
+      const allowedServices: Record<string, string[]> = {
+        mtn: ["mtn-data"], airtel: ["airtel-data"], glo: ["glo-data", "glo-sme-data"], "9mobile": ["etisalat-data"],
+      };
+      const [requestedServiceID, requestedVariationCode] = requestedPlanId.includes("::")
+        ? requestedPlanId.split("::", 2)
+        : [defaultServiceID, requestedPlanId];
+      if (!defaultServiceID || !requestedServiceID || !requestedVariationCode || !allowedServices[network]?.includes(requestedServiceID)) {
+        return reply(req, { success: false, error: "That data product is not supported for the selected network." }, 400);
+      }
+      const catalogueResponse = await fetch(vtpassBase + "/service-variations?serviceID=" + encodeURIComponent(requestedServiceID), {
         headers: { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" },
         signal: AbortSignal.timeout(12000),
       });
@@ -128,15 +137,15 @@ Deno.serve(async (req: Request) => {
         return reply(req, { success: false, error: "The VTpass data catalogue is temporarily unavailable. No payment has been started." }, 502);
       }
       const plan = variations.find((item: Record<string, unknown>) =>
-        String(item.variation_code) === requestedPlanId &&
+        String(item.variation_code) === requestedVariationCode &&
         !/\b(?:calls?|minutes?|voice|talk\s*more)\b/i.test(String(item.name || ""))
       );
       if (!plan) return reply(req, { success: false, error: "That data bundle is unavailable or is not a data product. Refresh the catalogue and select a valid data plan." }, 409);
       amount = money(plan.variation_amount);
       providerCost = amount;
-      dataPlanId = requestedPlanId;
+      dataPlanId = requestedServiceID + "::" + requestedVariationCode;
       dataPlanName = clean(plan.name, 120);
-      dataPlanType = "Data bundle";
+      dataPlanType = requestedServiceID === "glo-sme-data" ? "SME data" : "Data bundle";
       const matchValidity = dataPlanName.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i);
       dataValidity = matchValidity?.[0] || null;
       if (!amount || !dataPlanName) return reply(req, { success: false, error: "VTpass returned an invalid price for this bundle." }, 502);
