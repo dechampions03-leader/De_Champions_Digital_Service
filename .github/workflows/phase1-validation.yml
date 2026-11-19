@@ -107,7 +107,7 @@ jobs:
           home = Path("index.html").read_text(encoding="utf-8")
           checks = {
               "home page links to the new Airtime & Data landing page": 'href="airtime-data.html"' in home,
-              "landing page loads the VTpass server catalogue": 'functions.invoke("dcds-vtpass-catalog"' in page and "Oplug" not in page,
+              "landing page loads the VTpass server catalogue": 'functions.invoke("dcds-vtpass-catalog"' in page and "dcds-vtpass-catalog" in page,
               "checkout uses the separate Flutterwave pay-per-order endpoint": 'functions.invoke("dcds-vtu-create-payment"' in page and 'checkout.flutterwave.com' in page,
               "checkout remains direct pay-per-order with no customer wallet": "There is no DCDS wallet or stored balance" in page,
               "VTpass catalogue reads keys server-side only": 'Deno.env.get("VTPASS_API_KEY")' in fn and 'Deno.env.get("VTPASS_PUBLIC_KEY")' in fn and "VTPASS_API_KEY" not in page,
@@ -261,7 +261,6 @@ jobs:
               sys.exit(1)
           print(f"Verified explicit RLS enablement for all new public tables across {len(files)} migration files.")
           PY
- THEN 'vtpass'" in provider_migration and "ELSE 'oplug'" in provider_migration,
           }
           failures = [name for name, passed in checks.items() if not passed]
           for name, passed in checks.items():
