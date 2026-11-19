@@ -183,161 +183,18 @@ Deno.serve(async (req: Request) => {
     if (current.status === "needs_review") return successResponse(req, current, "needs_review", "DCDS support is reviewing this transaction.");
     if (current.status === "failed" || current.status === "cancelled") return successResponse(req, current, current.status, "This checkout was not completed.");
 
-    // Preserve Oplug orders created before the supplier migration. The provider
-    // column defaults historical rows to Oplug; new rows are explicitly VTpass.
-    // A row already in "processing" is rechecked only, never submitted again.
-    const providerSource = String(current.provider || order.provider || "oplug").toLowerCase();
-    if (providerSource === "oplug") {
-      const oplugKey = Deno.env.get("OPLUG_API_KEY") || "";
-      if (!oplugKey) {
-        return reply(req, { success: false, status: "needs_review", error: "A legacy Oplug order is awaiting reconciliation, but its read-only provider credential is unavailable. Do not pay again; contact DCDS support." }, 503);
-      }
-
-      let legacyOrder = current;
-      let submitLegacyPurchase = false;
-      if (legacyOrder.status === "paid") {
-        const { data: claimed, error: claimError } = await db.from("dcds_vtu_orders").update({
-          status: "processing",
-          purchase_started_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-        }).eq("id", legacyOrder.id).eq("status", "paid").select("*").maybeSingle();
-        if (claimError) throw claimError;
-        if (claimed) {
-          legacyOrder = claimed;
-          submitLegacyPurchase = true;
-        } else {
-          const { data: refreshed, error: refreshError } = await db.from("dcds_vtu_orders")
-            .select("*").eq("id", legacyOrder.id).single();
-          if (refreshError) throw refreshError;
-          legacyOrder = refreshed;
-        }
-      }
-      if (legacyOrder.status !== "processing") {
-        return successResponse(req, legacyOrder, String(legacyOrder.status), "Your legacy order is being checked.");
-      }
-
-      const legacyRequestId = String(legacyOrder.oplug_request_id || "");
-      if (!legacyRequestId || legacyRequestId.length < 12 || legacyRequestId.length > 80) {
-        await db.from("dcds_vtu_orders").update({
-          status: "needs_review",
-          last_error: "Legacy Oplug request ID is missing or invalid.",
-          updated_at: new Date().toISOString(),
-        }).eq("id", legacyOrder.id).eq("status", "processing");
-        return successResponse(req, legacyOrder, "needs_review", "The legacy provider reference requires DCDS support review. Do not pay again.");
-      }
-
-      let purchaseData: Record<string, unknown> | null = null;
-      if (submitLegacyPurchase) {
-        const payload: Record<string, unknown> = {
-          network: Number(legacyOrder.network_id),
-          phone: String(legacyOrder.recipient_phone),
-          bypass: false,
-          "request-id": legacyRequestId,
-        };
-        const endpoint = legacyOrder.service_type === "data" ? "/data" : "/airtime";
-        if (legacyOrder.service_type === "data") payload.data_plan = String(legacyOrder.data_plan_id);
-        else {
-          payload.amount = String(legacyOrder.airtime_amount);
-          payload.type = "VTU";
-        }
-
-        const purchaseResponse = await fetch("https://www.oplug.com.ng/api/v1" + endpoint, {
-          method: "POST",
-          headers: {
-            Authorization: "Token " + oplugKey,
-            "Content-Type": "application/json",
-            Accept: "application/json",
-            "Idempotency-Key": legacyRequestId,
-          },
-          body: JSON.stringify(payload),
-          signal: AbortSignal.timeout(18000),
-        }).catch(() => null);
-        purchaseData = purchaseResponse ? await purchaseResponse.json().catch(() => null) : null;
-        const purchaseStatus = resultStatus(purchaseData);
-        if (purchaseData && (purchaseData.status === "success" ||
-          ["SUCCESS", "SUCCESSFUL", "COMPLETED"].includes(purchaseStatus))) {
-          const { data: fulfilled, error: fulfilledError } = await db.from("dcds_vtu_orders").update({
-            status: "successful",
-            provider_status: purchaseStatus || "SUCCESSFUL",
-            provider_reference: safeText(purchaseData["request-id"] || purchaseData.reference, 120) || legacyRequestId,
-            provider_response: purchaseData,
-            fulfilled_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-            last_error: null,
-          }).eq("id", legacyOrder.id).eq("status", "processing").select("*").maybeSingle();
-          if (fulfilledError) throw fulfilledError;
-          return successResponse(req, fulfilled || legacyOrder, "successful", "Your existing Oplug order has been completed.");
-        }
-        if (["FAILED", "FAILURE", "REJECTED"].includes(purchaseStatus)) {
-          const { data: refundOrder, error: refundError } = await db.from("dcds_vtu_orders").update({
-            status: "refund_required",
-            provider_status: purchaseStatus,
-            provider_response: purchaseData,
-            last_error: "The legacy Oplug provider did not complete the purchase after payment.",
-            updated_at: new Date().toISOString(),
-          }).eq("id", legacyOrder.id).eq("status", "processing").select("*").maybeSingle();
-          if (refundError) throw refundError;
-          return successResponse(req, refundOrder || legacyOrder, "refund_required", "Payment was received, but the legacy provider did not complete the top-up. DCDS support must arrange a refund.");
-        }
-      }
-
-      // For orders already in processing, or an ambiguous first submission,
-      // query the same persisted Oplug request ID. Never create a second legacy
-      // purchase just because a customer refreshed this page.
-      const legacyVerifyUrl = "https://www.oplug.com.ng/api/v1/verify-transaction?request-id=" + encodeURIComponent(legacyRequestId);
-      const legacyStatusResponse = await fetch(legacyVerifyUrl, {
-        headers: { Authorization: "Token " + oplugKey, Accept: "application/json" },
-        signal: AbortSignal.timeout(12000),
-      }).catch(() => null);
-      const legacyStatusPayload = legacyStatusResponse
-        ? await legacyStatusResponse.json().catch(() => null)
-        : null;
-      const legacyStatus = resultStatus(legacyStatusPayload);
-
-      if (["SUCCESS", "SUCCESSFUL", "COMPLETED"].includes(legacyStatus)) {
-        const { data: fulfilled, error: fulfilledError } = await db.from("dcds_vtu_orders").update({
-          status: "successful",
-          provider_status: legacyStatus,
-          provider_reference: safeText(legacyStatusPayload["request-id"] || legacyStatusPayload.reference, 120) || legacyRequestId,
-          provider_response: legacyStatusPayload,
-          fulfilled_at: new Date().toISOString(),
-          updated_at: new Date().toISOString(),
-          last_error: null,
-        }).eq("id", legacyOrder.id).eq("status", "processing").select("*").maybeSingle();
-        if (fulfilledError) throw fulfilledError;
-        return successResponse(req, fulfilled || legacyOrder, "successful", "Your existing Oplug top-up has been confirmed.");
-      }
-      if (["FAILED", "FAILURE", "REJECTED"].includes(legacyStatus)) {
-        const { data: refundOrder, error: refundError } = await db.from("dcds_vtu_orders").update({
-          status: "refund_required",
-          provider_status: legacyStatus,
-          provider_response: legacyStatusPayload,
-          last_error: "Oplug reports that the previously paid legacy purchase failed.",
-          updated_at: new Date().toISOString(),
-        }).eq("id", legacyOrder.id).eq("status", "processing").select("*").maybeSingle();
-        if (refundError) throw refundError;
-        return successResponse(req, refundOrder || legacyOrder, "refund_required", "The legacy provider reports a failed top-up. DCDS support must arrange a refund.");
-      }
-
-      const notFound = legacyStatus === "ERROR" &&
-        /transaction not found/i.test(safeText(legacyStatusPayload?.message, 180));
-      const { data: legacyPending, error: legacyPendingError } = await db.from("dcds_vtu_orders").update({
-        provider_status: notFound ? "NOT_FOUND" : (legacyStatus || "UNKNOWN"),
-        provider_response: {
-          purchase_response: purchaseData,
-          status_lookup: legacyStatusPayload,
-        },
-        last_error: notFound
-          ? "Oplug did not return this legacy request ID. The order remains processing for manual reconciliation; no second purchase was sent."
-          : "The legacy Oplug result is not final. The order remains processing; do not collect another payment.",
-        updated_at: new Date().toISOString(),
-      }).eq("id", legacyOrder.id).eq("status", "processing").select("*").maybeSingle();
-      if (legacyPendingError) throw legacyPendingError;
-      return successResponse(req, legacyPending || legacyOrder, "processing", "Your existing Oplug order is still being reconciled. Please do not pay again.");
-    }
-
+    // VTpass is the only active fulfilment provider. Historical orders remain
+    // stored for audit, but are never submitted to a retired supplier or silently
+    // rerouted to VTpass.
+    const providerSource = String(current.provider || order.provider || "").toLowerCase();
     if (providerSource !== "vtpass") {
-      return reply(req, { success: false, status: "needs_review", error: "This order has an unrecognized provider source. Do not pay again; contact DCDS support." }, 409);
+      const { data: archivedOrder, error: archiveError } = await db.from("dcds_vtu_orders").update({
+        status: "needs_review",
+        last_error: "This order predates the VTpass-only cutover. Its original provider has been retired; no supplier call or duplicate purchase will be attempted. DCDS support must reconcile the original payment.",
+        updated_at: new Date().toISOString(),
+      }).eq("id", current.id).in("status", ["paid", "processing"]).select("*").maybeSingle();
+      if (archiveError) throw archiveError;
+      return successResponse(req, archivedOrder || current, "needs_review", "This earlier order requires DCDS support review. Do not pay again.");
     }
 
     const vtpassApiKey = Deno.env.get("VTPASS_API_KEY") || "";
