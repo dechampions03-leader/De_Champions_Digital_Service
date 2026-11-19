@@ -7,12 +7,13 @@ const NETWORKS = [
   { id: 3, name: "9mobile", code: "9mobile", airtime_discount: "0" },
   { id: 4, name: "Airtel", code: "airtel", airtime_discount: "0" },
 ] as const;
-const DATA_SERVICES: Record<string, string> = {
-  mtn: "mtn-data",
-  airtel: "airtel-data",
-  glo: "glo-data",
-  "9mobile": "etisalat-data",
-};
+const DATA_SERVICES = [
+  { network: "mtn", networkId: 1, serviceID: "mtn-data" },
+  { network: "airtel", networkId: 4, serviceID: "airtel-data" },
+  { network: "glo", networkId: 2, serviceID: "glo-data" },
+  { network: "glo", networkId: 2, serviceID: "glo-sme-data" },
+  { network: "9mobile", networkId: 3, serviceID: "etisalat-data" },
+] as const;
 
 function allowedOrigin(origin: string | null): boolean {
   return !origin ||
@@ -74,9 +75,8 @@ async function requireAdmin(req: Request): Promise<{ ok: true } | { error: strin
   if (adminError || isAdmin !== true) return { error: "Admin access required.", status: 403 };
   return { ok: true };
 }
-async function fetchVariations(network: string, networkId: number) {
-  const serviceID = DATA_SERVICES[network];
-  if (!serviceID) return [];
+async function fetchVariations(service: { network: string; networkId: number; serviceID: string }) {
+  const { network, networkId, serviceID } = service;
   const response = await fetch(BASE + "/service-variations?serviceID=" + encodeURIComponent(serviceID), {
     headers: apiHeaders(),
     signal: AbortSignal.timeout(12000),
@@ -91,9 +91,9 @@ async function fetchVariations(network: string, networkId: number) {
     const plan = clean(item?.name, 120);
     const amount = Number(item?.variation_amount);
     const validity = (plan.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i) || [""])[0];
-    return { id, network, network_id: networkId, plan, amount, validity, type: "Data bundle" };
+    return { id: serviceID + "::" + id, service_id: serviceID, variation_code: id, network, network_id: networkId, plan, amount, validity, type: serviceID === "glo-sme-data" ? "SME data" : "Data bundle" };
   }).filter((item: { id: string; plan: string; amount: number }) =>
-    item.id && item.plan && Number.isFinite(item.amount) && item.amount >= 50 &&
+    item.id && item.plan && Number.isFinite(item.amount) && item.amount > 0 &&
     !/\b(?:calls?|minutes?|voice|talk\s*more)\b/i.test(item.plan)
   );
 }
@@ -135,7 +135,7 @@ Deno.serve(async (req: Request) => {
 
     const allPlans: Record<string, unknown>[] = [];
     if (action !== "networks") {
-      const results = await Promise.all(NETWORKS.map((n) => fetchVariations(n.code, n.id)));
+      const results = await Promise.all(DATA_SERVICES.map((service) => fetchVariations(service)));
       results.forEach((plans) => allPlans.push(...plans));
       if (!allPlans.length) return reply(req, { success: false, error: "VTpass returned no active Nigerian data plans." }, 502);
     }
