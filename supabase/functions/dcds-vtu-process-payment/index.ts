@@ -126,7 +126,7 @@ Deno.serve(async (req: Request) => {
     const verifiedId = String(tx.id ?? "").trim();
     const paidAmount = Number(tx.amount);
     const currency = safeText(tx.currency, 8).toUpperCase();
-    if (verifiedRef !== txRef || verifiedId !== transactionId || currency !== "NGN" ||
+    if (verifiedRef !== txRef || verifiedId !== transactionId || currency !== String(order.currency || "NGN").toUpperCase() ||
       !Number.isFinite(paidAmount) || Math.abs(paidAmount - Number(order.amount)) > 0.02) {
       await db.from("dcds_vtu_orders").update({
         status: "needs_review",
@@ -210,6 +210,16 @@ Deno.serve(async (req: Request) => {
     if (vtpassHost.protocol !== "https:" || !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname)) {
       return reply(req, { success: false, status: "needs_review", error: "VTpass API base URL is not valid. Do not pay again; contact DCDS support." }, 503);
     }
+    const storedProviderCost = Number(current.provider_cost);
+    if (!Number.isFinite(storedProviderCost) || storedProviderCost <= 0) {
+      await db.from("dcds_vtu_orders").update({
+        status: "needs_review",
+        last_error: "Stored VTpass provider cost is missing or invalid.",
+        updated_at: new Date().toISOString(),
+      }).eq("id", current.id).in("status", ["paid", "processing"]);
+      return reply(req, { success: false, status: "needs_review", error: "The provider charge requires support review. Do not pay again." }, 409);
+    }
+
     const requestId = String(current.oplug_request_id || "");
     if (!/^\d{12}[A-Za-z0-9]+$/.test(requestId)) {
       await db.from("dcds_vtu_orders").update({
