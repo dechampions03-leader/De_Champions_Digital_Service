@@ -110,7 +110,7 @@ Deno.serve(async (req: Request) => {
     const networkId = NETWORKS[network];
     const phone = network === "international" ? normalizeInternationalPhone(body.phone) : normalizePhone(body.phone);
     const customerEmail = clean(body.customer_email, 180).toLowerCase();
-    const customerPhone = normalizePhone(body.customer_phone);
+    const customerPhone = normalizeInternationalPhone(body.customer_phone);
     const smileEmail = clean(body.smile_email, 180).toLowerCase();
     const smileAccountId = clean(body.smile_account_id, 40);
     const clientRequestId = clean(body.request_id, 80);
@@ -291,7 +291,7 @@ Deno.serve(async (req: Request) => {
     // never create a second payable order.
     const { data: existing, error: existingError } = await db
       .from("dcds_vtu_orders")
-      .select("id,user_id,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,currency,tx_ref,payment_link,status")
+      .select("id,user_id,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,provider_cost,currency,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .eq("client_request_id", clientRequestId)
       .maybeSingle();
@@ -304,7 +304,7 @@ Deno.serve(async (req: Request) => {
         existing.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
         JSON.stringify(existing.provider_metadata || null) === JSON.stringify(internationalMetadata) &&
         existing.data_plan_id === dataPlanId &&
-        Number(existing.amount) === amount && existing.currency === customerCurrency &&
+        Number(existing.provider_cost) === providerCostNgn && existing.currency === customerCurrency &&
         (serviceType !== "airtime" || Number(existing.airtime_amount) === airtimeAmount);
       if (!samePayload) return reply(req, { success: false, error: "This checkout request key was already used for different purchase details." }, 409);
       if (existing.status === "pending_payment" && existing.payment_link) {
@@ -317,7 +317,7 @@ Deno.serve(async (req: Request) => {
     // has an existing unpaid, paid, processing or unresolved order.
     const { data: openOrder, error: openOrderError } = await db
       .from("dcds_vtu_orders")
-      .select("service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,currency,tx_ref,payment_link,status")
+      .select("service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,provider_cost,currency,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .in("status", ["pending_payment", "paid", "processing", "needs_review"])
       .order("created_at", { ascending: false })
@@ -332,7 +332,7 @@ Deno.serve(async (req: Request) => {
         openOrder.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
         JSON.stringify(openOrder.provider_metadata || null) === JSON.stringify(internationalMetadata) &&
         openOrder.data_plan_id === dataPlanId &&
-        Number(openOrder.amount) === amount && openOrder.currency === customerCurrency &&
+        Number(openOrder.provider_cost) === providerCostNgn && openOrder.currency === customerCurrency &&
         (serviceType !== "airtime" || Number(openOrder.airtime_amount) === airtimeAmount);
       if (openOrder.status === "pending_payment" && sameOrder && openOrder.payment_link) {
         return reply(req, {
