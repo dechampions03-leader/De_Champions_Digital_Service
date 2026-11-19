@@ -79,11 +79,25 @@ Deno.serve(async (req: Request) => {
     const vtpassPublicKey = Deno.env.get("VTPASS_PUBLIC_KEY") || "";
     const vtpassEmail = Deno.env.get("VTPASS_EMAIL") || "";
     const vtpassPassword = Deno.env.get("VTPASS_PASSWORD") || "";
-    const vtpassBase = (Deno.env.get("VTPASS_API_BASE_URL") || "https://sandbox.vtpass.com/api").replace(/\/+$/, "");
-    const vtpassHost = new URL(vtpassBase);
-    if (vtpassHost.protocol !== "https:" || !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname)) {
-      return reply(req, { success: false, error: "VTpass API base URL is not valid." }, 503);
+    const vtpassBaseValue = (Deno.env.get("VTPASS_API_BASE_URL") || "").trim();
+    if (!vtpassBaseValue) {
+      return reply(req, { success: false, error: "VTpass is not configured. Set VTPASS_API_BASE_URL explicitly to the sandbox URL in Development or the live URL in Production." }, 503);
     }
+    let vtpassHost: URL;
+    try {
+      vtpassHost = new URL(vtpassBaseValue);
+    } catch {
+      return reply(req, { success: false, error: "VTpass API base URL is invalid." }, 503);
+    }
+    if (
+      vtpassHost.protocol !== "https:" ||
+      !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname) ||
+      !["/api", "/api/"].includes(vtpassHost.pathname) ||
+      vtpassHost.username || vtpassHost.password || vtpassHost.search || vtpassHost.hash
+    ) {
+      return reply(req, { success: false, error: "VTpass API base URL must be the official HTTPS /api endpoint." }, 503);
+    }
+    const vtpassBase = vtpassHost.origin + "/api";
     if (!supabaseUrl || !adminKey || !flutterwaveKey || !vtpassApiKey || !vtpassPublicKey) {
       return reply(req, { success: false, error: "Airtime & Data checkout is not fully configured yet. Please contact DCDS support." }, 503);
     }
