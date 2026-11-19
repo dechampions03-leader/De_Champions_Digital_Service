@@ -7,6 +7,7 @@ const NETWORKS = [
   { id: 3, name: "9mobile", code: "9mobile", airtime_discount: "0" },
   { id: 4, name: "Airtel", code: "airtel", airtime_discount: "0" },
   { id: 5, name: "Spectranet", code: "spectranet", airtime_discount: "0" },
+  { id: 6, name: "Smile", code: "smile", airtime_discount: "0" },
 ] as const;
 const DATA_SERVICES = [
   { network: "mtn", networkId: 1, serviceID: "mtn-data" },
@@ -16,6 +17,7 @@ const DATA_SERVICES = [
   { network: "9mobile", networkId: 3, serviceID: "etisalat-data" },
   { network: "9mobile", networkId: 3, serviceID: "9mobile-sme-data" },
   { network: "spectranet", networkId: 5, serviceID: "spectranet" },
+  { network: "smile", networkId: 6, serviceID: "smile-direct" },
 ] as const;
 
 function allowedOrigin(origin: string | null): boolean {
@@ -122,6 +124,31 @@ Deno.serve(async (req: Request) => {
     const base = getBase();
     const action = clean(body.action, 30) || "catalog";
     const headers = apiHeaders();
+    if (action === "verify_smile") {
+      const email = clean(body.email, 180).toLowerCase();
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return reply(req, { success: false, error: "Enter a valid Smile account email." }, 400);
+      }
+      const verifyResponse = await fetch(base + "/merchant-verify/smile/email", {
+        method: "POST",
+        headers: { ...headers, "Content-Type": "application/json" },
+        body: JSON.stringify({ billersCode: email, serviceID: "smile-direct" }),
+        signal: AbortSignal.timeout(12000),
+      });
+      const verification = await verifyResponse.json().catch(() => null);
+      const accounts = verification?.content?.AccountList?.Account;
+      if (!verifyResponse.ok || String(verification?.code) !== "000" || !Array.isArray(accounts) || !accounts.length) {
+        return reply(req, { success: false, error: "We could not verify that Smile email. Check the email and try again." }, 404);
+      }
+      return reply(req, {
+        success: true,
+        customer_name: clean(verification?.content?.Customer_Name, 120),
+        accounts: accounts.map((account: Record<string, unknown>) => ({
+          account_id: clean(account.AccountId, 40),
+          friendly_name: clean(account.FriendlyName, 80),
+        })).filter((account: { account_id: string }) => account.account_id),
+      });
+    }
     if (action === "balance") {
       const access = await requireAdmin(req);
       if (!("ok" in access)) return reply(req, { success: false, error: access.error }, access.status);
@@ -147,7 +174,7 @@ Deno.serve(async (req: Request) => {
     }
     const data = {
       status: "success",
-      network_reference: { MTN: 1, GLO: 2, "9MOBILE": 3, AIRTEL: 4, SPECTRANET: 5 },
+      network_reference: { MTN: 1, GLO: 2, "9MOBILE": 3, AIRTEL: 4, SPECTRANET: 5, SMILE: 6 },
       plans: allPlans,
       networks: NETWORKS,
     };
