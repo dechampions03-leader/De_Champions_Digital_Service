@@ -203,7 +203,7 @@ Deno.serve(async (req: Request) => {
       return reply(req, { success: false, status: "needs_review", error: "VTpass fulfilment credentials are not configured. Do not pay again; contact DCDS support." }, 503);
     }
 
-    // This legacy column stores the VTpass request_id. A single paid -> processing
+    // This column stores the VTpass request_id. A single paid -> processing
     // claim may submit /pay; every subsequent invocation performs /requery only.
     const DEFAULT_DATA_SERVICES: Record<string, string> = {
       mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet", smile: "smile-direct", international: "foreign-airtime",
@@ -263,7 +263,7 @@ Deno.serve(async (req: Request) => {
       return reply(req, { success: false, status: "needs_review", error: "The provider charge requires support review. Do not pay again." }, 409);
     }
 
-    const requestId = String(current.oplug_request_id || "");
+    const requestId = String(current.provider_request_id || "");
     if (!/^\d{12}[A-Za-z0-9]+$/.test(requestId)) {
       await db.from("dcds_vtu_orders").update({
         status: "needs_review",
