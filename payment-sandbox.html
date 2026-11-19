@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>DCDS NGN Payment Sandbox</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;color:#28183a;background:#f7f3fb}
+*{box-sizing:border-box}body{margin:0;min-height:100vh;padding:24px;display:grid;place-items:center}
+main{width:min(100%,560px);background:#fff;border:1px solid #e7dcef;border-radius:20px;padding:28px;box-shadow:0 12px 42px rgba(43,21,61,.09)}
+.brand{text-align:center;color:#6b35a2;font-weight:900;letter-spacing:.16em;font-size:13px}
+h1{text-align:center;font-size:27px;margin:18px 0 8px}
+.intro{text-align:center;color:#64576f;line-height:1.6;font-size:14px}
+.environment{display:flex;justify-content:center;gap:8px;align-items:center;margin:18px 0}
+.pill{border-radius:999px;padding:6px 12px;background:#eee5f7;color:#512d76;font-size:12px;font-weight:800}
+.warn{background:#fff7e8;border:1px solid #f0d7a9;color:#6b4b11;padding:12px;border-radius:12px;font-size:13px;line-height:1.5;margin:16px 0}
+label{display:block;font-size:13px;font-weight:700;margin:14px 0 6px}
+input,select{width:100%;min-height:46px;border:1px solid #d9cde4;border-radius:10px;padding:10px 12px;font:inherit;background:#fff;color:#28183a}
+button{width:100%;border:0;border-radius:11px;padding:14px 16px;margin-top:14px;background:#713ba7;color:#fff;font-weight:800;font-size:15px}
+button:disabled{opacity:.45}
+.secondary{background:#eee5f7;color:#4e2b72}
+.status{min-height:48px;margin-top:16px;padding:12px;border-radius:11px;background:#f7f3fb;color:#4c3c5d;font-size:13px;line-height:1.55;white-space:pre-wrap}
+.hidden{display:none}
+.footer{text-align:center;color:#776c80;font-size:11px;margin-top:22px}
+</style>
+</head>
+<body>
+<main>
+<div class="brand">DE CHAMPIONS DIGITAL SERVICE</div>
+<h1>NGN Payment Sandbox</h1>
+<p class="intro">A private Development-only checkout test. Payments open on Flutterwave's hosted page; this page never collects or stores card numbers, CVV or PINs.</p>
+<div class="environment"><span class="pill">DEVELOPMENT</span><span class="pill">TEST MODE ONLY</span><span class="pill">NGN</span></div>
+<div class="warn"><strong>Safety:</strong> Use only a dedicated Development test account and Flutterwave test cards. Do not use a Production customer account or a real bank card.</div>
+<section id="authPanel">
+<label for="email">Development test account email</label>
+<input id="email" type="email" autocomplete="username" placeholder="test-student@example.com">
+<label for="password">Password</label>
+<input id="password" type="password" autocomplete="current-password" placeholder="Development account password">
+<button id="loginButton" type="button">Sign in to Development</button>
+</section>
+<section id="checkoutPanel" class="hidden">
+<div id="signedIn" class="status"></div>
+<button id="healthButton" class="secondary" type="button">Check sandbox readiness</button>
+<label for="course">Test course</label>
+<select id="course"><option value="">Loading Development courses…</option></select>
+<button id="payButton" type="button" disabled>Continue to secure Flutterwave checkout</button>
+<button id="logoutButton" class="secondary" type="button">Sign out</button>
+</section>
+<div id="status" class="status" role="status" aria-live="polite">Connect to the Development project to begin.</div>
+<div class="footer">DCDS-Development · Synthetic ₦100 QA course · No Production balances or customer records</div>
+</main>
+<script>
+(() => {
+  const SUPABASE_URL = "https://tjgsxbmkpvktlqulbktv.supabase.co";
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
+  const client = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true }
+  });
+  const el = id => document.getElementById(id);
+  const state = { session: null, readiness: null, courses: [] };
+  const setStatus = message => { el("status").textContent = message; };
+  const showSession = async session => {
+    state.session = session;
+    el("authPanel").classList.toggle("hidden", Boolean(session));
+    el("checkoutPanel").classList.toggle("hidden", !session);
+    if (!session) {
+      setStatus("Sign in with a Development test student account.");
+      return;
+    }
+    el("signedIn").textContent = "Signed in: " + session.user.email + " · DCDS-Development";
+    await loadCourses();
+    await checkReadiness();
+  };
+  async function loadCourses() {
+    el("course").replaceChildren(new Option("Loading…", ""));
+    const { data, error } = await client.from("courses")
+      .select("id,title,price,currency")
+      .eq("currency", "NGN")
+      .order("title", { ascending: true });
+    if (error) {
+      el("course").replaceChildren(new Option("Courses unavailable", ""));
+      setStatus("Could not load Development courses: " + error.message);
+      return;
+    }
+    state.courses = data || [];
+    el("course").replaceChildren();
+    if (!state.courses.length) {
+      el("course").append(new Option("No NGN Development course found", ""));
+      setStatus("No Development course is available. Ask the DCDS administrator to check the sandbox QA course.");
+      return;
+    }
+    for (const course of state.courses) {
+      const option = new Option(course.title + " — ₦" + Number(course.price).toLocaleString("en-NG"), course.id);
+      el("course").append(option);
+    }
+    el("payButton").disabled = false;
+    setStatus("Development course loaded. Confirm sandbox readiness before testing.");
+  }
+  async function checkReadiness() {
+    setStatus("Checking Development and Flutterwave test configuration…");
+    const { data, error } = await client.functions.invoke("dcds-payment-sandbox-health", { method: "GET" });
+    if (error || !data) {
+      state.readiness = null;
+      setStatus("Could not check sandbox readiness. " + (error?.message || "Try again."));
+      el("payButton").disabled = true;
+      return;
+    }
+    state.readiness = data;
+    const lines = Object.entries(data.checks || {}).map(([key,value]) => (value ? "✓ " : "✗ ") + key.replaceAll("_"," "));
+    setStatus("Sandbox readiness: " + (data.ready ? "READY" : "NOT READY") + "\n" + lines.join("\n"));
+    el("payButton").disabled = !data.ready || !state.courses.length;
+  }
+  el("loginButton").addEventListener("click", async () => {
+    el("loginButton").disabled = true;
+    const email = el("email").value.trim();
+    const password = el("password").value;
+    try {
+      const { data, error } = await client.auth.signInWithPassword({ email, password });
+      if (error) throw error;
+      await showSession(data.session);
+    } catch (error) {
+      setStatus("Development sign-in failed: " + (error?.message || "Please retry."));
+    } finally { el("loginButton").disabled = false; }
+  });
+  el("healthButton").addEventListener("click", checkReadiness);
+  el("course").addEventListener("change", () => {
+    el("payButton").disabled = !state.readiness?.ready || !el("course").value;
+  });
+  el("payButton").addEventListener("click", async () => {
+    const courseId = el("course").value;
+    if (!state.session || !state.readiness?.ready || !courseId) return;
+    el("payButton").disabled = true;
+    setStatus("Creating your NGN test checkout. The amount is read from the Development database.");
+    try {
+      const { data, error } = await client.functions.invoke("create-payment", {
+        body: { course_id: courseId, currency: "NGN" }
+      });
+      if (error || !data?.success || !data?.payment_link) {
+        throw new Error(data?.error || error?.message || "Hosted checkout could not be created.");
+      }
+      setStatus("Hosted checkout created. Reference: " + data.tx_ref + "\nOpening Flutterwave test checkout…");
+      window.location.assign(data.payment_link);
+    } catch (error) {
+      setStatus("Checkout was not started: " + (error?.message || "Please retry."));
+      el("payButton").disabled = false;
+    }
+  });
+  el("logoutButton").addEventListener("click", async () => {
+    await client.auth.signOut();
+    await showSession(null);
+  });
+  client.auth.getSession().then(({data}) => showSession(data.session));
+})();
+</script>
+</body>
+</html>
