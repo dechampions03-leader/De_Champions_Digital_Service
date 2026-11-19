@@ -188,10 +188,14 @@ Deno.serve(async (req: Request) => {
     // This legacy column stores the VTpass request_id. A single paid -> processing
     // claim may submit /pay; every subsequent invocation performs /requery only.
     const DEFAULT_DATA_SERVICES: Record<string, string> = {
-      mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data",
+      mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet",
     };
     const ALLOWED_DATA_SERVICES: Record<string, string[]> = {
-      mtn: ["mtn-data"], airtel: ["airtel-data"], glo: ["glo-data", "glo-sme-data"], "9mobile": ["etisalat-data"],
+      mtn: ["mtn-data"],
+      airtel: ["airtel-data"],
+      glo: ["glo-data", "glo-sme-data"],
+      "9mobile": ["etisalat-data", "9mobile-sme-data"],
+      spectranet: ["spectranet"],
     };
     const AIRTIME_SERVICES: Record<string, string> = {
       mtn: "mtn",
