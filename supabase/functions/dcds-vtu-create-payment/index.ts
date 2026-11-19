@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SITE_URL = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
-const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4, spectranet: 5 };
+const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4, spectranet: 5, smile: 6 };
 
 function secret(name: string): string {
   const direct = Deno.env.get(name);
@@ -53,7 +53,7 @@ function normalizeNetwork(value: unknown, id?: unknown): string {
   if (name.includes("glo")) return "glo";
   if (name.includes("9mobile") || name.includes("9 mobile")) return "9mobile";
   if (name.includes("airtel")) return "airtel";
-  return ({ 1: "mtn", 2: "glo", 3: "9mobile", 4: "airtel" } as Record<number, string>)[Number(id)] || "";
+  return ({ 1: "mtn", 2: "glo", 3: "9mobile", 4: "airtel", 5: "spectranet", 6: "smile" } as Record<number, string>)[Number(id)] || "";
 }
 function money(value: unknown): number {
   const n = Number(value);
@@ -101,8 +101,10 @@ Deno.serve(async (req: Request) => {
     const network = clean(body.network, 20).toLowerCase();
     const networkId = NETWORKS[network];
     const phone = normalizePhone(body.phone);
+    const smileEmail = clean(body.smile_email, 180).toLowerCase();
+    const smileAccountId = clean(body.smile_account_id, 40);
     const clientRequestId = clean(body.request_id, 80);
-    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && network === "spectranet") || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
+    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && ["spectranet", "smile"].includes(network)) || (network === "smile" && serviceType !== "data") || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
       return reply(req, { success: false, error: "Choose a valid service and network, enter a valid Nigerian phone number, and try again." }, 400);
     }
 
@@ -117,13 +119,14 @@ Deno.serve(async (req: Request) => {
     if (serviceType === "data") {
       const requestedPlanId = clean(body.plan_id, 100);
       if (!requestedPlanId) return reply(req, { success: false, error: "Select a data bundle first." }, 400);
-      const defaultServiceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet" } as Record<string, string>)[network];
+      const defaultServiceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet", smile: "smile-direct" } as Record<string, string>)[network];
       const allowedServices: Record<string, string[]> = {
         mtn: ["mtn-data"],
         airtel: ["airtel-data"],
         glo: ["glo-data", "glo-sme-data"],
         "9mobile": ["etisalat-data", "9mobile-sme-data"],
         spectranet: ["spectranet"],
+        smile: ["smile-direct"],
       };
       const [requestedServiceID, requestedVariationCode] = requestedPlanId.includes("::")
         ? requestedPlanId.split("::", 2)
@@ -142,7 +145,8 @@ Deno.serve(async (req: Request) => {
       }
       const plan = variations.find((item: Record<string, unknown>) =>
         String(item.variation_code) === requestedVariationCode &&
-        !/\b(?:calls?|minutes?|voice|talk\s*more)\b/i.test(String(item.name || ""))
+        Number(item.variation_amount) > 0 &&
+        !/\b(?:calls?|minutes?|voice|talk\s*more|buy airtime)\b/i.test(String(item.name || ""))
       );
       if (!plan) return reply(req, { success: false, error: "That data bundle is unavailable or is not a data product. Refresh the catalogue and select a valid data plan." }, 409);
       amount = money(plan.variation_amount);
@@ -153,6 +157,21 @@ Deno.serve(async (req: Request) => {
       const matchValidity = dataPlanName.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i);
       dataValidity = matchValidity?.[0] || null;
       if (!Number.isFinite(amount) || amount <= 0 || !dataPlanName) return reply(req, { success: false, error: "VTpass returned an invalid price for this bundle." }, 502);
+      if (network === "smile") {
+        if (!smileEmail || !smileAccountId) return reply(req, { success: false, error: "Verify your Smile email and select an account ID before checkout." }, 400);
+        const verifyResponse = await fetch(vtpassBase + "/merchant-verify/smile/email", {
+          method: "POST",
+          headers: { "api-key": vtpassApiKey, "secret-key": Deno.env.get("VTPASS_SECRET_KEY") || "", "Content-Type": "application/json", Accept: "application/json" },
+          body: JSON.stringify({ billersCode: smileEmail, serviceID: "smile-direct" }),
+          signal: AbortSignal.timeout(12000),
+        });
+        const verifyData = await verifyResponse.json().catch(() => null);
+        const accounts = verifyData?.content?.AccountList?.Account;
+        if (!verifyResponse.ok || String(verifyData?.code) !== "000" || !Array.isArray(accounts) ||
+          !accounts.some((account: Record<string, unknown>) => String(account.AccountId) === smileAccountId)) {
+          return reply(req, { success: false, error: "The selected Smile account could not be verified for this email. Please verify again." }, 409);
+        }
+      }
     } else {
       const requestedAmount = money(body.amount);
       if (!Number.isInteger(requestedAmount) || requestedAmount < 50 || requestedAmount > 50000) {
@@ -235,6 +254,8 @@ Deno.serve(async (req: Request) => {
       network,
       network_id: networkId,
       recipient_phone: phone,
+      provider_billers_code: network === "smile" ? smileAccountId : null,
+      provider_email: network === "smile" ? smileEmail : null,
       data_plan_id: dataPlanId,
       data_plan_name: dataPlanName,
       data_plan_type: dataPlanType,
