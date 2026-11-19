@@ -16,7 +16,6 @@ on:
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-vtu-catalog/**"
       - "supabase/functions/dcds-vtpass-catalog/**"
-      - "supabase/functions/dcds-oplug-readonly/**"
       - "supabase/functions/dcds-vtu-create-payment/**"
       - "supabase/functions/dcds-vtu-process-payment/**"
       - "supabase/functions/dcds-vtu-history/**"
@@ -40,7 +39,6 @@ on:
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-vtu-catalog/**"
       - "supabase/functions/dcds-vtpass-catalog/**"
-      - "supabase/functions/dcds-oplug-readonly/**"
       - "supabase/functions/dcds-vtu-create-payment/**"
       - "supabase/functions/dcds-vtu-process-payment/**"
       - "supabase/functions/dcds-vtu-history/**"
@@ -87,8 +85,6 @@ jobs:
         run: deno check supabase/functions/dcds-vtu-catalog/index.ts
       - name: Type-check VTpass catalogue endpoint
         run: deno check supabase/functions/dcds-vtpass-catalog/index.ts
-      - name: Type-check retired legacy supplier endpoint
-        run: deno check supabase/functions/dcds-oplug-readonly/index.ts
       - name: Type-check DCDS VTU Flutterwave checkout endpoint
         run: deno check supabase/functions/dcds-vtu-create-payment/index.ts
       - name: Type-check DCDS VTU verified payment and fulfilment endpoint
@@ -152,7 +148,6 @@ jobs:
               "VTpass checkout and fulfilment base URLs use official HTTPS /api hosts": all(x in create and x in process for x in ['vtpassHost.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','vtpassHost.pathname','vtpassHost.password','vtpassHost.search','vtpassHost.hash']),
               "VTpass catalogue base URL is restricted to the official HTTPS /api endpoint": all(x in fn for x in ['parsed.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','parsed.pathname','parsed.password','parsed.search','parsed.hash']),
               "new VTpass purchases are explicitly tagged for provider routing": 'provider: "vtpass"' in create and 'existing.provider === "vtpass"' in create and 'openOrder.provider === "vtpass"' in create,
-              "legacy Oplug orders are identified separately from VTpass request IDs": "provider text" in provider_migration and "WHEN oplug_request_id ~ '^[0-9]{12}[A-Za-z0-9]+          }
           failures = [name for name, passed in checks.items() if not passed]
           for name, passed in checks.items():
               print(("PASS " if passed else "FAIL ") + name)
@@ -267,8 +262,6 @@ jobs:
           print(f"Verified explicit RLS enablement for all new public tables across {len(files)} migration files.")
           PY
  THEN 'vtpass'" in provider_migration and "ELSE 'oplug'" in provider_migration,
-              "legacy Oplug processing orders use status lookup without resubmitting the purchase": 'providerSource === "oplug"' in process and 'const legacyVerifyUrl = "https://www.oplug.com.ng/api/v1/verify-transaction?' in process and "if (submitLegacyPurchase)" in process,
-              "legacy Oplug and VTpass credentials are separated by provider source": 'if (!oplugKey)' in process and 'if (!vtpassApiKey || !vtpassSecretKey)' in process and 'providerSource !== "vtpass"' in process,
           }
           failures = [name for name, passed in checks.items() if not passed]
           for name, passed in checks.items():
