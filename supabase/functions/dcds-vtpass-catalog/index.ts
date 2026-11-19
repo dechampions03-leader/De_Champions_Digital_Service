@@ -187,6 +187,62 @@ Deno.serve(async (req: Request) => {
       }
       return reply(req, { success: true, balance: payload });
     }
+    if (action === "international_countries") {
+      const response = await fetch(base + "/get-international-airtime-countries", { headers, signal: AbortSignal.timeout(12000) });
+      const payload = await response.json().catch(() => null);
+      const countries = payload?.content?.countries;
+      if (!response.ok || payload?.response_description !== "000" || !Array.isArray(countries)) {
+        return reply(req, { success: false, error: "International country list is temporarily unavailable." }, 502);
+      }
+      return reply(req, { success: true, countries: countries.map((x: Record<string, unknown>) => ({
+        code: clean(x.code, 3), name: clean(x.name, 80), currency: clean(x.currency, 8), prefix: clean(x.prefix, 8),
+      })).filter((x: { code: string; name: string }) => x.code && x.name) });
+    }
+    if (action === "international_product_types") {
+      const code = clean(body.country_code, 3).toUpperCase();
+      if (!/^[A-Z]{2,3}$/.test(code)) return reply(req, { success: false, error: "Choose a valid destination country." }, 400);
+      const response = await fetch(base + "/get-international-airtime-product-types?code=" + encodeURIComponent(code), { headers, signal: AbortSignal.timeout(12000) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || payload?.response_description !== "000" || !Array.isArray(payload?.content)) {
+        return reply(req, { success: false, error: "International product types are unavailable for this country." }, 502);
+      }
+      return reply(req, { success: true, product_types: payload.content.map((x: Record<string, unknown>) => ({
+        id: Number(x.product_type_id), name: clean(x.name, 80),
+      })).filter((x: { id: number; name: string }) => Number.isInteger(x.id) && x.id > 0 && x.name) });
+    }
+    if (action === "international_operators") {
+      const code = clean(body.country_code, 3).toUpperCase();
+      const productTypeId = Number(body.product_type_id);
+      if (!/^[A-Z]{2,3}$/.test(code) || !Number.isInteger(productTypeId) || productTypeId <= 0) {
+        return reply(req, { success: false, error: "Choose a valid country and product type." }, 400);
+      }
+      const response = await fetch(base + "/get-international-airtime-operators?code=" + encodeURIComponent(code) + "&product_type_id=" + productTypeId, { headers, signal: AbortSignal.timeout(12000) });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok || payload?.response_description !== "000" || !Array.isArray(payload?.content)) {
+        return reply(req, { success: false, error: "International operators are unavailable for this selection." }, 502);
+      }
+      return reply(req, { success: true, operators: payload.content.map((x: Record<string, unknown>) => ({
+        id: clean(String(x.operator_id ?? ""), 30), name: clean(x.name, 100),
+      })).filter((x: { id: string; name: string }) => x.id && x.name) });
+    }
+    if (action === "international_variations") {
+      const operatorId = clean(body.operator_id, 30);
+      const productTypeId = Number(body.product_type_id);
+      if (!/^\\d+$/.test(operatorId) || !Number.isInteger(productTypeId) || productTypeId <= 0) {
+        return reply(req, { success: false, error: "Choose a valid international operator and product type." }, 400);
+      }
+      const url = base + "/service-variations?serviceID=foreign-airtime&operator_id=" + encodeURIComponent(operatorId) + "&product_type_id=" + productTypeId;
+      const response = await fetch(url, { headers, signal: AbortSignal.timeout(12000) });
+      const payload = await response.json().catch(() => null);
+      const variations = payload?.content?.variations ?? payload?.content?.varations;
+      if (!response.ok || payload?.response_description !== "000" || !Array.isArray(variations)) {
+        return reply(req, { success: false, error: "International top-up options are unavailable for this operator." }, 502);
+      }
+      return reply(req, { success: true, variations: variations.map((x: Record<string, unknown>) => ({
+        code: clean(x.variation_code, 80), name: clean(x.name, 120), amount: Number(x.variation_amount),
+        fixed_price: clean(x.fixedPrice, 8), rate: Number(x.variation_rate),
+      })).filter((x: { code: string; name: string }) => x.code && x.name) });
+    }
     if (!["catalog", "data_plans", "networks"].includes(action)) {
       return reply(req, { success: false, error: "Unsupported catalogue action." }, 400);
     }
