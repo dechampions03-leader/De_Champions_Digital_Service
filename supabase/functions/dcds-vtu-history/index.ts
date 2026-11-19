@@ -31,7 +31,8 @@ function reply(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: cors(req) });
 }
 function maskPhone(phone: string): string {
-  return phone.replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2");
+  const clean = phone.replace(/\s/g, "");
+  return clean.length >= 7 ? clean.slice(0, 3) + "****" + clean.slice(-3) : "";
 }
 
 Deno.serve(async (req: Request) => {
