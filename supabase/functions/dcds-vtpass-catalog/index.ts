@@ -1,6 +1,6 @@
 import { createClient } from "npm:@supabase/supabase-js@2";
 
-const BASE = (Deno.env.get("VTPASS_API_BASE_URL") || "https://sandbox.vtpass.com/api").replace(/\/+$/, "");
+const BASE = (Deno.env.get("VTPASS_API_BASE_URL") || "").trim();
 const NETWORKS = [
   { id: 1, name: "MTN", code: "mtn", airtime_discount: "0" },
   { id: 2, name: "Glo", code: "glo", airtime_discount: "0" },
@@ -45,11 +45,24 @@ function clean(value: unknown, max = 150): string {
   return typeof value === "string" ? value.replace(/[<>\u0000-\u001f]/g, "").trim().slice(0, max) : "";
 }
 function getBase(): string {
-  const parsed = new URL(BASE);
-  if (!["sandbox.vtpass.com", "vtpass.com"].includes(parsed.hostname) || parsed.protocol !== "https:") {
+  if (!BASE) {
+    throw new Error("VTpass is not configured. Set VTPASS_API_BASE_URL explicitly to the sandbox URL in Development or the live URL in Production.");
+  }
+  let parsed: URL;
+  try {
+    parsed = new URL(BASE);
+  } catch {
     throw new Error("Invalid VTpass API base URL.");
   }
-  return BASE;
+  if (
+    !["sandbox.vtpass.com", "vtpass.com"].includes(parsed.hostname) ||
+    parsed.protocol !== "https:" ||
+    !["/api", "/api/"].includes(parsed.pathname) ||
+    parsed.username || parsed.password || parsed.search || parsed.hash
+  ) {
+    throw new Error("VTpass API base URL must be the official HTTPS /api endpoint.");
+  }
+  return parsed.origin + "/api";
 }
 function apiHeaders(): HeadersInit {
   const apiKey = Deno.env.get("VTPASS_API_KEY") || "";
