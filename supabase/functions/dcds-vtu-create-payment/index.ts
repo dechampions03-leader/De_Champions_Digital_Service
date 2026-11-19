@@ -217,7 +217,7 @@ Deno.serve(async (req: Request) => {
         countriesData?.response_description !== "000" || typesData?.response_description !== "000" ||
         operatorsData?.response_description !== "000" || variationsData?.response_description !== "000" ||
         !country || !productType || !String(productType.name || "").toLowerCase().includes("top up") ||
-        !operator || !variation || !/\\btop[\\s-]?up\\b/i.test(String(variation.name || "")) || String(variation.fixedPrice).toLowerCase() !== "yes") {
+        !operator || !variation || !/\btop[\s-]?up\b/i.test(String(variation.name || "")) || String(variation.fixedPrice).toLowerCase() !== "yes") {
         return reply(req, { success: false, error: "The selected international top-up option could not be verified as a fixed-price mobile top-up with VTpass. Refresh the options and try again." }, 409);
       }
       const providerCharge = Number(variation.charged_amount ?? variation.variation_amount);
