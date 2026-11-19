@@ -57,6 +57,27 @@ function apiHeaders(): HeadersInit {
   if (!apiKey || !publicKey) throw new Error("VTpass GET credentials are not configured.");
   return { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" };
 }
+async function requireSignedIn(req: Request): Promise<{ ok: true } | { error: string; status: number }> {
+  const authorization = req.headers.get("Authorization") || "";
+  if (!authorization.startsWith("Bearer ")) return { error: "Sign in required.", status: 401 };
+  const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || (() => {
+    try {
+      const values = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}");
+      return typeof values.default === "string" ? values.default : "";
+    } catch {
+      return "";
+    }
+  })();
+  if (!supabaseUrl || !anonKey) return { error: "Account verification is unavailable.", status: 503 };
+  const client = createClient(supabaseUrl, anonKey, {
+    global: { headers: { Authorization: authorization } },
+    auth: { persistSession: false, autoRefreshToken: false },
+  });
+  const { data: { user }, error } = await client.auth.getUser();
+  if (error || !user) return { error: "Valid DCDS sign-in required.", status: 401 };
+  return { ok: true };
+}
 async function requireAdmin(req: Request): Promise<{ ok: true } | { error: string; status: number }> {
   const authorization = req.headers.get("Authorization") || "";
   if (!authorization.startsWith("Bearer ")) return { error: "Sign in required.", status: 401 };
@@ -125,6 +146,8 @@ Deno.serve(async (req: Request) => {
     const action = clean(body.action, 30) || "catalog";
     const headers = apiHeaders();
     if (action === "verify_smile") {
+      const access = await requireSignedIn(req);
+      if (!("ok" in access)) return reply(req, { success: false, error: access.error }, access.status);
       const email = clean(body.email, 180).toLowerCase();
       if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
         return reply(req, { success: false, error: "Enter a valid Smile account email." }, 400);
