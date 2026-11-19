@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - feature/phase1-security-reliability
+      - feature/vtpass-provider-migration
     paths:
       - "supabase/functions/create-payment/**"
       - "supabase/functions/admin-verify-flutterwave-payment/**"
@@ -113,6 +114,7 @@ jobs:
               "Smile email verification endpoint is present": 'merchant-verify/smile/email' in fn and 'action === "verify_smile"' in fn,
               "Smile checkout re-verifies account email and selected AccountId": 'merchant-verify/smile/email' in create and 'provider_billers_code' in create and 'provider_email' in create,
               "Smile UI requires verification and a selected linked account": 'action:"verify_smile"' in page and 'smile_account_id' in page and 'smile_email' in page,
+              "Smile account verification is restricted to signed-in DCDS users": "requireSignedIn(req)" in fn,
               "Smile email verification endpoint is present": 'merchant-verify/smile/email' in fn and 'action === "verify_smile"' in fn,
               "catalogue includes low-price positive VTpass variations": "item.amount > 0" in fn and "item.amount >= 50" not in fn,
               "Glo and 9mobile SME variation IDs retain their provider service ID": 'serviceID + "::" + id' in fn and 'includes(serviceID)' in fn and "9mobile-sme-data" in fn,
