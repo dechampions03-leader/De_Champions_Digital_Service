@@ -1,5 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// VTpass migration CI marker: Smile uses provider-required Basic Auth; international top-ups are fixed-price only.
+
 const SITE_URL = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
 const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4, spectranet: 5, smile: 6, international: 7 };
 
