@@ -27,6 +27,7 @@ ALTER TABLE public.dcds_payment_review_events
 -- Preserve the original atomic pricing/enrolment/pending-order checks while
 -- recording the exact hosted checkout expiry in the same INSERT.
 DROP FUNCTION IF EXISTS public.dcds_create_checkout_order(uuid,uuid,text,text);
+DROP FUNCTION IF EXISTS public.dcds_create_checkout_order(uuid,uuid,text,text,timestamptz);
 
 CREATE FUNCTION public.dcds_create_checkout_order(
   p_user_id uuid,
