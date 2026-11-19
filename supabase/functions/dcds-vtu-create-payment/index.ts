@@ -406,7 +406,7 @@ Deno.serve(async (req: Request) => {
       fx_rate_date: fxRateDate,
       fx_rate_source: fxRateSource,
       tx_ref: txRef,
-      oplug_request_id: vtpassRequestId, // Legacy column retained for compatibility; stores the VTpass request ID.
+      provider_request_id: vtpassRequestId, // Provider request ID.
       checkout_expires_at: expiresAt,
       status: "pending_payment",
     }).select("id,tx_ref,amount,currency").single();
