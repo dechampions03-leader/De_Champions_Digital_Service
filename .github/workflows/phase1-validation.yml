@@ -21,6 +21,7 @@ on:
       - "supabase/functions/flutterwave-webhook/**"
       - "airtime-data.html"
       - "smile-payment.html"
+      - "international-airtime.html"
       - "vtu-payment-return.html"
       - "index.html"
       - "supabase/migrations/**"
@@ -115,6 +116,10 @@ jobs:
               "Smile checkout re-verifies account email and selected AccountId": 'merchant-verify/smile/email' in create and 'provider_billers_code' in create and 'provider_email' in create,
               "Smile UI requires verification and a selected linked account": 'action:"verify_smile"' in page and 'smile_account_id' in page and 'smile_email' in page,
               "Smile account verification is restricted to signed-in DCDS users": "requireSignedIn(req)" in fn,
+              "international airtime catalogue endpoints are mapped": all(x in fn for x in ["international_countries","international_product_types","international_operators","international_variations","get-international-airtime-countries","get-international-airtime-operators"]),
+              "international checkout revalidates country, operator and fixed NGN price": all(x in create for x in ["foreign-airtime","get-international-airtime-countries","get-international-airtime-operators","variation.variation_amount"]),
+              "international fulfilment sends the complete VTpass payload": all(x in process for x in ["foreign-airtime","operator_id","country_code","product_type_id","provider_email"]),
+              "international page blocks unpriced provider variations": 'Number(x.amount)>0' in Path("international-airtime.html").read_text(encoding="utf-8") and 'network:"international"' in Path("international-airtime.html").read_text(encoding="utf-8"),
               "Smile email verification endpoint is present": 'merchant-verify/smile/email' in fn and 'action === "verify_smile"' in fn,
               "catalogue includes low-price positive VTpass variations": "item.amount > 0" in fn and "item.amount >= 50" not in fn,
               "Glo and 9mobile SME variation IDs retain their provider service ID": 'serviceID + "::" + id' in fn and 'includes(serviceID)' in fn and "9mobile-sme-data" in fn,
