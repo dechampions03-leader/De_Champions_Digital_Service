@@ -83,6 +83,8 @@ create policy "DCDS admins delete payment receipts"
   on storage.objects for delete to authenticated
   using (bucket_id = 'dcds-payment-receipts' and (select public.is_dcds_admin()));
 
+drop function if exists public.admin_list_payment_orders(text,text,text,integer);
+
 create or replace function public.admin_list_payment_orders(
   p_status text default 'pending',
   p_search text default null,
