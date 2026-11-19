@@ -55,7 +55,7 @@ function successResponse(req: Request, order: Record<string, unknown>, status: s
       service_type: order.service_type,
       network: String(order.network || "").toUpperCase(),
       recipient: String(order.recipient_phone || "").replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2"),
-      plan: order.data_plan_name || null,
+      plan: order.data_plan_name || (order.provider_metadata && typeof order.provider_metadata === "object" ? (order.provider_metadata as Record<string, unknown>).plan_name || null : null),
       amount: order.amount,
       currency: order.currency || "NGN",
       provider_reference: order.provider_reference || null,
