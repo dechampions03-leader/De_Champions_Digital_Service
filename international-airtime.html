@@ -28,10 +28,10 @@
 <h2>2. Customer and payment details</h2>
 <div class="grid">
 <div class="field"><label for="customerPhone">Your contact phone</label><input id="customerPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+1 202 555 0100"></div>
-<div class="field"><label for="checkoutCurrency">Payment currency</label><select id="checkoutCurrency"><option value="NGN">NGN — Nigerian naira</option><option value="USD">USD — US dollar</option><option value="GBP">GBP — British pound</option><option value="EUR">EUR — euro</option></select></div>
+<div class="field"><label for="checkoutCurrency">Payment currency</label><select id="checkoutCurrency"><option value="NGN">NGN — Nigerian naira</option><option value="USD" disabled>USD — coming soon</option><option value="GBP" disabled>GBP — coming soon</option><option value="EUR" disabled>EUR — coming soon</option></select></div>
 <div class="field"><label for="email">Your email address</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
 </div>
-<div class="note">Only fixed-price top-up options with a confirmed NGN provider charge can proceed. Choose NGN, USD, GBP or EUR for Flutterwave checkout. Foreign-currency amounts use a daily reference-rate estimate with no DCDS FX markup; the server rechecks and stores the final rate when checkout is created. <br><br>No top-up is sent before Flutterwave confirms payment.</div><p id="fxEstimate" class="small" aria-live="polite">Choose a top-up option to see the estimated checkout amount.</p>
+<div class="note">Only fixed-price top-up options with a confirmed NGN provider charge can proceed. Flutterwave checkout is currently NGN-only. USD, GBP and EUR will be enabled after the decimal-capable Flutterwave V4 checkout has passed sandbox testing. <br><br>No top-up is sent before Flutterwave confirms payment.</div><p id="fxEstimate" class="small" aria-live="polite">Choose a top-up option to see the estimated checkout amount.</p>
 <button id="checkout" class="primary" type="button" disabled>Continue to Flutterwave</button>
 <div id="checkoutStatus" class="status" role="status" aria-live="polite"></div>
 </section>
