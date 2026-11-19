@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const corsHeaders = {
-  "Access-Control-Allow-Origin": "https://dechampions03-leader.github.io",
+  "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
   "Vary": "Origin",
@@ -20,7 +20,9 @@ Deno.serve(async (req: Request) => {
 
   try {
     const origin = req.headers.get("Origin");
-    if (origin && origin !== "https://dechampions03-leader.github.io") {
+    const allowedDevPreview = origin === "https://dcds-dev-auth-preview.pages.dev" ||
+      Boolean(origin && /^https:\/\/[a-z0-9-]+\.dcds-dev-auth-preview\.pages\.dev$/i.test(origin));
+    if (origin && !allowedDevPreview) {
       return respond({ success: false, error: "Origin not allowed." }, 403);
     }
 
@@ -29,6 +31,13 @@ Deno.serve(async (req: Request) => {
     const flutterwaveKey = Deno.env.get("FLW_SECRET_KEY");
     if (!supabaseUrl || !serviceKey || !flutterwaveKey) {
       return respond({ success: false, error: "Payment configuration is incomplete." }, 503);
+    }
+    // This deployment is Development-only. Never allow a live Flutterwave key here.
+    if (!flutterwaveKey.startsWith("FLWSECK_TEST-")) {
+      return respond({
+        success: false,
+        error: "NGN sandbox checkout is locked until a Flutterwave TEST secret key is configured for DCDS-Development. No payment was started.",
+      }, 503);
     }
 
     const authorization = req.headers.get("Authorization");
@@ -60,6 +69,12 @@ Deno.serve(async (req: Request) => {
     if (!/^[A-Z]{3}$/.test(requestedCurrency)) {
       return respond({ success: false, error: "Please select a valid payment currency." }, 400);
     }
+    if (requestedCurrency !== "NGN") {
+      return respond({
+        success: false,
+        error: "This release is limited to NGN sandbox checkout. USD, GBP and EUR remain disabled until the separate V4 card flow passes its security and compliance gates.",
+      }, 409);
+    }
 
     // The database selects the authoritative active regional price and creates
     // the order with its expiry atomically. The browser never supplies a payment amount.
@@ -80,6 +95,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const siteUrl = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
+    const returnUrl = supabaseUrl.replace(/\/+$/, "") + "/functions/v1/dcds-course-payment-return";
     const flutterwaveResponse = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
       headers: {
@@ -91,7 +107,7 @@ Deno.serve(async (req: Request) => {
         tx_ref: checkout.tx_ref,
         amount: Number(checkout.amount),
         currency: checkout.currency || "NGN",
-        redirect_url: `${siteUrl}/payment-return.html`,
+        redirect_url: returnUrl,
         configuration: {
           session_duration: 60,
           max_retry_attempt: 3,
