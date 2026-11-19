@@ -69,8 +69,9 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const adminKey = serviceKey();
     const flutterwaveKey = Deno.env.get("FLW_SECRET_KEY") || "";
-    const oplugKey = Deno.env.get("OPLUG_API_KEY") || "";
-    if (!supabaseUrl || !adminKey || !flutterwaveKey || !oplugKey) {
+    const vtpassApiKey = Deno.env.get("VTPASS_API_KEY") || "";
+    const vtpassPublicKey = Deno.env.get("VTPASS_PUBLIC_KEY") || "";
+    if (!supabaseUrl || !adminKey || !flutterwaveKey || !vtpassApiKey || !vtpassPublicKey) {
       return reply(req, { success: false, error: "Airtime & Data checkout is not fully configured yet. Please contact DCDS support." }, 503);
     }
 
@@ -108,35 +109,29 @@ Deno.serve(async (req: Request) => {
     let dataValidity: string | null = null;
     let airtimeAmount: number | null = null;
 
-    const oplugHeaders = {
-      Authorization: "Token " + oplugKey,
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    };
-
     if (serviceType === "data") {
-      const requestedPlanId = clean(body.plan_id, 80);
+      const requestedPlanId = clean(body.plan_id, 100);
       if (!requestedPlanId) return reply(req, { success: false, error: "Select a data bundle first." }, 400);
-      const planResponse = await fetch("https://www.oplug.com.ng/api/v1/data_plans", {
-        headers: oplugHeaders,
+      const serviceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data" } as Record<string, string>)[network];
+      const catalogueResponse = await fetch("https://sandbox.vtpass.com/api/service-variations?serviceID=" + encodeURIComponent(serviceID), {
+        headers: { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" },
         signal: AbortSignal.timeout(12000),
       });
-      const catalogue = await planResponse.json().catch(() => null);
-      if (!planResponse.ok || catalogue?.status !== "success" || !Array.isArray(catalogue.plans)) {
-        return reply(req, { success: false, error: "The live data catalogue is temporarily unavailable. No payment has been started." }, 502);
+      const catalogue = await catalogueResponse.json().catch(() => null);
+      const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
+      if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) {
+        return reply(req, { success: false, error: "The VTpass data catalogue is temporarily unavailable. No payment has been started." }, 502);
       }
-      const plan = catalogue.plans.find((item: Record<string, unknown>) =>
-        String(item.id) === requestedPlanId &&
-        normalizeNetwork(item.network, item.network_id) === network
-      );
+      const plan = variations.find((item: Record<string, unknown>) => String(item.variation_code) === requestedPlanId);
       if (!plan) return reply(req, { success: false, error: "That bundle is no longer available on this network. Refresh the catalogue and select another plan." }, 409);
-      amount = money(plan.amount);
+      amount = money(plan.variation_amount);
       providerCost = amount;
       dataPlanId = requestedPlanId;
-      dataPlanName = clean(plan.plan, 100);
-      dataPlanType = clean(plan.type, 50);
-      dataValidity = clean(plan.validity, 50);
-      if (!amount || !dataPlanName) return reply(req, { success: false, error: "The provider returned an invalid price for this bundle." }, 502);
+      dataPlanName = clean(plan.name, 120);
+      dataPlanType = "Data bundle";
+      const matchValidity = dataPlanName.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i);
+      dataValidity = matchValidity?.[0] || null;
+      if (!amount || !dataPlanName) return reply(req, { success: false, error: "VTpass returned an invalid price for this bundle." }, 502);
     } else {
       const requestedAmount = money(body.amount);
       if (!Number.isInteger(requestedAmount) || requestedAmount < 50 || requestedAmount > 50000) {
@@ -144,38 +139,7 @@ Deno.serve(async (req: Request) => {
       }
       amount = requestedAmount;
       airtimeAmount = requestedAmount;
-
-      const netResponse = await fetch("https://www.oplug.com.ng/api/v1/get-networks", {
-        headers: oplugHeaders,
-        signal: AbortSignal.timeout(12000),
-      });
-      const networkPayload = await netResponse.json().catch(() => null);
-      if (!netResponse.ok || networkPayload?.status !== "success" || !Array.isArray(networkPayload.networks)) {
-        return reply(req, { success: false, error: "The live network catalogue is temporarily unavailable. No payment has been started." }, 502);
-      }
-      const networkItem = networkPayload.networks.find((item: Record<string, unknown>) =>
-        Number(item.id) === networkId && normalizeNetwork(item.code || item.name, item.id) === network
-      );
-      if (!networkItem) return reply(req, { success: false, error: "This network is temporarily unavailable for airtime." }, 409);
-      const discount = Number(String(networkItem.airtime_discount || "0").replace("%", ""));
-      const safeDiscount = Number.isFinite(discount) && discount >= 0 && discount <= 10 ? discount : 0;
-      providerCost = Math.round(amount * (1 - safeDiscount / 100) * 100) / 100;
-    }
-
-    // Verify provider float before accepting a customer's Flutterwave payment.
-    const balanceResponse = await fetch("https://www.oplug.com.ng/api/v1/balance", {
-      headers: oplugHeaders,
-      signal: AbortSignal.timeout(12000),
-    });
-    const balancePayload = await balanceResponse.json().catch(() => null);
-    const providerBalance = money(balancePayload?.user?.balance);
-    if (!balanceResponse.ok || balancePayload?.status !== "success" ||
-      String(balancePayload?.user?.status || "").toLowerCase() !== "active" ||
-      !Number.isFinite(providerBalance)) {
-      return reply(req, { success: false, error: "Oplug could not confirm DCDS reseller availability. No payment has been started." }, 503);
-    }
-    if (providerBalance < providerCost) {
-      return reply(req, { success: false, error: "This top-up is temporarily unavailable because the provider cannot confirm enough fulfilment balance. No payment has been started." }, 409);
+      providerCost = requestedAmount;
     }
 
     // A retry with the same client request key must reuse the original checkout,
@@ -238,7 +202,9 @@ Deno.serve(async (req: Request) => {
 
     const suffix = crypto.randomUUID().replaceAll("-", "").toUpperCase();
     const txRef = "DCDSVTU" + suffix;
-    const oplugRequestId = "DCDSVTU" + (serviceType === "data" ? "DATA" : "AIR") + suffix;
+    const lagos = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Lagos", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
+    const part = (type: string) => lagos.find((item) => item.type === type)?.value || "";
+    const vtpassRequestId = part("year") + part("month") + part("day") + part("hour") + part("minute") + crypto.randomUUID().replaceAll("-", "").slice(0, 12);
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
     const { data: order, error: insertError } = await db.from("dcds_vtu_orders").insert({
@@ -257,7 +223,7 @@ Deno.serve(async (req: Request) => {
       provider_cost: providerCost,
       currency: "NGN",
       tx_ref: txRef,
-      oplug_request_id: oplugRequestId,
+      oplug_request_id: vtpassRequestId, // Legacy column retained for compatibility; stores the VTpass request ID.
       checkout_expires_at: expiresAt,
       status: "pending_payment",
     }).select("id,tx_ref,amount,currency").single();
