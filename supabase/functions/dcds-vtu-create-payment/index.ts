@@ -254,6 +254,15 @@ Deno.serve(async (req: Request) => {
     if (!["NGN", "USD", "GBP", "EUR"].includes(customerCurrency)) {
       return reply(req, { success: false, error: "This checkout currency is not currently supported." }, 400);
     }
+    // V3 Standard Checkout documents amount as int32. Do not send a fractional
+    // foreign-currency amount through this endpoint. USD/GBP/EUR stay disabled
+    // until the decimal-capable V4 checkout flow is integrated and sandbox-tested.
+    if (customerCurrency !== "NGN") {
+      return reply(req, {
+        success: false,
+        error: "Foreign-currency checkout is not enabled yet. Please select NGN; USD, GBP and EUR will be enabled after the decimal-capable Flutterwave checkout has passed testing.",
+      }, 503);
+    }
 
     const providerCostNgn = money(providerCost);
     if (!Number.isFinite(providerCostNgn) || providerCostNgn <= 0) {
