@@ -100,6 +100,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           page = Path("airtime-data.html").read_text(encoding="utf-8")
+          smile_page = Path("smile-payment.html").read_text(encoding="utf-8")
           fn = Path("supabase/functions/dcds-vtpass-catalog/index.ts").read_text(encoding="utf-8")
           create = Path("supabase/functions/dcds-vtu-create-payment/index.ts").read_text(encoding="utf-8")
           process = Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8")
@@ -114,7 +115,7 @@ jobs:
               "mobile, SME, Spectranet and Smile data services are mapped": all(x in fn for x in ["mtn-data","airtel-data","glo-data","glo-sme-data","etisalat-data","9mobile-sme-data","spectranet","smile-direct"]),
               "Smile email verification endpoint is present": 'merchant-verify/smile/email' in fn and 'action === "verify_smile"' in fn,
               "Smile checkout re-verifies account email and selected AccountId": 'merchant-verify/smile/email' in create and 'provider_billers_code' in create and 'provider_email' in create,
-              "Smile UI requires verification and a selected linked account": 'action:"verify_smile"' in page and 'smile_account_id' in page and 'smile_email' in page,
+              "Smile UI requires verification and a selected linked account": 'action:"verify_smile"' in smile_page and 'smile_account_id' in smile_page and 'smile_email' in smile_page,
               "Smile account verification is restricted to signed-in DCDS users": "requireSignedIn(req)" in fn,
               "international airtime catalogue endpoints are mapped": all(x in fn for x in ["international_countries","international_product_types","international_operators","international_variations","get-international-airtime-countries","get-international-airtime-operators"]),
               "international checkout revalidates country, operator and fixed NGN price": all(x in create for x in ["foreign-airtime","get-international-airtime-countries","get-international-airtime-operators","variation.variation_amount"]),
