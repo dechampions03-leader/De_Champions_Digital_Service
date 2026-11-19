@@ -272,7 +272,9 @@ Deno.serve(async (req: Request) => {
         request_id: requestId,
         serviceID,
         phone: String(current.recipient_phone),
-        amount: Number(current.amount),
+        // VTpass is priced and settled in NGN. Never send the customer's
+        // Flutterwave display/checkout amount to the provider.
+        amount: Number(current.provider_cost),
       };
       if (current.service_type === "data") {
         payload.billersCode = current.network === "smile"
