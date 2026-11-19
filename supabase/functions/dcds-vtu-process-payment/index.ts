@@ -220,6 +220,17 @@ Deno.serve(async (req: Request) => {
       return reply(req, { success: false, status: "needs_review", error: "The provider charge requires support review. Do not pay again." }, 409);
     }
 
+    const providerCostNgn = Number(current.provider_cost);
+    if (!Number.isFinite(providerCostNgn) || providerCostNgn <= 0 ||
+      String(current.provider_cost_currency || "NGN").toUpperCase() !== "NGN") {
+      await db.from("dcds_vtu_orders").update({
+        status: "needs_review",
+        last_error: "Stored VTpass NGN provider cost is missing or invalid.",
+        updated_at: new Date().toISOString(),
+      }).eq("id", current.id).in("status", ["paid", "processing"]);
+      return reply(req, { success: false, status: "needs_review", error: "The provider charge requires support review. Do not pay again." }, 409);
+    }
+
     const requestId = String(current.oplug_request_id || "");
     if (!/^\d{12}[A-Za-z0-9]+$/.test(requestId)) {
       await db.from("dcds_vtu_orders").update({
