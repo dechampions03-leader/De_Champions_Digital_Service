@@ -1,9 +1,9 @@
 -- Preserve provider ownership for historical VTU orders.
--- Every row present at cutover is historical and remains tagged as retired supplier.
+-- Every row present at cutover is historical and remains tagged as legacy.
 -- All new orders default to VTpass. No payment, amount, or balance is changed.
 
 -- Replace the old supplier-specific request-id column name without losing values.
-DO $
+DO $cutover$
 BEGIN
   IF EXISTS (
     SELECT 1 FROM information_schema.columns
@@ -17,15 +17,18 @@ BEGIN
     ALTER TABLE public.dcds_vtu_orders
       RENAME COLUMN oplug_request_id TO provider_request_id;
   END IF;
-END $;
+END
+$cutover$;
 
-DO $
+DO $cutover$
 BEGIN
-  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'dcds_vtu_orders_oplug_request_id_key') THEN
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'dcds_vtu_orders_oplug_request_id_key')
+     AND NOT EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'dcds_vtu_orders_provider_request_id_key') THEN
     ALTER TABLE public.dcds_vtu_orders
       RENAME CONSTRAINT dcds_vtu_orders_oplug_request_id_key TO dcds_vtu_orders_provider_request_id_key;
   END IF;
-END $;
+END
+$cutover$;
 
 ALTER TABLE public.dcds_vtu_orders
   ADD COLUMN IF NOT EXISTS provider text;
