@@ -8,7 +8,7 @@ function json(req: Request, body: unknown, status = 200): Response {
     "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
-  if (origin === "https://dechampions03-leader.github.io") {
+  if (origin === "https://dechampions03-leader.github.io" || (origin && /^https:\/\/[a-z0-9-]+\.pages\.dev$/i.test(origin))) {
     headers["Access-Control-Allow-Origin"] = origin;
     headers["Vary"] = "Origin";
   }
