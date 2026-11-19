@@ -107,11 +107,12 @@ Deno.serve(async (req: Request) => {
     const networkId = NETWORKS[network];
     const phone = network === "international" ? normalizeInternationalPhone(body.phone) : normalizePhone(body.phone);
     const customerEmail = clean(body.customer_email, 180).toLowerCase();
+    const customerPhone = normalizePhone(body.customer_phone);
     const smileEmail = clean(body.smile_email, 180).toLowerCase();
     const smileAccountId = clean(body.smile_account_id, 40);
     const clientRequestId = clean(body.request_id, 80);
-    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && ["spectranet", "smile"].includes(network)) || (network === "smile" && serviceType !== "data") || (network === "international" && (serviceType !== "airtime" || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(customerEmail))) || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
-      return reply(req, { success: false, error: "Choose a valid service and network, enter a valid Nigerian phone number, and try again." }, 400);
+    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && ["spectranet", "smile"].includes(network)) || (network === "smile" && serviceType !== "data") || (network === "international" && (serviceType !== "airtime" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || !customerPhone)) || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
+      return reply(req, { success: false, error: "Choose a valid service and network, enter a valid recipient phone number, and try again." }, 400);
     }
 
     let amount = 0;
@@ -183,7 +184,7 @@ Deno.serve(async (req: Request) => {
       const productTypeId = Number(body.product_type_id);
       const operatorId = clean(String(body.operator_id ?? ""), 30);
       const variationCode = clean(body.variation_code, 80);
-      if (!/^[A-Z]{2,3}$/.test(countryCode) || !Number.isInteger(productTypeId) || productTypeId <= 0 || !/^\\d+$/.test(operatorId) || !variationCode) {
+      if (!/^[A-Z]{2,3}$/.test(countryCode) || !Number.isInteger(productTypeId) || productTypeId <= 0 || !/^\d+$/.test(operatorId) || !variationCode) {
         return reply(req, { success: false, error: "Choose a valid country, product type, operator and top-up option." }, 400);
       }
       const getHeaders = { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" };
@@ -324,6 +325,8 @@ Deno.serve(async (req: Request) => {
         product_type_id: Number(body.product_type_id),
         operator_id: clean(String(body.operator_id ?? ""), 30),
         variation_code: clean(body.variation_code, 80),
+        customer_phone: customerPhone,
+        plan_name: clean(body.variation_name, 120),
       } : null,
       data_plan_id: dataPlanId,
       data_plan_name: dataPlanName,
