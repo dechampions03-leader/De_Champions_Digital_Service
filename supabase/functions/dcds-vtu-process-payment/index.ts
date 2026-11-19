@@ -188,7 +188,7 @@ Deno.serve(async (req: Request) => {
     // This legacy column stores the VTpass request_id. A single paid -> processing
     // claim may submit /pay; every subsequent invocation performs /requery only.
     const DEFAULT_DATA_SERVICES: Record<string, string> = {
-      mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet", smile: "smile-direct",
+      mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet", smile: "smile-direct", international: "foreign-airtime",
     };
     const ALLOWED_DATA_SERVICES: Record<string, string[]> = {
       mtn: ["mtn-data"],
@@ -203,6 +203,7 @@ Deno.serve(async (req: Request) => {
       airtel: "airtel",
       glo: "glo",
       "9mobile": "etisalat",
+      international: "foreign-airtime",
     };
     const vtpassBase = (Deno.env.get("VTPASS_API_BASE_URL") || "https://sandbox.vtpass.com/api").replace(/\/+$/, "");
     const vtpassHost = new URL(vtpassBase);
@@ -271,6 +272,15 @@ Deno.serve(async (req: Request) => {
           ? String(current.provider_billers_code || "")
           : String(current.recipient_phone);
         payload.variation_code = storedVariationCode;
+      } else if (current.network === "international") {
+        const meta = (current.provider_metadata || {}) as Record<string, unknown>;
+        payload.billersCode = String(current.recipient_phone);
+        payload.variation_code = String(meta.variation_code || "");
+        payload.operator_id = String(meta.operator_id || "");
+        payload.country_code = String(meta.country_code || "");
+        payload.product_type_id = String(meta.product_type_id || "");
+        payload.email = String(current.provider_email || "");
+        payload.phone = String(meta.customer_phone || "");
       }
       providerResponse = await fetch(vtpassBase + "/pay", {
         method: "POST",
