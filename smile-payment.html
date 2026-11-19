@@ -69,6 +69,8 @@ $("verifyButton").addEventListener("click",async()=>{
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ $("verifyStatus").textContent="Enter a valid Smile email address.";return;}
  $("verifyButton").disabled=true;$("verifyStatus").textContent="Checking your Smile email with VTpass…";
  try{
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  if(sessionError||!sessionData?.session)throw new Error("Sign in to DCDS before verifying a Smile account.");
   const {data,error}=await db.functions.invoke("dcds-vtpass-catalog",{body:{action:"verify_smile",email}});
   if(error)throw error;
   if(!data?.success||!Array.isArray(data.accounts)||!data.accounts.length)throw new Error(data?.error||"No linked accounts were returned.");
