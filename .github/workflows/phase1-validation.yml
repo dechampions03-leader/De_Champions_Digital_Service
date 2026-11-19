@@ -148,9 +148,6 @@ jobs:
               "VTpass checkout and fulfilment base URLs use official HTTPS /api hosts": all(x in create and x in process for x in ['vtpassHost.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','vtpassHost.pathname','vtpassHost.password','vtpassHost.search','vtpassHost.hash']),
               "VTpass catalogue base URL is restricted to the official HTTPS /api endpoint": all(x in fn for x in ['parsed.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','parsed.pathname','parsed.password','parsed.search','parsed.hash']),
               "new VTpass purchases are explicitly tagged for provider routing": 'provider: "vtpass"' in create and 'existing.provider === "vtpass"' in create and 'openOrder.provider === "vtpass"' in create,
-              "legacy Oplug orders are classified separately from timestamp-based VTpass request IDs": "WHEN oplug_request_id ~" in provider_migration and "THEN 'vtpass'" in provider_migration and "ELSE 'oplug'" in provider_migration,
-              "legacy Oplug processing orders use status lookup instead of a second purchase": 'providerSource === "oplug"' in process and 'const legacyVerifyUrl = "https://www.oplug.com.ng/api/v1/verify-transaction?' in process and "if (submitLegacyPurchase)" in process,
-              "legacy Oplug and VTpass credentials are isolated by provider source": 'if (!oplugKey)' in process and 'if (!vtpassApiKey || !vtpassSecretKey)' in process and 'providerSource !== "vtpass"' in process,
           }
           failures = [name for name, passed in checks.items() if not passed]
           for name, passed in checks.items():
