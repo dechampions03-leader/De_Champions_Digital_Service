@@ -131,7 +131,12 @@ Deno.serve(async (req: Request) => {
       }
       const verifyResponse = await fetch(base + "/merchant-verify/smile/email", {
         method: "POST",
-        headers: { ...headers, "Content-Type": "application/json" },
+        headers: {
+          "api-key": Deno.env.get("VTPASS_API_KEY") || "",
+          "secret-key": Deno.env.get("VTPASS_SECRET_KEY") || "",
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
         body: JSON.stringify({ billersCode: email, serviceID: "smile-direct" }),
         signal: AbortSignal.timeout(12000),
       });
