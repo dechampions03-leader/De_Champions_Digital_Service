@@ -1,0 +1,109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><meta name="theme-color" content="#542080">
+<title>International Airtime | DCDS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+:root{--ink:#351052;--purple:#6426a4;--line:#eadff2;--muted:#806d8e}*{box-sizing:border-box}body{margin:0;background:linear-gradient(150deg,#fcfaff,#f5edff 58%,#fffaf0);color:var(--ink);font-family:'DM Sans',sans-serif}.top{padding:16px max(18px,calc((100% - 900px)/2));background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px}.top a{color:#542080;text-decoration:none;font-weight:800;font-size:13px}.wrap{width:min(900px,calc(100% - 28px));margin:24px auto 60px}.hero{padding:28px;border-radius:22px;color:#fff;background:linear-gradient(125deg,#21083f,#542080 60%,#7b35b8)}.hero h1{font:800 clamp(30px,6vw,46px)/1.1 'Playfair Display',serif;margin:10px 0}.hero p{max-width:680px;color:#eee1fa;line-height:1.7;font-size:14px}.card{margin-top:16px;padding:clamp(17px,4vw,28px);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 34px #39115d0a}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:7px;margin:12px 0}.field label{font-size:12px;font-weight:800;color:#503663}input,select{width:100%;height:48px;border:1px solid #e5d9ef;border-radius:12px;padding:0 12px;font:inherit;color:#2b1b3d;background:white}button{min-height:46px;padding:0 16px;border:0;border-radius:12px;background:linear-gradient(115deg,#6627a6,#873ddb);color:#fff;font:800 13px 'DM Sans';cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}.primary{width:100%;margin-top:12px;background:linear-gradient(115deg,#f1cd69,#ffe293);color:#351052;border:1px solid #d8b64f}.status{margin-top:10px;min-height:22px;font-size:12px;color:#73528d;line-height:1.6}.small{font-size:11px;color:var(--muted);line-height:1.7}.plan-list{display:grid;gap:8px;max-height:330px;overflow:auto}.plan{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;text-align:left;background:#fff;color:var(--ink);width:100%;min-height:58px}.plan[aria-pressed=true]{border:2px solid var(--purple);background:#fbf7ff}.plan strong{display:block;font-size:12px}.plan small{display:block;margin-top:3px;color:var(--muted);font-size:10px}.price{font-weight:900;color:#542080;white-space:nowrap}.note{padding:12px;border-radius:12px;background:#fffaf0;border:1px solid #efe3bf;color:#806a39;font-size:11px;line-height:1.7}.hide{display:none!important}@media(max-width:620px){.grid{grid-template-columns:1fr}.hero{padding:23px}.wrap{margin-top:15px}}
+</style>
+</head>
+<body>
+<header class="top"><a href="airtime-data.html">← Airtime & Data</a><a href="index.html">DCDS Home</a></header>
+<main class="wrap">
+<section class="hero"><span>DE CHAMPIONS DIGITAL SERVICE</span><h1>International Airtime</h1><p>Send mobile top-ups to supported countries. Select the destination, mobile top-up type and operator, then choose a provider-priced option.</p></section>
+<section class="card">
+<h2>1. Destination and operator</h2>
+<div class="grid">
+<div class="field"><label for="country">Destination country</label><select id="country"><option value="">Loading countries…</option></select></div>
+<div class="field"><label for="productType">Product type</label><select id="productType" disabled><option value="">Choose country first</option></select></div>
+<div class="field"><label for="operator">Mobile operator</label><select id="operator" disabled><option value="">Choose product type first</option></select></div>
+<div class="field"><label for="recipient">Recipient mobile number</label><input id="recipient" type="tel" inputmode="tel" placeholder="Include country code where needed"></div>
+</div>
+<div id="plans" class="plan-list"><div class="note">Choose a country, product type and operator to load top-up options.</div></div>
+<div id="catalogStatus" class="status" role="status" aria-live="polite"></div>
+</section>
+<section class="card">
+<h2>2. Customer and payment details</h2>
+<div class="grid">
+<div class="field"><label for="customerPhone">Your Nigerian contact phone</label><input id="customerPhone" type="tel" inputmode="tel" maxlength="14" placeholder="08012345678"></div>
+<div class="field"><label for="email">Your email address</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
+</div>
+<div class="note">Only international options with a confirmed fixed NGN provider price can proceed. VTpass's published examples include options priced at ₦0.00; those are deliberately not purchasable here until a reliable NGN charge is available. <br><br>No top-up is sent before Flutterwave confirms payment.</div>
+<button id="checkout" class="primary" type="button" disabled>Continue to Flutterwave</button>
+<div id="checkoutStatus" class="status" role="status" aria-live="polite"></div>
+</section>
+</main>
+<script>
+const PROD=["dechampions03-leader.github.io","dechampionsdigital.com","www.dechampionsdigital.com"].includes(location.hostname.toLowerCase());
+const URL=PROD?"https://qxsenflgaweeadvggnyp.supabase.co":"https://tjgsxbmkpvktlqulbktv.supabase.co";
+const KEY=PROD?"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP":"sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
+const db=window.supabase?.createClient?window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+const $=id=>document.getElementById(id);
+let selected=null,countryList=[],productTypes=[],operators=[];
+const money=n=>"₦"+Number(n).toLocaleString("en-NG",{maximumFractionDigits:2});
+async function invoke(action,body={}){const {data,error}=await db.functions.invoke("dcds-vtpass-catalog",{body:{action,...body}});if(error)throw error;if(!data?.success)throw new Error(data?.error||"VTpass catalogue request failed.");return data;}
+function option(select,label,items,value,labelFn){select.replaceChildren(new Option(label,""));for(const item of items)select.add(new Option(labelFn(item),String(value(item))));}
+function refreshCheckout(){
+ const validPhone=/^0[789]\d{9}$/.test($("customerPhone").value.trim());
+ const validRecipient=/^\+?[0-9\s()-]{7,20}$/.test($("recipient").value.trim());
+ const validEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("email").value.trim());
+ $("checkout").disabled=!(db&&selected&&validPhone&&validRecipient&&validEmail);
+}
+function renderPlans(items){
+ const root=$("plans");root.replaceChildren();selected=null;
+ const priced=items.filter(x=>Number(x.amount)>0&&String(x.fixed_price).toLowerCase()==="yes");
+ if(!priced.length){const note=document.createElement("div");note.className="note";note.textContent="VTpass has not returned any fixed-price options in NGN for this operator. No checkout will be offered for zero-priced or unquoted options.";root.append(note);refreshCheckout();return;}
+ for(const p of priced){
+  const b=document.createElement("button");b.type="button";b.className="plan";b.setAttribute("aria-pressed","false");
+  const left=document.createElement("span");const strong=document.createElement("strong");strong.textContent=p.name;left.append(strong);
+  const price=document.createElement("span");price.className="price";price.textContent=money(p.amount);b.append(left,price);
+  b.addEventListener("click",()=>{selected=p;root.querySelectorAll(".plan").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));refreshCheckout();});root.append(b);
+ }
+ refreshCheckout();
+}
+async function loadCountries(){
+ try{const data=await invoke("international_countries");countryList=data.countries||[];option($("country"),"Choose country",countryList,x=>x.code,x=>x.name+" ("+x.currency+")");$("catalogStatus").textContent=countryList.length+" destination countries available from VTpass.";}
+ catch(e){$("country").replaceChildren(new Option("Countries unavailable",""));$("catalogStatus").textContent=e.message||"Could not load international destinations.";}
+}
+$("country").addEventListener("change",async()=>{
+ const code=$("country").value;selected=null;option($("productType"),"Loading product types",[],x=>x.id,x=>x.name);$("operator").replaceChildren(new Option("Choose product type first",""));$("operator").disabled=true;$("plans").textContent="Choose a mobile top-up product type.";if(!code)return;
+ try{
+  const data=await invoke("international_product_types",{country_code:code});
+  productTypes=(data.product_types||[]).filter(x=>/mobile top.?up/i.test(x.name));
+  option($("productType"),"Choose mobile top-up type",productTypes,x=>x.id,x=>x.name);$("productType").disabled=false;
+  if(!productTypes.length)$("catalogStatus").textContent="VTpass has no Mobile Top Up product type listed for this country.";
+ }catch(e){$("catalogStatus").textContent=e.message;}
+ refreshCheckout();
+});
+$("productType").addEventListener("change",async()=>{
+ const code=$("country").value,id=Number($("productType").value);selected=null;$("operator").disabled=true;$("plans").textContent="Loading operators…";if(!code||!id)return;
+ try{const data=await invoke("international_operators",{country_code:code,product_type_id:id});operators=data.operators||[];option($("operator"),"Choose operator",operators,x=>x.id,x=>x.name);$("operator").disabled=false;$("plans").textContent="Choose an operator to load top-up options.";}
+ catch(e){$("catalogStatus").textContent=e.message;}
+ refreshCheckout();
+});
+$("operator").addEventListener("change",async()=>{
+ const id=$("operator").value,typeId=Number($("productType").value);selected=null;$("plans").textContent="Loading operator options…";if(!id||!typeId)return;
+ try{const data=await invoke("international_variations",{operator_id:id,product_type_id:typeId});renderPlans(data.variations||[]);$("catalogStatus").textContent=(data.variations||[]).length+" provider options returned. Only fixed NGN-priced options are enabled.";}
+ catch(e){$("plans").textContent=e.message;$("catalogStatus").textContent="Could not load this operator's plans.";}
+ refreshCheckout();
+});
+$("recipient").addEventListener("input",refreshCheckout);$("customerPhone").addEventListener("input",refreshCheckout);$("email").addEventListener("input",refreshCheckout);
+$("checkout").addEventListener("click",async()=>{
+ if(!selected)return;
+ const {data:session,error:sessionError}=await db.auth.getSession();
+ if(sessionError||!session?.session){$("checkoutStatus").textContent="Please sign in to your DCDS account before purchasing.";return;}
+ $("checkout").disabled=true;$("checkoutStatus").textContent="Revalidating the international product and preparing checkout…";
+ try{
+  const body={service_type:"airtime",network:"international",phone:$("recipient").value.trim(),customer_phone:$("customerPhone").value.trim(),customer_email:$("email").value.trim().toLowerCase(),country_code:$("country").value,product_type_id:Number($("productType").value),operator_id:$("operator").value,variation_code:selected.code,request_id:crypto.randomUUID()};
+  const {data,error}=await db.functions.invoke("dcds-vtu-create-payment",{body});
+  if(error)throw error;if(!data?.success||typeof data.payment_link!=="string")throw new Error(data?.error||"Flutterwave checkout could not be created.");
+  const target=new URL(data.payment_link);if(target.protocol!=="https:"||target.hostname!=="checkout.flutterwave.com")throw new Error("Unexpected payment address. Contact DCDS support.");
+  $("checkoutStatus").textContent="Secure checkout ready. Redirecting…";location.assign(target.href);
+ }catch(e){$("checkoutStatus").textContent=(e.message||"Checkout failed.")+" Do not pay again unless your order status is checked.";}
+ finally{refreshCheckout();}
+});
+if(db)loadCountries();else $("catalogStatus").textContent="DCDS connection unavailable. Reload the page.";
+</script>
+</body></html>
