@@ -285,11 +285,9 @@ Deno.serve(async (req: Request) => {
       : undefined;
     const transactionStatus = safeText(txContent?.status, 30).toLowerCase();
     const transactionReference = safeText(String(txContent?.transactionId || providerData?.requestId || ""), 120) || requestId;
-    const explicitFailureCodes = new Set([
-      "010", "011", "012", "013", "016", "017", "018", "019",
-      "021", "022", "023", "024", "027", "028", "030", "031",
-      "032", "034", "035", "040", "083", "085", "087",
-    ]);
+    // Only VTpass's documented terminal purchase outcomes trigger the refund-review path.
+    // Other codes and unclear outcomes remain pending for requery/support review.
+    const explicitFailureCodes = new Set(["016", "040", "091"]);
     const updateFields = {
       provider_status: providerCode + (transactionStatus ? ":" + transactionStatus : ""),
       provider_reference: transactionReference,
