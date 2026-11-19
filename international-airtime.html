@@ -27,10 +27,11 @@
 <section class="card">
 <h2>2. Customer and payment details</h2>
 <div class="grid">
-<div class="field"><label for="customerPhone">Your Nigerian contact phone</label><input id="customerPhone" type="tel" inputmode="tel" maxlength="14" placeholder="08012345678"></div>
+<div class="field"><label for="customerPhone">Your contact phone</label><input id="customerPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+1 202 555 0100"></div>
+<div class="field"><label for="checkoutCurrency">Payment currency</label><select id="checkoutCurrency"><option value="NGN">NGN — Nigerian naira</option><option value="USD">USD — US dollar</option><option value="GBP">GBP — British pound</option><option value="EUR">EUR — euro</option></select></div>
 <div class="field"><label for="email">Your email address</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
 </div>
-<div class="note">Only international options with a confirmed fixed NGN provider price can proceed. VTpass's published examples include options priced at ₦0.00; those are deliberately not purchasable here until a reliable NGN charge is available. <br><br>No top-up is sent before Flutterwave confirms payment.</div>
+<div class="note">Only fixed-price top-up options with a confirmed NGN provider charge can proceed. Choose NGN, USD, GBP or EUR for Flutterwave checkout. Foreign-currency amounts use a daily reference-rate estimate with no DCDS FX markup; the server rechecks and stores the final rate when checkout is created. <br><br>No top-up is sent before Flutterwave confirms payment.</div><p id="fxEstimate" class="small" aria-live="polite">Choose a top-up option to see the estimated checkout amount.</p>
 <button id="checkout" class="primary" type="button" disabled>Continue to Flutterwave</button>
 <div id="checkoutStatus" class="status" role="status" aria-live="polite"></div>
 </section>
@@ -41,12 +42,33 @@ const URL=PROD?"https://qxsenflgaweeadvggnyp.supabase.co":"https://tjgsxbmkpvktl
 const KEY=PROD?"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP":"sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
 const db=window.supabase?.createClient?window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 const $=id=>document.getElementById(id);
-let selected=null,countryList=[],productTypes=[],operators=[];
+let selected=null,countryList=[],productTypes=[],operators=[],previewRate=1,previewDate=null,quoteRequest=0;
 const money=n=>"₦"+Number(n).toLocaleString("en-NG",{maximumFractionDigits:2});
+const checkoutMoney=(n,currency=$("checkoutCurrency").value)=>new Intl.NumberFormat("en",{style:"currency",currency,maximumFractionDigits:2}).format(Number(n));
+function updateFxEstimate(){
+ const target=$("fxEstimate");
+ if(!selected){target.textContent="Choose a fixed-price option to see the estimated checkout amount.";return;}
+ if(!Number.isFinite(previewRate)){target.textContent="A preview rate is unavailable. Checkout will proceed only if the server can obtain a fresh quote.";return;}
+ target.textContent="Estimated checkout: "+checkoutMoney(Number(selected.amount)*previewRate)+(previewDate?" · reference rate dated "+previewDate:" · NGN checkout")+". Final amount is confirmed at secure checkout.";
+}
+async function refreshFxPreview(){
+ const request=++quoteRequest;
+ const currency=$("checkoutCurrency").value;
+ if(currency==="NGN"){previewRate=1;previewDate=null;updateFxEstimate();return;}
+ previewRate=Number.NaN;previewDate=null;updateFxEstimate();
+ try{
+  const response=await fetch("https://api.frankfurter.dev/v2/rate/NGN/"+currency,{headers:{Accept:"application/json"},signal:AbortSignal.timeout(9000)});
+  const data=await response.json();
+  if(!response.ok||data?.base!=="NGN"||data?.quote!==currency||!Number.isFinite(Number(data?.rate))||Number(data.rate)<=0)throw new Error("No reference quote");
+  if(request!==quoteRequest)return;
+  previewRate=Number(data.rate);previewDate=String(data.date||"");updateFxEstimate();
+ }catch{if(request===quoteRequest){previewRate=Number.NaN;updateFxEstimate();}}
+}
+$("checkoutCurrency").addEventListener("change",refreshFxPreview);
 async function invoke(action,body={}){const {data,error}=await db.functions.invoke("dcds-vtpass-catalog",{body:{action,...body}});if(error)throw error;if(!data?.success)throw new Error(data?.error||"VTpass catalogue request failed.");return data;}
 function option(select,label,items,value,labelFn){select.replaceChildren(new Option(label,""));for(const item of items)select.add(new Option(labelFn(item),String(value(item))));}
 function refreshCheckout(){
- const validPhone=/^0[789]\d{9}$/.test($("customerPhone").value.trim());
+ const validPhone=/^\+?[0-9\s()-]{7,20}$/.test($("customerPhone").value.trim());
  const validRecipient=/^\+?[0-9\s()-]{7,20}$/.test($("recipient").value.trim());
  const validEmail=/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test($("email").value.trim());
  $("checkout").disabled=!(db&&selected&&validPhone&&validRecipient&&validEmail);
@@ -59,7 +81,7 @@ function renderPlans(items){
   const b=document.createElement("button");b.type="button";b.className="plan";b.setAttribute("aria-pressed","false");
   const left=document.createElement("span");const strong=document.createElement("strong");strong.textContent=p.name;left.append(strong);
   const price=document.createElement("span");price.className="price";price.textContent=money(p.amount);b.append(left,price);
-  b.addEventListener("click",()=>{selected=p;root.querySelectorAll(".plan").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));refreshCheckout();});root.append(b);
+  b.addEventListener("click",()=>{selected=p;root.querySelectorAll(".plan").forEach(x=>x.setAttribute("aria-pressed",String(x===b)));updateFxEstimate();refreshCheckout();});root.append(b);
  }
  refreshCheckout();
 }
@@ -96,7 +118,7 @@ $("checkout").addEventListener("click",async()=>{
  if(sessionError||!session?.session){$("checkoutStatus").textContent="Please sign in to your DCDS account before purchasing.";return;}
  $("checkout").disabled=true;$("checkoutStatus").textContent="Revalidating the international product and preparing checkout…";
  try{
-  const body={service_type:"airtime",network:"international",phone:$("recipient").value.trim(),customer_phone:$("customerPhone").value.trim(),customer_email:$("email").value.trim().toLowerCase(),country_code:$("country").value,product_type_id:Number($("productType").value),operator_id:$("operator").value,variation_code:selected.code,request_id:crypto.randomUUID()};
+  const body={service_type:"airtime",network:"international",phone:$("recipient").value.trim(),customer_phone:$("customerPhone").value.trim(),customer_email:$("email").value.trim().toLowerCase(),currency:$("checkoutCurrency").value,country_code:$("country").value,product_type_id:Number($("productType").value),operator_id:$("operator").value,variation_code:selected.code,request_id:crypto.randomUUID()};
   const {data,error}=await db.functions.invoke("dcds-vtu-create-payment",{body});
   if(error)throw error;if(!data?.success||typeof data.payment_link!=="string")throw new Error(data?.error||"Flutterwave checkout could not be created.");
   const target=new URL(data.payment_link);if(target.protocol!=="https:"||target.hostname!=="checkout.flutterwave.com")throw new Error("Unexpected payment address. Contact DCDS support.");
@@ -104,6 +126,6 @@ $("checkout").addEventListener("click",async()=>{
  }catch(e){$("checkoutStatus").textContent=(e.message||"Checkout failed.")+" Do not pay again unless your order status is checked.";}
  finally{refreshCheckout();}
 });
-if(db)loadCountries();else $("catalogStatus").textContent="DCDS connection unavailable. Reload the page.";
+refreshFxPreview();if(db)loadCountries();else $("catalogStatus").textContent="DCDS connection unavailable. Reload the page.";
 </script>
 </body></html>
