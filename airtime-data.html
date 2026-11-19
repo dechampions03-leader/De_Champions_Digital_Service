@@ -170,10 +170,10 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
     <div class="summary-total"><span>Amount to pay (NGN)</span><strong id="summaryPrice">—</strong></div>
     <button class="checkout" id="checkoutButton" type="button" disabled>Continue to Flutterwave</button>
     <p class="muted" id="checkoutMessage" role="status" aria-live="polite">Review the recipient, network and amount, then continue to secure Flutterwave checkout.</p>
-    <div class="secure-note">Pay for each order directly through Flutterwave. There is no DCDS wallet or stored balance. Data bundle prices currently use the live Oplug provider rate; airtime is charged at the selected face value. Your top-up is sent only after Flutterwave confirms payment.</div>
+    <div class="secure-note">Pay for each order directly through Flutterwave. There is no DCDS wallet or stored balance. Data bundle prices currently use the live VTpass provider rate; airtime is charged at the selected face value. Your top-up is sent only after Flutterwave confirms payment.</div>
    </section>
    <section class="card side-card"><h3>How it works</h3><ul><li>Choose airtime or data.</li><li>Select your network and enter the recipient number.</li><li>Review the exact plan and price.</li><li>Pay securely through Flutterwave. Delivery starts after payment is confirmed.</li></ul></section>
-   <section class="card side-card"><h3>Live catalogue</h3><p class="muted" id="catalogMessage">Connecting to the wholesale catalogue…</p><div class="price-note">Provider prices are refreshed from Oplug before checkout. Data is charged at the displayed provider rate; airtime is paid at the selected face value. Each purchase is paid directly through Flutterwave—no DCDS wallet is used.</div></section>
+   <section class="card side-card"><h3>Live catalogue</h3><p class="muted" id="catalogMessage">Connecting to the wholesale catalogue…</p><div class="price-note">Provider prices are refreshed from VTpass before checkout. Data is charged at the displayed provider rate; airtime is paid at the selected face value. Each purchase is paid directly through Flutterwave—no DCDS wallet is used.</div></section>
   </aside>
  </div>
  <section class="card history-card" id="purchaseHistory" aria-labelledby="historyTitle">
@@ -292,17 +292,9 @@ $("checkoutButton").addEventListener("click",startCheckout);
 async function loadCatalog(){
  if(!db){setCatalogStatus("Catalogue unavailable");$("catalogMessage").textContent="The DCDS connection could not be initialised. Please reload the page.";return;}
  try{
-  const [plansResult,networksResult]=await Promise.all([
-   db.functions.invoke("dcds-oplug-readonly",{body:{action:"data_plans"}}),
-   db.functions.invoke("dcds-oplug-readonly",{body:{action:"networks"}})
-  ]);
-  if(plansResult.error)throw plansResult.error;
-  if(networksResult.error)throw networksResult.error;
-  const plansPayload=plansResult.data;
-  const networksPayload=networksResult.data;
-  if(!plansPayload?.success||!Array.isArray(plansPayload.data?.plans))throw new Error(plansPayload?.error||"The provider data catalogue is unavailable.");
-  if(!networksPayload?.success||!Array.isArray(networksPayload.data?.networks))throw new Error(networksPayload?.error||"The provider network catalogue is unavailable.");
-
+  const {data:catalogue,error}=await db.functions.invoke("dcds-vtpass-catalog",{body:{action:"catalog"}});
+  if(error)throw error;
+  if(!catalogue?.success||!Array.isArray(catalogue.data?.plans)||!Array.isArray(catalogue.data?.networks))throw new Error(catalogue?.error||"The VTpass catalogue is unavailable.");
   const normalizeNetwork=(name,id)=>{
    const n=String(name||"").trim().toLowerCase();
    const byId={1:"mtn",2:"glo",3:"9mobile",4:"airtel"};
@@ -312,7 +304,7 @@ async function loadCatalog(){
    if(n.includes("airtel"))return "airtel";
    return byId[Number(id)]||"";
   };
-  state.plans=plansPayload.data.plans.map(p=>({
+  state.plans=catalogue.data.plans.map(p=>({
    id:String(p.id??""),
    network:normalizeNetwork(p.network,p.network_id),
    networkId:Number(p.network_id)||null,
@@ -321,22 +313,20 @@ async function loadCatalog(){
    validity:String(p.validity??""),
    type:String(p.type??"")
   })).filter(p=>p.id&&p.plan&&["mtn","airtel","glo","9mobile"].includes(p.network)&&Number.isFinite(p.amount)&&p.amount>0);
-
-  state.discounts=Object.fromEntries(networksPayload.data.networks.map(n=>{
+  state.discounts=Object.fromEntries(catalogue.data.networks.map(n=>{
    const slug=normalizeNetwork(n.code||n.name,n.id);
-   return [slug,String(n.airtime_discount||"")];
+   return [slug,String(n.airtime_discount||"0")];
   }).filter(([slug])=>slug));
-
-  if(!state.plans.length)throw new Error("The provider returned no active data bundles.");
+  if(!state.plans.length)throw new Error("VTpass returned no active data bundles.");
   setCatalogStatus("Live catalogue loaded",true);
-  $("catalogMessage").textContent=state.plans.length+" live data bundles loaded. Data is charged at the displayed Oplug rate; airtime is charged at face value. Each order is paid separately through Flutterwave—no wallet is used.";
+  $("catalogMessage").textContent=state.plans.length+" live VTpass data bundles loaded. Data is charged at the displayed provider rate; airtime is charged at face value. Each order is paid separately through Flutterwave—no wallet is used.";
   renderPlans();updateSummary();
  }catch(error){
-  console.warn("DCDS Oplug catalogue unavailable:",error);
+  console.warn("DCDS VTpass catalogue unavailable:",error);
   setCatalogStatus("Live plans unavailable");
-  $("catalogMessage").textContent="The live Oplug catalogue could not be reached. No sample prices are being substituted and checkout remains unavailable. Please try again later.";
-  $("planList").textContent="";
-  const empty=document.createElement("div");empty.className="empty-plans";empty.textContent="Live data plans are temporarily unavailable. Refresh to try again.";$("planList").append(empty);
+  $("catalogMessage").textContent="The live VTpass catalogue could not be reached. No sample prices are being substituted and checkout remains unavailable. Please try again later.";
+  $("planList").replaceChildren();
+  const empty=document.createElement("div");empty.className="empty-plans";empty.textContent="Live data plans are temporarily unavailable. Refresh to try again."; $("planList").append(empty);
  }
 }
 async function loadHistory(){
@@ -402,19 +392,19 @@ async function loadHistory(){
 }
 async function recheckHistoryOrder(order,button){
  if(!db||button.disabled)return;
- button.disabled=true;button.textContent="Checking Oplug…";
- $("historyMessage").textContent="Rechecking the existing order using its original Oplug request ID. No new payment will be created.";
+ button.disabled=true;button.textContent="Checking VTpass…";
+ $("historyMessage").textContent="Rechecking the existing order using its original VTpass request ID. No new payment will be created.";
  try{
   const {data,error}=await db.functions.invoke("dcds-vtu-process-payment",{
    body:{transaction_id:order.transaction_id,tx_ref:order.reference}
   });
   if(error)throw error;
   if(data?.status==="successful")$("historyMessage").textContent="Top-up delivered successfully. Your history has been updated.";
-  else if(data?.status==="processing")$("historyMessage").textContent="Oplug still has this order processing. Please do not pay again.";
+  else if(data?.status==="processing")$("historyMessage").textContent="VTpass still has this order processing. Please do not pay again.";
   else if(data?.status==="refund_required")$("historyMessage").textContent="The provider reports a failed delivery after payment. This order needs DCDS refund review.";
   else $("historyMessage").textContent=data?.error||data?.message||"The order is still being checked. Do not pay again.";
  }catch(error){
-  console.error("DCDS Oplug order reconciliation:",error);
+  console.error("DCDS VTpass order reconciliation:",error);
   $("historyMessage").textContent="Could not check delivery right now. Your payment record remains saved; please do not pay again.";
  }finally{
   button.disabled=false;button.textContent="Check delivery again";
