@@ -1,7 +1,7 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
 const SITE_URL = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
-const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4 };
+const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4, spectranet: 5 };
 
 function secret(name: string): string {
   const direct = Deno.env.get(name);
@@ -102,7 +102,7 @@ Deno.serve(async (req: Request) => {
     const networkId = NETWORKS[network];
     const phone = normalizePhone(body.phone);
     const clientRequestId = clean(body.request_id, 80);
-    if (!serviceType || !networkId || !phone || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
+    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && network === "spectranet") || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
       return reply(req, { success: false, error: "Choose a valid service and network, enter a valid Nigerian phone number, and try again." }, 400);
     }
 
@@ -117,9 +117,13 @@ Deno.serve(async (req: Request) => {
     if (serviceType === "data") {
       const requestedPlanId = clean(body.plan_id, 100);
       if (!requestedPlanId) return reply(req, { success: false, error: "Select a data bundle first." }, 400);
-      const defaultServiceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data" } as Record<string, string>)[network];
+      const defaultServiceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet" } as Record<string, string>)[network];
       const allowedServices: Record<string, string[]> = {
-        mtn: ["mtn-data"], airtel: ["airtel-data"], glo: ["glo-data", "glo-sme-data"], "9mobile": ["etisalat-data"],
+        mtn: ["mtn-data"],
+        airtel: ["airtel-data"],
+        glo: ["glo-data", "glo-sme-data"],
+        "9mobile": ["etisalat-data", "9mobile-sme-data"],
+        spectranet: ["spectranet"],
       };
       const [requestedServiceID, requestedVariationCode] = requestedPlanId.includes("::")
         ? requestedPlanId.split("::", 2)
@@ -145,7 +149,7 @@ Deno.serve(async (req: Request) => {
       providerCost = amount;
       dataPlanId = requestedServiceID + "::" + requestedVariationCode;
       dataPlanName = clean(plan.name, 120);
-      dataPlanType = requestedServiceID === "glo-sme-data" ? "SME data" : "Data bundle";
+      dataPlanType = ["glo-sme-data", "9mobile-sme-data"].includes(requestedServiceID) ? "SME data" : "Data bundle";
       const matchValidity = dataPlanName.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i);
       dataValidity = matchValidity?.[0] || null;
       if (!Number.isFinite(amount) || amount <= 0 || !dataPlanName) return reply(req, { success: false, error: "VTpass returned an invalid price for this bundle." }, 502);
