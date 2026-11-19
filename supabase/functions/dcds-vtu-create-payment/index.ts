@@ -75,6 +75,8 @@ Deno.serve(async (req: Request) => {
     const flutterwaveKey = Deno.env.get("FLW_SECRET_KEY") || "";
     const vtpassApiKey = Deno.env.get("VTPASS_API_KEY") || "";
     const vtpassPublicKey = Deno.env.get("VTPASS_PUBLIC_KEY") || "";
+    const vtpassEmail = Deno.env.get("VTPASS_EMAIL") || "";
+    const vtpassPassword = Deno.env.get("VTPASS_PASSWORD") || "";
     const vtpassBase = (Deno.env.get("VTPASS_API_BASE_URL") || "https://sandbox.vtpass.com/api").replace(/\/+$/, "");
     const vtpassHost = new URL(vtpassBase);
     if (vtpassHost.protocol !== "https:" || !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname)) {
@@ -168,7 +170,10 @@ Deno.serve(async (req: Request) => {
         if (!smileEmail || !smileAccountId) return reply(req, { success: false, error: "Verify your Smile email and select an account ID before checkout." }, 400);
         const verifyResponse = await fetch(vtpassBase + "/merchant-verify/smile/email", {
           method: "POST",
-          headers: { "api-key": vtpassApiKey, "secret-key": Deno.env.get("VTPASS_SECRET_KEY") || "", "Content-Type": "application/json", Accept: "application/json" },
+          headers: (() => {
+            if (!vtpassEmail || !vtpassPassword) throw new Error("VTpass Smile Basic Authentication credentials are not configured.");
+            return { Authorization: "Basic " + btoa(vtpassEmail + ":" + vtpassPassword), "Content-Type": "application/json", Accept: "application/json" };
+          })(),
           body: JSON.stringify({ billersCode: smileEmail, serviceID: "smile-direct" }),
           signal: AbortSignal.timeout(12000),
         });
