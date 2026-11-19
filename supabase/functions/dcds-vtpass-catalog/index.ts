@@ -14,13 +14,16 @@ const DATA_SERVICES: Record<string, string> = {
   "9mobile": "etisalat-data",
 };
 
-function cors(req: Request): HeadersInit {
-  const origin = req.headers.get("Origin");
-  const allowed = !origin ||
+function allowedOrigin(origin: string | null): boolean {
+  return !origin ||
     origin === "https://dechampions03-leader.github.io" ||
     origin === "https://dechampionsdigital.com" ||
     origin === "https://www.dechampionsdigital.com" ||
     /^https:\/\/[a-z0-9-]+\.dcds-dev-auth-preview\.pages\.dev$/i.test(origin);
+}
+function cors(req: Request): HeadersInit {
+  const origin = req.headers.get("Origin");
+  const allowed = allowedOrigin(origin);
   return {
     ...(origin && allowed ? { "Access-Control-Allow-Origin": origin, "Vary": "Origin" } : {}),
     "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
@@ -52,7 +55,14 @@ async function requireAdmin(req: Request): Promise<{ ok: true } | { error: strin
   const authorization = req.headers.get("Authorization") || "";
   if (!authorization.startsWith("Bearer ")) return { error: "Sign in required.", status: 401 };
   const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
-  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || "";
+  const anonKey = Deno.env.get("SUPABASE_ANON_KEY") || (() => {
+    try {
+      const values = JSON.parse(Deno.env.get("SUPABASE_PUBLISHABLE_KEYS") || "{}");
+      return typeof values.default === "string" ? values.default : "";
+    } catch {
+      return "";
+    }
+  })();
   if (!supabaseUrl || !anonKey) return { error: "Supabase admin verification is unavailable.", status: 503 };
   const client = createClient(supabaseUrl, anonKey, {
     global: { headers: { Authorization: authorization } },
@@ -91,8 +101,7 @@ Deno.serve(async (req: Request) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: cors(req) });
   if (req.method !== "POST") return reply(req, { success: false, error: "POST required." }, 405);
   const origin = req.headers.get("Origin");
-  if (origin && !["https://dechampions03-leader.github.io","https://dechampionsdigital.com","https://www.dechampionsdigital.com"].includes(origin) &&
-    !/^https:\/\/[a-z0-9-]+\.dcds-dev-auth-preview\.pages\.dev$/i.test(origin)) {
+  if (!allowedOrigin(origin)) {
     return reply(req, { success: false, error: "Origin not allowed." }, 403);
   }
 
