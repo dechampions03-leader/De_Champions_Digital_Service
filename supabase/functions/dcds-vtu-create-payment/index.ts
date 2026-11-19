@@ -287,13 +287,13 @@ Deno.serve(async (req: Request) => {
     // never create a second payable order.
     const { data: existing, error: existingError } = await db
       .from("dcds_vtu_orders")
-      .select("id,user_id,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,provider_cost,currency,tx_ref,payment_link,status")
+      .select("id,user_id,provider,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,provider_cost,currency,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .eq("client_request_id", clientRequestId)
       .maybeSingle();
     if (existingError) throw existingError;
     if (existing) {
-      const samePayload = existing.service_type === serviceType &&
+      const samePayload = existing.provider === "vtpass" && existing.service_type === serviceType &&
         existing.network === network &&
         existing.recipient_phone === phone &&
         existing.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
@@ -313,7 +313,7 @@ Deno.serve(async (req: Request) => {
     // has an existing unpaid, paid, processing or unresolved order.
     const { data: openOrder, error: openOrderError } = await db
       .from("dcds_vtu_orders")
-      .select("service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,provider_cost,currency,tx_ref,payment_link,status")
+      .select("provider,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,provider_cost,currency,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .in("status", ["pending_payment", "paid", "processing", "needs_review"])
       .order("created_at", { ascending: false })
@@ -321,7 +321,7 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     if (openOrderError) throw openOrderError;
     if (openOrder) {
-      const sameOrder = openOrder.service_type === serviceType &&
+      const sameOrder = openOrder.provider === "vtpass" && openOrder.service_type === serviceType &&
         openOrder.network === network &&
         openOrder.recipient_phone === phone &&
         openOrder.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
@@ -384,6 +384,7 @@ Deno.serve(async (req: Request) => {
 
     const { data: order, error: insertError } = await db.from("dcds_vtu_orders").insert({
       user_id: user.id,
+      provider: "vtpass",
       client_request_id: clientRequestId,
       service_type: serviceType,
       network,
