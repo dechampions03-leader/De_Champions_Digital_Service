@@ -6,6 +6,7 @@ on:
       - feature/phase1-security-reliability
     paths:
       - "supabase/functions/create-payment/**"
+      - "supabase/functions/verify-payment/**"
       - "supabase/functions/admin-verify-flutterwave-payment/**"
       - "supabase/functions/dcds-process-payout/**"
       - "supabase/functions/dcds-international-payout/**"
@@ -21,6 +22,9 @@ on:
       - "airtime-data.html"
       - "vtu-payment-return.html"
       - "index.html"
+      - "assets/dcds-global-currency.js"
+      - "tests/payments/**"
+      - "ai-config/DCDS-FLUTTERWAVE-PAYMENT-VERSION-STRATEGY.md"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
   pull_request:
@@ -28,6 +32,7 @@ on:
       - main
     paths:
       - "supabase/functions/create-payment/**"
+      - "supabase/functions/verify-payment/**"
       - "supabase/functions/admin-verify-flutterwave-payment/**"
       - "supabase/functions/dcds-process-payout/**"
       - "supabase/functions/dcds-international-payout/**"
@@ -37,6 +42,9 @@ on:
       - "supabase/functions/dcds-oplug-readonly/**"
       - "airtime-data.html"
       - "index.html"
+      - "assets/dcds-global-currency.js"
+      - "tests/payments/**"
+      - "ai-config/DCDS-FLUTTERWAVE-PAYMENT-VERSION-STRATEGY.md"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
 
@@ -59,6 +67,8 @@ jobs:
           deno-version: v2.x
       - name: Type-check create-payment
         run: deno check supabase/functions/create-payment/index.ts
+      - name: Type-check authenticated Flutterwave payment verifier
+        run: deno check supabase/functions/verify-payment/index.ts
       - name: Type-check admin Flutterwave verifier
         run: deno check supabase/functions/admin-verify-flutterwave-payment/index.ts
       - name: Type-check payout processor
@@ -164,6 +174,38 @@ jobs:
               raise SystemExit(f"{len(failures)} pending-checkout reconciliation checks failed.")
           PY
 
+
+      - name: Verify staged NGN-only hosted checkout safeguards
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          create = Path("supabase/functions/create-payment/index.ts").read_text(encoding="utf-8")
+          currency = Path("assets/dcds-global-currency.js").read_text(encoding="utf-8")
+          home = Path("index.html").read_text(encoding="utf-8")
+          workflow = Path(".github/workflows/phase1-validation.yml").read_text(encoding="utf-8")
+
+          currency_guard = create.find("if (requestedCurrency !== " + chr(34) + "NGN" + chr(34) + ")")
+          create_rpc = create.find("supabase.rpc(" + chr(34) + "dcds_create_checkout_order" + chr(34))
+          amount_guard = create.find("Number.isSafeInteger(checkoutAmount)")
+          provider_call = create.find("fetch(" + chr(34) + "https://api.flutterwave.com/v3/payments" + chr(34))
+
+          checks = {
+              "foreign currency is rejected before an order is created": currency_guard >= 0 and create_rpc > currency_guard,
+              "V3 hosted checkout enforces NGN and integer int32 amounts": amount_guard >= 0 and ("checkoutCurrency !== " + chr(34) + "NGN" + chr(34)) in create and "checkoutAmount > 2147483647" in create,
+              "V3 hosted checkout sends only NGN with the NGN payment methods": ("currency: " + chr(34) + "NGN" + chr(34)) in create and "payment_options: " in create,
+              "amount validation occurs before the provider call": provider_call > amount_guard,
+              "foreign currency selector cannot enable checkout": ("return currency === " + chr(34) + "NGN" + chr(34) + ";") in currency,
+              "course and General Course UI block foreign currency": home.count("requestedCurrency!==" + chr(34) + "NGN" + chr(34)) >= 2 and "Switch to NGN to pay" in home,
+              "CI type-checks the restored payment verifier": "deno check supabase/functions/verify-payment/index.ts" in workflow,
+          }
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} staged-checkout safeguards failed.")
+          PY
       - name: Require RLS on every new public table
         shell: bash
         run: |
