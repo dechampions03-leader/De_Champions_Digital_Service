@@ -48,9 +48,8 @@ function normalizePhone(value: unknown): string {
   return /^0[789][0-9]{9}$/.test(phone) ? phone : "";
 }
 function normalizeInternationalPhone(value: unknown): string {
-  const raw = String(value ?? "").replace(/[\s()-]/g, "");
-  const digits = raw.startsWith("+") ? "+" + raw.slice(1).replace(/\D/g, "") : raw.replace(/\D/g, "");
-  return /^\+?[0-9]{7,15}$/.test(digits) ? digits : "";
+  const digits = String(value ?? "").replace(/\D/g, "");
+  return /^[0-9]{7,15}$/.test(digits) ? digits : "";
 }
 function normalizeNetwork(value: unknown, id?: unknown): string {
   const name = clean(value, 30).toLowerCase();
