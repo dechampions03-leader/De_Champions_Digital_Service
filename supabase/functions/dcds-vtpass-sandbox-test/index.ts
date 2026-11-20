@@ -123,6 +123,42 @@ Deno.serve(async (req: Request) => {
       return json(req, { success: false, error: "Explicit confirmation is required. Send confirm=RUN_SANDBOX_TEST." }, 400);
     }
 
+    // Isolated Smile customer-email verification diagnostic. This calls only
+    // the documented verification endpoint and never submits /pay.
+    if (body?.action === "SMILE_VERIFY_DIAGNOSTIC") {
+      const email = Deno.env.get("VTPASS_EMAIL") || "";
+      const password = Deno.env.get("VTPASS_PASSWORD") || "";
+      const sandboxEmail = Deno.env.get("VTPASS_SMILE_SANDBOX_EMAIL") || "";
+      if (!email || !password || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(sandboxEmail)) {
+        return json(req, { success: false, stage: "smile-email-verification-diagnostic", error: "Check that Development has VTPASS_EMAIL, VTPASS_PASSWORD and a valid VTPASS_SMILE_SANDBOX_EMAIL." }, 503);
+      }
+      const response = await fetch(base + "/merchant-verify/smile/email", {
+        method: "POST",
+        headers: {
+          Authorization: "Basic " + btoa(email + ":" + password),
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({ billersCode: sandboxEmail, serviceID: "smile-direct" }),
+        signal: AbortSignal.timeout(15000),
+      });
+      const payload = await response.json().catch(() => null);
+      const accounts = payload?.content?.AccountList?.Account;
+      const expectedAccount = Array.isArray(accounts) && accounts.some((x: Record<string, unknown>) => clean(x.AccountId, 30) === "08011111111");
+      const providerCode = clean(payload?.code ?? payload?.response_description, 12);
+      const providerMessage = clean(payload?.response_description ?? payload?.message ?? payload?.error, 180);
+      return json(req, {
+        success: response.ok && providerCode === "000" && expectedAccount,
+        stage: "smile-email-verification-diagnostic",
+        provider_http_status: response.status,
+        provider_code: providerCode || null,
+        provider_message: providerMessage || null,
+        verified_accounts_returned: Array.isArray(accounts) ? accounts.length : 0,
+        expected_sandbox_account_found: Boolean(expectedAccount),
+        note: "Smile customer-email verification only. No /pay request or purchase was submitted.",
+      }, 200);
+    }
+
     const apiKey = Deno.env.get("VTPASS_API_KEY") || "";
     const publicKey = Deno.env.get("VTPASS_PUBLIC_KEY") || "";
     const secretKey = Deno.env.get("VTPASS_SECRET_KEY") || "";
