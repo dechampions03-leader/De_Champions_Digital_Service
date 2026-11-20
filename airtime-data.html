@@ -45,7 +45,7 @@ h2{margin:6px 0 6px;color:#351052;font:800 25px 'Playfair Display',serif}
 .status-pill{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;padding:7px 10px;border:1px solid #e9dff1;border-radius:999px;background:#fcf9ff;color:#7a4a9e;font-size:10px;font-weight:850}
 .status-dot{width:7px;height:7px;border-radius:50%;background:#d9ad4c}
 .tabs{display:grid;grid-template-columns:1fr 1fr;gap:9px;padding:6px;margin:20px 0 19px;border:1px solid #eaddf2;border-radius:16px;background:#faf6ff}
-.tab{min-height:48px;border:0;border-radius:12px;background:transparent;color:#765e8a;font-weight:850;font-size:13px;cursor:pointer}
+.tab{min-height:48px;border:0;border-radius:12px;background:transparent;color:#765e8a;font-weight:850;font-size:13px;cursor:pointer}.service-link{display:flex;align-items:center;justify-content:center;text-align:center;text-decoration:none;padding:8px 10px;line-height:1.25}
 .tab[aria-selected="true"]{background:linear-gradient(120deg,#6627a6,#873ddb);color:#fff;box-shadow:0 6px 16px #6128b82c}
 .field{display:grid;gap:8px;margin:15px 0}
 .field label{color:#4a315e;font-size:11px;font-weight:850}
@@ -141,7 +141,7 @@ footer strong{display:block;margin-top:7px;color:#75469c;letter-spacing:.16em}
  <div class="page-grid">
   <section class="card buy-card" aria-labelledby="buyTitle">
    <div class="section-head"><div><span class="kicker">DCDS QUICK TOP-UP</span><h2 id="buyTitle">What would you like to buy?</h2><p class="muted">Choose a service and enter the number you want to recharge.</p></div><span class="status-pill" id="catalogStatus"><i class="status-dot"></i> Checking live plans</span></div>
-   <div class="tabs" role="tablist" aria-label="Choose top-up type"><button class="tab" id="dataTab" role="tab" aria-selected="true" type="button">📶 Buy Data</button><button class="tab" id="airtimeTab" role="tab" aria-selected="false" type="button">📱 Buy Airtime</button></div>
+   <div class="tabs" role="group" aria-label="Choose a top-up service"><button class="tab" id="dataTab" role="tab" aria-selected="true" type="button">📶 Buy Data</button><button class="tab" id="airtimeTab" role="tab" aria-selected="false" type="button">📱 Buy Airtime</button><a class="tab service-link" href="international-airtime.html">🌍 International Airtime</a><a class="tab service-link" href="smile-payment.html">📡 Smile Network</a></div>
    <div class="field"><label>Select your network</label><div class="network-grid" id="networkGrid">
     <button class="network" data-network="mtn" aria-label="MTN" aria-pressed="true" type="button"><img class="network-logo" src="./assets/network-logos/mtn.svg" alt="MTN logo"><span>MTN</span></button>
     <button class="network" data-network="airtel" aria-label="Airtel" aria-pressed="false" type="button"><img class="network-logo" src="./assets/network-logos/airtel.svg" alt="Airtel logo"><span>Airtel</span></button>
