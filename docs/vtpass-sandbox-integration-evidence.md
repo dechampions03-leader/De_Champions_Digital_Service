@@ -84,3 +84,26 @@ The DCDS root administrator ran the updated **read-only Smile email verification
 - The diagnostic explicitly confirmed: **no `/pay` request or purchase was submitted**.
 
 This closes the Smile sandbox customer-email verification diagnostic. It does **not** establish a successful Smile purchase/delivery. The separate read-only Smile authentication/variations check and one controlled Smile sandbox purchase/requery lifecycle remain to be completed before Live readiness can be claimed.
+
+
+## Follow-up — Spectranet passed; Smile catalogue blocked (2026-11-20)
+
+### Confirmed successful Spectranet delivery
+
+| Service | Plan | Sandbox amount | Request ID | VTpass code | Status |
+|---|---|---:|---|---|---|
+| Spectranet Internet Data | Spectranet N1000 | NGN 1,000 | 20261120104642abf389169e | 000 | delivered |
+
+The DCDS root administrator screenshot confirms provider HTTP 200, code 000, and transaction status delivered. This is the **10th confirmed successful Sandbox delivery** (nine earlier domestic tests plus Spectranet).
+
+### Smile attempt — not a purchase
+
+The Smile selection returned a catalogue-stage error: "No valid data variation was returned for the selected service." No purchase request ID was generated and no Smile /pay request was submitted. Earlier read-only diagnostics remain successful: Basic Authentication accepted, code 000, 57 variations returned; Smile email verification returned code 000 and the expected sandbox account. This points to a catalogue response/variation-selection mismatch in the purchase test path, not a failed Smile payment. Do not count Smile as delivered and do not repeat a purchase attempt until the catalogue mismatch is diagnosed.
+
+### International airtime requery — unresolved
+
+| Service | Request ID | Plan | Reported amount | VTpass code | Status |
+|---|---|---|---:|---|---|
+| Ghana International Airtime | 2026112010469289f1f7d7db | 160 -2000 GMD Top Up | NGN 0 | 011 | unknown / not delivered |
+
+The screenshot shows HTTP 200 from the API transport but VTpass code 011 and transaction status unknown at requery. **Do not submit another /pay for this request ID.** This remains unresolved and is not successful evidence.
