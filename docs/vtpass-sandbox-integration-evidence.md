@@ -107,3 +107,10 @@ The Smile selection returned a catalogue-stage error: "No valid data variation w
 | Ghana International Airtime | 2026112010469289f1f7d7db | 160 -2000 GMD Top Up | NGN 0 | 011 | unknown / not delivered |
 
 The screenshot shows HTTP 200 from the API transport but VTpass code 011 and transaction status unknown at requery. **Do not submit another /pay for this request ID.** This remains unresolved and is not successful evidence.
+
+
+### Smile catalogue diagnosis and matcher correction (2026-11-20)
+
+The root-admin read-only Smile catalogue diagnostic returned HTTP 200, VTpass code `000`, and 57 variations. The sample included data plans whose capacity is attached directly to the number, including `413 — 2GB MidNite for 7days — NGN 1,020`, `414 — 3GB MidNite for 7days — NGN 1,530`, `624 — 1GB Flexi for 1days — NGN 300`, and `625 — 2.5GB Flexi for 2days — NGN 500`. It also included voice-only variations, confirming that the catalogue contains mixed product types.
+
+The purchase-path matcher used a word-boundary expression for `GB`/`MB` that did not match labels such as `2GB` because the digit and G are both word characters. The Development-only matcher has been corrected to recognize numeric capacity labels such as `1GB`, `2.5GB`, and `500MB`, while continuing to require a positive amount. The Development Edge Function was deployed as version 31. This is a code correction only; it is **not** evidence of a Smile purchase or delivery. One controlled Smile Sandbox test remains pending.
