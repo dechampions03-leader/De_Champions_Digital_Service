@@ -65,7 +65,17 @@ async function refreshFxPreview(){
  }catch{if(request===quoteRequest){previewRate=Number.NaN;updateFxEstimate();}}
 }
 $("checkoutCurrency").addEventListener("change",refreshFxPreview);
-async function invoke(action,body={}){const {data,error}=await db.functions.invoke("dcds-vtpass-catalog",{body:{action,...body}});if(error)throw error;if(!data?.success)throw new Error(data?.error||"VTpass catalogue request failed.");return data;}
+async function invoke(action,body={}){
+ const request=db.functions.invoke("dcds-vtpass-catalog",{body:{action,...body}});
+ let timer;
+ try{
+  const timeout=new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error("The DCDS catalogue request timed out. Check your connection and reload. If this continues, contact DCDS support with the action name: "+action+".")),15000);});
+  const {data,error}=await Promise.race([request,timeout]);
+  if(error)throw error;
+  if(!data?.success)throw new Error(data?.error||"VTpass catalogue request failed.");
+  return data;
+ }finally{clearTimeout(timer);}
+}
 function option(select,label,items,value,labelFn){select.replaceChildren(new Option(label,""));for(const item of items)select.add(new Option(labelFn(item),String(value(item))));}
 function refreshCheckout(){
  const validPhone=/^\+?[0-9\s()-]{7,20}$/.test($("customerPhone").value.trim());
