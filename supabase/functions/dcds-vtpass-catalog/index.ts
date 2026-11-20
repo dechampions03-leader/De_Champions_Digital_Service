@@ -250,11 +250,11 @@ Deno.serve(async (req: Request) => {
       const payload = await response.json().catch(() => null);
       const variations = payload?.content?.variations ?? payload?.content?.varations;
       if (!response.ok || payload?.response_description !== "000" || !Array.isArray(variations)) {
-        return reply(req, { success: false, error: "International top-up options are unavailable for this operator." }, 502);
+        return reply(req, { success: false, error: "International product options are unavailable for this operator." }, 502);
       }
       return reply(req, { success: true, variations: variations.map((x: Record<string, unknown>) => ({
         code: clean(x.variation_code, 80), name: clean(x.name, 120),
-        amount: Number(x.charged_amount ?? x.variation_amount),
+        amount: Number(x.charged_amount),
         charged_amount: Number(x.charged_amount), variation_amount: Number(x.variation_amount),
         fixed_price: clean(x.fixedPrice, 8), rate: Number(x.variation_rate),
       })).filter((x: { code: string; name: string }) => x.code && x.name) });
