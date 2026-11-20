@@ -215,6 +215,7 @@ Deno.serve(async (req: Request) => {
       "9mobile": ["etisalat-data", "9mobile-sme-data"],
       spectranet: ["spectranet"],
       smile: ["smile-direct"],
+      international: ["foreign-airtime"],
     };
     const AIRTIME_SERVICES: Record<string, string> = {
       mtn: "mtn",
@@ -313,7 +314,7 @@ Deno.serve(async (req: Request) => {
     const [storedServiceID, storedVariationCode] = storedPlanId.includes("::")
       ? storedPlanId.split("::", 2)
       : [DEFAULT_DATA_SERVICES[String(current.network)] || "", storedPlanId];
-    const serviceID = current.service_type === "data" ? storedServiceID : AIRTIME_SERVICES[String(current.network)];
+    const serviceID = current.network === "international" ? "foreign-airtime" : current.service_type === "data" ? storedServiceID : AIRTIME_SERVICES[String(current.network)];
     if (!serviceID || (current.service_type === "data" && !ALLOWED_DATA_SERVICES[String(current.network)]?.includes(serviceID))) {
       throw new Error("Unsupported VTpass service for this purchase.");
     }
@@ -329,12 +330,12 @@ Deno.serve(async (req: Request) => {
         // Flutterwave display/checkout amount to the provider.
         amount: Number(current.provider_cost),
       };
-      if (current.service_type === "data") {
+      if (current.network === "international") {
         payload.billersCode = current.network === "smile"
           ? String(current.provider_billers_code || "")
           : String(current.recipient_phone);
         payload.variation_code = storedVariationCode;
-      } else if (current.network === "international") {
+      } else if (current.service_type === "data") {
         const meta = (current.provider_metadata || {}) as Record<string, unknown>;
         payload.billersCode = String(current.recipient_phone);
         payload.variation_code = String(meta.variation_code || "");
