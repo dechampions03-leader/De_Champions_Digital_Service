@@ -102,7 +102,7 @@ Deno.serve(async (req: Request) => {
     // One controlled data simulation per invocation. Only allowlisted data
     // services are accepted; recipient is fixed to VTpass's documented sandbox
     // success number and no customer-supplied phone is accepted.
-    const dataServices: Record<string, string> = { "airtel-data": "Airtel Data", "etisalat-data": "9mobile Data", "glo-data": "GLO Data", "glo-sme-data": "GLO Data (Best Value)" };
+    const dataServices: Record<string, string> = { "mtn-data": "MTN Data", "airtel-data": "Airtel Data", "etisalat-data": "9mobile Data", "glo-data": "GLO Data", "glo-sme-data": "GLO Data (Best Value)", "spectranet": "Spectranet Internet Data" };
     const airtimeServices: Record<string, string> = { "mtn": "MTN Airtime", "airtel": "Airtel Airtime", "etisalat": "9mobile Airtime", "glo": "GLO Airtime" };
     const specialServices: Record<string, string> = { "smile-direct": "Smile Network Payment", "foreign-airtime": "International Airtime" };
     const serviceType = clean(body?.service_type, 30) || "data";
@@ -110,28 +110,30 @@ Deno.serve(async (req: Request) => {
     const isAirtime = serviceType === "airtime";
     const isSmile = serviceType === "smile";
     const isInternational = serviceType === "international-airtime";
+    const isSpectranet = requestedService === "spectranet" && serviceType === "data";
     const allowedServices = isAirtime ? airtimeServices : (isSmile || isInternational) ? specialServices : dataServices;
-    if (!Object.hasOwn(allowedServices, requestedService) || (isSmile && requestedService !== "smile-direct") || (isInternational && requestedService !== "foreign-airtime")) return json(req, { success: false, error: "Choose an allowlisted data, airtime, Smile or international airtime service." }, 400);
+    if (!Object.hasOwn(allowedServices, requestedService) || (isSmile && requestedService !== "smile-direct") || (isInternational && requestedService !== "foreign-airtime")) return json(req, { success: false, error: "Choose an allowlisted data, airtime, Smile, Spectranet or international airtime service." }, 400);
     const serviceID = requestedService;
     const serviceName = allowedServices[serviceID];
-    const recipient = "08011111111";
+    const recipient = isSpectranet ? "1212121212" : "08011111111";
     let chosen = { code: "", name: serviceName + " N50 top-up", amount: 50 };
     let billersCode = recipient;
     let specialPayload: Record<string, unknown> = {};
     let requestHeaders: Record<string, string> = { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" };
+    let requeryHeaders: Record<string, string> = { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" };
     if (isSmile) {
       const smileEmail = Deno.env.get("VTPASS_EMAIL") || "";
       const smilePassword = Deno.env.get("VTPASS_PASSWORD") || "";
       if (!smileEmail || !smilePassword) return json(req, { success: false, error: "Smile testing requires VTPASS_EMAIL and VTPASS_PASSWORD in Development Edge Function secrets. Do not send credentials in chat." }, 503);
       requestHeaders = { Authorization: "Basic " + btoa(smileEmail + ":" + smilePassword), "Content-Type": "application/json", Accept: "application/json" };
+      requeryHeaders = { ...requestHeaders };
       const verify = await fetch(base + "/merchant-verify/smile/email", { method: "POST", headers: requestHeaders, body: JSON.stringify({ billersCode: "tester@sandbox.com", serviceID: "smile-direct" }), signal: AbortSignal.timeout(15000) });
       const verified = await verify.json().catch(() => null);
       const accounts = verified?.content?.AccountList?.Account;
       const account = Array.isArray(accounts) ? accounts.find((x: Record<string, unknown>) => clean(x.AccountId, 30) === recipient) : null;
       if (!verify.ok || clean(verified?.code, 12) !== "000" || !account) return json(req, { success: false, stage: "smile-email-verification", error: "VTpass Sandbox did not verify the documented Smile test email/account." }, 200);
       billersCode = clean(account.AccountId, 30);
-      specialPayload = { email: "smile@sandbox.vtpass.com" };
-      requestHeaders = { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" };
+      specialPayload = { email: "sandbox@sandbox.vtpass.com" };
     }
     if (isInternational) {
       const country = "GH";
@@ -155,7 +157,14 @@ Deno.serve(async (req: Request) => {
       specialPayload = { operator_id: operatorId, country_code: country, product_type_id: productTypeId, email: "sandbox@sandbox.vtpass.com" };
     }
     if (!isAirtime && !isInternational) {
-      const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, { headers: isSmile ? requestHeaders : { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
+      if (isSpectranet) {
+        const email = Deno.env.get("VTPASS_EMAIL") || "";
+        const password = Deno.env.get("VTPASS_PASSWORD") || "";
+        if (!email || !password) return json(req, { success: false, error: "Spectranet testing requires VTPASS_EMAIL and VTPASS_PASSWORD in Development Edge Function secrets." }, 503);
+        requestHeaders = { Authorization: "Basic " + btoa(email + ":" + password), "Content-Type": "application/json", Accept: "application/json" };
+        requeryHeaders = { ...requestHeaders };
+      }
+      const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, { headers: (isSmile || isSpectranet) ? requestHeaders : { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
       const catalogue = await catalogueResponse.json().catch(() => null);
       const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
       if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid data catalogue for the selected service.", provider_code: clean(catalogue?.code, 12) }, 200);
@@ -164,8 +173,9 @@ Deno.serve(async (req: Request) => {
       chosen = selected[0];
     }
     const id = requestId();
-    const purchasePayload: Record<string, unknown> = { request_id: id, serviceID, amount: chosen.amount, phone: recipient };
+    const purchasePayload: Record<string, unknown> = { request_id: id, serviceID, amount: chosen.amount, phone: isSpectranet ? "08011111111" : recipient };
     if (!isAirtime) { purchasePayload.billersCode = billersCode; purchasePayload.variation_code = chosen.code; }
+    if (isSpectranet) purchasePayload.quantity = 1;
     Object.assign(purchasePayload, specialPayload);
     const purchaseResponse = await fetch(base + "/pay", { method: "POST", headers: requestHeaders, body: JSON.stringify(purchasePayload), signal: AbortSignal.timeout(20000) });
     const purchase = await purchaseResponse.json().catch(() => null);
@@ -183,7 +193,7 @@ Deno.serve(async (req: Request) => {
       (isAirtime || (providerCode !== "000" && !["delivered", "successful"].includes(purchaseStatus)))) {
       const requeryResponse = await fetch(base + "/requery", {
         method: "POST",
-        headers: { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" },
+        headers: requeryHeaders,
         body: JSON.stringify({ request_id: id }),
         signal: AbortSignal.timeout(15000),
       });
