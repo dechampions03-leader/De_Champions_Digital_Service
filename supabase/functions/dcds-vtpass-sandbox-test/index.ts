@@ -125,7 +125,7 @@ Deno.serve(async (req: Request) => {
       const email = Deno.env.get("VTPASS_EMAIL") || "";
       const password = Deno.env.get("VTPASS_PASSWORD") || "";
       const sandboxEmail = Deno.env.get("VTPASS_SMILE_SANDBOX_EMAIL") || "";
-      if (!email || !password || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(sandboxEmail)) {
+      if (!email || !password || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(sandboxEmail)) {
         return json(req, { success: false, stage: "smile-email-verification-diagnostic", error: "Check that Development has VTPASS_EMAIL, VTPASS_PASSWORD and a valid VTPASS_SMILE_SANDBOX_EMAIL." }, 503);
       }
       const response = await fetch(base + "/merchant-verify/smile/email", {
