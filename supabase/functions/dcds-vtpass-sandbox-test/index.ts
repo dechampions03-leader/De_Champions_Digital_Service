@@ -268,7 +268,7 @@ Deno.serve(async (req: Request) => {
       const catalogue = await catalogueResponse.json().catch(() => null);
       const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
       if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid data catalogue for the selected service.", provider_code: clean(catalogue?.code, 12) }, 200);
-      const selected = variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount) })).filter((v: { code: string; name: string; amount: number }) => v.code && v.name && Number.isFinite(v.amount) && v.amount > 0 && (isSmile ? /\b(?:gb|mb)\b/i.test(v.name) : !/calls?|minutes?|voice|talk\s*more/i.test(v.name))).sort((a: { amount: number }, b: { amount: number }) => a.amount - b.amount);
+      const selected = variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount) })).filter((v: { code: string; name: string; amount: number }) => v.code && v.name && Number.isFinite(v.amount) && v.amount > 0 && (isSmile ? /(?:\\d+(?:\\.\\d+)?\\s*(?:gb|mb)\\b|\\b(?:gb|mb)\\b)/i.test(v.name) : !/calls?|minutes?|voice|talk\s*more/i.test(v.name))).sort((a: { amount: number }, b: { amount: number }) => a.amount - b.amount);
       if (!selected.length) return json(req, { success: false, stage: "catalogue", error: "No valid data variation was returned for the selected service." }, 200);
       chosen = selected[0];
     }
