@@ -99,9 +99,21 @@ Deno.serve(async (req: Request) => {
       return json(req, { success: false, error: "Sandbox API, Public and Secret keys must all be configured in Development Supabase." }, 503);
     }
 
-    // One controlled MTN data simulation. The recipient is fixed to VTpass's
-    // documented sandbox success number; no customer-supplied phone is accepted.
-    const serviceID = "mtn-data";
+    // One controlled data simulation per invocation. Only allowlisted data
+    // services are accepted; recipient is fixed to VTpass's documented sandbox
+    // success number and no customer-supplied phone is accepted.
+    const services: Record<string, string> = {
+      "airtel-data": "Airtel Data",
+      "etisalat-data": "9mobile Data",
+      "glo-data": "GLO Data",
+      "glo-sme-data": "GLO Data (Best Value)",
+    };
+    const requestedService = clean(body?.service_id, 40);
+    if (!Object.hasOwn(services, requestedService)) {
+      return json(req, { success: false, error: "Choose Airtel Data, 9mobile Data, GLO Data or GLO Data (Best Value). MTN Data has already passed." }, 400);
+    }
+    const serviceID = requestedService;
+    const serviceName = services[serviceID];
     const recipient = "08011111111";
     const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, {
       headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" },
@@ -110,7 +122,7 @@ Deno.serve(async (req: Request) => {
     const catalogue = await catalogueResponse.json().catch(() => null);
     const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
     if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) {
-      return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid MTN data catalogue.", provider_code: clean(catalogue?.code, 12) }, 502);
+      return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid data catalogue for the selected service.", provider_code: clean(catalogue?.code, 12) }, 502);
     }
     const selected = variations
       .map((v: Record<string, unknown>) => ({
@@ -123,7 +135,7 @@ Deno.serve(async (req: Request) => {
         !/calls?|minutes?|voice|talk\s*more/i.test(v.name))
       .sort((a: { amount: number }, b: { amount: number }) => a.amount - b.amount);
     if (!selected.length) {
-      return json(req, { success: false, stage: "catalogue", error: "No valid MTN data variation was returned." }, 502);
+      return json(req, { success: false, stage: "catalogue", error: "No valid data variation was returned for the selected service." }, 502);
     }
 
     const chosen = selected[0];
@@ -181,7 +193,7 @@ Deno.serve(async (req: Request) => {
       transaction_status: transactionStatus || "unknown",
       provider_http_status: finalHttpStatus,
       message: delivered
-        ? "VTpass Sandbox confirms the simulated MTN data transaction was delivered."
+        ? "VTpass Sandbox confirms the simulated data transaction was delivered."
         : code === "087" || providerCode === "087"
         ? "VTpass rejected the POST authentication credentials (code 087). No further requery was sent. Correct the Sandbox Secret Key/authentication setting before any new test."
         : "No successful delivery was confirmed. Do not submit another /pay for this request ID; inspect/requery this same request.",
