@@ -8,7 +8,7 @@ function json(req: Request, body: unknown, status = 200): Response {
     "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
     "Access-Control-Allow-Methods": "POST, OPTIONS",
   };
-  if (origin === "https://dechampions03-leader.github.io" || (origin && /^https:\/\/[a-z0-9-]+\.pages\.dev$/i.test(origin))) {
+  if (origin === "https://dechampions03-leader.github.io" || (origin && /^https:\/\/[a-z0-9-]+\.dcds-dev-auth-preview\.pages\.dev$/i.test(origin))) {
     headers["Access-Control-Allow-Origin"] = origin;
     headers["Vary"] = "Origin";
   }
@@ -67,9 +67,19 @@ function requestId(): string {
 }
 
 Deno.serve(async (req: Request) => {
-  if (req.method === "OPTIONS") return new Response("ok", {
-    headers: { "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type", "Access-Control-Allow-Methods": "POST, OPTIONS" },
-  });
+  if (req.method === "OPTIONS") {
+    const origin = req.headers.get("Origin") || "";
+    const allowed = origin === "https://dechampions03-leader.github.io" ||
+      /^https:\/\/[a-z0-9-]+\.dcds-dev-auth-preview\.pages\.dev$/i.test(origin);
+    const headers: HeadersInit = {
+      "Access-Control-Allow-Headers": "authorization, apikey, x-client-info, content-type",
+      "Access-Control-Allow-Methods": "POST, OPTIONS",
+      "Access-Control-Max-Age": "86400",
+      "Vary": "Origin",
+    };
+    if (allowed) headers["Access-Control-Allow-Origin"] = origin;
+    return new Response("ok", { headers });
+  }
   if (req.method !== "POST") return json(req, { success: false, error: "POST required." }, 405);
 
   const access = await requireDcdsAdmin(req);
