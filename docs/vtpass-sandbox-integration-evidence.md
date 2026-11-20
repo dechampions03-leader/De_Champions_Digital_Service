@@ -37,18 +37,18 @@
 | Airtel Airtime | airtel | <not applicable: confirmed above> |
 | 9mobile Airtime | etisalat | <not applicable: confirmed above> |
 | GLO Airtime | glo | <not applicable: confirmed above> |
-| International Airtime | foreign-airtime | Ghana mobile top-up Sandbox flow added; awaiting user-run test |
-| Smile Network Payment | smile-direct | Sandbox email/account verification and plan flow added; requires VTpass Smile Basic Auth secrets in Development and user-run test |
+| International Airtime | foreign-airtime | Earlier Ghana test returned code 011; runner updated to omit zero optional amount. Needs a fresh user-run test before evidence can be recorded |
+| Smile Network Payment | smile-direct | Runner corrected to use Basic Auth for email verification, variations, purchase and requery; requires Development VTPASS_EMAIL and VTPASS_PASSWORD and a fresh user-run test |
 
 
-## Latest failed / blocked Sandbox attempts (2026-11-20)
+| Spectranet Internet Data | spectranet | Sandbox success number 1212121212 documented; runner now supports Basic Auth and quantity=1; awaiting user-run test |\n\n## Latest failed / blocked Sandbox attempts (2026-11-20)
 
 | Service | Request ID | Result | Handling |
 |---|---|---|---|
 | International Airtime (Ghana selection; provider returned a GMD-labelled variation) | 202611200847c18a21baff2c | VTpass code 011; status unknown; reported amount NGN 0 | Not successful evidence. Do not repeat /pay for this reference. Investigate country/operator/variation mapping and require a positive NGN provider charge before another test. |
 | Smile Network Payment | No request ID generated | Failed at smile-email-verification; no /pay request was made | No purchase was submitted. Check Sandbox Basic Auth account credentials and exact documented Sandbox Smile email/account verification flow before retry. |
 
-The 2026-11-20 screenshots confirmed that the four domestic airtime tests and five data tests above returned code 000 and status delivered. The Ghana international attempt and Smile email verification are not successful deliveries.
+The 2026-11-20 screenshots confirmed that the four domestic airtime tests and five data tests above returned code 000 and status delivered. The Ghana international attempt and Smile email verification are not successful deliveries. The runner was subsequently corrected against the official Smile and international API documentation; Spectranet was added to the controlled test path. These new paths have not yet been invoked.
 
 ## Safety and release notes
 
