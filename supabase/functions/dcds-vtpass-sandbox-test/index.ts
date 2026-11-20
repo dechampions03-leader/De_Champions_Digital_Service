@@ -104,16 +104,55 @@ Deno.serve(async (req: Request) => {
     // success number and no customer-supplied phone is accepted.
     const dataServices: Record<string, string> = { "airtel-data": "Airtel Data", "etisalat-data": "9mobile Data", "glo-data": "GLO Data", "glo-sme-data": "GLO Data (Best Value)" };
     const airtimeServices: Record<string, string> = { "mtn": "MTN Airtime", "airtel": "Airtel Airtime", "etisalat": "9mobile Airtime", "glo": "GLO Airtime" };
-    const serviceType = clean(body?.service_type, 20) || "data";
+    const specialServices: Record<string, string> = { "smile-direct": "Smile Network Payment", "foreign-airtime": "International Airtime" };
+    const serviceType = clean(body?.service_type, 30) || "data";
     const requestedService = clean(body?.service_id, 40);
     const isAirtime = serviceType === "airtime";
-    const allowedServices = isAirtime ? airtimeServices : dataServices;
-    if (!Object.hasOwn(allowedServices, requestedService)) return json(req, { success: false, error: isAirtime ? "Choose MTN, Airtel, 9mobile or GLO Airtime." : "Choose Airtel Data, 9mobile Data, GLO Data or GLO Data (Best Value)." }, 400);
+    const isSmile = serviceType === "smile";
+    const isInternational = serviceType === "international-airtime";
+    const allowedServices = isAirtime ? airtimeServices : (isSmile || isInternational) ? specialServices : dataServices;
+    if (!Object.hasOwn(allowedServices, requestedService) || (isSmile && requestedService !== "smile-direct") || (isInternational && requestedService !== "foreign-airtime")) return json(req, { success: false, error: "Choose an allowlisted data, airtime, Smile or international airtime service." }, 400);
     const serviceID = requestedService;
     const serviceName = allowedServices[serviceID];
     const recipient = "08011111111";
     let chosen = { code: "", name: serviceName + " N50 top-up", amount: 50 };
-    if (!isAirtime) {
+    let billersCode = recipient;
+    let specialPayload: Record<string, unknown> = {};
+    let requestHeaders: Record<string, string> = { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" };
+    if (isSmile) {
+      const smileEmail = Deno.env.get("VTPASS_EMAIL") || "";
+      const smilePassword = Deno.env.get("VTPASS_PASSWORD") || "";
+      if (!smileEmail || !smilePassword) return json(req, { success: false, error: "Smile testing requires VTPASS_EMAIL and VTPASS_PASSWORD in Development Edge Function secrets. Do not send credentials in chat." }, 503);
+      requestHeaders = { Authorization: "Basic " + btoa(smileEmail + ":" + smilePassword), "Content-Type": "application/json", Accept: "application/json" };
+      const verify = await fetch(base + "/merchant-verify/smile/email", { method: "POST", headers: requestHeaders, body: JSON.stringify({ billersCode: "tester@sandbox.com", serviceID: "smile-direct" }), signal: AbortSignal.timeout(15000) });
+      const verified = await verify.json().catch(() => null);
+      const accounts = verified?.content?.AccountList?.Account;
+      const account = Array.isArray(accounts) ? accounts.find((x: Record<string, unknown>) => clean(x.AccountId, 30) === recipient) : null;
+      if (!verify.ok || clean(verified?.code, 12) !== "000" || !account) return json(req, { success: false, stage: "smile-email-verification", error: "VTpass Sandbox did not verify the documented Smile test email/account." }, 502);
+      billersCode = clean(account.AccountId, 30);
+    }
+    if (isInternational) {
+      const country = "GH";
+      const typesResponse = await fetch(base + "/get-international-airtime-product-types?code=" + country, { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
+      const typesPayload = await typesResponse.json().catch(() => null);
+      const mobileType = Array.isArray(typesPayload?.content) ? typesPayload.content.find((x: Record<string, unknown>) => /mobile top up/i.test(clean(x.name, 80))) : null;
+      if (!typesResponse.ok || clean(typesPayload?.response_description, 12) !== "000" || !mobileType) return json(req, { success: false, stage: "international-product-types", error: "VTpass Sandbox did not return a mobile top-up product type for Ghana." }, 502);
+      const productTypeId = String(mobileType.product_type_id);
+      const operatorsResponse = await fetch(base + "/get-international-airtime-operators?code=" + country + "&product_type_id=" + encodeURIComponent(productTypeId), { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
+      const operatorsPayload = await operatorsResponse.json().catch(() => null);
+      const operator = Array.isArray(operatorsPayload?.content) ? operatorsPayload.content[0] : null;
+      const operatorId = clean(operator?.operator_id, 20);
+      if (!operatorsResponse.ok || clean(operatorsPayload?.response_description, 12) !== "000" || !operatorId) return json(req, { success: false, stage: "international-operators", error: "VTpass Sandbox did not return a Ghana mobile top-up operator." }, 502);
+      const variationsResponse = await fetch(base + "/service-variations?serviceID=foreign-airtime&operator_id=" + encodeURIComponent(operatorId) + "&product_type_id=" + encodeURIComponent(productTypeId), { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
+      const variationsPayload = await variationsResponse.json().catch(() => null);
+      const variations = variationsPayload?.content?.variations;
+      const intlVariation = Array.isArray(variations) ? variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount), fixed: clean(v.fixedPrice, 10) })).find((v: { code: string; name: string; amount: number; fixed: string }) => v.code && /top\s*up/i.test(v.name) && v.amount > 0 && Number.isFinite(v.amount)) : null;
+      if (!variationsResponse.ok || clean(variationsPayload?.response_description, 12) !== "000" || !intlVariation) return json(req, { success: false, stage: "international-variations", error: "No fixed-price Ghana airtime top-up variation is available for a safe Sandbox test." }, 502);
+      chosen = { code: intlVariation.code, name: intlVariation.name, amount: intlVariation.amount };
+      billersCode = "233" + recipient.replace(/^0/, "").slice(0, 9);
+      specialPayload = { operator_id: operatorId, country_code: country, product_type_id: productTypeId, email: "sandbox@sandbox.vtpass.com" };
+    }
+    if (!isAirtime && !isInternational) {
       const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
       const catalogue = await catalogueResponse.json().catch(() => null);
       const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
@@ -124,8 +163,9 @@ Deno.serve(async (req: Request) => {
     }
     const id = requestId();
     const purchasePayload: Record<string, unknown> = { request_id: id, serviceID, amount: chosen.amount, phone: recipient };
-    if (!isAirtime) { purchasePayload.billersCode = recipient; purchasePayload.variation_code = chosen.code; }
-    const purchaseResponse = await fetch(base + "/pay", { method: "POST", headers: { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(purchasePayload), signal: AbortSignal.timeout(20000) });
+    if (!isAirtime) { purchasePayload.billersCode = billersCode; purchasePayload.variation_code = chosen.code; }
+    Object.assign(purchasePayload, specialPayload);
+    const purchaseResponse = await fetch(base + "/pay", { method: "POST", headers: requestHeaders, body: JSON.stringify(purchasePayload), signal: AbortSignal.timeout(20000) });
     const purchase = await purchaseResponse.json().catch(() => null);
     const providerCode = clean(purchase?.code, 12);
     let finalPayload = purchase;
@@ -159,6 +199,7 @@ Deno.serve(async (req: Request) => {
       stage,
       service_type: serviceType,
       service_id: serviceID,
+      country_code: isInternational ? "GH" : undefined,
       service_name: serviceName,
       plan: chosen.name,
       sandbox_amount_ngn: chosen.amount,
