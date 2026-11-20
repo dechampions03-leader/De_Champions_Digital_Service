@@ -14,6 +14,15 @@
 | GLO Data | WTF N25 100MB Oneoff | NGN 25 | 20261120080241affbca4da2 | 000 | delivered |
 | GLO Data (Best Value / SME) | N70 200MB / 14 days | NGN 70 | 2026112008024614fa303579 | 000 | delivered |
 
+## Confirmed successful airtime deliveries
+
+| Service | Test top-up | Sandbox amount | Request ID | VTpass code | Status |
+|---|---|---:|---|---|---|
+| MTN Airtime | N50 top-up | NGN 50 | 2026112008133cb46836ff0f | 000 | delivered |
+| Airtel Airtime | N50 top-up | NGN 50 | 202611200814089647f9b5ce | 000 | delivered |
+| 9mobile Airtime | N50 top-up | NGN 50 | 202611200814c73b57defd95 | 000 | delivered |
+| GLO Airtime | N50 top-up | NGN 50 | 202611200814e6b68536b340 | 000 | delivered |
+
 ## Unresolved historical Sandbox attempt
 
 | Service | Request ID | VTpass code(s) observed | Status | Handling |
@@ -24,10 +33,10 @@
 
 | Service | Service ID | Status |
 |---|---|---|
-| MTN Airtime | mtn | Awaiting user-run Sandbox test |
-| Airtel Airtime | airtel | Awaiting user-run Sandbox test |
-| 9mobile Airtime | etisalat | Awaiting user-run Sandbox test |
-| GLO Airtime | glo | Awaiting user-run Sandbox test |
+| MTN Airtime | mtn | <not applicable: confirmed above> |
+| Airtel Airtime | airtel | <not applicable: confirmed above> |
+| 9mobile Airtime | etisalat | <not applicable: confirmed above> |
+| GLO Airtime | glo | <not applicable: confirmed above> |
 | International Airtime | foreign-airtime | Ghana mobile top-up Sandbox flow added; awaiting user-run test |
 | Smile Network Payment | smile-direct | Sandbox email/account verification and plan flow added; requires VTpass Smile Basic Auth secrets in Development and user-run test |
 
