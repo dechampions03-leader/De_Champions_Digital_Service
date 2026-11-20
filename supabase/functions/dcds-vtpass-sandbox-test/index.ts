@@ -124,16 +124,17 @@ Deno.serve(async (req: Request) => {
     if (isSmile) {
       const smileEmail = Deno.env.get("VTPASS_EMAIL") || "";
       const smilePassword = Deno.env.get("VTPASS_PASSWORD") || "";
+      const smileSandboxEmail = Deno.env.get("VTPASS_SMILE_SANDBOX_EMAIL") || "";
       if (!smileEmail || !smilePassword) return json(req, { success: false, error: "Smile testing requires VTPASS_EMAIL and VTPASS_PASSWORD in Development Edge Function secrets. Do not send credentials in chat." }, 503);
+      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(smileSandboxEmail)) return json(req, { success: false, error: "Set VTPASS_SMILE_SANDBOX_EMAIL in Development Edge Function secrets to the exact Smile sandbox verification email published in VTpass documentation. This is separate from the VTpass API login email." }, 503);
       requestHeaders = { Authorization: "Basic " + btoa(smileEmail + ":" + smilePassword), "Content-Type": "application/json", Accept: "application/json" };
       requeryHeaders = { ...requestHeaders };
-      const verify = await fetch(base + "/merchant-verify/smile/email", { method: "POST", headers: requestHeaders, body: JSON.stringify({ billersCode: "tester@sandbox.com", serviceID: "smile-direct" }), signal: AbortSignal.timeout(15000) });
+      const verify = await fetch(base + "/merchant-verify/smile/email", { method: "POST", headers: requestHeaders, body: JSON.stringify({ billersCode: smileSandboxEmail, serviceID: "smile-direct" }), signal: AbortSignal.timeout(15000) });
       const verified = await verify.json().catch(() => null);
       const accounts = verified?.content?.AccountList?.Account;
       const account = Array.isArray(accounts) ? accounts.find((x: Record<string, unknown>) => clean(x.AccountId, 30) === recipient) : null;
-      if (!verify.ok || clean(verified?.code, 12) !== "000" || !account) return json(req, { success: false, stage: "smile-email-verification", error: "VTpass Sandbox did not verify the documented Smile test email/account." }, 200);
+      if (!verify.ok || clean(verified?.code, 12) !== "000" || !account) return json(req, { success: false, stage: "smile-email-verification", provider_code: clean(verified?.code, 12) || null, error: "VTpass Sandbox did not verify the configured Smile sandbox email/account. Check the sandbox email and Development VTpass Basic Auth credentials." }, 200);
       billersCode = clean(account.AccountId, 30);
-      specialPayload = { email: "sandbox@sandbox.vtpass.com" };
     }
     if (isInternational) {
       const country = "GH";
@@ -181,6 +182,8 @@ Deno.serve(async (req: Request) => {
     if (chosen.amount > 0) purchasePayload.amount = chosen.amount;
     if (!isAirtime) { purchasePayload.billersCode = billersCode; purchasePayload.variation_code = chosen.code; }
     if (isSpectranet) purchasePayload.quantity = 1;
+    // Smile's documented purchase payload uses the verified AccountId as
+    // billersCode. Do not add an undocumented email field to /pay.
     Object.assign(purchasePayload, specialPayload);
     const purchaseResponse = await fetch(base + "/pay", { method: "POST", headers: requestHeaders, body: JSON.stringify(purchasePayload), signal: AbortSignal.timeout(20000) });
     const purchase = await purchaseResponse.json().catch(() => null);
