@@ -12,7 +12,7 @@
 <body>
 <header class="top"><a href="airtime-data.html">← Airtime & Data</a><a href="index.html">DCDS Home</a></header>
 <main class="wrap">
-<section class="hero"><span>DE CHAMPIONS DIGITAL SERVICE</span><h1>International Airtime</h1><p>Send mobile top-ups to supported countries. Select the destination, mobile top-up type and operator, then choose a provider-priced option.</p></section>
+<section class="hero"><span>DE CHAMPIONS DIGITAL SERVICE</span><h1>International Airtime &amp; Data</h1><p>Send mobile top-ups or purchase mobile data bundles for supported countries. Select the destination, product type and operator, then choose a provider-priced option.</p></section>
 <section class="card">
 <h2>1. Destination and operator</h2>
 <div class="grid">
@@ -31,7 +31,7 @@
 <div class="field"><label for="checkoutCurrency">Payment currency</label><select id="checkoutCurrency"><option value="NGN">NGN — Nigerian naira</option><option value="USD" disabled>USD — coming soon</option><option value="GBP" disabled>GBP — coming soon</option><option value="EUR" disabled>EUR — coming soon</option></select></div>
 <div class="field"><label for="email">Your email address</label><input id="email" type="email" autocomplete="email" placeholder="you@example.com"></div>
 </div>
-<div class="note">Only fixed-price top-up options with a confirmed NGN provider charge can proceed. Flutterwave checkout is currently NGN-only. USD, GBP and EUR will be enabled after the decimal-capable Flutterwave V4 checkout has passed sandbox testing. <br><br>No top-up is sent before Flutterwave confirms payment.</div><p id="fxEstimate" class="small" aria-live="polite">Choose a top-up option to see the estimated checkout amount.</p>
+<div class="note">Only fixed-price mobile top-up or data options with a confirmed NGN provider charge can proceed. Flutterwave checkout is currently NGN-only. USD, GBP and EUR will be enabled after the decimal-capable Flutterwave V4 checkout has passed sandbox testing. <br><br>No top-up is sent before Flutterwave confirms payment.</div><p id="fxEstimate" class="small" aria-live="polite">Choose a top-up option to see the estimated checkout amount.</p>
 <button id="checkout" class="primary" type="button" disabled>Continue to Flutterwave</button>
 <div id="checkoutStatus" class="status" role="status" aria-live="polite"></div>
 </section>
@@ -75,7 +75,9 @@ function refreshCheckout(){
 }
 function renderPlans(items){
  const root=$("plans");root.replaceChildren();selected=null;
- const priced=items.filter(x=>/\btop[\s-]?up\b/i.test(String(x.name||""))&&Number(x.amount)>0&&String(x.fixed_price).toLowerCase()==="yes");
+ const typeName=String(productTypes.find(x=>String(x.id)===String($("productType").value))?.name||"");
+ const isData=/mobile\s+data/i.test(typeName);
+ const priced=items.filter(x=>(isData?/\b(?:data|\d+(?:\.\d+)?\s*(?:GB|MB))\b/i.test(String(x.name||""))&&!/gift\s*card|voice|minutes?/i.test(String(x.name||"")):/\btop[\s-]?up\b/i.test(String(x.name||"")))&&Number(x.amount)>0&&String(x.fixed_price).toLowerCase()==="yes");
  if(!priced.length){const note=document.createElement("div");note.className="note";note.textContent="VTpass has not returned any fixed-price options in NGN for this operator. No checkout will be offered for zero-priced or unquoted options.";root.append(note);refreshCheckout();return;}
  for(const p of priced){
   const b=document.createElement("button");b.type="button";b.className="plan";b.setAttribute("aria-pressed","false");
@@ -93,9 +95,9 @@ $("country").addEventListener("change",async()=>{
  const code=$("country").value;selected=null;option($("productType"),"Loading product types",[],x=>x.id,x=>x.name);$("operator").replaceChildren(new Option("Choose product type first",""));$("operator").disabled=true;$("plans").textContent="Choose a mobile top-up product type.";if(!code)return;
  try{
   const data=await invoke("international_product_types",{country_code:code});
-  productTypes=(data.product_types||[]).filter(x=>/mobile top.?up/i.test(x.name));
-  option($("productType"),"Choose mobile top-up type",productTypes,x=>x.id,x=>x.name);$("productType").disabled=false;
-  if(!productTypes.length)$("catalogStatus").textContent="VTpass has no Mobile Top Up product type listed for this country.";
+  productTypes=(data.product_types||[]).filter(x=>/mobile\s+(?:top\s*up|data)/i.test(x.name));
+  option($("productType"),"Choose mobile product type",productTypes,x=>x.id,x=>x.name);$("productType").disabled=false;
+  if(!productTypes.length)$("catalogStatus").textContent="VTpass has no mobile top-up or mobile data product type listed for this country.";
  }catch(e){$("catalogStatus").textContent=e.message;}
  refreshCheckout();
 });
@@ -118,7 +120,7 @@ $("checkout").addEventListener("click",async()=>{
  if(sessionError||!session?.session){$("checkoutStatus").textContent="Please sign in to your DCDS account before purchasing.";return;}
  $("checkout").disabled=true;$("checkoutStatus").textContent="Revalidating the international product and preparing checkout…";
  try{
-  const body={service_type:"airtime",network:"international",phone:$("recipient").value.trim(),customer_phone:$("customerPhone").value.trim(),customer_email:$("email").value.trim().toLowerCase(),currency:$("checkoutCurrency").value,country_code:$("country").value,product_type_id:Number($("productType").value),operator_id:$("operator").value,variation_code:selected.code,request_id:crypto.randomUUID()};
+  const body={service_type:/mobile\s+data/i.test(String(productTypes.find(x=>String(x.id)===String($("productType").value))?.name||""))?"data":"airtime",network:"international",phone:$("recipient").value.trim(),customer_phone:$("customerPhone").value.trim(),customer_email:$("email").value.trim().toLowerCase(),currency:$("checkoutCurrency").value,country_code:$("country").value,product_type_id:Number($("productType").value),operator_id:$("operator").value,variation_code:selected.code,request_id:crypto.randomUUID()};
   const {data,error}=await db.functions.invoke("dcds-vtu-create-payment",{body});
   if(error)throw error;if(!data?.success||typeof data.payment_link!=="string")throw new Error(data?.error||"Flutterwave checkout could not be created.");
   const target=new URL(data.payment_link);if(target.protocol!=="https:"||target.hostname!=="checkout.flutterwave.com")throw new Error("Unexpected payment address. Contact DCDS support.");
