@@ -40,6 +40,16 @@
 | International Airtime | foreign-airtime | Ghana mobile top-up Sandbox flow added; awaiting user-run test |
 | Smile Network Payment | smile-direct | Sandbox email/account verification and plan flow added; requires VTpass Smile Basic Auth secrets in Development and user-run test |
 
+
+## Latest failed / blocked Sandbox attempts (2026-11-20)
+
+| Service | Request ID | Result | Handling |
+|---|---|---|---|
+| International Airtime (Ghana selection; provider returned a GMD-labelled variation) | 202611200847c18a21baff2c | VTpass code 011; status unknown; reported amount NGN 0 | Not successful evidence. Do not repeat /pay for this reference. Investigate country/operator/variation mapping and require a positive NGN provider charge before another test. |
+| Smile Network Payment | No request ID generated | Failed at smile-email-verification; no /pay request was made | No purchase was submitted. Check Sandbox Basic Auth account credentials and exact documented Sandbox Smile email/account verification flow before retry. |
+
+The 2026-11-20 screenshots confirmed that the four domestic airtime tests and five data tests above returned code 000 and status delivered. The Ghana international attempt and Smile email verification are not successful deliveries.
+
 ## Safety and release notes
 
 - No Production Supabase migration or Edge Function deployment is authorized by this register.
