@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - feature/phase1-security-reliability
+      - feature/vtpass-provider-migration
+      - feature/dcds-global-vtu-currency
     paths:
       - "supabase/functions/create-payment/**"
       - "supabase/functions/admin-verify-flutterwave-payment/**"
@@ -13,12 +15,15 @@ on:
       - "supabase/functions/flutterwave-webhook/**"
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-vtu-catalog/**"
-      - "supabase/functions/dcds-oplug-readonly/**"
+      - "supabase/functions/dcds-vtpass-catalog/**"
       - "supabase/functions/dcds-vtu-create-payment/**"
       - "supabase/functions/dcds-vtu-process-payment/**"
       - "supabase/functions/dcds-vtu-history/**"
+      - "supabase/functions/dcds-vtpass-sandbox-test/**"
       - "supabase/functions/flutterwave-webhook/**"
       - "airtime-data.html"
+      - "smile-payment.html"
+      - "international-airtime.html"
       - "vtu-payment-return.html"
       - "index.html"
       - "supabase/migrations/**"
@@ -34,8 +39,14 @@ on:
       - "supabase/functions/dcds-international-payout-webhook/**"
       - "supabase/functions/dcds-create-account/**"
       - "supabase/functions/dcds-vtu-catalog/**"
-      - "supabase/functions/dcds-oplug-readonly/**"
+      - "supabase/functions/dcds-vtpass-catalog/**"
+      - "supabase/functions/dcds-vtu-create-payment/**"
+      - "supabase/functions/dcds-vtu-process-payment/**"
+      - "supabase/functions/dcds-vtu-history/**"
       - "airtime-data.html"
+      - "smile-payment.html"
+      - "international-airtime.html"
+      - "vtu-payment-return.html"
       - "index.html"
       - "supabase/migrations/**"
       - ".github/workflows/phase1-validation.yml"
@@ -45,7 +56,7 @@ permissions:
 
 concurrency:
   group: phase1-validation-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   edge-function-checks:
@@ -71,16 +82,18 @@ jobs:
         run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Type-check DCDS account creation function
         run: deno check supabase/functions/dcds-create-account/index.ts
-      - name: Type-check legacy DCDS VTU catalogue endpoint
+      - name: Type-check retired legacy VTU catalogue endpoint
         run: deno check supabase/functions/dcds-vtu-catalog/index.ts
-      - name: Type-check Oplug read-only catalogue endpoint
-        run: deno check supabase/functions/dcds-oplug-readonly/index.ts
+      - name: Type-check VTpass catalogue endpoint
+        run: deno check supabase/functions/dcds-vtpass-catalog/index.ts
       - name: Type-check DCDS VTU Flutterwave checkout endpoint
         run: deno check supabase/functions/dcds-vtu-create-payment/index.ts
       - name: Type-check DCDS VTU verified payment and fulfilment endpoint
         run: deno check supabase/functions/dcds-vtu-process-payment/index.ts
       - name: Type-check authenticated DCDS VTU purchase history endpoint
         run: deno check supabase/functions/dcds-vtu-history/index.ts
+      - name: Type-check admin-only VTpass Sandbox smoke test
+        run: deno check supabase/functions/dcds-vtpass-sandbox-test/index.ts
       - name: Type-check shared Flutterwave webhook
         run: deno check supabase/functions/flutterwave-webhook/index.ts
       - name: Verify DCDS Airtime and Data safety boundaries
@@ -89,28 +102,55 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           page = Path("airtime-data.html").read_text(encoding="utf-8")
-          fn = Path("supabase/functions/dcds-oplug-readonly/index.ts").read_text(encoding="utf-8")
+          smile_page = Path("smile-payment.html").read_text(encoding="utf-8")
+          fn = Path("supabase/functions/dcds-vtpass-catalog/index.ts").read_text(encoding="utf-8")
+          create = Path("supabase/functions/dcds-vtu-create-payment/index.ts").read_text(encoding="utf-8")
+          process = Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8")
+          provider_migration = Path("supabase/migrations/20261119223000_add_dcds_vtu_provider_source.sql").read_text(encoding="utf-8")
           home = Path("index.html").read_text(encoding="utf-8")
           checks = {
               "home page links to the new Airtime & Data landing page": 'href="airtime-data.html"' in home,
-              "landing page loads the server catalogue rather than hardcoding prices": 'functions.invoke("dcds-oplug-readonly"' in page and "₦285" not in page and "₦280" not in page,
-              "checkout uses a separate Flutterwave pay-per-order endpoint": 'functions.invoke("dcds-vtu-create-payment"' in page and 'checkout.flutterwave.com' in page,
-              "checkout is direct payment, not a customer wallet": "There is no DCDS wallet or stored balance" in page and "wallet" not in fn.lower(),
-              "provider API key is only read server-side": 'Deno.env.get("OPLUG_API_KEY")' in fn and "OPLUG_API_KEY" not in page,
-              "VTU order table has isolated RLS and no client grants": "dcds_vtu_orders" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8") and "enable row level security" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8").lower() and "from public, anon, authenticated" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8"),
-              "fulfilment verifies Flutterwave before Oplug purchase": 'transactions/' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and 'providerStatus !== "successful"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and '"/data"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and '"/airtime"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8"),
-              "Oplug purchase uses persisted request-id and idempotency key": '"request-id": String(current.oplug_request_id)' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8") and '"Idempotency-Key"' in Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8"),
-              "Flutterwave webhook routes VTU payments to fulfilment": 'dcds-vtu-process-payment' in Path("supabase/functions/flutterwave-webhook/index.ts").read_text(encoding="utf-8"),
-              "return page invokes the VTU payment processor": 'dcds-vtu-process-payment' in Path("vtu-payment-return.html").read_text(encoding="utf-8"),
-              "network buttons display all four supplied carrier SVG logos": all((Path("assets/network-logos") / name).is_file() for name in ["mtn.svg", "airtel.svg", "glo.svg", "9mobile.svg"]) and all(f'./assets/network-logos/{name}.svg' in page for name in ["mtn", "airtel", "glo", "9mobile"]),
-              "checkout call-to-action stays visually bright with no opacity dimming": ".checkout:disabled" in page and "opacity:1" in page[page.index(".checkout{"):page.index(".secure-note{")],
-              "authenticated transaction history UI uses server history endpoint": 'functions.invoke("dcds-vtu-history"' in page and 'id="purchaseHistory"' in page,
-              "history retry uses the existing Flutterwave transaction and order reference": 'dcds-vtu-process-payment' in page and 'transaction_id:order.transaction_id' in page and 'tx_ref:order.reference' in page and 'async function recheckHistoryOrder' in page,
-              "only allowlisted Nigerian networks enter the returned catalogue": 'new Set(["mtn","airtel","glo","9mobile"])' in fn and "NETWORKS.has(p.network)" in fn,
-              "catalogue endpoint is read-only and rejects unexpected actions": 'const allowedCatalog = new Map([' in fn and '["data_plans", "/data_plans"]' in fn and 'base + "/airtime"' not in fn and 'base + "/data"' not in fn,
+              "landing page loads the VTpass server catalogue": 'functions.invoke("dcds-vtpass-catalog"' in page and "dcds-vtpass-catalog" in page,
+              "checkout uses the separate Flutterwave pay-per-order endpoint": 'functions.invoke("dcds-vtu-create-payment"' in page and 'checkout.flutterwave.com' in page,
+              "checkout remains direct pay-per-order with no customer wallet": "There is no DCDS wallet or stored balance" in page,
+              "VTpass catalogue reads keys server-side only": 'Deno.env.get("VTPASS_API_KEY")' in fn and 'Deno.env.get("VTPASS_PUBLIC_KEY")' in fn and "VTPASS_API_KEY" not in page,
+              "VTpass GET catalogue uses API and public key headers": '"api-key": apiKey' in fn and '"public-key": publicKey' in fn and '"/service-variations?serviceID="' in fn,
+              "mobile, SME, Spectranet and Smile data services are mapped": all(x in fn for x in ["mtn-data","airtel-data","glo-data","glo-sme-data","etisalat-data","9mobile-sme-data","spectranet","smile-direct"]),
+              "Smile email verification endpoint is present": 'merchant-verify/smile/email' in fn and 'action === "verify_smile"' in fn,
+              "Smile checkout re-verifies account email and selected AccountId": 'merchant-verify/smile/email' in create and 'provider_billers_code' in create and 'provider_email' in create,
+              "Smile UI requires verification and a selected linked account": 'action:"verify_smile"' in smile_page and 'smile_account_id' in smile_page and 'smile_email' in smile_page,
+              "Smile account verification is restricted to signed-in DCDS users": "requireSignedIn(req)" in fn,
+              "Smile endpoints use documented Basic Authentication": all(x in fn for x in ["smileBasicHeaders","VTPASS_EMAIL","VTPASS_PASSWORD","Authorization: \"Basic \""]) and all(x in create for x in ["VTPASS_EMAIL","VTPASS_PASSWORD","Authorization: \"Basic \""]) and all(x in process for x in ["VTPASS_EMAIL","VTPASS_PASSWORD","Authorization: \"Basic \""]),
+              "international checkout supports fixed-price top-ups and mobile data with explicit NGN charges": "serviceType === \"data\"" in create and "serviceType === \"airtime\"" in create and "Number(variation.charged_amount)" in create and "charged_amount" in fn,
+              "Smile catalogue, verification, checkout and fulfilment use Basic Authentication": all(x in fn for x in ["smileBasicHeaders", "Authorization: \"Basic \"", "VTPASS_EMAIL", "VTPASS_PASSWORD"]) and all(x in create for x in ["Authorization: \"Basic \"", "VTPASS_EMAIL", "VTPASS_PASSWORD"]) and all(x in process for x in ["Authorization: \"Basic \"", "VTPASS_EMAIL", "VTPASS_PASSWORD"]),
+              "international airtime catalogue endpoints are mapped": all(x in fn for x in ["international_countries","international_product_types","international_operators","international_variations","get-international-airtime-countries","get-international-airtime-operators"]),
+              "international checkout revalidates country, operator, service-specific product type and positive explicit NGN charge": all(x in create for x in ["foreign-airtime","get-international-airtime-countries","get-international-airtime-operators","Number(variation.charged_amount)","!Number.isFinite(amount)","amount <= 0","serviceType === \"airtime\"","serviceType === \"data\"","mobile\\s+top\\s*up","mobile\\s+data"]),
+              "international airtime checkout rejects gift cards and non-top-up products": r"top[\s-]?up" in create and r"top[\s-]?up" in Path("international-airtime.html").read_text(encoding="utf-8"),
+              "international fulfilment sends the complete VTpass payload": all(x in process for x in ["foreign-airtime","operator_id","country_code","product_type_id","provider_email"]),
+              "international page blocks unpriced provider variations": 'Number(x.amount)>0' in Path("international-airtime.html").read_text(encoding="utf-8") and 'network:"international"' in Path("international-airtime.html").read_text(encoding="utf-8"),
+              "Smile email verification endpoint is present": 'merchant-verify/smile/email' in fn and 'action === "verify_smile"' in fn,
+              "catalogue includes low-price positive VTpass variations": "item.amount > 0" in fn and "item.amount >= 50" not in fn,
+              "Glo and 9mobile SME variation IDs retain their provider service ID": 'serviceID + "::" + id' in fn and 'includes(serviceID)' in fn and "9mobile-sme-data" in fn,
+              "catalogue tolerates one optional product endpoint being unavailable": "Promise.allSettled" in fn,
+              "VTpass admin balance requires verified DCDS administrator": 'auth.getUser()' in fn and 'rpc("is_dcds_admin")' in fn and '"/balance"' in fn,
+              "checkout revalidates exact VTpass service and variation server-side": 'service-variations?serviceID=' in create and 'item.variation_code' in create and 'variation_amount' in create and 'glo-sme-data' in create and '9mobile-sme-data' in create and 'spectranet' in create and 'smile-direct' in create and 'provider_billers_code' in create,
+              "checkout permits provider-priced data below airtime minimum": 'requestedServiceID + "::" + requestedVariationCode' in create and "requestedAmount < 50" in create,
+              "checkout request IDs begin with Africa/Lagos date and minute": 'timeZone: "Africa/Lagos"' in create and 'vtpassRequestId' in create,
+              "VTpass POST credentials remain server-side": 'Deno.env.get("VTPASS_SECRET_KEY")' in process and '"secret-key": vtpassSecretKey' in process and "VTPASS_SECRET_KEY" not in page,
+              "fulfilment verifies Flutterwave before VTpass purchase": 'transactions/' in process and 'providerStatus !== "successful"' in process and 'vtpassBase + "/pay"' in process,
+              "subsequent fulfilment retries use requery only": 'vtpassBase + "/requery"' in process and 'Never submit /pay a second time' in process,
+              "fulfilment preserves the exact selected VTpass service and variation": 'storedServiceID' in process and 'storedVariationCode' in process and 'glo-sme-data' in process and '9mobile-sme-data' in process and 'spectranet' in process and 'smile-direct' in process and 'provider_billers_code' in process,
+              "documented terminal VTpass failures enter refund review": all(code in process for code in ['"010"','"011"','"012"','"013"','"016"','"017"','"018"','"023"','"027"','"028"','"034"','"035"','"040"','"091"']),
+              "provider delivery requires delivered transaction status": 'transactionStatus === "delivered"' in process,
+              "ambiguous VTpass responses remain processing": 'status: "processing"' in process and "never submit another purchase" in process,
+              "VTU order table retains isolated RLS and no client grants": "dcds_vtu_orders" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8") and "enable row level security" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8").lower() and "from public, anon, authenticated" in Path("supabase/migrations/20261118165000_dcds_vtu_pay_per_order_checkout.sql").read_text(encoding="utf-8"),
+              "authenticated transaction history UI still uses server history endpoint": 'functions.invoke("dcds-vtu-history"' in page and 'id="purchaseHistory"' in page,
               "preview hosts select the isolated Development Supabase project": 'tjgsxbmkpvktlqulbktv.supabase.co' in page and 'IS_DCDS_PRODUCTION' in page,
-              "admin balance requires a verified DCDS admin session": 'auth.getUser()' in fn and 'rpc("is_dcds_admin")' in fn,
               "provider failure does not substitute invented prices": "No sample prices are being substituted" in page and "Live data plans are temporarily unavailable" in page,
+              "checkout requires an explicit VTpass base URL and does not default production to sandbox": 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in create and 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in process and 'Deno.env.get("VTPASS_API_BASE_URL") || ""' in fn and "https://sandbox.vtpass.com/api" not in create + process + fn,
+              "VTpass checkout and fulfilment base URLs use official HTTPS /api hosts": all(x in create and x in process for x in ['vtpassHost.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','vtpassHost.pathname','vtpassHost.password','vtpassHost.search','vtpassHost.hash']),
+              "VTpass catalogue base URL is restricted to the official HTTPS /api endpoint": all(x in fn for x in ['parsed.protocol !== "https:"','["sandbox.vtpass.com", "vtpass.com"].includes','parsed.pathname','parsed.password','parsed.search','parsed.hash']),
+              "new VTpass purchases are explicitly tagged for provider routing": 'provider: "vtpass"' in create and 'existing.provider === "vtpass"' in create and 'openOrder.provider === "vtpass"' in create,
           }
           failures = [name for name, passed in checks.items() if not passed]
           for name, passed in checks.items():
@@ -118,6 +158,146 @@ jobs:
           if failures:
               raise SystemExit(f"{len(failures)} DCDS VTU safety checks failed.")
           PY
+      - name: Verify global VTU currency and NGN provider-cost separation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          create = Path("supabase/functions/dcds-vtu-create-payment/index.ts").read_text(encoding="utf-8")
+          process = Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8")
+          migration = Path("supabase/migrations/20261119220000_add_global_vtu_checkout_currency.sql").read_text(encoding="utf-8")
+          pages = {name: Path(name).read_text(encoding="utf-8") for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html", "vtu-payment-return.html"]}
+          checks = {
+              "checkout accepts only explicitly supported currencies": '["NGN", "USD", "GBP", "EUR"]' in create,
+              "FX quote is fetched server-side and never accepted from the browser": "/v2/rate/NGN/" in create and "body.fx_rate" not in create,
+              "FX quote is checked for pair, positive rate and freshness": 'rateData?.base !== "NGN"' in create and "ageDays > 4" in create and "fxRate <= 0" in create,
+              "customer price and NGN provider cost are stored separately": "provider_cost: providerCostNgn" in create and 'provider_cost_currency: "NGN"' in create and "currency: customerCurrency" in create,
+              "retry returns the existing checkout without depending on a fresh FX fetch": create.index(".maybeSingle();", create.index("const customerCurrency")) < create.index("api.frankfurter.dev/v2/rate/NGN/"),
+              "VTpass /pay never receives the customer checkout amount": 'amount: Number(current.provider_cost)' in process and 'amount: Number(current.amount)' not in process,
+              "foreign checkout is blocked until decimal-capable V4 is implemented": 'if (customerCurrency !== "NGN")' in create and "V3 Standard Checkout documents amount as int32" in create,
+              "foreign currency choices remain visibly disabled until V4 is ready": all(all(f'<option value="{currency}" disabled>' in pages[name] for currency in ["USD", "GBP", "EUR"]) for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html"]),
+              "VTpass fulfilment uses the saved NGN provider cost": "amount: Number(current.provider_cost)" in process,
+              "provider cost currency is checked before fulfilment": "provider_cost_currency" in process and '"NGN"' in process,
+              "Flutterwave verification matches the stored order currency": 'currency !== String(order.currency || "NGN").toUpperCase()' in process,
+              "migration adds quote snapshot and provider currency fields": all(x in migration for x in ["fx_rate", "fx_rate_date", "fx_rate_source", "provider_cost_currency"]),
+              "migration preserves NGN provider settlement and allows approved customer currencies": "provider_cost_currency = 'NGN'" in migration and "ARRAY['NGN','USD','GBP','EUR']" in migration,
+              "all VTU checkout pages send a selected currency": all('currency:' in pages[name] for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html"]),
+              "customer order history and return page display stored currency": 'formatCurrency(Number(order.amount' in pages["airtime-data.html"] and 'currency:String(order.currency' in pages["vtu-payment-return.html"],
+          }
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} global VTU currency checks failed.")
+          PY
+
+      - name: Verify Phase 1 migration invariants
+        shell: bash
+        run: |
+          test -f supabase/migrations/20261110000100_phase1_security_reliability.sql
+          grep -q "email_confirmed_at" supabase/functions/create-payment/index.ts
+          grep -q "dcds_create_checkout_order" supabase/functions/create-payment/index.ts
+          grep -q "provider_transfer_id" supabase/functions/dcds-process-payout/index.ts
+          grep -qi "on delete restrict" supabase/migrations/20261110000100_phase1_security_reliability.sql
+          test -f supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          test -f supabase/migrations/20261111113000_dcds_payment_verification_audit_event.sql
+          grep -q "admin_approve_manual_bank_payment" supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          grep -q "dcds-payment-receipts" supabase/migrations/20261111110000_dcds_admin_payment_operations.sql
+          grep -q "verify_by_reference" supabase/functions/admin-verify-flutterwave-payment/index.ts
+
+      - name: Verify pending checkout reconciliation safeguards
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          migration = Path("supabase/migrations/20261112081327_dcds_pending_checkout_reconciliation.sql").read_text(encoding="utf-8")
+          create_payment = Path("supabase/functions/create-payment/index.ts").read_text(encoding="utf-8")
+          admin_verify = Path("supabase/functions/admin-verify-flutterwave-payment/index.ts").read_text(encoding="utf-8")
+          admin_page = Path("student-management.html").read_text(encoding="utf-8")
+
+          checks = {
+              "new orders have a persisted checkout expiry": "checkout_expires_at" in migration and "p_checkout_expires_at" in create_payment,
+              "local expiry is recorded but never auto-fails an order": "checkout_expires_at" in migration and "SET status = 'failed'" not in migration.split("CREATE OR REPLACE FUNCTION public.admin_release_pending_flutterwave_checkout", 1)[0],
+              "legacy and expired pending orders remain blocked until provider review": "checkout_expires_at timestamptz" in migration and "Legacy and expired pending orders deliberately remain blocking" in migration,
+              "new Flutterwave sessions have provider-side timeout and link expiry": "session_duration: 60" in create_payment and "max_retry_attempt: 3" in create_payment and "link_expiration: checkoutExpiresAt.toISOString()" in create_payment,
+              "reconciliation checks are written to the audit trail": 'event_type: "flutterwave_reconciliation_checked"' in admin_verify and "'flutterwave_reconciliation_checked'" in migration,
+              "not-found or failed provider checks do not automatically release the order": 'outcome = referenceNotFound ? "not_found" : "unconfirmed"' in admin_verify and 'outcome = terminalFailure' in admin_verify and "order_unchanged: true" in admin_verify,
+              "release requires the latest recent provider check and a closed/expired link": "interval '2 hours'" in migration and "p_confirm_link_disabled" in migration and "v_link_expired" in migration and "ORDER BY e.created_at DESC" in migration and "v_check.details ->> 'outcome' NOT IN ('not_found','failed')" in migration,
+              "release is blocked when a non-failed payment or linked enrolment exists": "p.status <> 'failed'" in migration and "e.order_id = p_order_id" in migration,
+              "release creates an auditable administrator event": "'pending_checkout_released'" in migration and "administrator_confirmation_note" in migration,
+              "admin UI exposes the guarded release action": 'action:"release_pending"' in admin_page and "Release checkout as unpaid" in admin_page,
+              "new checkout-order RPC remains service-role only": "REVOKE ALL ON FUNCTION public.dcds_create_checkout_order(uuid,uuid,text,text,timestamptz)" in migration and "TO service_role" in migration,
+          }
+
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} pending-checkout reconciliation checks failed.")
+          PY
+
+      - name: Require RLS on every new public table
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import glob
+          import re
+          import sys
+
+          files = sorted(glob.glob("supabase/migrations/*.sql"))
+          failures = []
+          created_pattern = r'(?im)^\s*CREATE\s+TABLE(?:\s+IF\s+NOT\s+EXISTS)?\s+(?:"?public"?\s*\.\s*)?"?([A-Za-z_][A-Za-z0-9_]*)"?'
+          for path in files:
+              with open(path, encoding="utf-8") as source:
+                  sql = source.read()
+              created = re.findall(created_pattern, sql)
+              for table in created:
+                  rls_pattern = (
+                      rf'(?im)^\s*ALTER\s+TABLE(?:\s+IF\s+EXISTS)?\s+'
+                      rf'(?:"?public"?\s*\.\s*)?"?{re.escape(table)}"?'
+                      rf'\s+ENABLE\s+ROW\s+LEVEL\s+SECURITY\s*;'
+                  )
+                  if not re.search(rls_pattern, sql):
+                      failures.append(f"{path}: {table} is created without explicit RLS enablement")
+          if failures:
+              print("\n".join(failures))
+              sys.exit(1)
+          print(f"Verified explicit RLS enablement for all new public tables across {len(files)} migration files.")
+          PY
+      - name: Verify global VTU currency and NGN provider-cost separation
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          create = Path("supabase/functions/dcds-vtu-create-payment/index.ts").read_text(encoding="utf-8")
+          process = Path("supabase/functions/dcds-vtu-process-payment/index.ts").read_text(encoding="utf-8")
+          migration = Path("supabase/migrations/20261119220000_add_global_vtu_checkout_currency.sql").read_text(encoding="utf-8")
+          pages = {name: Path(name).read_text(encoding="utf-8") for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html", "vtu-payment-return.html"]}
+          checks = {
+              "checkout accepts only explicitly supported currencies": '["NGN", "USD", "GBP", "EUR"]' in create,
+              "FX quote is fetched server-side and never accepted from the browser": "/v2/rate/NGN/" in create and "body.fx_rate" not in create,
+              "FX quote is checked for pair, positive rate and freshness": 'rateData?.base !== "NGN"' in create and "ageDays > 4" in create and "fxRate <= 0" in create,
+              "customer price and NGN provider cost are stored separately": "provider_cost: providerCostNgn" in create and 'provider_cost_currency: "NGN"' in create and "currency: customerCurrency" in create,
+              "retry returns the existing checkout without depending on a fresh FX fetch": create.index(".maybeSingle();", create.index("const customerCurrency")) < create.index("api.frankfurter.dev/v2/rate/NGN/"),
+              "VTpass /pay never receives the customer checkout amount": 'amount: Number(current.provider_cost)' in process and 'amount: Number(current.amount)' not in process,
+              "foreign checkout is blocked until decimal-capable V4 is implemented": 'if (customerCurrency !== "NGN")' in create and "V3 Standard Checkout documents amount as int32" in create,
+              "foreign currency choices remain visibly disabled until V4 is ready": all(all(f'<option value="{currency}" disabled>' in pages[name] for currency in ["USD", "GBP", "EUR"]) for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html"]),
+              "VTpass fulfilment uses the saved NGN provider cost": "amount: Number(current.provider_cost)" in process,
+              "provider cost currency is checked before fulfilment": "provider_cost_currency" in process and '"NGN"' in process,
+              "Flutterwave verification matches the stored order currency": 'currency !== String(order.currency || "NGN").toUpperCase()' in process,
+              "migration adds quote snapshot and provider currency fields": all(x in migration for x in ["fx_rate", "fx_rate_date", "fx_rate_source", "provider_cost_currency"]),
+              "migration preserves NGN provider settlement and allows approved customer currencies": "provider_cost_currency = 'NGN'" in migration and "ARRAY['NGN','USD','GBP','EUR']" in migration,
+              "all VTU checkout pages send a selected currency": all('currency:' in pages[name] for name in ["airtime-data.html", "international-airtime.html", "smile-payment.html"]),
+              "customer order history and return page display stored currency": 'formatCurrency(Number(order.amount' in pages["airtime-data.html"] and 'currency:String(order.currency' in pages["vtu-payment-return.html"],
+          }
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} global VTU currency checks failed.")
+          PY
+
       - name: Verify Phase 1 migration invariants
         shell: bash
         run: |

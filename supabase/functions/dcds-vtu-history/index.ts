@@ -31,7 +31,8 @@ function reply(req: Request, body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), { status, headers: cors(req) });
 }
 function maskPhone(phone: string): string {
-  return phone.replace(/^(\d{3})\d{4}(\d{4})$/, "$1****$2");
+  const clean = phone.replace(/\s/g, "");
+  return clean.length >= 7 ? clean.slice(0, 3) + "****" + clean.slice(-3) : "";
 }
 
 Deno.serve(async (req: Request) => {
@@ -58,7 +59,7 @@ Deno.serve(async (req: Request) => {
     }
 
     const { data, error } = await db.from("dcds_vtu_orders")
-      .select("tx_ref,service_type,network,recipient_phone,data_plan_name,amount,currency,status,provider_status,flutterwave_transaction_id,created_at,paid_at,fulfilled_at")
+      .select("tx_ref,service_type,network,recipient_phone,data_plan_name,provider_metadata,amount,currency,status,provider_status,flutterwave_transaction_id,created_at,paid_at,fulfilled_at")
       .eq("user_id", authData.user.id)
       .order("created_at", { ascending: false })
       .limit(50);
@@ -69,7 +70,7 @@ Deno.serve(async (req: Request) => {
       service_type: String(order.service_type || ""),
       network: String(order.network || ""),
       recipient: maskPhone(String(order.recipient_phone || "")),
-      plan: order.data_plan_name ? String(order.data_plan_name) : null,
+      plan: order.data_plan_name ? String(order.data_plan_name) : (order.provider_metadata && typeof order.provider_metadata === "object" ? String((order.provider_metadata as Record<string, unknown>).plan_name || "") || null : null),
       amount: Number(order.amount || 0),
       currency: String(order.currency || "NGN"),
       status: String(order.status || "needs_review"),

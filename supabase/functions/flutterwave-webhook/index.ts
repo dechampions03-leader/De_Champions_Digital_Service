@@ -228,7 +228,7 @@ Deno.serve(async (req: Request) => {
 
     // VTU orders are isolated from course orders and use their own idempotent
     // fulfilment path. The processor re-verifies the Flutterwave transaction
-    // and sends the Oplug request with the persisted provider request-id.
+    // and sends the VTpass request with the persisted provider request-id.
     const { data: vtuOrder, error: vtuLookupError } = await db
       .from("dcds_vtu_orders")
       .select("id,tx_ref")

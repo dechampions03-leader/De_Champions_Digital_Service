@@ -1,0 +1,124 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#542080"><title>Smile Network | DCDS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+<style>
+:root{color-scheme:light;--ink:#351052;--purple:#6426a4;--line:#eadff2;--muted:#806d8e}*{box-sizing:border-box}body{margin:0;background:linear-gradient(150deg,#fcfaff,#f5edff 58%,#fffaf0);color:var(--ink);font-family:'DM Sans',sans-serif}.top{padding:16px max(18px,calc((100% - 900px)/2));background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:12px}.top a{color:#542080;text-decoration:none;font-weight:800;font-size:13px}.wrap{width:min(900px,calc(100% - 28px));margin:24px auto 60px}.hero{padding:28px;border-radius:22px;color:#fff;background:linear-gradient(125deg,#21083f,#542080 60%,#7b35b8)}.hero h1{font:800 clamp(30px,6vw,46px)/1.1 'Playfair Display',serif;margin:10px 0}.hero p{max-width:680px;color:#eee1fa;line-height:1.7;font-size:14px}.card{margin-top:16px;padding:clamp(17px,4vw,28px);background:#fff;border:1px solid var(--line);border-radius:20px;box-shadow:0 12px 34px #39115d0a}.grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}.field{display:grid;gap:7px;margin:12px 0}.field label{font-size:12px;font-weight:800;color:#503663}input,select{width:100%;height:48px;border:1px solid #e5d9ef;border-radius:12px;padding:0 12px;font:inherit;color:#2b1b3d;background:white}button{min-height:46px;padding:0 16px;border:0;border-radius:12px;background:linear-gradient(115deg,#6627a6,#873ddb);color:#fff;font:800 13px 'DM Sans';cursor:pointer}button:disabled{opacity:.55;cursor:not-allowed}.primary{width:100%;margin-top:12px;background:linear-gradient(115deg,#f1cd69,#ffe293);color:#351052;border:1px solid #d8b64f}.status{margin-top:10px;min-height:22px;font-size:12px;color:#73528d;line-height:1.6}.small{font-size:11px;color:var(--muted);line-height:1.7}.plan-list{display:grid;gap:8px;max-height:330px;overflow:auto}.plan{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:1px solid var(--line);border-radius:12px;text-align:left;background:#fff;color:var(--ink);width:100%;min-height:58px}.plan[aria-pressed=true]{border:2px solid var(--purple);background:#fbf7ff}.plan strong{display:block;font-size:12px}.plan small{display:block;margin-top:3px;color:var(--muted);font-size:10px}.price{font-weight:900;color:#542080;white-space:nowrap}.note{padding:12px;border-radius:12px;background:#fffaf0;border:1px solid #efe3bf;color:#806a39;font-size:11px;line-height:1.7}.hide{display:none!important}@media(max-width:620px){.grid{grid-template-columns:1fr}.hero{padding:23px}.wrap{margin-top:15px}}
+</style>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+<header class="top"><a href="airtime-data.html">← Airtime & Data</a><a href="index.html">DCDS Home</a></header>
+<main class="wrap">
+<section class="hero"><span>DE CHAMPIONS DIGITAL SERVICE</span><h1>Smile Network Payment</h1><p>Verify the Smile account email, select the correct linked account, choose a live data bundle and pay securely through Flutterwave.</p></section>
+<section class="card">
+<h2>1. Verify your Smile account</h2>
+<p class="small">Enter the email address registered with Smile. We will ask VTpass to verify it and return the available account IDs. Your Smile account password is never requested.</p>
+<div class="grid"><div class="field"><label for="smileEmail">Smile account email</label><input id="smileEmail" type="email" autocomplete="email" placeholder="name@example.com"></div><div class="field" style="align-content:end"><button id="verifyButton" type="button">Verify Smile email</button></div></div>
+<div class="status" id="verifyStatus" role="status" aria-live="polite"></div>
+<div id="accountSection" class="field hide"><label for="smileAccount">Choose your verified Smile account</label><select id="smileAccount"><option value="">Select account ID</option></select></div>
+</section>
+<section class="card">
+<h2>2. Select a bundle</h2>
+<p class="small">Plans and prices are retrieved from the VTpass Smile catalogue. The checkout re-verifies the email and selected account before payment.</p>
+<div id="plans" class="plan-list"><div class="note">Loading Smile bundles…</div></div>
+</section>
+<section class="card">
+<h2>3. Payment details</h2>
+<div class="grid">
+<div class="field"><label for="contactPhone">Your contact phone</label><input id="contactPhone" type="tel" inputmode="tel" autocomplete="tel" placeholder="+1 202 555 0100"></div>
+<div class="field"><label>Selected bundle (provider price in NGN)</label><input id="selectedPlan" readonly placeholder="Choose a Smile bundle"></div>
+<div class="field"><label for="checkoutCurrency">Payment currency</label><select id="checkoutCurrency"><option value="NGN">NGN — Nigerian naira</option><option value="USD" disabled>USD — coming soon</option><option value="GBP" disabled>GBP — coming soon</option><option value="EUR" disabled>EUR — coming soon</option></select></div>
+</div>
+<div class="note">Your selected Smile account ID receives the bundle. The contact phone is supplied as the customer contact number. Flutterwave checkout is currently NGN-only. USD, GBP and EUR will be enabled after the decimal-capable Flutterwave V4 checkout has passed sandbox testing.</div><p id="fxEstimate" class="small" role="status" aria-live="polite">Choose a Smile bundle to see the estimated checkout amount.</p>
+<button id="checkout" class="primary" type="button" disabled>Continue to Flutterwave</button>
+<div id="checkoutStatus" class="status" role="status" aria-live="polite"></div>
+</section>
+</main>
+<script>
+const PROD=["dechampions03-leader.github.io","dechampionsdigital.com","www.dechampionsdigital.com"].includes(location.hostname.toLowerCase());
+const URL=PROD?"https://qxsenflgaweeadvggnyp.supabase.co":"https://tjgsxbmkpvktlqulbktv.supabase.co";
+const KEY=PROD?"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP":"sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
+const db=window.supabase?.createClient?window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+const $=id=>document.getElementById(id);
+let accounts=[],plans=[],selected=null,previewRate=1,previewDate=null,quoteRequest=0;
+const money=n=>"₦"+Number(n).toLocaleString("en-NG",{maximumFractionDigits:2});
+const checkoutMoney=(n,currency=$("checkoutCurrency").value)=>new Intl.NumberFormat("en",{style:"currency",currency,maximumFractionDigits:2}).format(Number(n));
+function updateFxEstimate(){
+ const target=$("fxEstimate");
+ if(!selected){target.textContent="Choose a Smile bundle to see the estimated checkout amount.";return;}
+ if(!Number.isFinite(previewRate)){target.textContent="A preview rate is unavailable. The server will require a fresh quote to continue.";return;}
+ target.textContent="Estimated checkout: "+checkoutMoney(Number(selected.amount)*previewRate)+(previewDate?" · reference rate dated "+previewDate:" · NGN checkout")+". Final amount is confirmed at secure checkout.";
+}
+async function refreshFxPreview(){
+ const request=++quoteRequest,currency=$("checkoutCurrency").value;
+ if(currency==="NGN"){previewRate=1;previewDate=null;updateFxEstimate();return;}
+ previewRate=Number.NaN;previewDate=null;updateFxEstimate();
+ try{
+  const response=await fetch("https://api.frankfurter.dev/v2/rate/NGN/"+currency,{headers:{Accept:"application/json"},signal:AbortSignal.timeout(9000)});
+  const data=await response.json();
+  if(!response.ok||data?.base!=="NGN"||data?.quote!==currency||!Number.isFinite(Number(data?.rate))||Number(data.rate)<=0)throw new Error("No reference quote");
+  if(request!==quoteRequest)return;
+  previewRate=Number(data.rate);previewDate=String(data.date||"");updateFxEstimate();
+ }catch{if(request===quoteRequest){previewRate=Number.NaN;updateFxEstimate();}}
+}
+$("checkoutCurrency").addEventListener("change",refreshFxPreview);
+function renderPlans(){
+ const root=$("plans");root.replaceChildren();
+ if(!plans.length){const p=document.createElement("div");p.className="note";p.textContent="Smile plans are temporarily unavailable. Refresh the page to try again.";root.append(p);return;}
+ for(const p of plans){
+  const b=document.createElement("button");b.type="button";b.className="plan";b.setAttribute("aria-pressed",String(selected?.id===p.id));
+  const left=document.createElement("span");const strong=document.createElement("strong");strong.textContent=p.plan;const small=document.createElement("small");small.textContent=p.validity||"Smile data bundle";left.append(strong,small);
+  const price=document.createElement("span");price.className="price";price.textContent=money(p.amount);b.append(left,price);
+  b.addEventListener("click",()=>{selected=p;$("selectedPlan").value=p.plan+" — "+money(p.amount);renderPlans();updateFxEstimate();refreshCheckout();});root.append(b);
+ }
+}
+function refreshCheckout(){const valid=/^\+?[0-9\s()-]{7,20}$/.test($("contactPhone").value.trim());$("checkout").disabled=!(db&&selected&&accounts.length&&$("smileAccount").value&&valid);}
+async function loadPlans(){
+ try{
+  const {data,error}=await db.functions.invoke("dcds-vtpass-catalog",{body:{action:"catalog"}});
+  if(error)throw error;
+  if(!data?.success||!Array.isArray(data.data?.plans))throw new Error(data?.error||"Catalogue unavailable");
+  plans=data.data.plans.filter(p=>p.network==="smile"&&p.service_id==="smile-direct"&&Number(p.amount)>0).map(p=>({id:String(p.id),plan:String(p.plan),amount:Number(p.amount),validity:String(p.validity||"")}));
+  renderPlans();
+ }catch(e){$("plans").textContent="Could not load Smile plans: "+(e.message||"Please try again.");}
+}
+$("verifyButton").addEventListener("click",async()=>{
+ const email=$("smileEmail").value.trim().toLowerCase();
+ if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ $("verifyStatus").textContent="Enter a valid Smile email address.";return;}
+ $("verifyButton").disabled=true;$("verifyStatus").textContent="Checking your Smile email with VTpass…";
+ try{
+  const {data:sessionData,error:sessionError}=await db.auth.getSession();
+  if(sessionError||!sessionData?.session)throw new Error("Sign in to DCDS before verifying a Smile account.");
+  const {data,error}=await db.functions.invoke("dcds-vtpass-catalog",{body:{action:"verify_smile",email}});
+  if(error)throw error;
+  if(!data?.success||!Array.isArray(data.accounts)||!data.accounts.length)throw new Error(data?.error||"No linked accounts were returned.");
+  accounts=data.accounts;$("smileAccount").replaceChildren(new Option("Select account ID",""));
+  for(const a of accounts){const label=[a.account_id,a.friendly_name].filter(Boolean).join(" — ");$("smileAccount").add(new Option(label,a.account_id));}
+  $("accountSection").classList.remove("hide");$("verifyStatus").textContent="Verified"+(data.customer_name?" for "+data.customer_name:"")+". Select the Smile account you want to top up.";
+  refreshCheckout();
+ }catch(e){accounts=[];$("accountSection").classList.add("hide");$("verifyStatus").textContent=e.message||"Verification failed. Check the email and try again.";}
+ finally{$("verifyButton").disabled=false;}
+});
+$("smileAccount").addEventListener("change",refreshCheckout);$("contactPhone").addEventListener("input",refreshCheckout);
+$("checkout").addEventListener("click",async()=>{
+ if(!db||!selected||!$("smileAccount").value)return;
+ const {data:session,error:sessionError}=await db.auth.getSession();
+ if(sessionError||!session?.session){$("checkoutStatus").textContent="Please sign in to your DCDS account before purchasing.";return;}
+ $("checkout").disabled=true;$("checkoutStatus").textContent="Rechecking Smile account and preparing secure payment…";
+ try{
+  const body={service_type:"data",network:"smile",phone:$("contactPhone").value.trim(),plan_id:selected.id,smile_email:$("smileEmail").value.trim().toLowerCase(),smile_account_id:$("smileAccount").value,currency:$("checkoutCurrency").value,request_id:crypto.randomUUID()};
+  const {data,error}=await db.functions.invoke("dcds-vtu-create-payment",{body});
+  if(error)throw error;
+  if(!data?.success||typeof data.payment_link!=="string")throw new Error(data?.error||"Flutterwave checkout could not be created.");
+  const target=new URL(data.payment_link);
+  if(target.protocol!=="https:"||target.hostname!=="checkout.flutterwave.com")throw new Error("Unexpected payment address. Contact DCDS support.");
+  $("checkoutStatus").textContent="Secure checkout ready. Redirecting…";location.assign(target.href);
+ }catch(e){$("checkoutStatus").textContent=(e.message||"Checkout failed.")+" Do not pay again unless your order status is checked.";}
+ finally{refreshCheckout();}
+});
+refreshFxPreview();if(db)loadPlans();else{$("plans").textContent="DCDS connection unavailable. Reload the page.";}
+</script>
+</body></html>
