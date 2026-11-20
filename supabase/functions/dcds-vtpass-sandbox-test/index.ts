@@ -133,7 +133,23 @@ Deno.serve(async (req: Request) => {
       const verified = await verify.json().catch(() => null);
       const accounts = verified?.content?.AccountList?.Account;
       const account = Array.isArray(accounts) ? accounts.find((x: Record<string, unknown>) => clean(x.AccountId, 30) === recipient) : null;
-      if (!verify.ok || clean(verified?.code, 12) !== "000" || !account) return json(req, { success: false, stage: "smile-email-verification", provider_code: clean(verified?.code, 12) || null, error: "VTpass Sandbox did not verify the configured Smile sandbox email/account. Check the sandbox email and Development VTpass Basic Auth credentials." }, 200);
+      if (!verify.ok || clean(verified?.code, 12) !== "000" || !account) {
+        // Surface only safe provider diagnostics; never echo request headers or credentials.
+        const providerMessage = clean(
+          verified?.response_description ?? verified?.message ?? verified?.error ?? verified?.content?.Customer_Name,
+          180,
+        );
+        return json(req, {
+          success: false,
+          stage: "smile-email-verification",
+          provider_code: clean(verified?.code, 12) || null,
+          provider_http_status: verify.status,
+          provider_message: providerMessage || null,
+          account_count: Array.isArray(accounts) ? accounts.length : 0,
+          expected_account_found: Boolean(account),
+          error: "VTpass Sandbox did not verify the configured Smile sandbox email/account. Review the provider code/message and Development Basic Auth configuration.",
+        }, 200);
+      }
       billersCode = clean(account.AccountId, 30);
     }
     if (isInternational) {
