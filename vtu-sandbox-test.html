@@ -46,43 +46,42 @@
  activate();
  signIn.addEventListener("click",async()=>{signIn.disabled=true;status.className="";status.textContent="Signing in to Development…";try{if(!db)throw dbInitError||new Error("The Development sign-in SDK is unavailable.");if(!captchaToken)throw new Error("Please complete the Cloudflare security check first.");const {data,error}=await db.auth.signInWithPassword({email:document.getElementById("email").value.trim(),password:document.getElementById("password").value,options:{captchaToken}});if(error)throw error;if(!data.session)throw new Error("No Development session was returned.");document.getElementById("password").value="";captchaToken="";await activate();}catch(e){status.textContent=e.message||"Development sign-in failed. Check the email and password.";status.className="error";}finally{signIn.disabled=false;}});
  ghanaDiag.addEventListener("click",async()=>{
-  if(!confirm("Run a READ-ONLY Ghana international catalogue lookup on VTpass Sandbox? This checks countries, product types, operators and variations. It will NEVER submit /pay or make a purchase."))return;
-  ghanaDiag.disabled=true;
-  ghanaDiag.textContent="Checking Ghana catalogue…";
-  status.className="";
-  status.textContent="Calling only VTpass international catalogue GET endpoints. No purchase request will be sent.";
+  if(!confirm("Run a READ-ONLY Ghana international catalogue lookup on VTpass Sandbox for every product type and operator? This uses GET catalogue endpoints only and NEVER submits /pay."))return;
+  ghanaDiag.disabled=true;ghanaDiag.textContent="Checking all Ghana catalogue options…";
+  status.className="";status.textContent="Checking Ghana Mobile Top Up, Mobile Data and every returned operator. No purchase request will be sent.";
   try{
    const {data,error}=await db.functions.invoke("dcds-vtpass-sandbox-test",{body:{action:"GHANA_INTL_CATALOGUE_DIAGNOSTIC"}});
    if(error)throw error;
    const lines=[];
-   lines.push(data?.success?"Ghana international catalogue returned.":"Ghana catalogue diagnostic did not fully pass.");
-   if(data?.stage)lines.push("Stage: "+data.stage);
+   lines.push(data?.success?"Ghana full catalogue lookup returned.":"Ghana catalogue lookup did not fully pass.");
    if(data?.country)lines.push("Country: "+data.country.name+" ("+data.country.code+"), currency "+data.country.currency+", dialing prefix +"+data.country.prefix);
-   if(data?.selected_product_type_id)lines.push("Mobile Top Up product type ID: "+data.selected_product_type_id);
    if(Array.isArray(data?.product_types)){
     lines.push("Product types:");
     for(const item of data.product_types)lines.push(item.product_type_id+" — "+item.name);
    }
-   if(Array.isArray(data?.operators)){
-    for(const operator of data.operators){
-     lines.push("Operator: "+operator.operator_name+" (ID "+operator.operator_id+")");
-     lines.push("Catalogue HTTP: "+operator.http_status+"; VTpass code: "+(operator.provider_code||"not returned"));
-     if(Array.isArray(operator.variations)&&operator.variations.length){
-      for(const plan of operator.variations)lines.push((plan.variation_code||"no code")+" — "+(plan.name||"unnamed")+" — amount "+(plan.variation_amount||"not supplied")+" — fixed "+(plan.fixedPrice||"unknown"));
-     }else lines.push("No variations returned");
+   if(Array.isArray(data?.groups)){
+    for(const group of data.groups){
+     lines.push("\\n"+group.product_type_name+" (ID "+group.product_type_id+") — operators HTTP "+group.operators_http_status+", VTpass "+(group.operators_provider_code||"unknown"));
+     if(!Array.isArray(group.operators)||!group.operators.length){lines.push("No operators returned.");continue;}
+     for(const operator of group.operators){
+      lines.push("Operator: "+operator.operator_name+" (ID "+operator.operator_id+") — variations HTTP "+operator.variations_http_status+", VTpass "+(operator.variations_provider_code||"unknown"));
+      const variations=Array.isArray(operator.variations)?operator.variations:[];
+      lines.push("Variations returned: "+variations.length);
+      const candidates=variations.filter(v=>/top.?up|airtime|GHS|Ghana|GMD/i.test((v.name||"")+" "+(v.variation_rate||"")));
+      const shown=candidates.slice(0,25);
+      if(shown.length){
+       for(const plan of shown)lines.push((plan.variation_code||"no code")+" — "+(plan.name||"unnamed")+" — amount "+(plan.variation_amount||"not supplied")+" — rate "+(plan.variation_rate||"not supplied")+" — fixed "+(plan.fixedPrice||"unknown"));
+       if(candidates.length>shown.length)lines.push("Additional matching variations omitted: "+(candidates.length-shown.length));
+      }else lines.push("No obvious airtime/top-up/GHS-labelled variation; full catalogue was retrieved.");
+     }
     }
    }
-   if(data?.provider_http_status)lines.push("Provider HTTP status: "+data.provider_http_status);
-   if(data?.provider_code)lines.push("VTpass code: "+data.provider_code);
-   if(data?.error||data?.note)lines.push(data.error||data.note);
-   status.textContent=lines.join("\n");
-   status.className=data?.success?"success":"error";
-   ghanaDiag.textContent="Run read-only Ghana catalogue check again";
-  }catch(e){
-   status.textContent="Ghana catalogue diagnostic failed: "+(e.message||"Check Development function logs.");
-   status.className="error";
-   ghanaDiag.textContent="Retry Ghana catalogue check";
-  }finally{ghanaDiag.disabled=false;}
+   if(data?.summary)lines.push("\\nSummary: "+data.summary.product_types_checked+" product types, "+data.summary.operators_returned+" operators, "+data.summary.variations_returned+" variations.");
+   if(data?.note||data?.error)lines.push(data.note||data.error);
+   status.textContent=lines.join("\\n");status.className=data?.success?"success":"error";
+   ghanaDiag.textContent="Run full read-only Ghana catalogue check again";
+  }catch(e){status.textContent="Ghana catalogue diagnostic failed: "+(e.message||"Check Development function logs.");status.className="error";ghanaDiag.textContent="Retry full Ghana catalogue check";}
+  finally{ghanaDiag.disabled=false;}
  });
  smileVerifyDiag.addEventListener("click",async()=>{if(!confirm("Verify the documented Smile sandbox customer email only? This calls the verification endpoint but NEVER submits /pay or makes a purchase."))return;smileVerifyDiag.disabled=true;smileVerifyDiag.textContent="Verifying Smile sandbox email…";status.className="";status.textContent="Calling only POST /merchant-verify/smile/email. No purchase request will be sent.";try{const {data,error}=await db.functions.invoke("dcds-vtpass-sandbox-test",{body:{action:"SMILE_VERIFY_DIAGNOSTIC"}});if(error)throw error;const lines=[data?.success?"Smile sandbox email verification PASSED.":"Smile sandbox email verification did not pass.",data?.stage?"Stage: "+data.stage:"",data?.provider_http_status?"Provider HTTP status: "+data.provider_http_status:"",data?.provider_code?"VTpass code: "+data.provider_code:"",data?.provider_message?"Provider message: "+data.provider_message:"",data?.provider_content_type?"Provider content type: "+data.provider_content_type:"",data?.provider_server?"Provider server: "+data.provider_server:"",data?.provider_auth_challenge?"WWW-Authenticate: "+data.provider_auth_challenge:"",data?.provider_response_excerpt?"Provider response: "+data.provider_response_excerpt:"Verified accounts returned: "+Number(data?.verified_accounts_returned||0),"Expected sandbox account found: "+(data?.expected_sandbox_account_found?"yes":"no"),data?.note||data?.error||""].filter(Boolean);status.textContent=lines.join("\n");status.className=data?.success?"success":"error";smileVerifyDiag.textContent="Verify Smile sandbox email again";}catch(e){status.textContent="Verification diagnostic failed: "+(e.message||"Check Development function logs.");status.className="error";smileVerifyDiag.textContent="Retry Smile email verification";}finally{smileVerifyDiag.disabled=false;}});
  smileDiag.addEventListener("click",async()=>{if(!confirm("Run a READ-ONLY Smile authentication check against the VTpass Sandbox variation-codes endpoint? This will not verify an email or submit a purchase."))return;smileDiag.disabled=true;smileDiag.textContent="Checking VTpass authentication…";status.className="";status.textContent="Calling only GET /service-variations?serviceID=smile-direct. No /pay request will be sent.";try{const {data,error}=await db.functions.invoke("dcds-vtpass-sandbox-test",{body:{action:"SMILE_AUTH_DIAGNOSTIC"}});if(error)throw error;const lines=[data?.success?"Smile Basic Authentication accepted; catalogue returned.":"Smile Basic Authentication/catalogue check failed.",data?.stage?"Stage: "+data.stage:"",data?.provider_http_status?"Provider HTTP status: "+data.provider_http_status:"",data?.provider_code?"VTpass code: "+data.provider_code:"",data?.provider_message?"Provider message: "+data.provider_message:"","Variations returned: "+Number(data?.variations_returned||0),...(Array.isArray(data?.variation_sample)?["Sample Smile plans:",...data.variation_sample.map(v=>[v.variation_code||"no code",v.name||"unnamed",v.variation_amount?("₦"+v.variation_amount):"amount unavailable",v.fixedPrice||"fixed-price unknown"].join(" — "))]:[]),data?.note||data?.error||""].filter(Boolean);status.textContent=lines.join("\n");status.className=data?.success?"success":"error";smileDiag.textContent="Run read-only Smile authentication check again";}catch(e){status.textContent="Diagnostic request failed: "+(e.message||"Check Development function logs.");status.className="error";smileDiag.textContent="Retry read-only Smile authentication check";}finally{smileDiag.disabled=false;}});
