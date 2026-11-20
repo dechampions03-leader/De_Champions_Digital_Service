@@ -264,7 +264,7 @@ Deno.serve(async (req: Request) => {
       chosen = selected[0];
     }
     const id = requestId();
-    const purchasePayload: Record<string, unknown> = { request_id: id, serviceID, phone: isSpectranet ? "08011111111" : recipient };
+    const purchasePayload: Record<string, unknown> = { request_id: id, serviceID, phone: recipient };
     // International fixed-price variations may report variation_amount=0 while
     // VTpass calculates the NGN wallet charge server-side. The amount field is
     // optional in the official API payload; omit zero rather than sending an
