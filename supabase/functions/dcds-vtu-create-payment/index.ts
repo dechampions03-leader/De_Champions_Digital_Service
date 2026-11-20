@@ -128,7 +128,7 @@ Deno.serve(async (req: Request) => {
     const smileEmail = clean(body.smile_email, 180).toLowerCase();
     const smileAccountId = clean(body.smile_account_id, 40);
     const clientRequestId = clean(body.request_id, 80);
-    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && ["spectranet", "smile"].includes(network)) || (network === "smile" && serviceType !== "data") || (network === "international" && (serviceType !== "airtime" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || !customerPhone)) || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
+    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && ["spectranet", "smile"].includes(network)) || (network === "smile" && serviceType !== "data") || (network === "international" && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || !customerPhone)) || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
       return reply(req, { success: false, error: "Choose a valid service and network, enter a valid recipient phone number, and try again." }, 400);
     }
 
@@ -141,7 +141,7 @@ Deno.serve(async (req: Request) => {
     let airtimeAmount: number | null = null;
     let internationalMetadata: Record<string, unknown> | null = null;
 
-    if (serviceType === "data") {
+    if (serviceType === "data" && network !== "international") {
       const requestedPlanId = clean(body.plan_id, 100);
       if (!requestedPlanId) return reply(req, { success: false, error: "Select a data bundle first." }, 400);
       const defaultServiceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet", smile: "smile-direct" } as Record<string, string>)[network];
@@ -232,16 +232,22 @@ Deno.serve(async (req: Request) => {
       if (!countriesResponse.ok || !typesResponse.ok || !operatorsResponse.ok || !variationsResponse.ok ||
         countriesData?.response_description !== "000" || typesData?.response_description !== "000" ||
         operatorsData?.response_description !== "000" || variationsData?.response_description !== "000" ||
-        !country || !productType || !String(productType.name || "").toLowerCase().includes("top up") ||
-        !operator || !variation || !/\btop[\s-]?up\b/i.test(String(variation.name || "")) || String(variation.fixedPrice).toLowerCase() !== "yes") {
+        !country || !productType ||
+        (serviceType === "airtime" && !/mobile\s+top\s*up/i.test(String(productType.name || ""))) ||
+        (serviceType === "data" && !/mobile\s+data/i.test(String(productType.name || ""))) ||
+        !operator || !variation ||
+        (serviceType === "airtime" && !/\btop[\s-]?up\b/i.test(String(variation.name || ""))) ||
+        (serviceType === "data" && (!/\b(?:data|\d+(?:\.\d+)?\s*(?:GB|MB))\b/i.test(String(variation.name || "")) || /gift\s*card|voice|minutes?/i.test(String(variation.name || "")))) ||
+        String(variation.fixedPrice).toLowerCase() !== "yes") {
         return reply(req, { success: false, error: "The selected international top-up option could not be verified as a fixed-price mobile top-up with VTpass. Refresh the options and try again." }, 409);
       }
-      const providerCharge = Number(variation.charged_amount ?? variation.variation_amount);
+      const providerCharge = Number(variation.charged_amount);
       amount = money(providerCharge);
       if (!Number.isFinite(amount) || amount <= 0) {
         return reply(req, { success: false, error: "VTpass has not supplied a fixed NGN charge for this international option. This option cannot be purchased safely yet." }, 409);
       }
-      airtimeAmount = amount;
+      if (serviceType === "airtime") airtimeAmount = amount;
+      else { dataPlanId = "foreign-airtime::" + variationCode; dataPlanName = clean(variation.name, 120); dataPlanType = "International data bundle"; }
       providerCost = amount;
       internationalMetadata = {
         country_code: countryCode,
@@ -252,6 +258,7 @@ Deno.serve(async (req: Request) => {
         operator_name: clean(operator.name, 100),
         variation_code: variationCode,
         plan_name: clean(variation.name, 120),
+        service_type: serviceType,
         customer_phone: customerPhone,
       };
     } else {
