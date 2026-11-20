@@ -102,57 +102,31 @@ Deno.serve(async (req: Request) => {
     // One controlled data simulation per invocation. Only allowlisted data
     // services are accepted; recipient is fixed to VTpass's documented sandbox
     // success number and no customer-supplied phone is accepted.
-    const services: Record<string, string> = {
-      "airtel-data": "Airtel Data",
-      "etisalat-data": "9mobile Data",
-      "glo-data": "GLO Data",
-      "glo-sme-data": "GLO Data (Best Value)",
-    };
+    const dataServices: Record<string, string> = { "airtel-data": "Airtel Data", "etisalat-data": "9mobile Data", "glo-data": "GLO Data", "glo-sme-data": "GLO Data (Best Value)" };
+    const airtimeServices: Record<string, string> = { "mtn": "MTN Airtime", "airtel": "Airtel Airtime", "etisalat": "9mobile Airtime", "glo": "GLO Airtime" };
+    const serviceType = clean(body?.service_type, 20) || "data";
     const requestedService = clean(body?.service_id, 40);
-    if (!Object.hasOwn(services, requestedService)) {
-      return json(req, { success: false, error: "Choose Airtel Data, 9mobile Data, GLO Data or GLO Data (Best Value). MTN Data has already passed." }, 400);
-    }
+    const isAirtime = serviceType === "airtime";
+    const allowedServices = isAirtime ? airtimeServices : dataServices;
+    if (!Object.hasOwn(allowedServices, requestedService)) return json(req, { success: false, error: isAirtime ? "Choose MTN, Airtel, 9mobile or GLO Airtime." : "Choose Airtel Data, 9mobile Data, GLO Data or GLO Data (Best Value)." }, 400);
     const serviceID = requestedService;
-    const serviceName = services[serviceID];
+    const serviceName = allowedServices[serviceID];
     const recipient = "08011111111";
-    const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, {
-      headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" },
-      signal: AbortSignal.timeout(12000),
-    });
-    const catalogue = await catalogueResponse.json().catch(() => null);
-    const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
-    if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) {
-      return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid data catalogue for the selected service.", provider_code: clean(catalogue?.code, 12) }, 502);
+    let chosen = { code: "", name: serviceName + " N50 top-up", amount: 50 };
+    if (!isAirtime) {
+      const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
+      const catalogue = await catalogueResponse.json().catch(() => null);
+      const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
+      if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid data catalogue for the selected service.", provider_code: clean(catalogue?.code, 12) }, 502);
+      const selected = variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount) })).filter((v: { code: string; name: string; amount: number }) => v.code && v.name && Number.isFinite(v.amount) && v.amount > 0 && !/calls?|minutes?|voice|talk\s*more/i.test(v.name)).sort((a: { amount: number }, b: { amount: number }) => a.amount - b.amount);
+      if (!selected.length) return json(req, { success: false, stage: "catalogue", error: "No valid data variation was returned for the selected service." }, 502);
+      chosen = selected[0];
     }
-    const selected = variations
-      .map((v: Record<string, unknown>) => ({
-        code: clean(v.variation_code, 80),
-        name: clean(v.name, 100),
-        amount: Number(v.variation_amount),
-      }))
-      .filter((v: { code: string; name: string; amount: number }) =>
-        v.code && v.name && Number.isFinite(v.amount) && v.amount > 0 &&
-        !/calls?|minutes?|voice|talk\s*more/i.test(v.name))
-      .sort((a: { amount: number }, b: { amount: number }) => a.amount - b.amount);
-    if (!selected.length) {
-      return json(req, { success: false, stage: "catalogue", error: "No valid data variation was returned for the selected service." }, 502);
-    }
-
-    const chosen = selected[0];
     const id = requestId();
-    const purchaseResponse = await fetch(base + "/pay", {
-      method: "POST",
-      headers: { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" },
-      body: JSON.stringify({
-        request_id: id,
-        serviceID,
-        billersCode: recipient,
-        variation_code: chosen.code,
-        amount: chosen.amount,
-        phone: recipient,
-      }),
-      signal: AbortSignal.timeout(20000),
-    });
+    const purchasePayload: Record<string, unknown> = { request_id: id, serviceID, amount: chosen.amount, phone: recipient };
+    if (!isAirtime) { purchasePayload.billersCode = recipient; purchasePayload.variation_code = chosen.code; }
+    const purchaseResponse = await fetch(base + "/pay", { method: "POST", headers: { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(purchasePayload), signal: AbortSignal.timeout(20000) });
+    const purchase = await purchaseResponse.json().catch(() => null);
     const purchase = await purchaseResponse.json().catch(() => null);
     const providerCode = clean(purchase?.code, 12);
     let finalPayload = purchase;
@@ -164,8 +138,8 @@ Deno.serve(async (req: Request) => {
     const purchaseStatus = clean(purchase?.content?.transactions?.status, 30).toLowerCase();
     // Authentication failures are definitive: do not issue a requery with
     // the same rejected credentials. Correct the Sandbox Secret Key first.
-    if (providerCode !== "087" &&
-      (!purchaseResponse.ok || !purchase || (providerCode !== "000" && !["delivered", "successful"].includes(purchaseStatus)))) {
+    if (providerCode !== "087" && purchaseResponse.ok && purchase &&
+      (isAirtime || (providerCode !== "000" && !["delivered", "successful"].includes(purchaseStatus)))) {
       const requeryResponse = await fetch(base + "/requery", {
         method: "POST",
         headers: { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" },
@@ -184,7 +158,9 @@ Deno.serve(async (req: Request) => {
     return json(req, {
       success: delivered,
       stage,
+      service_type: serviceType,
       service_id: serviceID,
+      service_name: serviceName,
       plan: chosen.name,
       sandbox_amount_ngn: chosen.amount,
       test_recipient: recipient,
@@ -193,7 +169,7 @@ Deno.serve(async (req: Request) => {
       transaction_status: transactionStatus || "unknown",
       provider_http_status: finalHttpStatus,
       message: delivered
-        ? "VTpass Sandbox confirms the simulated data transaction was delivered."
+        ? "VTpass Sandbox confirms the simulated transaction was delivered."
         : code === "087" || providerCode === "087"
         ? "VTpass rejected the POST authentication credentials (code 087). No further requery was sent. Correct the Sandbox Secret Key/authentication setting before any new test."
         : "No successful delivery was confirmed. Do not submit another /pay for this request ID; inspect/requery this same request.",
