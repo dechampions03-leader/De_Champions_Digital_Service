@@ -138,18 +138,18 @@ Deno.serve(async (req: Request) => {
       const typesResponse = await fetch(base + "/get-international-airtime-product-types?code=" + country, { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
       const typesPayload = await typesResponse.json().catch(() => null);
       const mobileType = Array.isArray(typesPayload?.content) ? typesPayload.content.find((x: Record<string, unknown>) => /mobile top up/i.test(clean(x.name, 80))) : null;
-      if (!typesResponse.ok || clean(typesPayload?.response_description, 12) !== "000" || !mobileType) return json(req, { success: false, stage: "international-product-types", error: "VTpass Sandbox did not return a mobile top-up product type for Ghana." }, 502);
+      if (!typesResponse.ok || clean(typesPayload?.response_description, 12) !== "000" || !mobileType) return json(req, { success: false, stage: "international-product-types", error: "VTpass Sandbox did not return a mobile top-up product type for Ghana." }, 200);
       const productTypeId = String(mobileType.product_type_id);
       const operatorsResponse = await fetch(base + "/get-international-airtime-operators?code=" + country + "&product_type_id=" + encodeURIComponent(productTypeId), { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
       const operatorsPayload = await operatorsResponse.json().catch(() => null);
       const operator = Array.isArray(operatorsPayload?.content) ? operatorsPayload.content[0] : null;
       const operatorId = clean(operator?.operator_id, 20);
-      if (!operatorsResponse.ok || clean(operatorsPayload?.response_description, 12) !== "000" || !operatorId) return json(req, { success: false, stage: "international-operators", error: "VTpass Sandbox did not return a Ghana mobile top-up operator." }, 502);
+      if (!operatorsResponse.ok || clean(operatorsPayload?.response_description, 12) !== "000" || !operatorId) return json(req, { success: false, stage: "international-operators", error: "VTpass Sandbox did not return a Ghana mobile top-up operator." }, 200);
       const variationsResponse = await fetch(base + "/service-variations?serviceID=foreign-airtime&operator_id=" + encodeURIComponent(operatorId) + "&product_type_id=" + encodeURIComponent(productTypeId), { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
       const variationsPayload = await variationsResponse.json().catch(() => null);
       const variations = variationsPayload?.content?.variations;
-      const intlVariation = Array.isArray(variations) ? variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount), fixed: clean(v.fixedPrice, 10) })).find((v: { code: string; name: string; amount: number; fixed: string }) => v.code && /top\s*up/i.test(v.name) && Number.isFinite(v.amount) && v.amount >= 0) : null;
-      if (!variationsResponse.ok || clean(variationsPayload?.response_description, 12) !== "000" || !intlVariation) return json(req, { success: false, stage: "international-variations", error: "No fixed-price Ghana airtime top-up variation is available for a safe Sandbox test." }, 502);
+      const intlVariation = Array.isArray(variations) ? variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount), fixed: clean(v.fixedPrice, 10) })).find((v: { code: string; name: string; amount: number; fixed: string }) => v.code && /top\s*up/i.test(v.name) && v.fixed.toLowerCase() === "yes" && Number.isFinite(v.amount) && v.amount >= 0) : null;
+      if (!variationsResponse.ok || clean(variationsPayload?.response_description, 12) !== "000" || !intlVariation) return json(req, { success: false, stage: "international-variations", error: "No fixed-price Ghana airtime top-up variation is available for a safe Sandbox test." }, 200);
       chosen = { code: intlVariation.code, name: intlVariation.name, amount: intlVariation.amount };
       billersCode = recipient;
       specialPayload = { operator_id: operatorId, country_code: country, product_type_id: productTypeId, email: "sandbox@sandbox.vtpass.com" };
@@ -158,9 +158,9 @@ Deno.serve(async (req: Request) => {
       const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, { headers: isSmile ? requestHeaders : { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
       const catalogue = await catalogueResponse.json().catch(() => null);
       const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
-      if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid data catalogue for the selected service.", provider_code: clean(catalogue?.code, 12) }, 502);
+      if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid data catalogue for the selected service.", provider_code: clean(catalogue?.code, 12) }, 200);
       const selected = variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount) })).filter((v: { code: string; name: string; amount: number }) => v.code && v.name && Number.isFinite(v.amount) && v.amount > 0 && (isSmile ? /\b(?:gb|mb)\b/i.test(v.name) : !/calls?|minutes?|voice|talk\s*more/i.test(v.name))).sort((a: { amount: number }, b: { amount: number }) => a.amount - b.amount);
-      if (!selected.length) return json(req, { success: false, stage: "catalogue", error: "No valid data variation was returned for the selected service." }, 502);
+      if (!selected.length) return json(req, { success: false, stage: "catalogue", error: "No valid data variation was returned for the selected service." }, 200);
       chosen = selected[0];
     }
     const id = requestId();
