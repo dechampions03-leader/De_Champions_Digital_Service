@@ -108,14 +108,23 @@ Deno.serve(async (req: Request) => {
       const variations = payload?.content?.variations ?? payload?.content?.varations;
       const code = clean(payload?.response_description ?? payload?.code, 12);
       const message = clean(payload?.response_description ?? payload?.message ?? payload?.error, 160);
+      const sample = Array.isArray(variations) ? variations.slice(0, 12).map((v: Record<string, unknown>) => ({
+        variation_code: clean(v.variation_code, 100),
+        name: clean(v.name, 140),
+        variation_amount: clean(String(v.variation_amount ?? ""), 40),
+        fixedPrice: clean(String(v.fixedPrice ?? ""), 12),
+      })) : [];
       return json(req, {
         success: response.ok && code === "000" && Array.isArray(variations),
         stage: "smile-auth-diagnostic",
         provider_http_status: response.status,
         provider_code: code || null,
         provider_message: message || null,
+        response_top_level_keys: payload && typeof payload === "object" ? Object.keys(payload) : [],
+        content_keys: payload?.content && typeof payload.content === "object" ? Object.keys(payload.content) : [],
         variations_returned: Array.isArray(variations) ? variations.length : 0,
-        note: "Read-only GET service-variations check. No verification or purchase request was submitted.",
+        variation_sample: sample,
+        note: "Read-only GET service-variations check. Sample plan labels/codes/prices are diagnostic only. No verification or purchase request was submitted.",
       }, 200);
     }
 
