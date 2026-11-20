@@ -331,10 +331,14 @@ Deno.serve(async (req: Request) => {
         amount: Number(current.provider_cost),
       };
       if (current.network === "international") {
-        payload.billersCode = current.network === "smile"
-          ? String(current.provider_billers_code || "")
-          : String(current.recipient_phone);
-        payload.variation_code = storedVariationCode;
+        const meta = (current.provider_metadata || {}) as Record<string, unknown>;
+        payload.billersCode = String(current.recipient_phone);
+        payload.variation_code = String(meta.variation_code || storedVariationCode || "");
+        payload.operator_id = String(meta.operator_id || "");
+        payload.country_code = String(meta.country_code || "");
+        payload.product_type_id = String(meta.product_type_id || "");
+        payload.email = String(current.provider_email || "");
+        payload.phone = String(meta.customer_phone || "");
       } else if (current.service_type === "data") {
         const meta = (current.provider_metadata || {}) as Record<string, unknown>;
         payload.billersCode = String(current.recipient_phone);
