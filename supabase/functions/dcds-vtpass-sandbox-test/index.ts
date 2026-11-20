@@ -149,11 +149,11 @@ Deno.serve(async (req: Request) => {
       const intlVariation = Array.isArray(variations) ? variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount), fixed: clean(v.fixedPrice, 10) })).find((v: { code: string; name: string; amount: number; fixed: string }) => v.code && /top\s*up/i.test(v.name) && v.amount > 0 && Number.isFinite(v.amount)) : null;
       if (!variationsResponse.ok || clean(variationsPayload?.response_description, 12) !== "000" || !intlVariation) return json(req, { success: false, stage: "international-variations", error: "No fixed-price Ghana airtime top-up variation is available for a safe Sandbox test." }, 502);
       chosen = { code: intlVariation.code, name: intlVariation.name, amount: intlVariation.amount };
-      billersCode = "233" + recipient.replace(/^0/, "").slice(0, 9);
+      billersCode = recipient;
       specialPayload = { operator_id: operatorId, country_code: country, product_type_id: productTypeId, email: "sandbox@sandbox.vtpass.com" };
     }
     if (!isAirtime && !isInternational) {
-      const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
+      const catalogueResponse = await fetch(base + "/service-variations?serviceID=" + serviceID, { headers: isSmile ? requestHeaders : { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
       const catalogue = await catalogueResponse.json().catch(() => null);
       const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
       if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) return json(req, { success: false, stage: "catalogue", error: "VTpass Sandbox did not return a valid data catalogue for the selected service.", provider_code: clean(catalogue?.code, 12) }, 502);
