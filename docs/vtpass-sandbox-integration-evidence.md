@@ -41,7 +41,9 @@
 | Smile Network Payment | smile-direct | Runner corrected to use Basic Auth for email verification, variations, purchase and requery; requires Development VTPASS_EMAIL and VTPASS_PASSWORD and a fresh user-run test |
 
 
-| Spectranet Internet Data | spectranet | Sandbox success number 1212121212 documented; runner now supports Basic Auth and quantity=1; awaiting user-run test |\n\n## Latest failed / blocked Sandbox attempts (2026-11-20)
+| Spectranet Internet Data | spectranet | Sandbox success number 1212121212 documented; runner now supports Basic Auth and quantity=1; awaiting user-run test |
+
+## Latest failed / blocked Sandbox attempts (2026-11-20)
 
 | Service | Request ID | Result | Handling |
 |---|---|---|---|
