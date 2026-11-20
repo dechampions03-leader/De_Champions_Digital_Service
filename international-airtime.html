@@ -108,10 +108,10 @@ async function loadCountries(){
  }
  try{
   const data=await invoke("international_countries");
-  countryList=data.countries||[];
+  countryList=(data.countries||[]).filter(x=>x.code&&x.name).sort((a,b)=>a.name.localeCompare(b.name));
   option($("country"),"Choose country",countryList,x=>x.code,x=>x.name+" ("+x.currency+")");
   $("country").disabled=false;
-  $("catalogStatus").textContent=countryList.length+" destinations returned by VTpass Sandbox. Live country coverage may differ; only provider-returned destinations can be purchased.";
+  $("catalogStatus").textContent=countryList.length+" Sandbox destinations returned by VTpass, sorted A–Z. The UK and other destinations will appear automatically when VTpass enables and returns them in the Live catalogue; no unsupported country can be purchased.";
   if(!countryList.length){
    $("country").replaceChildren(new Option("No countries returned",""));
    $("country").disabled=true;
