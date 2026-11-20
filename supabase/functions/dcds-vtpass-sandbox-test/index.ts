@@ -119,10 +119,6 @@ Deno.serve(async (req: Request) => {
       }, 200);
     }
 
-    if (body?.confirm !== "RUN_SANDBOX_TEST") {
-      return json(req, { success: false, error: "Explicit confirmation is required. Send confirm=RUN_SANDBOX_TEST." }, 400);
-    }
-
     // Isolated Smile customer-email verification diagnostic. This calls only
     // the documented verification endpoint and never submits /pay.
     if (body?.action === "SMILE_VERIFY_DIAGNOSTIC") {
@@ -157,6 +153,10 @@ Deno.serve(async (req: Request) => {
         expected_sandbox_account_found: Boolean(expectedAccount),
         note: "Smile customer-email verification only. No /pay request or purchase was submitted.",
       }, 200);
+    }
+
+    if (body?.confirm !== "RUN_SANDBOX_TEST") {
+      return json(req, { success: false, error: "Explicit confirmation is required. Send confirm=RUN_SANDBOX_TEST." }, 400);
     }
 
     const apiKey = Deno.env.get("VTPASS_API_KEY") || "";
