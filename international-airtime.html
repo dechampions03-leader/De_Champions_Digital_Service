@@ -38,9 +38,9 @@
 </main>
 <script>
 const PROD=["dechampions03-leader.github.io","dechampionsdigital.com","www.dechampionsdigital.com"].includes(location.hostname.toLowerCase());
-const URL=PROD?"https://qxsenflgaweeadvggnyp.supabase.co":"https://tjgsxbmkpvktlqulbktv.supabase.co";
+const SUPABASE_URL=PROD?"https://qxsenflgaweeadvggnyp.supabase.co":"https://tjgsxbmkpvktlqulbktv.supabase.co";
 const KEY=PROD?"sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP":"sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn";
-const db=window.supabase?.createClient?window.supabase.createClient(URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
+const db=window.supabase?.createClient?window.supabase.createClient(SUPABASE_URL,KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}}):null;
 const $=id=>document.getElementById(id);
 let selected=null,countryList=[],productTypes=[],operators=[],previewRate=1,previewDate=null,quoteRequest=0;
 const money=n=>"₦"+Number(n).toLocaleString("en-NG",{maximumFractionDigits:2});
@@ -98,8 +98,30 @@ function renderPlans(items){
  refreshCheckout();
 }
 async function loadCountries(){
- try{const data=await invoke("international_countries");countryList=data.countries||[];option($("country"),"Choose country",countryList,x=>x.code,x=>x.name+" ("+x.currency+")");$("catalogStatus").textContent=countryList.length+" destination countries available from VTpass.";}
- catch(e){$("country").replaceChildren(new Option("Countries unavailable",""));$("catalogStatus").textContent=e.message||"Could not load international destinations.";}
+ $("country").disabled=true;
+ $("country").replaceChildren(new Option("Connecting to VTpass…",""));
+ $("catalogStatus").textContent="Loading the sandbox destination list…";
+ if(!db){
+  $("country").replaceChildren(new Option("DCDS connection unavailable — reload",""));
+  $("catalogStatus").textContent="The Supabase browser library did not initialize. No VTpass request was sent. Reload this page; if it repeats, DCDS support must inspect the browser console.";
+  return;
+ }
+ try{
+  const data=await invoke("international_countries");
+  countryList=data.countries||[];
+  option($("country"),"Choose country",countryList,x=>x.code,x=>x.name+" ("+x.currency+")");
+  $("country").disabled=false;
+  $("catalogStatus").textContent=countryList.length+" destination countries available from VTpass.";
+  if(!countryList.length){
+   $("country").replaceChildren(new Option("No countries returned",""));
+   $("country").disabled=true;
+   $("catalogStatus").textContent="VTpass responded successfully but returned an empty country list. No checkout is available.";
+  }
+ }catch(e){
+  $("country").replaceChildren(new Option("Countries unavailable — reload",""));
+  $("country").disabled=true;
+  $("catalogStatus").textContent=(e.message||"Could not load international destinations.")+" No purchase request was submitted.";
+ }
 }
 $("country").addEventListener("change",async()=>{
  const code=$("country").value;selected=null;option($("productType"),"Loading product types",[],x=>x.id,x=>x.name);$("operator").replaceChildren(new Option("Choose product type first",""));$("operator").disabled=true;$("plans").textContent="Choose a mobile top-up product type.";if(!code)return;
@@ -138,6 +160,6 @@ $("checkout").addEventListener("click",async()=>{
  }catch(e){$("checkoutStatus").textContent=(e.message||"Checkout failed.")+" Do not pay again unless your order status is checked.";}
  finally{refreshCheckout();}
 });
-refreshFxPreview();if(db)loadCountries();else $("catalogStatus").textContent="DCDS connection unavailable. Reload the page.";
+refreshFxPreview();loadCountries();
 </script>
 </body></html>
