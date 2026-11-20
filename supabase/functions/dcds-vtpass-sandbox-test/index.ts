@@ -138,17 +138,22 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({ billersCode: sandboxEmail, serviceID: "smile-direct" }),
         signal: AbortSignal.timeout(15000),
       });
-      const payload = await response.json().catch(() => null);
+      const rawBody = await response.text();
+      let payload: Record<string, any> | null = null;
+      try { payload = JSON.parse(rawBody); } catch { payload = null; }
       const accounts = payload?.content?.AccountList?.Account;
       const expectedAccount = Array.isArray(accounts) && accounts.some((x: Record<string, unknown>) => clean(x.AccountId, 30) === "08011111111");
       const providerCode = clean(payload?.code ?? payload?.response_description, 12);
       const providerMessage = clean(payload?.response_description ?? payload?.message ?? payload?.error, 180);
+      const safeBody = rawBody.replaceAll(sandboxEmail, "[sandbox-email-redacted]").replaceAll(email, "[merchant-email-redacted]").slice(0, 500);
       return json(req, {
         success: response.ok && providerCode === "000" && expectedAccount,
         stage: "smile-email-verification-diagnostic",
         provider_http_status: response.status,
+        provider_content_type: clean(response.headers.get("content-type"), 100),
         provider_code: providerCode || null,
         provider_message: providerMessage || null,
+        provider_response_excerpt: safeBody || null,
         verified_accounts_returned: Array.isArray(accounts) ? accounts.length : 0,
         expected_sandbox_account_found: Boolean(expectedAccount),
         note: "Smile customer-email verification only. No /pay request or purchase was submitted.",
