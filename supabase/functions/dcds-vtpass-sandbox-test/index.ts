@@ -151,6 +151,8 @@ Deno.serve(async (req: Request) => {
         stage: "smile-email-verification-diagnostic",
         provider_http_status: response.status,
         provider_content_type: clean(response.headers.get("content-type"), 100),
+        provider_server: clean(response.headers.get("server"), 80),
+        provider_auth_challenge: clean(response.headers.get("www-authenticate"), 160),
         provider_code: providerCode || null,
         provider_message: providerMessage || null,
         provider_response_excerpt: safeBody || null,
