@@ -150,7 +150,10 @@ Deno.serve(async (req: Request) => {
     // Never repeat /pay. If the first response is ambiguous, query the exact
     // request_id once; an unresolved result is returned for manual follow-up.
     const purchaseStatus = clean(purchase?.content?.transactions?.status, 30).toLowerCase();
-    if (!purchaseResponse.ok || !purchase || (providerCode !== "000" && !["delivered", "successful"].includes(purchaseStatus))) {
+    // Authentication failures are definitive: do not issue a requery with
+    // the same rejected credentials. Correct the Sandbox Secret Key first.
+    if (providerCode !== "087" &&
+      (!purchaseResponse.ok || !purchase || (providerCode !== "000" && !["delivered", "successful"].includes(purchaseStatus)))) {
       const requeryResponse = await fetch(base + "/requery", {
         method: "POST",
         headers: { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" },
@@ -179,6 +182,8 @@ Deno.serve(async (req: Request) => {
       provider_http_status: finalHttpStatus,
       message: delivered
         ? "VTpass Sandbox confirms the simulated MTN data transaction was delivered."
+        : code === "087" || providerCode === "087"
+        ? "VTpass rejected the POST authentication credentials (code 087). No further requery was sent. Correct the Sandbox Secret Key/authentication setting before any new test."
         : "No successful delivery was confirmed. Do not submit another /pay for this request ID; inspect/requery this same request.",
     }, delivered ? 200 : 202);
   } catch (error) {
