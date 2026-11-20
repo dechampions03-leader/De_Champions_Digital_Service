@@ -110,8 +110,19 @@ async function loadCountries(){
   const data=await invoke("international_countries");
   countryList=(data.countries||[]).filter(x=>x.code&&x.name).sort((a,b)=>a.name.localeCompare(b.name));
   option($("country"),"Choose country",countryList,x=>x.code,x=>x.name+" ("+x.currency+")");
+  const verifiedNames=new Set(countryList.map(x=>String(x.name).toLowerCase()));
+  const legacyCountries=[
+   "Afghanistan","Algeria","Angola","Anguilla","Antigua and Barbuda","Argentina","Aruba","Azerbaijan","Bangladesh","Barbados","Belgium","Benin","Bermuda","Bhutan","Bolivia","Botswana","Brazil","British Virgin Islands","Burkina Faso","Burundi","Cambodia","Canada","Cayman Islands","Central African Republic","Chile","China","Colombia","Congo","Costa Rica","Cuba","Cyprus","Democratic Republic of the Congo","Dominica","Dominican Republic","Ecuador","Egypt","El Salvador","Estonia","Ethiopia","Fiji","France","French Guiana","Gambia","Germany","Greece","Grenada","Guadeloupe","Guinea-Bissau","Guinea-Conakry","Guyana","Haiti","Honduras","India","Indonesia","Iraq","Ireland","Italy","Ivory Coast","Jamaica","Jordan","Kenya","Laos","Latvia","Lebanon","Liberia","Lithuania","Madagascar","Malawi","Malaysia","Mali","Martinique","Mauritania","Mexico","Moldova","Morocco","Mozambique","Namibia","Nauru","Nepal","Netherlands","Netherlands Antilles","Nicaragua","Niger","Pakistan","Panama","Papua New Guinea","Paraguay","Peru","Philippines","Poland","Puerto Rico","Romania","Russia","Saint Kitts and Nevis","Saint Lucia","Senegal","Sierra Leone","Saint Vincent and the Grenadines","Singapore","Slovakia","Slovenia","South Africa","Spain","Sri Lanka","State of Palestine","Suriname","Switzerland","Tanzania","Thailand","Togo","Tonga","Trinidad and Tobago","Tunisia","Turkey","Turks and Caicos Islands","Uganda","Ukraine","United Arab Emirates","United Kingdom","Uruguay","United States of America","Vanuatu","Vietnam","Zambia","Zimbabwe"
+  ];
+  const pending=legacyCountries.filter(name=>!verifiedNames.has(name.toLowerCase())).sort((a,b)=>a.localeCompare(b));
+  if(pending.length){
+   const group=document.createElement("optgroup");
+   group.label="VTpass published destinations — awaiting current API confirmation";
+   for(const name of pending){const item=new Option(name+" — not yet enabled","");item.disabled=true;group.append(item);}
+   $("country").append(group);
+  }
   $("country").disabled=false;
-  $("catalogStatus").textContent=countryList.length+" Sandbox destinations returned by VTpass, sorted A–Z. The UK and other destinations will appear automatically when VTpass enables and returns them in the Live catalogue; no unsupported country can be purchased.";
+  $("catalogStatus").textContent=countryList.length+" active Sandbox destinations returned by VTpass. Additional destinations from VTpass’s published country list are shown below as disabled until current API support and prices are confirmed. No unverified destination can be purchased.";
   if(!countryList.length){
    $("country").replaceChildren(new Option("No countries returned",""));
    $("country").disabled=true;
