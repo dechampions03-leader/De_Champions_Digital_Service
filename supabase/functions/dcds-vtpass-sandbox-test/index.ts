@@ -92,6 +92,35 @@ Deno.serve(async (req: Request) => {
 
   try {
     const base = sandboxBase();
+
+    // Read-only Smile authentication diagnostic. This branch never calls /pay.
+    if (body?.action === "SMILE_AUTH_DIAGNOSTIC") {
+      const email = Deno.env.get("VTPASS_EMAIL") || "";
+      const password = Deno.env.get("VTPASS_PASSWORD") || "";
+      if (!email || !password) {
+        return json(req, { success: false, stage: "smile-auth-diagnostic", error: "VTPASS_EMAIL and VTPASS_PASSWORD are not both configured in Development." }, 503);
+      }
+      const auth = "Basic " + btoa(email + ":" + password);
+      const response = await fetch(base + "/service-variations?serviceID=smile-direct", {
+        method: "GET",
+        headers: { Authorization: auth, Accept: "application/json" },
+        signal: AbortSignal.timeout(15000),
+      });
+      const payload = await response.json().catch(() => null);
+      const variations = payload?.content?.variations ?? payload?.content?.varations;
+      const code = clean(payload?.response_description ?? payload?.code, 12);
+      const message = clean(payload?.response_description ?? payload?.message ?? payload?.error, 160);
+      return json(req, {
+        success: response.ok && code === "000" && Array.isArray(variations),
+        stage: "smile-auth-diagnostic",
+        provider_http_status: response.status,
+        provider_code: code || null,
+        provider_message: message || null,
+        variations_returned: Array.isArray(variations) ? variations.length : 0,
+        note: "Read-only GET service-variations check. No verification or purchase request was submitted.",
+      }, 200);
+    }
+
     const apiKey = Deno.env.get("VTPASS_API_KEY") || "";
     const publicKey = Deno.env.get("VTPASS_PUBLIC_KEY") || "";
     const secretKey = Deno.env.get("VTPASS_SECRET_KEY") || "";
