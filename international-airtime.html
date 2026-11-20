@@ -111,7 +111,7 @@ async function loadCountries(){
   countryList=data.countries||[];
   option($("country"),"Choose country",countryList,x=>x.code,x=>x.name+" ("+x.currency+")");
   $("country").disabled=false;
-  $("catalogStatus").textContent=countryList.length+" destination countries available from VTpass.";
+  $("catalogStatus").textContent=countryList.length+" destinations returned by VTpass Sandbox. Live country coverage may differ; only provider-returned destinations can be purchased.";
   if(!countryList.length){
    $("country").replaceChildren(new Option("No countries returned",""));
    $("country").disabled=true;
