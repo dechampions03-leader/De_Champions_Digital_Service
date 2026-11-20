@@ -114,3 +114,18 @@ The screenshot shows HTTP 200 from the API transport but VTpass code 011 and tra
 The root-admin read-only Smile catalogue diagnostic returned HTTP 200, VTpass code `000`, and 57 variations. The sample included data plans whose capacity is attached directly to the number, including `413 — 2GB MidNite for 7days — NGN 1,020`, `414 — 3GB MidNite for 7days — NGN 1,530`, `624 — 1GB Flexi for 1days — NGN 300`, and `625 — 2.5GB Flexi for 2days — NGN 500`. It also included voice-only variations, confirming that the catalogue contains mixed product types.
 
 The purchase-path matcher used a word-boundary expression for `GB`/`MB` that did not match labels such as `2GB` because the digit and G are both word characters. The Development-only matcher has been corrected to recognize numeric capacity labels such as `1GB`, `2.5GB`, and `500MB`, while continuing to require a positive amount. The Development Edge Function was deployed as version 31. This is a code correction only; it is **not** evidence of a Smile purchase or delivery. One controlled Smile Sandbox test remains pending.
+
+
+### Smile Network delivery confirmed — 11th successful Sandbox test (2026-11-20)
+
+The DCDS root administrator screenshot confirms the controlled Smile Sandbox purchase returned:
+
+- Service: Smile Network Payment
+- Plan: `1GB Flexi for 1days - 300 Naira`
+- Sandbox amount: NGN 300
+- Request ID: `202611201055426ffebe17ae`
+- Provider HTTP status: `200`
+- VTpass code: `000`
+- Transaction status: `delivered`
+
+This is the **11th confirmed successful Sandbox delivery** (nine earlier domestic airtime/data tests, Spectranet, and Smile). The runner used the documented Sandbox recipient and reports a simulated delivery. This closes the team's 11-test milestone; it does not replace the outstanding Ghana international transaction investigation or Flutterwave end-to-end checkout qualification.
