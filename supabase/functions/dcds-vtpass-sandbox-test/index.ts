@@ -86,14 +86,12 @@ Deno.serve(async (req: Request) => {
   if (!access.ok) return json(req, { success: false, error: access.error }, access.status);
 
   const body = await req.json().catch(() => null);
-  if (body?.confirm !== "RUN_SANDBOX_TEST") {
-    return json(req, { success: false, error: "Explicit confirmation is required. Send confirm=RUN_SANDBOX_TEST." }, 400);
-  }
 
   try {
     const base = sandboxBase();
 
-    // Read-only Smile authentication diagnostic. This branch never calls /pay.
+    // Read-only Smile authentication diagnostic. This branch never calls /pay
+    // and deliberately does not require purchase confirmation.
     if (body?.action === "SMILE_AUTH_DIAGNOSTIC") {
       const email = Deno.env.get("VTPASS_EMAIL") || "";
       const password = Deno.env.get("VTPASS_PASSWORD") || "";
@@ -119,6 +117,10 @@ Deno.serve(async (req: Request) => {
         variations_returned: Array.isArray(variations) ? variations.length : 0,
         note: "Read-only GET service-variations check. No verification or purchase request was submitted.",
       }, 200);
+    }
+
+    if (body?.confirm !== "RUN_SANDBOX_TEST") {
+      return json(req, { success: false, error: "Explicit confirmation is required. Send confirm=RUN_SANDBOX_TEST." }, 400);
     }
 
     const apiKey = Deno.env.get("VTPASS_API_KEY") || "";
