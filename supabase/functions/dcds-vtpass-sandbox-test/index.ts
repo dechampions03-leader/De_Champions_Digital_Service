@@ -127,7 +127,6 @@ Deno.serve(async (req: Request) => {
     if (!isAirtime) { purchasePayload.billersCode = recipient; purchasePayload.variation_code = chosen.code; }
     const purchaseResponse = await fetch(base + "/pay", { method: "POST", headers: { "api-key": apiKey, "secret-key": secretKey, "Content-Type": "application/json", Accept: "application/json" }, body: JSON.stringify(purchasePayload), signal: AbortSignal.timeout(20000) });
     const purchase = await purchaseResponse.json().catch(() => null);
-    const purchase = await purchaseResponse.json().catch(() => null);
     const providerCode = clean(purchase?.code, 12);
     let finalPayload = purchase;
     let finalHttpStatus = purchaseResponse.status;
