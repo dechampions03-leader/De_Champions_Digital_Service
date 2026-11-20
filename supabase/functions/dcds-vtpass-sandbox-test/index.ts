@@ -126,7 +126,7 @@ Deno.serve(async (req: Request) => {
       const smilePassword = Deno.env.get("VTPASS_PASSWORD") || "";
       const smileSandboxEmail = Deno.env.get("VTPASS_SMILE_SANDBOX_EMAIL") || "";
       if (!smileEmail || !smilePassword) return json(req, { success: false, error: "Smile testing requires VTPASS_EMAIL and VTPASS_PASSWORD in Development Edge Function secrets. Do not send credentials in chat." }, 503);
-      if (!/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(smileSandboxEmail)) return json(req, { success: false, error: "Set VTPASS_SMILE_SANDBOX_EMAIL in Development Edge Function secrets to the exact Smile sandbox verification email published in VTpass documentation. This is separate from the VTpass API login email." }, 503);
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(smileSandboxEmail)) return json(req, { success: false, error: "Set VTPASS_SMILE_SANDBOX_EMAIL in Development Edge Function secrets to the exact Smile sandbox verification email published in VTpass documentation. This is separate from the VTpass API login email." }, 503);
       requestHeaders = { Authorization: "Basic " + btoa(smileEmail + ":" + smilePassword), "Content-Type": "application/json", Accept: "application/json" };
       requeryHeaders = { ...requestHeaders };
       const verify = await fetch(base + "/merchant-verify/smile/email", { method: "POST", headers: requestHeaders, body: JSON.stringify({ billersCode: smileSandboxEmail, serviceID: "smile-direct" }), signal: AbortSignal.timeout(15000) });
