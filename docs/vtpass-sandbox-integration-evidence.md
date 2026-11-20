@@ -48,7 +48,7 @@
 | Service | Request ID | Result | Handling |
 |---|---|---|---|
 | International Airtime (Ghana selection; provider returned a GMD-labelled variation) | 202611200847c18a21baff2c | VTpass code 011; status unknown; reported amount NGN 0 | Not successful evidence. Do not repeat /pay for this reference. Investigate country/operator/variation mapping and require a positive NGN provider charge before another test. |
-| Smile Network Payment | No request ID generated | Failed at smile-email-verification; no /pay request was made | No purchase was submitted. Check Sandbox Basic Auth account credentials and exact documented Sandbox Smile email/account verification flow before retry. |
+| Smile Network Payment | No request ID generated | Failed at smile-email-verification; no /pay request was made | No purchase was submitted. Basic Auth credentials are present in Development. The runner now reads the exact documented sandbox customer email from `VTPASS_SMILE_SANDBOX_EMAIL` (separate from the VTpass merchant login email); configure that Development secret before retry. The purchase payload uses the verified AccountId as `billersCode` and does not send an undocumented email field. |
 
 The 2026-11-20 screenshots confirmed that the four domestic airtime tests and five data tests above returned code 000 and status delivered. The Ghana international attempt and Smile email verification are not successful deliveries. The runner was subsequently corrected against the official Smile and international API documentation; Spectranet was added to the controlled test path. These new paths have not yet been invoked.
 
