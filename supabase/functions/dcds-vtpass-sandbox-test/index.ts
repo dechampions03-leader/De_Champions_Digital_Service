@@ -128,6 +128,66 @@ Deno.serve(async (req: Request) => {
       }, 200);
     }
 
+    // Read-only Ghana international airtime catalogue diagnostic. No /pay call.
+    if (body?.action === "GHANA_INTL_CATALOGUE_DIAGNOSTIC") {
+      const apiKey = Deno.env.get("VTPASS_API_KEY") || "";
+      const publicKey = Deno.env.get("VTPASS_PUBLIC_KEY") || "";
+      if (!apiKey || !publicKey) {
+        return json(req, { success: false, stage: "ghana-catalogue-auth", error: "VTPASS_API_KEY and VTPASS_PUBLIC_KEY must be configured in Development." }, 503);
+      }
+      const headers = { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" };
+      const safeList = (value: unknown, fields: string[]) => Array.isArray(value) ? value.slice(0, 80).map((item: Record<string, unknown>) => {
+        const out: Record<string, string> = {};
+        for (const field of fields) out[field] = clean(String(item?.[field] ?? ""), 160);
+        return out;
+      }) : [];
+      const countryResponse = await fetch(base + "/get-international-airtime-countries", { headers, signal: AbortSignal.timeout(12000) });
+      const countryPayload = await countryResponse.json().catch(() => null);
+      const countries = countryPayload?.content?.countries ?? countryPayload?.content;
+      const ghana = Array.isArray(countries) ? countries.find((x: Record<string, unknown>) => clean(x.code, 4).toUpperCase() === "GH") : null;
+      if (!countryResponse.ok || clean(countryPayload?.response_description, 12) !== "000" || !ghana) {
+        return json(req, { success: false, stage: "ghana-countries", provider_http_status: countryResponse.status, provider_code: clean(countryPayload?.response_description, 12) || null, error: "Ghana was not returned by the VTpass international countries endpoint." }, 200);
+      }
+      const typesResponse = await fetch(base + "/get-international-airtime-product-types?code=GH", { headers, signal: AbortSignal.timeout(12000) });
+      const typesPayload = await typesResponse.json().catch(() => null);
+      const types = Array.isArray(typesPayload?.content) ? typesPayload.content : [];
+      const mobileTopUp = types.find((x: Record<string, unknown>) => /mobile\s*top\s*up/i.test(clean(x.name, 100)));
+      if (!typesResponse.ok || clean(typesPayload?.response_description, 12) !== "000" || !mobileTopUp) {
+        return json(req, { success: false, stage: "ghana-product-types", provider_http_status: typesResponse.status, provider_code: clean(typesPayload?.response_description, 12) || null, product_types: safeList(types, ["product_type_id", "name"]), error: "Ghana Mobile Top Up product type was not returned." }, 200);
+      }
+      const productTypeId = clean(String(mobileTopUp.product_type_id ?? ""), 20);
+      const operatorsResponse = await fetch(base + "/get-international-airtime-operators?code=GH&product_type_id=" + encodeURIComponent(productTypeId), { headers, signal: AbortSignal.timeout(12000) });
+      const operatorsPayload = await operatorsResponse.json().catch(() => null);
+      const operators = Array.isArray(operatorsPayload?.content) ? operatorsPayload.content : [];
+      if (!operatorsResponse.ok || clean(operatorsPayload?.response_description, 12) !== "000" || !operators.length) {
+        return json(req, { success: false, stage: "ghana-operators", provider_http_status: operatorsResponse.status, provider_code: clean(operatorsPayload?.response_description, 12) || null, product_type_id: productTypeId, operators: safeList(operators, ["operator_id", "name"]), error: "No Ghana mobile top-up operators were returned." }, 200);
+      }
+      const operatorResults = [];
+      for (const operator of operators.slice(0, 20)) {
+        const operatorId = clean(String(operator.operator_id ?? ""), 20);
+        if (!operatorId) continue;
+        const variationResponse = await fetch(base + "/service-variations?serviceID=foreign-airtime&operator_id=" + encodeURIComponent(operatorId) + "&product_type_id=" + encodeURIComponent(productTypeId), { headers, signal: AbortSignal.timeout(12000) });
+        const variationPayload = await variationResponse.json().catch(() => null);
+        const variations = variationPayload?.content?.variations;
+        operatorResults.push({
+          operator_id: operatorId,
+          operator_name: clean(operator.name, 100),
+          http_status: variationResponse.status,
+          provider_code: clean(variationPayload?.response_description, 12) || null,
+          variations: safeList(variations, ["variation_code", "name", "variation_amount", "fixedPrice"]),
+        });
+      }
+      return json(req, {
+        success: operatorResults.some((x) => x.provider_code === "000" && x.variations.length > 0),
+        stage: "ghana-international-catalogue",
+        country: { code: clean(ghana.code, 4), name: clean(ghana.name, 80), currency: clean(ghana.currency, 12), prefix: clean(ghana.prefix, 12) },
+        product_types: safeList(types, ["product_type_id", "name"]),
+        selected_product_type_id: productTypeId,
+        operators: operatorResults,
+        note: "Read-only VTpass Sandbox catalogue lookup only. No customer verification, /pay request, or purchase was submitted.",
+      }, 200);
+    }
+
     // Isolated Smile customer-email verification diagnostic. This calls only
     // the documented verification endpoint and never submits /pay.
     if (body?.action === "SMILE_VERIFY_DIAGNOSTIC") {
