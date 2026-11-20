@@ -124,7 +124,7 @@ Deno.serve(async (req: Request) => {
       const smilePassword = Deno.env.get("VTPASS_PASSWORD") || "";
       if (!smileEmail || !smilePassword) return json(req, { success: false, error: "Smile testing requires VTPASS_EMAIL and VTPASS_PASSWORD in Development Edge Function secrets. Do not send credentials in chat." }, 503);
       requestHeaders = { Authorization: "Basic " + btoa(smileEmail + ":" + smilePassword), "Content-Type": "application/json", Accept: "application/json" };
-      const verify = await fetch(base + "/merchant-verify/smile/email", { method: "POST", headers: requestHeaders, body: JSON.stringify({ billersCode: "smile@sandbox.vtpass.com", serviceID: "smile-direct" }), signal: AbortSignal.timeout(15000) });
+      const verify = await fetch(base + "/merchant-verify/smile/email", { method: "POST", headers: requestHeaders, body: JSON.stringify({ billersCode: "tester@sandbox.com", serviceID: "smile-direct" }), signal: AbortSignal.timeout(15000) });
       const verified = await verify.json().catch(() => null);
       const accounts = verified?.content?.AccountList?.Account;
       const account = Array.isArray(accounts) ? accounts.find((x: Record<string, unknown>) => clean(x.AccountId, 30) === recipient) : null;
