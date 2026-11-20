@@ -70,3 +70,17 @@ The 2026-11-20 screenshots confirmed that the four domestic airtime tests and fi
 - GLO Airtime: https://vtpass.com/documentation/glo-airtime-vtu-api/
 - International Airtime: https://vtpass.com/documentation/foreign-airtime/
 - Smile Network Payment: https://vtpass.com/documentation/smile-network-payment-api-2/
+
+## Follow-up — Smile sandbox email verification passed (2026-11-20)
+
+The DCDS root administrator ran the updated **read-only Smile email verification diagnostic** in the isolated Development sandbox runner. The displayed result confirmed:
+
+- Stage: `smile-email-verification-diagnostic`
+- Provider HTTP status: `200`
+- VTpass code: `000`
+- Provider response: customer name `THE TESTER ITSELF`
+- Two accounts returned: `08011111111` (friendly names `TESTER1` and `TESTER2`)
+- Expected sandbox account found: `yes`
+- The diagnostic explicitly confirmed: **no `/pay` request or purchase was submitted**.
+
+This closes the Smile sandbox customer-email verification diagnostic. It does **not** establish a successful Smile purchase/delivery. The separate read-only Smile authentication/variations check and one controlled Smile sandbox purchase/requery lifecycle remain to be completed before Live readiness can be claimed.
