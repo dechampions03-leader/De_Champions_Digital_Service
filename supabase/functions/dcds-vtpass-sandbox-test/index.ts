@@ -173,7 +173,12 @@ Deno.serve(async (req: Request) => {
       chosen = selected[0];
     }
     const id = requestId();
-    const purchasePayload: Record<string, unknown> = { request_id: id, serviceID, amount: chosen.amount, phone: isSpectranet ? "08011111111" : recipient };
+    const purchasePayload: Record<string, unknown> = { request_id: id, serviceID, phone: isSpectranet ? "08011111111" : recipient };
+    // International fixed-price variations may report variation_amount=0 while
+    // VTpass calculates the NGN wallet charge server-side. The amount field is
+    // optional in the official API payload; omit zero rather than sending an
+    // invalid zero amount (which triggers response code 011).
+    if (chosen.amount > 0) purchasePayload.amount = chosen.amount;
     if (!isAirtime) { purchasePayload.billersCode = billersCode; purchasePayload.variation_code = chosen.code; }
     if (isSpectranet) purchasePayload.quantity = 1;
     Object.assign(purchasePayload, specialPayload);
