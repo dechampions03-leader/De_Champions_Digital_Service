@@ -55,7 +55,7 @@ The 2026-11-20 screenshots confirmed that the four domestic airtime tests and fi
 ## Safety and release notes
 
 - No Production Supabase migration or Edge Function deployment is authorized by this register.
-- Sandbox test recipient is the documented VTpass test number 08011111111.
+- Sandbox test recipients: use 08011111111 for standard airtime/data services; use the documented Spectranet Sandbox success number 1212121212 for Spectranet. The runner must keep phone and billersCode aligned.
 - Each test must use one unique request ID. If /pay is ambiguous, query/requery the same ID; never send a second /pay for that test.
 - Record a reference as successful only when the provider returns code 000 and transaction status delivered.
 - Never record API keys, passwords, tokens, or other secrets in this file.
