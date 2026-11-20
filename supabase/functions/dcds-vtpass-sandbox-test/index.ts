@@ -128,7 +128,7 @@ Deno.serve(async (req: Request) => {
       const verified = await verify.json().catch(() => null);
       const accounts = verified?.content?.AccountList?.Account;
       const account = Array.isArray(accounts) ? accounts.find((x: Record<string, unknown>) => clean(x.AccountId, 30) === recipient) : null;
-      if (!verify.ok || clean(verified?.code, 12) !== "000" || !account) return json(req, { success: false, stage: "smile-email-verification", error: "VTpass Sandbox did not verify the documented Smile test email/account." }, 502);
+      if (!verify.ok || clean(verified?.code, 12) !== "000" || !account) return json(req, { success: false, stage: "smile-email-verification", error: "VTpass Sandbox did not verify the documented Smile test email/account." }, 200);
       billersCode = clean(account.AccountId, 30);
       specialPayload = { email: "smile@sandbox.vtpass.com" };
       requestHeaders = { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" };
@@ -148,7 +148,7 @@ Deno.serve(async (req: Request) => {
       const variationsResponse = await fetch(base + "/service-variations?serviceID=foreign-airtime&operator_id=" + encodeURIComponent(operatorId) + "&product_type_id=" + encodeURIComponent(productTypeId), { headers: { "api-key": apiKey, "public-key": publicKey, Accept: "application/json" }, signal: AbortSignal.timeout(12000) });
       const variationsPayload = await variationsResponse.json().catch(() => null);
       const variations = variationsPayload?.content?.variations;
-      const intlVariation = Array.isArray(variations) ? variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount), fixed: clean(v.fixedPrice, 10) })).find((v: { code: string; name: string; amount: number; fixed: string }) => v.code && /top\s*up/i.test(v.name) && v.amount > 0 && Number.isFinite(v.amount)) : null;
+      const intlVariation = Array.isArray(variations) ? variations.map((v: Record<string, unknown>) => ({ code: clean(v.variation_code, 80), name: clean(v.name, 100), amount: Number(v.variation_amount), fixed: clean(v.fixedPrice, 10) })).find((v: { code: string; name: string; amount: number; fixed: string }) => v.code && /top\s*up/i.test(v.name) && Number.isFinite(v.amount) && v.amount >= 0) : null;
       if (!variationsResponse.ok || clean(variationsPayload?.response_description, 12) !== "000" || !intlVariation) return json(req, { success: false, stage: "international-variations", error: "No fixed-price Ghana airtime top-up variation is available for a safe Sandbox test." }, 502);
       chosen = { code: intlVariation.code, name: intlVariation.name, amount: intlVariation.amount };
       billersCode = recipient;
