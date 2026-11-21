@@ -1,0 +1,52 @@
+name: DCDS Verified+ synthetic identity adapter validation
+
+on:
+  push:
+    branches:
+      - feature/dcds-verified-plus-ecosystem
+    paths:
+      - "supabase/functions/_shared/verified-plus/**"
+      - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/_shared/verified-plus/**"
+      - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dcds-verified-plus-adapter-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  synthetic-adapter-tests:
+    name: Synthetic adapter type-check and tests (no external services)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check provider-neutral contract and synthetic adapter
+        run: |
+          deno check supabase/functions/_shared/verified-plus/identity-provider.ts
+          deno check supabase/functions/_shared/verified-plus/mock-identity-provider.ts
+          deno check supabase/functions/_shared/verified-plus/identity-provider_test.ts
+
+      - name: Run synthetic-only tests
+        run: deno test --no-check supabase/functions/_shared/verified-plus/identity-provider_test.ts
+
+      - name: Verify mock adapter is not wired into a live Edge Function
+        shell: bash
+        run: |
+          if grep -R -n --include='*.ts' 'mock-identity-provider' supabase/functions/*/index.ts; then
+            echo "The synthetic identity adapter must not be imported by a deployable Edge Function."
+            exit 1
+          fi
