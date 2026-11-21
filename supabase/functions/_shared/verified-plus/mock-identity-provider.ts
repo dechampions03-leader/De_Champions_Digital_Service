@@ -124,12 +124,11 @@ async function hmacHex(
  * Test helper. Produces the synthetic HMAC header format consumed only by
  * SyntheticIdentityProviderAdapter. It does not imitate any vendor's scheme.
  */
-export async function createSyntheticNotificationForTest(
-  body: SyntheticNotification,
+export async function signSyntheticRawBodyForTest(
+  rawBody: Uint8Array,
   webhookSecret: string,
   timestampMs: number,
 ): Promise<{ rawBody: Uint8Array; headers: Record<string, string> }> {
-  const rawBody = new TextEncoder().encode(JSON.stringify(body));
   const timestamp = String(timestampMs);
   const signature = await hmacHex(webhookSecret, timestamp, rawBody);
   return {
@@ -139,6 +138,16 @@ export async function createSyntheticNotificationForTest(
       "x-dcds-mock-signature": signature,
     },
   };
+}
+
+/** Builds and signs a synthetic normalized provider event for tests. */
+export async function createSyntheticNotificationForTest(
+  body: SyntheticNotification,
+  webhookSecret: string,
+  timestampMs: number,
+): Promise<{ rawBody: Uint8Array; headers: Record<string, string> }> {
+  const rawBody = new TextEncoder().encode(JSON.stringify(body));
+  return await signSyntheticRawBodyForTest(rawBody, webhookSecret, timestampMs);
 }
 
 export class SyntheticIdentityProviderAdapter
