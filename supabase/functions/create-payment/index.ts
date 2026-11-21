@@ -107,7 +107,7 @@ Deno.serve(async (req: Request) => {
           user_id: user.id,
         },
         customizations: {
-          title: "De Champions Digital Service",
+          title: "De Champions Digital Services",
           description: `Payment for ${checkout.course_title}`,
           logo: `${siteUrl}/logo.png`,
         },
