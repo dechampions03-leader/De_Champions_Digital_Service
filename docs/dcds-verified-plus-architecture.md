@@ -175,6 +175,8 @@ Do not promise that identity verification makes an account unhackable. Provide b
 
 **Product specification:** The [Verified+ Exclusive Network specification](dcds-verified-plus-exclusive-network.md) records the members-only feed, publishing, emoji reactions, comments/replies, in-network sharing, privacy boundaries, moderation and entitlement lifecycle.
 
+**Interactive prototype:** [Open the standalone synthetic Verified+ community preview](../verified-plus-community-preview.html). It is a feature-branch-only demo with fictional data and no backend, account, payment or identity connection.
+
 The Verified+ network is separate from the existing supervised Student Community. Existing 13–17 and 18+ age-cohort controls, guardian requirements, moderation queues and direct-message restrictions remain in force. Normal student-community approval does not grant paid Verified+ membership, and Verified+ payment alone does not override identity, age, privacy or safety checks.
 
 Default audience for the new feed is active, eligible Verified+ members. A private AI conversation, course record, grade, payment, payout, VTU transaction, identity document, guardian record or private credential must never be imported automatically. Only approved, explicitly shared content enters the network.
