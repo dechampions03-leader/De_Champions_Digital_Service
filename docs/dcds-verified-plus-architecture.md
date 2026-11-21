@@ -25,8 +25,8 @@ Verified+ is a paid membership and entitlement layer. It is not a claim that pay
 | Advertising | Standard members may be eligible for ordinary DCDS display ads; active Verified+ members receive an ad-free authenticated experience |
 | TRUSTMARKET sellers | Must be Verified+ eligible, apply separately, and pass provider approval |
 | Business and professional credentials | Separate verification tracks; identity verification alone does not confer them |
-| Verified+ social network | Exclusive to eligible members with approved identity and active Verified+ entitlement; member-only content remains private by default |
-| Verified+ interactions | Eligible members can publish posts, use emoji reactions, comment, reply and share/repost within the original audience |
+| Verified+ social network | All signed-in DCDS accounts can view and engage with approved posts; only eligible active Verified+ members can publish original posts |
+| Verified+ interactions | Verified+ members publish original posts; all signed-in accounts can react, comment, reply and reshare attributed cards without captions |
 
 | Accounts | One DCDS account and one universal profile; no separate marketplace or membership account |
 
@@ -171,17 +171,23 @@ Do not promise that identity verification makes an account unhackable. Provide b
 - Any future sponsored marketplace listing must be clearly labelled and governed separately from ordinary display advertising.
 - Expired/suspended membership entitlements must be recalculated server-side.
 
-## 6A. Verified+ Exclusive Network
+## 6A. Verified+ Member Network
 
-**Product specification:** The [Verified+ Exclusive Network specification](dcds-verified-plus-exclusive-network.md) records the members-only feed, publishing, emoji reactions, comments/replies, in-network sharing, privacy boundaries, moderation and entitlement lifecycle.
+**Product specification:** The [Verified+ Member Network specification](dcds-verified-plus-exclusive-network.md) records DCDS-wide signed-in visibility, Verified+ original-publishing privileges, standard-account engagement, audience rules and lifecycle controls.
 
-**Interactive prototype:** [Open the standalone synthetic Verified+ community preview](../verified-plus-community-preview.html). It is a feature-branch-only demo with fictional data and no backend, account, payment or identity connection.
+**Brand and enforcement policy:** The [DCDS Verified+ Brand Content and Enforcement Policy](dcds-verified-plus-brand-content-policy.md) defines allowed DCDS topics, prohibited off-brand/social content, external-link controls, monitoring, strike escalation, restrictions, severe-incident response and appeals.
 
-The Verified+ network is separate from the existing supervised Student Community. Existing 13–17 and 18+ age-cohort controls, guardian requirements, moderation queues and direct-message restrictions remain in force. Normal student-community approval does not grant paid Verified+ membership, and Verified+ payment alone does not override identity, age, privacy or safety checks.
+**Interactive prototype:** [Open the standalone synthetic Verified+ community preview](../verified-plus-community-preview.html). It includes a switch between a Verified+ publisher and a standard/unverified engager. Both roles see the same DCDS member feed; only the Verified+ role can create an original post. The preview remains local and synthetic.
 
-Default audience for the new feed is active, eligible Verified+ members. A private AI conversation, course record, grade, payment, payout, VTU transaction, identity document, guardian record or private credential must never be imported automatically. Only approved, explicitly shared content enters the network.
+The feed is available to all signed-in DCDS accounts. Original publishing is a Verified+ privilege. Standard/unverified accounts may react, comment, reply and reshare an attributed reference card without a caption or external destination. Signed-out visitors receive no feed data.
 
-The social-network feature requires its own server-side entitlements, RLS, abuse controls, audit trail and expiry behaviour. Proposed table names in its specification are conceptual only; do not create them until the migration-reconciliation blocker is resolved.
+The network is a brand-only DCDS learning and professional-development space, not a general social-media wall. All text-bearing surfaces and media must pass the Brand Content and Enforcement Policy. External links are blocked unless the exact DCDS-controlled destination is formally allowlisted. Moderation actions are network-scoped, reason-coded, auditable and appealable. Automated checks may block or hold content, but must not permanently ban an account without human Root Administrator review.
+
+The network remains separate from the existing supervised Student Community. Existing 13–17 and 18+ age-cohort controls, guardian requirements, moderation queues and direct-message restrictions remain in force. Verified+ status does not override age, privacy or safeguarding rules.
+
+A private AI conversation, course record, grade, payment, payout, VTU transaction, identity document, guardian record or private credential must never be imported automatically. The feed may contain only content deliberately submitted and approved for the DCDS-member audience.
+
+The social-network feature requires its own server-side role and entitlement checks, RLS, abuse controls, audit trail and restriction expiry behaviour. Proposed table names remain conceptual only; do not create them until the migration-reconciliation blocker is resolved.
 
 ## 7. DCDS TRUSTMARKET
 
