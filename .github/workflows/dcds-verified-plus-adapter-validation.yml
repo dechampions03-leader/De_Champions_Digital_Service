@@ -12,6 +12,7 @@ on:
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
       - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
+      - "docs/dcds-verified-plus-moderation-engine-contract.md"
       - "docs/dcds-migration-reconciliation.md"
       - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
   pull_request:
@@ -25,6 +26,7 @@ on:
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
       - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
+      - "docs/dcds-verified-plus-moderation-engine-contract.md"
       - "docs/dcds-migration-reconciliation.md"
       - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
 
@@ -83,6 +85,7 @@ jobs:
           brand_policy = Path("docs/dcds-verified-plus-brand-content-policy.md").read_text(encoding="utf-8")
           network_spec = Path("docs/dcds-verified-plus-exclusive-network.md").read_text(encoding="utf-8")
           persistence_design = Path("docs/dcds-verified-plus-moderation-persistence-and-rls-design.md").read_text(encoding="utf-8")
+          moderation_contract = Path("docs/dcds-verified-plus-moderation-engine-contract.md").read_text(encoding="utf-8")
           migration_reconciliation = Path("docs/dcds-migration-reconciliation.md").read_text(encoding="utf-8")
 
           checks = {
@@ -119,6 +122,8 @@ jobs:
               "Verified+ persistence design keeps Student Community separate": "do not repurpose them for the verified+ network" in persistence_design.lower() and "room/cohort" in persistence_design.lower(),
               "Verified+ persistence design requires isolated tables and no direct moderation writes": "dcds_verified_network_moderation_cases" in persistence_design and "must not receive direct insert/update/delete privileges" in persistence_design.lower(),
               "database writes remain blocked by migration reconciliation": "migration reconciliation is not complete" in migration_reconciliation.lower() and "do not run" in migration_reconciliation.lower(),
+              "moderation engine contract references persistence design": "Moderation Persistence and RLS Design" in moderation_contract,
+              "moderation contract headings have unique sequential numbers": len([line for line in moderation_contract.splitlines() if line.startswith("## ")]) == len(set(line.split(".")[0] for line in moderation_contract.splitlines() if line.startswith("## "))),
               "emoji reactions are present": all(emoji in page for emoji in ["👍", "❤️", "💖", "😂", "😭", "😘", "😀", "🤔", "😉"]),
               "one active reaction can be toggled or changed": "post.myReaction" in page and "previous === emoji" in page,
               "comments and threaded replies are present": "comment-form" in page and "reply-form" in page,
