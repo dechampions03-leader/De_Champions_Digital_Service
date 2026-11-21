@@ -81,7 +81,7 @@ jobs:
               "standard account cannot publish originals": "postInput.disabled = !verifiedPublisher" in page and 'document.getElementById("demoRole").value !== "verified"' in page,
               "standard and verified accounts share the DCDS feed": "DCDS MEMBERS" in page and "DCDS member feed" in page,
               "all text-entry surfaces reject external links in preview": "hasDisallowedExternalLink" in page and "rejectExternalLink(text)" in page and page.count("rejectExternalLink(value)") >= 2,
-              "bare domains and off-platform handles are also detected": "a-z0-9_.{2,}" in page and "xyz" in page and "www\\.)" in page,
+              "bare domains and off-platform handles are also detected": "a-z0-9_.]{2,}" in page and "xyz" in page and "www\\.)" in page,
               "brand policy defines strict off-topic and external-link rules": "general-purpose social-media wall" in brand_policy and "External URLs are blocked by default" in brand_policy,
               "brand policy defines strikes and appeals": "4th violation" in brand_policy and "7 days" in brand_policy and "30 days" in brand_policy and "90 days" in brand_policy and "14 calendar days" in brand_policy,
               "automated moderation cannot permanently ban alone": "ai alone must not impose a permanent ban" in brand_policy.lower(),
