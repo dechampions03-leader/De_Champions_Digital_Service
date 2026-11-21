@@ -94,7 +94,7 @@ export interface ModerationResult {
 }
 
 const EXPLICIT_URL = /\b(?:https?:\/\/|www\.)[^\s<>"'()]+/gi;
-const BARE_DOMAIN = /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:com|net|org|io|co|ng|app|dev|me|xyz|edu|gov|uk|info|biz|example|invalid|test)(?:\/[^\s<>"']*)?/gi;
+const BARE_DOMAIN = /\b(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+(?:[a-z]{2,}|xn--[a-z0-9-]{2,})(?:\/[^\s<>"']*)?/gi;
 const EMAIL_ADDRESS = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
 const SOCIAL_HANDLE = /(?:^|\s)@[a-z0-9_.]{2,}/i;
 const PHONE_NUMBER = /(?:^|\D)(?:\+?\d[\d\s().-]{7,}\d)(?:$|\D)/;
