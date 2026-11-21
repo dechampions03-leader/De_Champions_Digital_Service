@@ -63,6 +63,8 @@ Do not merge student-only community visibility rules into the global profile. Do
 
 ## 4. Blue Badge identity verification
 
+**Implementation contract:** The vendor-neutral [identity provider adapter contract](dcds-verified-plus-provider-adapter-contract.md) defines the server-side integration boundary, normalized provider outcomes, replay protection, data minimisation, review permissions, failure handling, and rollout tests. No provider is selected and no identity-verification feature is enabled by this document.
+
 ### Eligibility and journey
 
 Support Nigerian and international applicants through a provider adapter so the identity vendor can be changed without rebuilding DCDS.
