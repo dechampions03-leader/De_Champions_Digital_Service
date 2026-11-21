@@ -7,6 +7,7 @@ on:
     paths:
       - "supabase/functions/_shared/verified-plus/**"
       - "verified-plus-community-preview.html"
+      - "verified-plus-moderation-preview.html"
       - "docs/dcds-verified-plus-brand-content-policy.md"
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
@@ -17,6 +18,7 @@ on:
     paths:
       - "supabase/functions/_shared/verified-plus/**"
       - "verified-plus-community-preview.html"
+      - "verified-plus-moderation-preview.html"
       - "docs/dcds-verified-plus-brand-content-policy.md"
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
@@ -68,6 +70,8 @@ jobs:
 
           page_path = Path("verified-plus-community-preview.html")
           page = page_path.read_text(encoding="utf-8")
+          moderation_path = Path("verified-plus-moderation-preview.html")
+          moderation_page = moderation_path.read_text(encoding="utf-8")
           home = Path("index.html").read_text(encoding="utf-8")
           student_safety = Path("docs/dcds-student-community-safety-and-moderation.md").read_text(encoding="utf-8")
           brand_policy = Path("docs/dcds-verified-plus-brand-content-policy.md").read_text(encoding="utf-8")
@@ -89,6 +93,17 @@ jobs:
               "mobile action controls have touch-friendly sizing": ".action{min-height:44px" in page and ".react{min-height:42px" in page,
               "mobile layout respects device safe areas": "safe-area-inset-bottom" in page,
               "reduced-motion preference is respected": "prefers-reduced-motion:reduce" in page,
+              "moderation centre is visibly synthetic": "Demo only" in moderation_page and "Synthetic demonstration" in moderation_page,
+              "moderation queue uses fictional case IDs": all(case_id in moderation_page for case_id in ["VP-1042", "VP-1043", "VP-1044", "VP-1045", "VP-1046"]),
+              "moderator and Root Admin roles can be previewed separately": 'id="roleSelect"' in moderation_page and 'value="moderator"' in moderation_page and 'value="root"' in moderation_page,
+              "fourth strike escalates from moderator to Root review": 'c.status="root_review"' in moderation_page and 'if(isRoot())' in moderation_page,
+              "permanent network ban is Root-only and requires typed confirmation": 'action==="permanent")&&!isRoot()' in moderation_page and 'value.trim()!=="PERMANENT"' in moderation_page and 'c.status="permanent_network_ban"' in moderation_page,
+              "permanent network ban is limited to a severe safety hold": 'action==="permanent"&&c.status!=="safety_hold"' in moderation_page,
+              "appeal review prevents original decision maker reviewing own case": 'a.prior===(isRoot()?"Root Admin Demo":"Moderator Demo")' in moderation_page,
+              "formal actions require reason and moderator note": 'if(!reason||!note)' in moderation_page,
+              "audit history records moderator decisions": 'audit.unshift({time:' in moderation_page and 'function log(event,detail)' in moderation_page,
+              "moderation preview does not connect to production services": "supabase-js" not in moderation_page and "createClient" not in moderation_page and "fetch(" not in moderation_page,
+              "moderation preview is responsive and safe-area aware": "@media(max-width:720px)" in moderation_page and "safe-area-inset-bottom" in moderation_page,
               "brand policy defines strict off-topic and external-link rules": "general-purpose social-media wall" in brand_policy and "External URLs are blocked by default" in brand_policy,
               "brand policy defines strikes and appeals": "4th violation" in brand_policy and "7 days" in brand_policy and "30 days" in brand_policy and "90 days" in brand_policy and "14 calendar days" in brand_policy,
               "automated moderation cannot permanently ban alone": "ai alone must not impose a permanent ban" in brand_policy.lower(),
@@ -128,11 +143,29 @@ jobs:
           Path("/tmp/verified-plus-community-preview.js").write_text(script.group(1), encoding="utf-8")
           PY
           node --check /tmp/verified-plus-community-preview.js
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          page = Path("verified-plus-moderation-preview.html").read_text(encoding="utf-8")
+          script = re.search(r"<script>\s*(.*?)\s*</script>", page, re.DOTALL)
+          if not script:
+              raise SystemExit("FAIL no moderation preview script found")
+          Path("/tmp/verified-plus-moderation-preview.js").write_text(script.group(1), encoding="utf-8")
+          PY
+          node --check /tmp/verified-plus-moderation-preview.js
 
       - name: Package standalone HTML preview for download
         uses: actions/upload-artifact@v4
         with:
           name: DCDS-Verified-Plus-Network-Preview
           path: verified-plus-community-preview.html
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Package standalone moderation centre preview for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: DCDS-Verified-Plus-Moderation-Preview
+          path: verified-plus-moderation-preview.html
           if-no-files-found: error
           retention-days: 14
