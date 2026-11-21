@@ -11,6 +11,8 @@ on:
       - "docs/dcds-verified-plus-brand-content-policy.md"
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
+      - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
+      - "docs/dcds-migration-reconciliation.md"
       - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
   pull_request:
     branches:
@@ -22,6 +24,8 @@ on:
       - "docs/dcds-verified-plus-brand-content-policy.md"
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
+      - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
+      - "docs/dcds-migration-reconciliation.md"
       - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
 
 permissions:
@@ -78,6 +82,8 @@ jobs:
           student_safety = Path("docs/dcds-student-community-safety-and-moderation.md").read_text(encoding="utf-8")
           brand_policy = Path("docs/dcds-verified-plus-brand-content-policy.md").read_text(encoding="utf-8")
           network_spec = Path("docs/dcds-verified-plus-exclusive-network.md").read_text(encoding="utf-8")
+          persistence_design = Path("docs/dcds-verified-plus-moderation-persistence-and-rls-design.md").read_text(encoding="utf-8")
+          migration_reconciliation = Path("docs/dcds-migration-reconciliation.md").read_text(encoding="utf-8")
 
           checks = {
               "preview is visibly marked demo only": "Demo only" in page,
@@ -110,6 +116,9 @@ jobs:
               "brand policy defines strikes and appeals": "4th violation" in brand_policy and "7 days" in brand_policy and "30 days" in brand_policy and "90 days" in brand_policy and "14 calendar days" in brand_policy,
               "automated moderation cannot permanently ban alone": "ai alone must not impose a permanent ban" in brand_policy.lower(),
               "product spec grants standard accounts engagement, not publishing": "standard/unverified accounts may react, comment, reply" in network_spec.lower() and "may not create original posts" in network_spec.lower(),
+              "Verified+ persistence design keeps Student Community separate": "do not repurpose them for the Verified+ network" in persistence_design.lower() and "room/cohort" in persistence_design.lower(),
+              "Verified+ persistence design requires isolated tables and no direct moderation writes": "dcds_verified_network_moderation_cases" in persistence_design and "no direct insert/update/delete" in persistence_design.lower(),
+              "database writes remain blocked by migration reconciliation": "migration reconciliation remains" in migration_reconciliation.lower() and "do not run" in migration_reconciliation.lower(),
               "emoji reactions are present": all(emoji in page for emoji in ["👍", "❤️", "💖", "😂", "😭", "😘", "😀", "🤔", "😉"]),
               "one active reaction can be toggled or changed": "post.myReaction" in page and "previous === emoji" in page,
               "comments and threaded replies are present": "comment-form" in page and "reply-form" in page,
