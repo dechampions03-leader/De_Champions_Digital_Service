@@ -231,21 +231,25 @@ No role should automatically inherit Root Administrator authority. Sensitive act
 
 ## 10. Existing-system integration findings
 
-The initial read-only audit found:
+The read-only audit found:
 
 - GitHub repository: `dechampions03-leader/De_Champions_Digital_Service`, default branch `main`.
-- Supabase projects: `DCDS-Development` and `dechampions03-leader's Project`; the latter is treated as the production candidate based on the existing project history, but the production mapping must be confirmed in deployment configuration before any write.
-- Current table inventory: 81 public tables in Development and 94 in the production-candidate project.
-- Existing profile-related tables include `profiles`, `dcds_career_profiles`, `dcds_community_profiles`, `dcds_student_projects`, and `dcds_community_credentials`.
-- The legacy `profiles` table uses a bigint primary key and is not directly keyed to `auth.users`; do not retrofit it as the universal profile.
+- Supabase projects: `DCDS-Development` (`tjgsxbmkpvktlqulbktv`) and `dechampions03-leader's Project` (`qxsenflgaweeadvggnyp`). The second is treated as the production candidate based on the existing project history, but the current production deployment mapping must be confirmed before any write.
+- Current public table inventory: 81 tables in Development and 94 in the production-candidate project.
+- The repository `main` tree contains 48 tracked SQL migration files, but does not contain `supabase/config.toml`.
+- Supabase compares migration timestamps, not names. Only 4 of the 48 checked-in timestamps match Development's 54 applied migration records, and only 8 of 48 match the production-candidate project's 80 applied records. Matching names with different timestamps are not exact migration-history matches. **This is a hard blocker for applying new migrations.**
+- The repository preserves `supabase/baseline/dcds-production-complete-baseline.sql` (373,633 bytes). Its 2026-11-12 commit message says it is a schema-only baseline used to restore DCDS-Development and contains no production customer rows. Treat it as a historical reference, not as proof of either project's current schema and not as a script to replay on an existing database.
+- `supabase/migrations/20261110000100_phase1_security_reliability.sql` is explicitly labelled as a draft in its own contents and says not to apply to production. It includes course-checkout and student-support-ticket changes, not Verified+ features. A GitHub workflow checks for this exact file path, so it must not be moved or deleted casually. Keep it out of any push until its intended status and dependencies are resolved.
+- Existing profile-related tables include `profiles`, `dcds_career_profiles`, `dcds_community_profiles`, `dcds_student_projects`, and `dcds_community_credentials`. The legacy `profiles` table uses a bigint primary key and is not directly keyed to `auth.users`; do not retrofit it as the universal profile.
 - Student community profiles have cohort/privacy restrictions and age/guardian controls. They are not a substitute for public universal profiles.
-- The production-candidate project reports 80 applied migrations, Development reports 54, while the current `main` repository tree contains 48 tracked migration files. This migration-history divergence is a blocker for applying new SQL until reconciled.
-- Supabase security advisors report existing RLS-no-policy and SECURITY DEFINER execution findings in both environments. These need triage; an RLS-enabled table with no policy is generally closed to API roles, but it may also break expected application functionality. SECURITY DEFINER functions callable by authenticated users must be checked for correct internal authorization and grants.
-- Existing payment and VTU systems must remain isolated from the new membership ledger. The current Flutterwave webhook validates the webhook hash and re-verifies the transaction with Flutterwave before further processing; this is a useful security pattern to preserve. The current course checkout is not a drop-in membership checkout because it is tied to `orders.course_id` and course enrolment.
+- Supabase security advisors report existing RLS-no-policy and SECURITY DEFINER execution findings in both environments. An RLS-enabled table with no policy is generally closed to API roles, but it may also break expected application functionality. SECURITY DEFINER functions callable by authenticated users must be checked individually for internal authorization and execute grants. The production-candidate advisor also warns that leaked-password protection is not enabled.
+- Existing payment and VTU systems must remain isolated from the new membership ledger. The current Flutterwave webhook validates the webhook hash and re-verifies the transaction with Flutterwave before further processing; preserve that security pattern. The current course checkout is not a drop-in membership checkout because it is tied to `orders.course_id` and course enrolment.
+
+See [the migration reconciliation report](dcds-migration-reconciliation.md) for the full timestamp comparison and safe recovery plan.
 
 ## 11. Implementation phases
 
-1. **Reconciliation gate:** confirm production project mapping, compare applied migration history to repository migrations, inspect relevant RLS policies and payment functions, and identify the current release branch/deployment target.
+1. **Reconciliation gate (blocking):** confirm production project mapping, add/review the missing Supabase CLI configuration, reconcile timestamp history using an isolated Development target, compare the preserved baseline with current schemas, inspect relevant RLS policies and payment functions, and prove a clean local rebuild. Do not run migration repair or database reset against production.
 2. **Universal profile:** add profile model, unique usernames, privacy settings and a migration/backfill plan without changing legacy records.
 3. **Identity verification:** select an authorised vendor, complete privacy/DPIA and data-retention work, then implement provider adapter and reviewer console.
 4. **Verified+ membership:** add the two approved plans, secure checkout, webhook idempotency, entitlement service, renewal and expiry handling.
