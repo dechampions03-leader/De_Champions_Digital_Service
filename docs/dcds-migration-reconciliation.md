@@ -27,6 +27,27 @@ References:
 - [Supabase migration repair](https://supabase.com/docs/reference/cli/supabase-migration-repair)
 - [Supabase database migrations](https://supabase.com/docs/guides/deployment/database-migrations)
 
+## Latest read-only revalidation — 2026-11-21
+
+The two configured Supabase projects were checked again through the current project list, migration list, public-table inventory, targeted information-schema/pg_policies inspection, and security advisors. No DDL or data-changing query was run.
+
+| Environment | Current project status | Remote migration records | Local SQL files | Exact timestamp matches | Local timestamps absent remotely | Remote timestamps absent locally | Public tables |
+|---|---|---:|---:|---:|---:|---:|---:|
+| DCDS-Development (`tjgsxbmkpvktlqulbktv`) | ACTIVE_HEALTHY | 54 | 48 | 4 | 44 | 50 | 81 |
+| Production-candidate (`qxsenflgaweeadvggnyp`) | ACTIVE_HEALTHY | 80 | 48 | 8 | 40 | 72 | 94 |
+
+The timestamp reconciliation remains unchanged and incomplete. Development still has repeated logical names under multiple remote versions (including community course-Q&A channels, official staff badges, regional course pricing, admin payment operations, payment verification audit events and pending-checkout reconciliation). The production-candidate history still contains the repeated VTU pay-per-order checkout logical name. These are unresolved content-mapping tasks, not safe repair candidates.
+
+The live schema inspection also reconfirmed that the existing `dcds_community_posts`, `dcds_community_reports`, `dcds_community_moderation_actions`, `dcds_community_post_reactions` and `dcds_community_blocks` tables belong to the supervised room/cohort Student Community. Their policies depend on room membership, accepted rules, cohort restrictions and Student Community moderation. They are **not** the Verified+ network persistence layer and must not be widened or repurposed.
+
+The existing Student Community moderation action model is scoped to community messages/posts/reports/credentials/membership/access/live sessions. It does not provide the Verified+ strike ledger, 180-day strike window, independent appeal lifecycle, delegated network restrictions or separate Root-only permanent network-ban controls. Verified+ requires separately scoped records and policies.
+
+The security advisors still report RLS-enabled tables with no policies on 13 Development tables and 24 production-candidate tables. This needs individual table/grant review. It is not permission to add broad policies or disable RLS.
+
+Production-candidate table inventory includes existing course orders, payments, enrolments, payouts, notifications and account-related records. Keep that environment read-only during this reconciliation and preserve all production records.
+
+**Decision:** The migration blocker remains active. No migration repair, schema pull, reset, DDL, Edge Function deployment, role change, secret edit, data mutation or Production release was performed during this revalidation.
+
 ## 1. Environments inspected
 
 | Supabase project | Project ref | Status | Applied migration records | Public tables |
