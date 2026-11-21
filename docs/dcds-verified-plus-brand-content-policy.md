@@ -146,4 +146,6 @@ Before real accounts can publish or engage, demonstrate:
 - no effect on Student Community age/guardian controls or private AI, student, identity, payment, wallet, payout or VTU data;
 - fail-safe behaviour when moderation or allowlist services are unavailable: do not silently publish unchecked content.
 
-**Implementation status:** Policy specification only. The current static preview cannot enforce production moderation. No moderation engine, account restriction, database table, API, Supabase policy or production control is enabled by this document.
+**Interactive administration preview:** [Open the standalone synthetic Moderation Centre](../verified-plus-moderation-preview.html). It demonstrates the review queue, moderator/Root Admin permission split, strike ladder, appeals, severe-case holds, typed Root-only permanent network-ban confirmation and append-only-style demo audit view. All case data is fictional and changes are local to the page.
+
+**Implementation status:** Policy specification and static administration preview only. The preview cannot enforce production moderation. No moderation engine, account restriction, database table, API, Supabase policy or production control is enabled by this document.
