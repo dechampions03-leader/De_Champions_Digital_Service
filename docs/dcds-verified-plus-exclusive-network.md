@@ -7,7 +7,7 @@
 
 ## 1. Product intent
 
-Verified+ should feel like a genuine members-only social and professional network inside DCDS, not merely a badge next to a profile name.
+Verified+ should feel like a genuine DCDS professional and learning network, with exclusive original-publishing privileges for eligible members and useful feed access for the wider signed-in DCDS community.
 
 Eligible active members should be able to discover the approved content shared into the network, publish their own posts, express themselves with reactions, join conversations, comment, reply, and share/repost content within the network. The experience should be unified across supported DCDS surfaces rather than fragmented into unrelated mini-communities.
 
@@ -73,7 +73,7 @@ Do not automatically ingest or publish:
 - private messages, private profiles, guardian details, age evidence, identity evidence or verification provider payloads;
 - private credentials, document uploads, contact details, or administrator-only records.
 
-A user may choose to publish a safe excerpt or a link to a supported item. Before publishing, show the audience and a preview of exactly what will be visible. Never convert a private item into a public/network item by default.
+A user may choose to publish a safe excerpt or a DCDS-controlled internal link to a supported item. External links are blocked unless the exact destination has been formally allowlisted. Before publishing, show the audience and a preview of exactly what will be visible. Never convert a private item into a network item by default.
 
 ## 5. Publishing and social interactions
 
@@ -122,7 +122,7 @@ Direct messaging is not included by this specification. Existing Student Communi
 ## 6. Content ownership, privacy and audience lifecycle
 
 - The member owns their original post subject to DCDS platform terms and applicable law.
-- Private-by-default network visibility is the starting point.
+- The default network audience is all signed-in DCDS accounts. A post is not visible to signed-out visitors. Never expose the private source record or fields outside the explicitly selected, approved excerpt.
 - Make the audience visible on every post and share card.
 - Never reveal a private member's email address, phone number, home address, legal name or identity evidence through a post, profile preview, API response or interaction list.
 - Respect block and mute rules across feed retrieval, search, comments, replies, reactions, reposts and notifications.
@@ -136,7 +136,7 @@ When a monthly Verified+ membership expires or an entitlement is suspended:
 - immediately block new original publishing and other Verified+-only privileges. General DCDS feed viewing/engagement remains available only where account status and any restriction permit it;
 - do not delete the member's original content or history merely because membership expired;
 - preserve ownership and the member's access to lawful account/data export and support paths;
-- keep existing content hidden from non-members unless the author had separately and validly made it public;
+- keep existing network content available to signed-in DCDS accounts while the author's account and the item remain eligible; keep source records and private data hidden;
 - provide a clear renewal/reactivation experience.
 
 When identity verification is suspended or revoked for a security or policy reason, recalculate dependent entitlements server-side and apply the relevant access restriction. Preserve the decision and audit history. Do not silently change payment, wallet, payout, course-enrolment or VTU records.
