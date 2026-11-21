@@ -109,6 +109,10 @@ async function hmacHex(
   const encoder = new TextEncoder();
   const prefix = encoder.encode(`${timestamp}.`);
   const payload = concatBytes(prefix, rawBody);
+  // Web Crypto's TypeScript definitions require an ArrayBuffer-backed view.
+  // Copy into a fresh ArrayBuffer to avoid ArrayBufferLike/SharedArrayBuffer typing.
+  const payloadBuffer = new ArrayBuffer(payload.byteLength);
+  new Uint8Array(payloadBuffer).set(payload);
   const key = await crypto.subtle.importKey(
     "raw",
     encoder.encode(secret),
@@ -116,7 +120,7 @@ async function hmacHex(
     false,
     ["sign"],
   );
-  const signature = await crypto.subtle.sign("HMAC", key, payload);
+  const signature = await crypto.subtle.sign("HMAC", key, payloadBuffer);
   return toHex(new Uint8Array(signature));
 }
 
