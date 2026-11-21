@@ -74,7 +74,41 @@ The current branch contains two baseline-related workflows:
 
 Neither workflow was run. No database connection or SQL execution was initiated by this inspection.
 
-## 6. Next reconciliation actions
+## 6. Read-only object-level comparison — 2026-11-21
+
+A targeted `SELECT`/catalog inspection was run against both Supabase projects. It returned definitions and metadata only; it did not read customer/payment rows or change schema.
+
+### Shared objects present in both environments
+
+The inspected objects `course_regional_prices`, `dcds_payment_receipt_reviews`, `dcds_payment_review_events`, `orders`, `dcds_community_rooms` and `dcds_vtu_orders` are present in both projects and have RLS enabled. The inspected `orders.checkout_expires_at` and `dcds_community_rooms.course_id` columns are present in both. This is evidence of common current object state, not proof of which exact migration version created it.
+
+### Function-definition comparison
+
+| Function | Development vs production-candidate | Local candidate comparison | Observation |
+|---|---|---|---|
+| `dcds_create_checkout_order` | Same catalog definition fingerprint | Same current signature/behavior family | Identical definition fingerprint in both environments; SECURITY DEFINER; EXECUTE restricted to postgres/service_role. |
+| `admin_finalize_flutterwave_payment` | Same catalog definition fingerprint | Candidate file `20261111113000...` matches the observed logic | Identical definition fingerprint in both; SECURITY DEFINER; EXECUTE restricted to postgres/service_role. It finalizes a course order and enrolment after Flutterwave transaction checks. |
+| `admin_create_manual_bank_order` | Different definition fingerprint | Development body matches the local `20261111110000...` candidate after whitespace normalization; production-candidate does not | Confirmed behavior difference: Development requires a confirmed email address; production-candidate permits either confirmed email or confirmed mobile. Both are SECURITY DEFINER and grant EXECUTE to authenticated/service_role, with an internal DCDS-admin check. Decide which contact-verification rule is canonical before any function/migration reconciliation. |
+| `admin_reject_payment_receipt` | Different raw definition fingerprint | Development body matches the local candidate after whitespace normalization; production-candidate does not | Line review shows broadly similar rejection flow and mostly formatting/statement-layout differences. Treat as **not yet semantically classified**; compare the full function bodies before making any history decision. |
+| `dcds_community_official_staff_ids` | Same definition fingerprint | Matches the checked-in staff-badge helper | Same constrained admin-ID lookup definition in both. |
+| `private.dcds_community_sync_course_enrollment` and `private.dcds_sync_community_access_request` | Same definition fingerprints | Not enough to identify exact historical versions | Same current definitions in both environments; keep these scoped to Student Community provisioning. |
+
+### VTU schema drift — high priority
+
+The same `public.dcds_vtu_orders` table has different column contracts:
+
+- **Development:** has `provider_request_id` and `provider`; its provider check allows `legacy` and `vtpass`.
+- **Production-candidate:** has `oplug_request_id` and does not have the `provider` column.
+
+This aligns with the Development migration history containing `20261119202303 dcds_vtu_vtpass_only_provider_cutover`, which is absent from the 48 checked-in local SQL files. GitHub commit-history lookup for that exact path returned no commits in the accessible repository history. This does not prove the SQL cannot be recovered from a different branch, artifact or backup, but it means the current migration directory does not contain it.
+
+**Do not copy either table definition over the other.** VTU is transaction infrastructure. Recover the missing cutover SQL and compare its Edge Function assumptions, constraints, indexes and grants before considering a canonical version.
+
+### Immediate implication
+
+The live object comparison has moved several candidates beyond simple name matching, but it has also confirmed project drift. The Development manual-bank-order function currently implements a stricter email-confirmation requirement than production-candidate; the VTU schema differs materially; and one Development cutover migration has no checked-in source file. None of these can be safely solved with `migration repair`.
+
+## 7. Next reconciliation actions
 
 1. Obtain fresh schema-only exports from both projects using approved read-only credentials and store them as private, short-retention artifacts; never commit production data or secrets.
 2. Extract the actual current definitions of the objects touched by each candidate migration: function bodies and grants, table/column/constraint/index definitions, policies, triggers and Storage policies.
@@ -83,11 +117,11 @@ Neither workflow was run. No database connection or SQL execution was initiated 
 5. Only after this crosswalk is evidenced should we design a canonical local baseline and a forward-only migration sequence. Test it on a disposable local PostgreSQL/Supabase environment before considering a Development-only change.
 6. Keep Production read-only until the project-to-deployment mapping, backup/rollback process and migration history are independently verified.
 
-## 7. Actions deliberately not performed
+## 8. Actions deliberately not performed
 
 - No `supabase migration repair`, `supabase db push`, linked reset, schema reset or SQL migration was run.
 - No remote schema, row, role, grant, secret, Edge Function or payment setting was changed.
 - No baseline restore or production export workflow was dispatched.
 - No Student Community policy or Verified+ domain table was changed.
 
-**Status:** The next task is object-level schema comparison using fresh read-only exports. The migration crosswalk is now more specific, but it is still not safe to reconcile or apply.
+**Status:** Candidate migration names are crosswalked and targeted live objects have been compared. The next task is to recover the missing VTU cutover SQL, semantically diff the divergent payment functions, and expand the object-level comparison using approved schema-only exports. The migration history is still not safe to repair or apply.
