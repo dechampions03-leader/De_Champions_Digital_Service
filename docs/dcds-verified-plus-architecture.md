@@ -25,6 +25,9 @@ Verified+ is a paid membership and entitlement layer. It is not a claim that pay
 | Advertising | Standard members may be eligible for ordinary DCDS display ads; active Verified+ members receive an ad-free authenticated experience |
 | TRUSTMARKET sellers | Must be Verified+ eligible, apply separately, and pass provider approval |
 | Business and professional credentials | Separate verification tracks; identity verification alone does not confer them |
+| Verified+ social network | Exclusive to eligible members with approved identity and active Verified+ entitlement; member-only content remains private by default |
+| Verified+ interactions | Eligible members can publish posts, use emoji reactions, comment, reply and share/repost within the original audience |
+
 | Accounts | One DCDS account and one universal profile; no separate marketplace or membership account |
 
 ### Membership and identity are separate
@@ -167,6 +170,16 @@ Do not promise that identity verification makes an account unhackable. Provide b
 - Never disguise ads as security notices, payment instructions, verification prompts, or system alerts.
 - Any future sponsored marketplace listing must be clearly labelled and governed separately from ordinary display advertising.
 - Expired/suspended membership entitlements must be recalculated server-side.
+
+## 6A. Verified+ Exclusive Network
+
+**Product specification:** The [Verified+ Exclusive Network specification](dcds-verified-plus-exclusive-network.md) records the members-only feed, publishing, emoji reactions, comments/replies, in-network sharing, privacy boundaries, moderation and entitlement lifecycle.
+
+The Verified+ network is separate from the existing supervised Student Community. Existing 13–17 and 18+ age-cohort controls, guardian requirements, moderation queues and direct-message restrictions remain in force. Normal student-community approval does not grant paid Verified+ membership, and Verified+ payment alone does not override identity, age, privacy or safety checks.
+
+Default audience for the new feed is active, eligible Verified+ members. A private AI conversation, course record, grade, payment, payout, VTU transaction, identity document, guardian record or private credential must never be imported automatically. Only approved, explicitly shared content enters the network.
+
+The social-network feature requires its own server-side entitlements, RLS, abuse controls, audit trail and expiry behaviour. Proposed table names in its specification are conceptual only; do not create them until the migration-reconciliation blocker is resolved.
 
 ## 7. DCDS TRUSTMARKET
 
