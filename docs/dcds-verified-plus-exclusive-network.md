@@ -1,4 +1,4 @@
-# DCDS Verified+ Exclusive Network — Product and Access Specification
+# DCDS Verified+ Member Network — Product and Access Specification
 
 **Status:** Product requirement recorded; implementation pending  
 **Date:** 2026-11-21  
@@ -39,18 +39,20 @@ Payment alone does not grant identity verification. Identity verification alone 
 
 The final minimum age and the relationship between minors' existing student-community access and any paid Verified+ social features remain a launch decision. Do not silently enrol minors into an adult identity-verification or paid social product. Until that policy is formally approved, keep Verified+ social activation age-gated and disabled for accounts whose eligibility is unresolved.
 
-## 3. Exclusive visibility and membership rules
+## 3. Network visibility and publishing permissions
 
-Default network audience: **active, eligible Verified+ members only**.
+Default audience for approved Verified+ network content: **all signed-in DCDS accounts**, including Verified+ members and standard/unverified accounts. Signed-out visitors do not receive the feed.
 
-- Only active, eligible Verified+ members may open the Verified+ feed, discover network-only posts, publish, comment, reply, react, repost, follow, or use member-only sharing.
-- A non-member may see a general Verified+ introduction/upgrade page, but must not receive feed data, post bodies, private media URLs, member lists, reaction identities, comments, or member-only notifications from a hidden feed.
-- The frontend may hide unavailable controls for clarity, but the server and database policies must independently enforce every entitlement.
-- Do not expose restricted content through search, public profile endpoints, metadata previews, APIs, cached responses, page source, or guessable storage URLs.
-- DCDS administrators and moderators receive only the specific moderation access granted by their roles. A moderator is not automatically a Verified+ member and does not inherit Root Administrator authority.
-- A member's privacy settings and content audience apply even inside the exclusive network. Membership does not override blocks, reports, private-profile settings, or a member's choice not to share an item.
+- Only a server-confirmed account with approved identity eligibility and an active Verified+ membership may create original posts.
+- All signed-in DCDS accounts may view approved network posts, regardless of Verified+ status.
+- Standard/unverified accounts may react, comment, reply and reshare an existing item inside DCDS. A reshare is an attributed reference card only: no added caption, new media, external destination or audience expansion.
+- Standard/unverified accounts may not create original posts, upload original post media, or add new authored commentary through a repost.
+- Suspended or restricted accounts lose the interactions specified by the restriction; hiding a button in the frontend is never the security control.
+- No guest/anonymous feed access is included. A general Verified+ introduction or upgrade page may be public, but it must not expose feed bodies, private media, comments or member-only notifications.
+- The backend must enforce role and entitlement rules independently of the UI. Never trust client-submitted verification, membership, role, owner or moderation flags.
+- Respect blocks, mutes, removals and each item's approved audience for every account state.
 
-An active membership is not permission to see everything stored anywhere in DCDS. "All network content" means content that is approved for the Verified+ network audience, not another member's private account information or restricted student records.
+Verified+ is therefore the exclusive **publishing privilege**, not an exclusive audience. The feed is available to the wider signed-in DCDS membership so standard members can learn from and engage with approved work.
 
 ## 4. Unified network feed — supported content
 
@@ -73,18 +75,22 @@ Do not automatically ingest or publish:
 
 A user may choose to publish a safe excerpt or a link to a supported item. Before publishing, show the audience and a preview of exactly what will be visible. Never convert a private item into a public/network item by default.
 
-## 5. Member publishing and social interactions
+## 5. Publishing and social interactions
 
-### Posts
+### Original posts
 
-Active eligible members may create a post with:
-- text and supported formatting;
-- approved images/media under file size, MIME and safety controls;
-- an optional link only where the relevant posting surface permits links;
-- an optional reference to a supported DCDS project/showcase or professional update;
-- a clear audience label.
+Only an eligible active Verified+ member may create an original post. The post must comply with the [Brand Content and Enforcement Policy](dcds-verified-plus-brand-content-policy.md). The composer is unavailable to standard/unverified accounts.
 
-The initial network default is "Verified+ members". A post must not become publicly shareable unless the author deliberately chooses a public audience and the content type is allowed to be public. Keep moderation and review states server-controlled.
+A new post must:
+- concern DCDS-supported learning, digital skills, creative work, projects, professional development, DCDS services or official DCDS activities;
+- use an approved media format and safety checks;
+- display the audience as "DCDS members" and remain visible only to authenticated accounts;
+- pass server-side topic, link, spam and safety checks before publication;
+- contain no external URL or off-platform social/contact invitation unless the exact DCDS-controlled destination has been formally allowlisted.
+
+### Viewing and engagement by all signed-in accounts
+
+Both Verified+ and standard/unverified DCDS accounts can view approved feed posts, react, comment and reply. They can also reshare an existing item inside DCDS as an attributed reference card only; a standard account cannot add a caption, new media or external link to the reshare. Every text-bearing interaction is subject to the same brand-content and safety rules as an original post.
 
 ### Emoji reactions
 
@@ -93,28 +99,25 @@ Support a reaction picker with common expressive emoji, including examples such 
 - 😂 😭 😘 😀
 - 🤔 😉 and other supported emoji.
 
-Members may add, change or remove their reaction. A member may have one active reaction per content item at a time; changing the emoji updates that reaction rather than creating unlimited duplicate records. Display aggregate counts and, only where appropriate, the members who reacted. Reactions must obey the item's audience, block rules and cohort restrictions.
+A signed-in account may add, change or remove its reaction while permitted to engage. A member may have one active reaction per content item at a time; changing the emoji updates that reaction rather than creating unlimited duplicate records. Display aggregate counts and, only where appropriate, the members who reacted. Reactions must obey the item's audience, block rules, restrictions and cohort policies.
 
 ### Comments and replies
 
-Support comments and threaded replies on eligible posts and shareable items. Provide edit/delete controls for the author within a defined policy window, report controls for members, and moderation actions for authorised moderators. Preserve edit/moderation audit history without exposing deleted or pending content to unauthorised readers.
+Support comments and threaded replies by both Verified+ and standard/unverified signed-in accounts. Comments, replies and edits must pass topic, link, spam and safety checks. Provide edit/delete controls for the author within a defined policy window, report controls for members, and moderation actions for authorised moderators. Preserve edit/moderation audit history without exposing deleted or pending content to unauthorised readers.
 
-The existing supervised 13–17 student-community moderation rules remain unchanged. Do not route teen comments into an adult Verified+ feed.
+The existing supervised 13–17 student-community moderation rules remain unchanged. Do not route teen comments into an adult Verified+ feed unless the final age policy expressly permits that account state.
 
-### Share and repost
+### Reshare
 
-Support in-network sharing/reposting with attribution to the original author and a link to the original item, provided the original author has not deleted, withdrawn, restricted or blocked the item.
+Support in-network reshares by permitted accounts using an attributed reference card only.
 
-- In-network sharing is the default.
-- Sharing must never expand the original audience.
-- A members-only post stays members-only when reshared.
-- External share links are disabled by default for members-only content.
-- An external share is permitted only when the author explicitly makes an eligible item public and the system confirms that no private student, course, identity or account data is included.
-- When an original item is deleted or its audience is narrowed, derived shares must stop revealing the removed/restricted content.
+- A reshare never creates a new original post and never expands the original audience.
+- Standard/unverified accounts cannot add a caption, commentary, extra media or external destination.
+- No public/external sharing is available in the initial release.
+- A DCDS-member feed item remains limited to signed-in DCDS accounts when reshared.
+- When an original item is deleted, withdrawn or restricted, derived reshares must stop revealing its content.
 
-### Additional network interactions
-
-The architecture may support bookmarking/saving, following, mentions, notifications and feed filters. Each must be entitlement-checked and respect member blocks, privacy settings and rate limits. Direct messaging is not included by this specification; the existing student-community prohibition on student-to-student direct messages remains in force.
+Direct messaging is not included by this specification. Existing Student Community direct-message restrictions remain in force.
 
 ## 6. Content ownership, privacy and audience lifecycle
 
@@ -130,7 +133,7 @@ The architecture may support bookmarking/saving, following, mentions, notificati
 ## 7. Expiry, suspension and revocation
 
 When a monthly Verified+ membership expires or an entitlement is suspended:
-- immediately block new publishing, commenting, replies, reactions, reposting, following and member-only feed access;
+- immediately block new original publishing and other Verified+-only privileges. General DCDS feed viewing/engagement remains available only where account status and any restriction permit it;
 - do not delete the member's original content or history merely because membership expired;
 - preserve ownership and the member's access to lawful account/data export and support paths;
 - keep existing content hidden from non-members unless the author had separately and validly made it public;
@@ -138,22 +141,28 @@ When a monthly Verified+ membership expires or an entitlement is suspended:
 
 When identity verification is suspended or revoked for a security or policy reason, recalculate dependent entitlements server-side and apply the relevant access restriction. Preserve the decision and audit history. Do not silently change payment, wallet, payout, course-enrolment or VTU records.
 
-The final policy for read-only access to a member's own historic posts after expiry must be decided before launch. It must not grant access to the active members-only feed.
+The final policy for access to a member's own historic posts after expiry must be decided before launch. Expiry removes original publishing privileges; feed viewing/engagement follows account status and network restrictions.
 
-## 8. Moderation, integrity and anti-abuse
+## 8. Brand-only moderation, integrity and anti-abuse
 
-The network requires:
-- member block, mute and report controls;
-- spam, harassment, impersonation, threat, scam and malicious-link handling;
-- content and account rate limits enforced server-side;
-- media MIME/size checks and a separate malware-safety process;
-- moderation queues and reason-coded actions;
-- moderator role separation and least-privilege access;
-- append-only audit events for sensitive moderation and administrative decisions;
-- a clear appeal/support route;
-- automated safeguards against reaction/comment spam and artificial engagement.
+The network is not a general social-media space. All posts, comments, replies, reshares, media captions and content displayed in the network must be directly connected to DCDS learning, digital skills, creative work, professional development, DCDS services or official DCDS activities.
 
-Verified+ status is not a guarantee that a member is harmless, honest, professionally qualified or immune from moderation. The Blue Badge must never exempt a member from community standards.
+The [DCDS Verified+ Brand Content and Enforcement Policy](dcds-verified-plus-brand-content-policy.md) defines approved topics, prohibited social/lifestyle promotion, strict external-link rules, pre-publication monitoring, moderator workflow, strike ladder, restrictions, severe-incident response, appeals and audit requirements.
+
+Core controls:
+- reject or hide off-brand content and unapproved external links before they become visible;
+- apply topic, spam, harassment, impersonation, scam, malicious-link and media checks to posts, comments, replies and reshares;
+- provide member block, mute and report controls;
+- enforce content and account rate limits server-side;
+- hold ambiguous content for human review rather than silently publishing it;
+- apply transparent, reason-coded strikes and progressive network-only restrictions;
+- require human review for long-term/permanent action; an automated classifier must never impose a permanent ban;
+- preserve role separation, least-privilege moderation and append-only audit events;
+- provide a clear 14-day appeal route;
+- do not inspect private AI conversations, student records, identity documents, payment records, balances, payouts or VTU activity to moderate network posts;
+- never allow a Verified+ badge or paid entitlement to exempt a member from moderation.
+
+The policy's restrictions apply to the Verified+ network surface and must not silently change course access, membership billing, identity status, wallet balances, payout records, VTU orders or existing Student Community permissions.
 
 ## 9. Suggested domain boundaries — not approved schema
 
@@ -189,7 +198,7 @@ Every exposed table requires deliberate RLS, grants and indexes. Policies must v
 
 ## 10A. Synthetic UI prototype
 
-A standalone [Verified+ community preview](../verified-plus-community-preview.html) has been added on the feature branch. It demonstrates a fictional members-only feed, post composer, emoji reactions, comments, replies, member filters, and attributed in-network reshares.
+A standalone [Verified+ community preview](../verified-plus-community-preview.html) has been added on the feature branch. It demonstrates the signed-in DCDS-wide feed, a role switch between Verified+ publisher and standard/unverified engager, a gated post composer, emoji reactions, comments, replies and attributed in-network reshares.
 
 The preview is static and self-contained. It does not call an API, connect to Supabase, read an authenticated account, persist state, or send content outside the browser page. All changes disappear when the page is reloaded. It is not linked from the live homepage and is not a production feature.
 
@@ -200,8 +209,8 @@ A GitHub Actions check validates that these boundaries remain true and that the 
 The exclusive network is not ready until all of the following are demonstrated:
 
 - An active eligible Verified+ member can see the feed items approved for the Verified+ audience.
-- A non-member cannot retrieve the feed, post bodies, comments, media, reaction identities, member lists or private notifications through UI, APIs, search or direct URLs.
-- Members can create eligible posts, react with emoji, comment, reply, and share/repost within the original audience.
+- A signed-out visitor cannot retrieve feed bodies, comments, media or notifications through UI, APIs, search or direct URLs. Standard signed-in accounts can retrieve only content approved for the DCDS member audience.
+- Active Verified+ members can publish original posts. Standard/unverified signed-in accounts can view, react, comment, reply and reshare attributed cards without captions. All interactions remain inside the signed-in DCDS audience.
 - Changing or deleting a source item cannot leave an accessible stale copy or widened repost.
 - Blocks, mutes, reports, moderation and rate limits apply consistently across every interaction.
 - Expired/suspended/revoked members cannot continue member-only access or interaction using stale sessions or client-side state.
@@ -209,4 +218,4 @@ The exclusive network is not ready until all of the following are demonstrated:
 - Existing supervised teen-community controls remain intact.
 - All permissions are enforced server-side and tested with distinct account roles and membership states.
 
-**Current result:** The exclusive Verified+ social experience is now specified, but no database tables, feed endpoints, UI, access policies or production behaviour have been implemented by this document.
+**Current result:** The DCDS-wide viewing/engagement model, Verified+ original-publishing privilege and strict brand-only enforcement policy are specified. The static role-switch preview is illustrative only; no database tables, moderation engine, feed endpoints, access policies or production behaviour have been enabled.
