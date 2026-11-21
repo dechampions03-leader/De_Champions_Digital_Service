@@ -6,6 +6,7 @@ on:
       - feature/dcds-verified-plus-ecosystem
     paths:
       - "supabase/functions/_shared/verified-plus/**"
+      - "verified-plus-community-preview.html"
       - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
   pull_request:
     branches:
@@ -50,3 +51,49 @@ jobs:
             echo "The synthetic identity adapter must not be imported by a deployable Edge Function."
             exit 1
           fi
+
+      - name: Verify Verified+ community preview stays synthetic and offline
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          page_path = Path("verified-plus-community-preview.html")
+          page = page_path.read_text(encoding="utf-8")
+          home = Path("index.html").read_text(encoding="utf-8")
+          student_safety = Path("docs/dcds-student-community-safety-and-moderation.md").read_text(encoding="utf-8")
+
+          checks = {
+              "preview is visibly marked demo only": "Demo only" in page,
+              "preview uses synthetic member data": "Fictional sample members only" in page and "Sample post" in page,
+              "post composer is present": 'id="composeForm"' in page and 'id="postText"' in page,
+              "emoji reactions are present": all(emoji in page for emoji in ["👍", "❤️", "💖", "😂", "😭", "😘", "😀", "🤔", "😉"]),
+              "one active reaction can be toggled or changed": "post.myReaction" in page and "previous === emoji" in page,
+              "comments and threaded replies are present": "comment-form" in page and "reply-form" in page,
+              "in-network reshare preserves original audience": "Share inside network" in page and "The audience did not change" in page and "sharedFrom" in page,
+              "preview has no live account or backend integration": "createClient" not in page and "supabase-js" not in page,
+              "preview is not linked from the live homepage": "verified-plus-community-preview.html" not in home,
+              "existing teen age cohorts and moderation rules remain specified": "13–17" in student_safety and "Every student group-chat message" in student_safety and "No student-to-student direct messaging" in student_safety,
+          }
+
+          forbidden_patterns = {
+              "network fetch": r"\\bfetch\\s*\\(",
+              "XHR": r"XMLHttpRequest",
+              "WebSocket": r"WebSocket",
+              "local storage": r"localStorage",
+              "session storage": r"sessionStorage",
+              "IndexedDB": r"indexedDB",
+              "native external share": r"navigator\\.share",
+              "external window opening": r"window\\.open",
+              "remote asset URL": r"(?:src|href)\\s*=\\s*[\"']https?://",
+          }
+          for label, pattern in forbidden_patterns.items():
+              checks["no " + label] = re.search(pattern, page, re.IGNORECASE) is None
+
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} Verified+ preview safety checks failed.")
+          PY
