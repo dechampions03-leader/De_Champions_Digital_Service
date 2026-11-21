@@ -92,6 +92,15 @@ Deno.test("only exact HTTPS DCDS host and path allowlist passes", () => {
   const insecure = moderateNetworkContent({ surface: "original_post", text: "Read http://dcds.example/learn/graphic-design" }, { allowedDcdsDestinations: ALLOWLIST });
   equal(insecure.decision, "reject", "HTTP destination");
 });
+Deno.test("reserved example, invalid and test domains are still treated as external destinations", () => {
+  for (const host of ["sample.example", "sample.invalid", "sample.test"]) {
+    const result = moderateNetworkContent({
+      surface: "original_post",
+      text: "Open " + host + " for the details.",
+    });
+    equal(result.decision, "reject", "Reserved test-domain URL: " + host);
+  }
+});
 Deno.test("off-platform handles, social invitations and unrelated social posts are rejected", () => {
   const inputs = [
     "Follow me @creative_daily for more.",
