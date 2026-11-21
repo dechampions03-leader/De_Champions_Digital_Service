@@ -264,7 +264,20 @@ Use synthetic fixtures only. Tests must not create real verification cases, perf
 7. Complete synthetic tests, provider sandbox tests, RLS tests, and manual-review exercises.
 8. Obtain an explicit production release decision before any production migration, secret configuration, provider callback registration, deployment, or live applicant use.
 
-## 14. Explicitly out of scope
+## 14. Initial synthetic implementation reference
+
+The first test-only fixture is stored alongside the Supabase Edge Function source, but it is not imported by any deployable Edge Function:
+
+- `supabase/functions/_shared/verified-plus/identity-provider.ts` — provider-neutral TypeScript contract and normalized types.
+- `supabase/functions/_shared/verified-plus/mock-identity-provider.ts` — in-memory synthetic adapter, reserved `.invalid` handoff URL, synthetic HMAC events, idempotent session creation, timestamp/replay checks, and strict event-field allowlisting.
+- `supabase/functions/_shared/verified-plus/identity-provider_test.ts` — Deno tests using synthetic-only identifiers and a hard-coded test secret.
+- `.github/workflows/dcds-verified-plus-adapter-validation.yml` — type-checks the contract and fixture, runs tests without external services, and fails if a deployable Edge Function imports the mock adapter.
+
+The fixture is not an identity provider, does not make network requests, and cannot verify a real person. Its HMAC format is only a test protocol; it must not be copied as the signature scheme for a real vendor.
+
+The current implementation does not create Supabase objects, call a provider API, write applicant data, or enable a customer-facing verification path. Provider-specific integration, durable case storage, reviewer workflows, real webhook verification, and rollout approval remain future work.
+
+## 15. Explicitly out of scope
 
 - Selecting or purchasing an identity-verification provider;
 - collecting NIN or identity documents directly in DCDS;
