@@ -138,16 +138,103 @@
     .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
     .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24103b;color:white;padding:11px 15px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);transition:.22s;z-index:50;max-width:calc(100% - 30px);text-align:center}
     .toast.show{opacity:1;transform:translate(-50%,0)}
+
+    /* Mobile layout hardening: prevent flex overflow, clipped fields and anchor headings
+       being hidden underneath the sticky brand bar. */
+    html{scroll-padding-top:104px}
+    body{overflow-x:hidden}
+    #feed,#discover,#guidelines{scroll-margin-top:104px}
+    .layout>*,.feed-column,.left-rail,.right-rail,.panel,.card,.post{min-width:0}
+    .compose-top{display:grid;grid-template-columns:43px minmax(0,1fr);gap:11px;align-items:start;min-width:0}
+    .compose-top>.avatar{width:43px;height:43px}
+    .compose textarea{
+      display:block;width:100%;max-width:100%;min-width:0;min-height:96px;
+      box-sizing:border-box;margin:0;padding:14px 15px;line-height:1.55;
+      overflow:auto;vertical-align:top;
+    }
+    .role-preview select{width:100%;max-width:100%}
+    .nav-link{flex:0 0 auto;min-height:42px}
+    .search{min-width:0;min-height:44px}
+    .filter,.react,.action,.reply-link{min-height:40px}
+    .comment-form input,.reply-form input{min-height:42px;min-width:0}
+    .comment-form button,.reply-form button{min-height:42px}
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+    }
+
     @media(max-width:1080px){.layout{grid-template-columns:190px minmax(0,1fr)}.right-rail{grid-column:2;position:static;grid-template-columns:repeat(2,minmax(0,1fr))}.right-rail .wide{grid-column:span 2}}
     @media(max-width:720px){
-      .topbar-inner{padding:10px 14px}.brand-mark{width:37px;height:37px}.brand-name{font-size:11px}.brand-sub{font-size:9px}.top-actions .member-pill{display:none}
-      .page{padding:0 12px 45px;margin:15px auto}.hero{padding:21px 19px;border-radius:21px}.hero p{font-size:12px}
-      .layout{display:flex;flex-direction:column}.left-rail{position:static;width:100%;order:0}.left-rail .profile-panel{display:none}.left-rail .nav-list{display:flex;overflow-x:auto;padding-bottom:3px}.mobile-nav{display:flex}.left-rail .small-label,.left-rail .rail-note{display:none}.nav-link{white-space:nowrap;background:white;border:1px solid var(--line);padding:8px 11px}
-      .feed-column{width:100%;order:1}.right-rail{display:grid;grid-template-columns:1fr 1fr;order:2;width:100%;gap:10px}.right-rail .wide{grid-column:span 2}
-      .panel,.post,.compose{border-radius:17px}.compose{padding:13px}.post{padding:14px}.feed-head{align-items:flex-start;flex-direction:column}.search{width:100%;max-width:none}.role-preview{grid-template-columns:1fr}.role-preview .mini-note{grid-column:auto}
-      .post-audience{display:none}.hero:after{right:-130px}.right-card{padding:13px}
+      .topbar-inner{padding:10px 13px;gap:9px;min-height:62px}
+      .brand{gap:8px;flex:1}
+      .brand-mark{width:39px;height:39px;flex:0 0 39px;font-size:16px}
+      .brand-name{font-size:clamp(10px,2.7vw,12px);line-height:1.12;letter-spacing:.055em;overflow-wrap:anywhere}
+      .brand-sub{font-size:9px;line-height:1.35;letter-spacing:.075em}
+      .top-actions{gap:6px;flex:0 0 auto}
+      .top-actions .member-pill{display:none}
+      .demo-pill{font-size:9px;padding:5px 7px}
+      .top-avatar{width:34px;height:34px}
+      .page{width:100%;max-width:100%;padding:0 12px calc(44px + env(safe-area-inset-bottom,0px));margin:14px auto 0}
+      .hero{padding:22px 19px;border-radius:21px;margin-bottom:16px}
+      .hero p{font-size:13px;line-height:1.65}
+      h1{font-size:clamp(30px,8vw,38px)}
+      .layout{display:flex;flex-direction:column;gap:14px}
+      .left-rail{position:static;width:100%;order:0}
+      .left-rail .profile-panel{display:none}
+      .left-rail .nav-list{display:flex;overflow-x:auto;overflow-y:hidden;padding:2px 2px 7px;scrollbar-width:thin;overscroll-behavior-x:contain}
+      .mobile-nav{display:flex;width:100%;max-width:100%;flex-wrap:nowrap;gap:7px}
+      .left-rail .small-label,.left-rail .rail-note{display:none}
+      .nav-link{white-space:nowrap;background:white;border:1px solid var(--line);padding:9px 12px;border-radius:13px;font-size:12px}
+      .feed-column{width:100%;order:1}
+      .feed-head{align-items:stretch;flex-direction:column;gap:9px;margin-bottom:12px}
+      .feed-title{font-size:25px}
+      .search{width:100%;max-width:none;font-size:14px;padding:11px 13px}
+      .right-rail{display:grid;grid-template-columns:minmax(0,1fr);order:2;position:static;width:100%;gap:11px}
+      .right-rail .wide{grid-column:auto}
+      .panel,.post,.compose{border-radius:17px}
+      .compose{padding:14px}
+      .compose-top{grid-template-columns:40px minmax(0,1fr);gap:10px}
+      .compose-top>.avatar{width:40px;height:40px}
+      .compose textarea{min-height:104px;padding:14px;font-size:14px;line-height:1.55}
+      .compose-bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+      .audience{width:100%;text-align:center;white-space:normal}
+      .compose-bottom .btn{width:100%;min-height:46px;font-size:13px}
+      .role-preview{grid-template-columns:minmax(0,1fr);gap:9px;padding:13px}
+      .role-preview .mini-note{grid-column:auto}
+      .role-preview select{font-size:13px;min-height:44px}
+      .policy-hint{font-size:12px;line-height:1.55;margin:0 4px 13px}
+      .filters{padding-bottom:9px;scrollbar-width:thin;overscroll-behavior-x:contain}
+      .filter{min-height:42px}
+      .post{padding:15px}
+      .post-head{align-items:flex-start}
+      .post-sub{font-size:11px;line-height:1.4}
+      .post-text{font-size:14px;line-height:1.65}
+      .post-stats{font-size:11px;flex-wrap:wrap}
+      .reaction-row{gap:7px}
+      .react{min-height:42px;padding:8px 10px}
+      .post-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+      .action{min-height:44px;font-size:12px;background:#faf8fd}
+      .comment-form,.reply-form{gap:7px}
+      .comment-form input,.reply-form input{font-size:13px;padding:10px}
+      .comment-form button,.reply-form button{font-size:11px;padding:9px 12px}
+      .post-audience{display:none}
+      .hero:after{right:-130px}
+      .right-card{padding:14px}
+      dialog{width:calc(100% - 20px);max-width:440px;max-height:calc(100% - 30px);overflow:auto}
+      .dialog-inner{padding:18px}
     }
-    @media(max-width:420px){.right-rail{grid-template-columns:1fr}.right-rail .wide{grid-column:auto}.demo-pill{font-size:9px;padding:5px 7px}.top-avatar{width:34px;height:34px}}
+    @media(max-width:420px){
+      .topbar-inner{padding-left:10px;padding-right:10px}
+      .brand-name{font-size:10px}
+      .brand-sub{font-size:8px}
+      .demo-pill{font-size:8px;padding:4px 6px}
+      .hero{padding:20px 17px}
+      .hero-note{font-size:10px}
+      .compose-top{grid-template-columns:36px minmax(0,1fr);gap:9px}
+      .compose-top>.avatar{width:36px;height:36px}
+      .artwork{min-height:145px;padding:18px}
+      .artwork-title{font-size:24px}
+    }
   </style>
 </head>
 <body>
@@ -205,7 +292,7 @@
       <section class="feed-column" id="feed" aria-label="Verified+ network feed">
         <div class="feed-head">
           <div><div class="eyebrow" style="color:var(--purple);">THE DCDS MEMBER NETWORK</div><h2 class="feed-title">Member network feed</h2></div>
-          <input class="search" id="feedSearch" type="search" placeholder="Search demo posts or members…" aria-label="Search demo posts or members">
+          <input class="search" id="feedSearch" type="search" placeholder="Search demo posts or members…" aria-label="Search demo posts or members" autocomplete="off">
         </div>
 
         <div class="role-preview">
@@ -220,7 +307,7 @@
         <form class="card compose" id="composeForm">
           <div class="compose-top">
             <div class="avatar" aria-hidden="true">DC</div>
-            <textarea id="postText" maxlength="1200" placeholder="Share a DCDS-related project, lesson or professional milestone…" aria-label="Write a DCDS-related network post" required></textarea>
+            <textarea id="postText" rows="3" maxlength="1200" placeholder="Share a DCDS-related project, lesson or professional milestone…" aria-label="Write a DCDS-related network post" aria-describedby="composerHint" required></textarea>
           </div>
           <div class="compose-bottom">
             <span class="audience" id="composerAudience">👥 Audience: DCDS members</span>
