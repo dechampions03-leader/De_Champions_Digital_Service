@@ -53,7 +53,7 @@
     .avatar.blue{background:linear-gradient(145deg,#6498dc,#3d5aa8)}
     .person-name{font-size:13px;font-weight:800}
     .person-sub{font-size:11px;color:var(--muted)}
-    .nav-list{display:grid;gap:5px}
+    .nav-list{display:grid;gap:5px}.mobile-nav{display:none}
     .nav-link{display:flex;align-items:center;gap:10px;padding:10px 11px;border:0;background:transparent;border-radius:12px;text-align:left;color:#594d69;font-weight:700;font-size:13px;text-decoration:none}
     .nav-link.active,.nav-link:hover{background:var(--lavender);color:var(--purple-dark)}
     .nav-icon{width:22px;text-align:center;font-size:16px}
@@ -136,7 +136,7 @@
     @media(max-width:720px){
       .topbar-inner{padding:10px 14px}.brand-mark{width:37px;height:37px}.brand-name{font-size:11px}.brand-sub{font-size:9px}.top-actions .member-pill{display:none}
       .page{padding:0 12px 45px;margin:15px auto}.hero{padding:21px 19px;border-radius:21px}.hero p{font-size:12px}
-      .layout{display:flex;flex-direction:column}.left-rail{position:static;width:100%;order:0}.left-rail .profile-panel{display:none}.left-rail .nav-list{display:flex;overflow-x:auto;padding-bottom:3px}.left-rail .small-label,.left-rail .rail-note{display:none}.nav-link{white-space:nowrap;background:white;border:1px solid var(--line);padding:8px 11px}
+      .layout{display:flex;flex-direction:column}.left-rail{position:static;width:100%;order:0}.left-rail .profile-panel{display:none}.left-rail .nav-list{display:flex;overflow-x:auto;padding-bottom:3px}.mobile-nav{display:flex}.left-rail .small-label,.left-rail .rail-note{display:none}.nav-link{white-space:nowrap;background:white;border:1px solid var(--line);padding:8px 11px}
       .feed-column{width:100%;order:1}.right-rail{display:grid;grid-template-columns:1fr 1fr;order:2;width:100%;gap:10px}.right-rail .wide{grid-column:span 2}
       .panel,.post,.compose{border-radius:17px}.compose{padding:13px}.post{padding:14px}.feed-head{align-items:flex-start;flex-direction:column}.search{width:100%;max-width:none}
       .post-audience{display:none}.hero:after{right:-130px}.right-card{padding:13px}
@@ -277,7 +277,7 @@
       {
         id: 1, author: "Amara Okoye", initials: "AO", tone: "teal",
         role: "Visual designer · Demo profile", time: "Just now · Sample post",
-        category: "projects", kind: "art",
+        category: "projects", kind: "art", myReaction: null,
         text: "Just wrapped up a fresh visual direction for a small creative brand. I wanted the identity to feel confident, warm and unmistakably memorable. What detail catches your eye first?",
         artwork: {kicker:"CREATIVE SHOWCASE · DEMO", title:"Design with intention.", foot:"A fictional project preview · DCDS Verified+"},
         reactions: {"👍":18,"❤️":12,"💖":7,"😂":2},
@@ -289,7 +289,7 @@
       {
         id: 2, author: "Kofi Mensah", initials: "KM", tone: "blue",
         role: "Web developer · Demo profile", time: "Sample post · 2h",
-        category: "learning", kind: "art",
+        category: "learning", kind: "art", myReaction: null,
         text: "A reminder from this week's learning sprint: small, consistent improvements compound. I finally understood a layout problem that had been confusing me. Keep asking questions and keep building.",
         artwork: {kicker:"LEARN · BUILD · IMPROVE", title:"Progress is built one step at a time.", foot:"Learning milestone · Synthetic demo"},
         reactions: {"👍":24,"❤️":9,"💖":4,"🤔":3},
@@ -300,7 +300,7 @@
       {
         id: 3, author: "Zara Bello", initials: "ZB", tone: "rose",
         role: "AI creator · Demo profile", time: "Sample post · Yesterday",
-        category: "community", kind: "text",
+        category: "community", kind: "text", myReaction: null,
         text: "What is one skill you are intentionally improving this month? Mine is turning creative ideas into clear, useful experiences. I would love to hear what everyone is working on. 💜",
         reactions: {"❤️":15,"😂":3,"😘":2,"👍":11},
         comments: [
@@ -368,11 +368,10 @@
       const row = element("div", "reaction-row");
       reactionOptions.forEach((emoji) => {
         const count = post.reactions[emoji] || 0;
-        if (!count && !["👍","❤️","💖","😂"].includes(emoji)) return;
         const button = element("button", "react");
         button.type = "button";
         button.dataset.reaction = emoji;
-        button.setAttribute("aria-pressed", "false");
+        button.setAttribute("aria-pressed", String(post.myReaction === emoji));
         button.setAttribute("aria-label", "React with " + emoji + ", " + count + " reactions");
         button.append(element("span", "emoji", emoji), element("span", "count", String(count)));
         row.append(button);
@@ -508,7 +507,7 @@
       demoPosts.unshift({
         id: nextId++, author:"Demo Member", initials:"DC", tone:"",
         role:"Your preview profile", time:"Just now · Local demo",
-        category:"community", kind:"text", text,
+        category:"community", kind:"text", myReaction:null, text,
         reactions:{}, comments:[], shares:0
       });
       input.value = "";
@@ -542,9 +541,19 @@
 
       if (button.dataset.reaction) {
         const emoji = button.dataset.reaction;
-        post.reactions[emoji] = (post.reactions[emoji] || 0) + 1;
-        renderFeed();
-        showToast("Reaction added in this local demo.");
+        const previous = post.myReaction || null;
+        if (previous === emoji) {
+          post.reactions[emoji] = Math.max(0, (post.reactions[emoji] || 0) - 1);
+          post.myReaction = null;
+          renderFeed();
+          showToast("Your reaction was removed in this local demo.");
+        } else {
+          if (previous) post.reactions[previous] = Math.max(0, (post.reactions[previous] || 0) - 1);
+          post.reactions[emoji] = (post.reactions[emoji] || 0) + 1;
+          post.myReaction = emoji;
+          renderFeed();
+          showToast(previous ? "Your reaction was changed." : "Reaction added in this local demo.");
+        }
       } else if (button.dataset.toggleComments) {
         const comments = card.querySelector(".comments");
         comments.hidden = !comments.hidden;
@@ -576,7 +585,7 @@
       demoPosts.unshift({
         id: nextId++, author:"Demo Member", initials:"DC", tone:"",
         role:"Shared inside Verified+ · Local demo", time:"Just now",
-        category:"community", kind:"repost",
+        category:"community", kind:"repost", myReaction:null,
         text:"Shared a post from " + original.author + ". The original audience remains Verified+ members only.",
         artwork:null, reactions:{}, comments:[], shares:0
       });
