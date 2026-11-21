@@ -100,7 +100,15 @@ The same `public.dcds_vtu_orders` table has different column contracts:
 - **Development:** has `provider_request_id` and `provider`; its provider check allows `legacy` and `vtpass`.
 - **Production-candidate:** has `oplug_request_id` and does not have the `provider` column.
 
-This aligns with the Development migration history containing `20261119202303 dcds_vtu_vtpass_only_provider_cutover`, which is absent from the 48 checked-in local SQL files. GitHub commit-history lookup for that exact path returned no commits in the accessible repository history. This does not prove the SQL cannot be recovered from a different branch, artifact or backup, but it means the current migration directory does not contain it.
+This aligns with the Development migration history containing remote record `20261119202303 dcds_vtu_vtpass_only_provider_cutover`, which has no exact same-name file in the current 48-file migration directory. A related source candidate was found on the separate branches `feature/vtpass-provider-migration` and `feature/dcds-vtu-wallet`:
+
+- Candidate file: `supabase/migrations/20261119223000_add_dcds_vtu_provider_source.sql`
+- Blob SHA: `47896c6b9ba5386da23ba6b4b92b3d3fe456d482`
+- Source link: [Open candidate migration on feature/vtpass-provider-migration](https://github.com/dechampions03-leader/De_Champions_Digital_Service/blob/feature/vtpass-provider-migration/supabase/migrations/20261119223000_add_dcds_vtu_provider_source.sql)
+
+Its intended effect matches the observed Development end state: rename `oplug_request_id` to `provider_request_id`, add a `provider` column, backfill existing rows as `legacy`, default new rows to `vtpass`, constrain the provider to `legacy` or `vtpass`, and add a provider/status/time index. This is a strong candidate for explaining the Development schema, but it is not proof of the exact remote migration body.
+
+**Important timestamp caveat:** the remote Development migration version `20261119202303` corresponds to 2026-11-19 20:23:03 UTC. The candidate file's accessible Git history shows a related revision at 20:21:16 UTC, then delimiter/PL/pgSQL terminator fixes at 20:24:10 and 20:24:20 UTC. Since those fixes are after the remote migration timestamp, the checked-in candidate cannot be certified as the exact SQL that was applied remotely. The separate exact-path lookup for `20261119202303_dcds_vtu_vtpass_only_provider_cutover.sql` returned no commits. Recover the actual applied SQL or authoritative backup before treating this as resolved.
 
 **Do not copy either table definition over the other.** VTU is transaction infrastructure. Recover the missing cutover SQL and compare its Edge Function assumptions, constraints, indexes and grants before considering a canonical version.
 
