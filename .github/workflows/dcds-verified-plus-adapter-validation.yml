@@ -82,7 +82,7 @@ jobs:
               "standard and verified accounts share the DCDS feed": "DCDS MEMBERS" in page and "DCDS member feed" in page,
               "all text-entry surfaces reject external links in preview": "hasDisallowedExternalLink" in page and "rejectExternalLink(text)" in page and page.count("rejectExternalLink(value)") >= 2,
               "bare domains and off-platform handles are also detected": "a-z0-9_.]{2,}" in page and "xyz" in page and "www\\.)" in page,
-              "mobile composer uses a shrink-safe grid": "grid-template-columns:40px minmax(0,1fr)" in page and "min-width:0" in page and "aria-describedby=\\"composerHint\\"" in page,
+              "mobile composer uses a shrink-safe grid": "grid-template-columns:40px minmax(0,1fr)" in page and "min-width:0" in page and 'aria-describedby="composerHint"' in page,
               "mobile composer textarea has proper height and padding": "min-height:104px" in page and "padding:14px" in page,
               "feed anchors clear the sticky header": "scroll-margin-top:104px" in page and "#feed,#discover,#guidelines" in page,
               "mobile navigation remains horizontally scrollable": "overscroll-behavior-x:contain" in page and "flex:0 0 auto;min-height:42px" in page,
