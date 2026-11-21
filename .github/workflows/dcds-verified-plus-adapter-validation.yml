@@ -121,3 +121,11 @@ jobs:
           Path("/tmp/verified-plus-community-preview.js").write_text(script.group(1), encoding="utf-8")
           PY
           node --check /tmp/verified-plus-community-preview.js
+
+      - name: Package standalone HTML preview for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: DCDS-Verified-Plus-Network-Preview
+          path: verified-plus-community-preview.html
+          if-no-files-found: error
+          retention-days: 14
