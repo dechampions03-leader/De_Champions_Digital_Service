@@ -4,6 +4,7 @@ import {
 import {
   createSyntheticNotificationForTest,
   MOCK_ADAPTER_SAFETY,
+  signSyntheticRawBodyForTest,
   SyntheticIdentityProviderAdapter,
 } from "./mock-identity-provider.ts";
 
@@ -313,42 +314,13 @@ Deno.test("rejects unknown provider decisions and unexpected sensitive fields", 
     occurredAt: new Date(BASE_TIME).toISOString(),
     nin: "synthetic-placeholder-only",
   }));
-  const signedSensitive = await createSyntheticNotificationForTest(
-    {
-      caseId: "case-test-0001",
-      providerReference: session.providerReference,
-      providerEventId: "event-test-signed-sensitive",
-      decision: "verified",
-      occurredAt: new Date(BASE_TIME).toISOString(),
-    },
+  const signedSensitive = await signSyntheticRawBodyForTest(
+    sensitiveBody,
     TEST_SECRET,
     BASE_TIME,
   );
-  const sensitiveHeaders = {
-    ...signedSensitive.headers,
-    "x-dcds-mock-signature": await (async () => {
-      // Sign the exact unexpected-field body so this test reaches strict schema
-      // validation rather than failing earlier on signature verification.
-      const helper = await createSyntheticNotificationForTest(
-        {
-          caseId: "case-test-0001",
-          providerReference: session.providerReference,
-          providerEventId: "event-test-sensitive",
-          decision: "verified",
-          occurredAt: new Date(BASE_TIME).toISOString(),
-        },
-        TEST_SECRET,
-        BASE_TIME,
-      );
-      return helper.headers["x-dcds-mock-signature"];
-    })(),
-  };
-  // The signature belongs to the helper body, not the altered body, so a
-  // signature failure must also be fail-closed. Strict field allowlisting is
-  // covered by the unknown-status test and is exercised in the parser.
   const result = await adapter.verifyNotification({
-    rawBody: sensitiveBody,
-    headers: sensitiveHeaders,
+    ...signedSensitive,
     receivedAt: new Date(BASE_TIME).toISOString(),
   });
   assertEquals(result, null, "Unexpected payload must be rejected");
