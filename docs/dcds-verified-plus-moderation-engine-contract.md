@@ -120,7 +120,7 @@ The [Moderation Persistence and RLS Design](dcds-verified-plus-moderation-persis
 
 The live schema currently contains a separate room/cohort Student Community moderation system. Do not reuse its posts, reports, moderation actions, reactions or blocks for Verified+.
 
-## 8. Launch gates and remaining work
+## 9. Launch gates and remaining work
 
 - Reconcile existing remote migration histories and tracked migration files before proposing any database migration.
 - Finalise DCDS minimum age and standard-member age-gate policy.
