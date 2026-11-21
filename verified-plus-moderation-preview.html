@@ -287,7 +287,7 @@
       {id:"VP-1046",member:"Nora Eze",account:"Standard member",surface:"Comment",category:"privacy",reason:"Possible exposure of personal contact details",severity:"Critical",snippet:"A comment appears to contain another member's phone number and home-location details. Review the original evidence in the restricted case record.",strikes:0,reported:"2 min ago",status:"pending",flag:"Possible doxxing / privacy incident",urgent:true}
     ];
     const appeals = [
-      {id:"AP-208",member:"Ayo Martins",caseId:"VP-1018",action:"30-day network suspension",date:"Today · 09:15",text:"I understand that the comment was off-topic, but I believe the restriction was applied to the wrong account. Please review the account and comment again.",status:"pending",prior:"Moderator Demo"},
+      {id:"AP-208",member:"Ayo Martins",caseId:"VP-1018",action:"30-day network suspension",date:"Today · 09:15",text:"I understand that the comment was off-topic, but I believe the restriction was applied to the wrong account. Please review the account and comment again.",status:"pending",prior:"Moderator Team Member B"},
       {id:"AP-209",member:"Lara Bello",caseId:"VP-1021",action:"7-day posting restriction",date:"Today · 11:42",text:"I shared a course resource link and did not realise it was not on the approved DCDS domain list. I have removed the link and understand the rule.",status:"pending",prior:"Moderator Demo"}
     ];
     const audit = [
@@ -378,7 +378,11 @@
         actions.append(button("Close with warning only","quiet",()=>openAction(c.id,"warning")));
       }else if(c.status==="safety_hold"){
         actions.append(badge("Human safety review required","red"));
-        if(isRoot())actions.append(button("Resolve safety case","primary",()=>openAction(c.id,"suspend90")));
+        if(isRoot()){
+          actions.append(button("Release hold / no violation","success",()=>openAction(c.id,"approve")));
+          actions.append(button("Apply 90-day network suspension","warning",()=>openAction(c.id,"suspend90")));
+          actions.append(button("Permanent network ban (Root only)","danger",()=>openAction(c.id,"permanent")));
+        }
       }
       card.append(actions);
       return card;
@@ -488,7 +492,8 @@
     }
     function openAction(caseId,action){
       const c=cases.find(x=>x.id===caseId);if(!c)return;
-      if(action==="suspend90"&&!isRoot()){showToast("Only Root Administrator can approve this fourth-strike action.");return;}
+      if((action==="suspend90"||action==="permanent")&&!isRoot()){showToast("Only Root Administrator can approve this restriction.");return;}
+      if(action==="permanent"&&c.status!=="safety_hold"){showToast("Permanent network ban requires a severe case under Root safety review.");return;}
       state.activeCase=caseId;state.activeAction=action;
       const labels={approve:"Approve content — no violation",strike:"Remove content and record the next strike",hold:"Place content/account in a temporary network safety hold",suspend90:"Root review: approve 90-day network participation suspension",warning:"Close with warning only"};
       document.getElementById("modalTitle").textContent=labels[action]||"Confirm moderation action";
@@ -516,6 +521,12 @@
       if(action==="warning"){c.status="closed_warning";result="Case closed with warning only · "+c.id;}
       if(action==="hold"){c.status="safety_hold";result="Temporary network safety hold applied pending human safety review · "+c.id;}
       if(action==="suspend90"){c.status="suspended_90d";result="90-day Verified+ network participation suspension approved by Root Admin · "+c.id;}
+      if(action==="permanent"){
+        if(!isRoot()||document.getElementById("rootConfirm").value.trim()!=="PERMANENT"){
+          showToast("Root Administrator must type PERMANENT to confirm this network-only ban.");return;
+        }
+        c.status="permanent_network_ban";result="Permanent Verified+ network ban approved by Root Admin after human safety review · "+c.id;
+      }
       if(action==="strike"){
         c.strikes+=1;
         if(c.strikes===1){c.status="removed_warning";result="Content removed; strike 1 and warning issued · "+c.id;}
