@@ -269,9 +269,11 @@ Use synthetic fixtures only. Tests must not create real verification cases, perf
 The first test-only fixture is stored alongside the Supabase Edge Function source, but it is not imported by any deployable Edge Function:
 
 - `supabase/functions/_shared/verified-plus/identity-provider.ts` — provider-neutral TypeScript contract and normalized types.
-- `supabase/functions/_shared/verified-plus/mock-identity-provider.ts` — in-memory synthetic adapter, reserved `.invalid` handoff URL, synthetic HMAC events, idempotent session creation, timestamp/replay checks, and strict event-field allowlisting.
+- `supabase/functions/_shared/verified-plus/mock-identity-provider.ts` — in-memory synthetic adapter, reserved `.invalid` handoff URL, synthetic HMAC events, idempotent session creation bound to one case/applicant/country, timestamp/replay checks, and strict event-field allowlisting.
 - `supabase/functions/_shared/verified-plus/identity-provider_test.ts` — Deno tests using synthetic-only identifiers and a hard-coded test secret.
 - `.github/workflows/dcds-verified-plus-adapter-validation.yml` — type-checks the contract and fixture, runs tests without external services, and fails if a deployable Edge Function imports the mock adapter.
+
+**Latest automated validation:** GitHub Actions run [#44937433754](https://github.com/dechampions03-leader/De_Champions_Digital_Service/actions/runs/44937433754) completed successfully: all three TypeScript files type-checked, **15 synthetic tests passed**, and the no-live-import guard passed.
 
 The fixture is not an identity provider, does not make network requests, and cannot verify a real person. Its HMAC format is only a test protocol; it must not be copied as the signature scheme for a real vendor.
 
