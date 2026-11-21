@@ -82,6 +82,15 @@ Deno.test("external URLs, bare domains, emails and phone numbers are rejected", 
   ];
   for (const text of inputs) equal(moderateNetworkContent({ surface: "original_post", text }).decision, "reject", text);
 });
+Deno.test("detects uncommon generic TLDs and multi-part domains", () => {
+  for (const host of ["portfolio.example", "creator.ai", "design.tech", "brand.online", "academy.services", "site.com.ng"]) {
+    const result = moderateNetworkContent({
+      surface: "original_post",
+      text: "Visit " + host + " for more.",
+    });
+    equal(result.decision, "reject", "External domain must be blocked: " + host);
+  }
+});
 Deno.test("only exact HTTPS DCDS host and path allowlist passes", () => {
   const ok = moderateNetworkContent({ surface: "original_post", text: "The DCDS course details: https://dcds.example/learn/graphic-design" }, { allowedDcdsDestinations: ALLOWLIST });
   equal(ok.decision, "allow", "Allowlisted DCDS path");
