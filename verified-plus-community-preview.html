@@ -422,6 +422,8 @@
         comment.replies = comment.replies || [];
         comment.replies.push({name:"Demo Member",initials:"DC",tone:"",text:value});
         renderFeed();
+        const updatedComments = feed.querySelector('[data-post-id="' + post.id + '"] .comments');
+        if (updatedComments) updatedComments.hidden = false;
         showToast("Reply added to this local demo.");
       });
       return form;
