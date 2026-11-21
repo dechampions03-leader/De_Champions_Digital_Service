@@ -1,0 +1,592 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#35105f">
+  <meta name="description" content="DCDS Verified+ exclusive community interactive prototype. Synthetic demonstration only.">
+  <title>Verified+ Network Preview | DCDS</title>
+  <style>
+    :root{
+      --purple:#7628d8;--purple-dark:#35105f;--purple-deep:#21083f;
+      --lavender:#f3edfc;--lavender-2:#e9def9;--gold:#d7b45a;
+      --ink:#211832;--muted:#756b82;--line:#e9e2f0;--white:#fff;
+      --surface:#f7f5fa;--good:#17683a;--shadow:0 14px 38px rgba(42,18,73,.08);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--surface);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid rgba(118,40,216,.25);outline-offset:2px}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+    .topbar-inner{max-width:1320px;margin:auto;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#8d4ce4,#421078);color:white;font-family:Georgia,serif;font-weight:800;letter-spacing:-2px;font-size:18px;box-shadow:0 7px 18px rgba(88,30,150,.2)}
+    .brand-name{font-family:Georgia,serif;font-weight:700;letter-spacing:.07em;color:var(--purple-dark);font-size:13px;line-height:1.2}
+    .brand-sub{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .demo-pill,.member-pill,.audience-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+    .demo-pill{color:#8a4d00;background:#fff3db;border:1px solid #f5dfb4}
+    .member-pill{color:var(--purple-dark);background:var(--lavender);border:1px solid #e4d5f7}
+    .top-avatar,.avatar{display:grid;place-items:center;flex:none;border-radius:50%;font-weight:800}
+    .top-avatar{width:38px;height:38px;background:var(--purple-dark);color:#fff;font-size:12px}
+    .page{max-width:1320px;margin:26px auto;padding:0 22px 70px}
+    .hero{background:linear-gradient(120deg,#2b0c4d 0%,#552092 57%,#7d42c3 100%);color:white;border-radius:28px;padding:26px 30px;position:relative;overflow:hidden;box-shadow:var(--shadow);margin-bottom:22px}
+    .hero:after{content:"";position:absolute;width:300px;height:300px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-55px;top:-165px;box-shadow:0 0 0 30px rgba(255,255,255,.035),0 0 0 62px rgba(255,255,255,.025)}
+    .hero-content{position:relative;z-index:1;max-width:760px}
+    .eyebrow{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#e7d8ff}
+    h1{font-family:Georgia,serif;font-size:clamp(28px,4vw,42px);line-height:1.08;letter-spacing:-.025em;margin:8px 0 10px}
+    .hero p{margin:0;color:#efe7f8;max-width:680px;font-size:14px}
+    .hero-bottom{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .hero-note{font-size:11px;color:#f3eafa;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);padding:7px 10px;border-radius:99px}
+    .layout{display:grid;grid-template-columns:220px minmax(0,1fr) 270px;gap:20px;align-items:start}
+    .panel,.card{background:white;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .panel{padding:17px}
+    .left-rail,.right-rail{position:sticky;top:88px;display:grid;gap:14px}
+    .demo-profile{display:flex;align-items:center;gap:10px;padding:3px 0 14px;border-bottom:1px solid var(--line);margin-bottom:12px}
+    .avatar{width:43px;height:43px;color:#fff;background:linear-gradient(145deg,#8850d3,#431278);font-size:12px}
+    .avatar.teal{background:linear-gradient(145deg,#299d99,#176d78)}
+    .avatar.rose{background:linear-gradient(145deg,#da7598,#873b75)}
+    .avatar.gold{background:linear-gradient(145deg,#d9a943,#99661c)}
+    .avatar.blue{background:linear-gradient(145deg,#6498dc,#3d5aa8)}
+    .person-name{font-size:13px;font-weight:800}
+    .person-sub{font-size:11px;color:var(--muted)}
+    .nav-list{display:grid;gap:5px}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:10px 11px;border:0;background:transparent;border-radius:12px;text-align:left;color:#594d69;font-weight:700;font-size:13px;text-decoration:none}
+    .nav-link.active,.nav-link:hover{background:var(--lavender);color:var(--purple-dark)}
+    .nav-icon{width:22px;text-align:center;font-size:16px}
+    .small-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:#93879f;font-weight:800;margin:18px 0 8px}
+    .mini-note{font-size:11px;color:var(--muted);margin:0;line-height:1.55}
+    .feed-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 13px}
+    .feed-title{font-family:Georgia,serif;font-size:23px;color:var(--purple-dark);margin:0}
+    .search{width:210px;max-width:45%;border:1px solid var(--line);background:#fcfbfd;padding:9px 12px;border-radius:12px;font-size:12px;color:var(--ink)}
+    .compose{padding:17px;margin-bottom:16px}
+    .compose-top{display:flex;gap:11px;align-items:flex-start}
+    .compose textarea{resize:vertical;min-height:74px;max-height:240px;flex:1;border:1px solid var(--line);background:#fcfbfd;border-radius:14px;padding:12px 13px;font-size:13px;line-height:1.5;color:var(--ink)}
+    .compose-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:13px}
+    .audience{font-size:11px;color:var(--purple-dark);font-weight:800;background:var(--lavender);padding:7px 10px;border-radius:99px}
+    .btn{border:0;border-radius:12px;padding:10px 15px;font-size:12px;font-weight:800}
+    .btn-primary{background:var(--purple);color:#fff;box-shadow:0 7px 16px rgba(118,40,216,.18)}
+    .btn-primary:hover{background:#6120b5}
+    .btn-quiet{background:#f4eff9;color:var(--purple-dark)}
+    .btn-quiet:hover{background:#eae0f7}
+    .filters{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:1px 1px 12px;margin-bottom:3px}
+    .filter{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#6c6078;border-radius:99px;padding:8px 13px;font-size:11px;font-weight:800}
+    .filter[aria-pressed="true"]{background:var(--purple-dark);border-color:var(--purple-dark);color:#fff}
+    .post{padding:18px;margin-bottom:14px}
+    .post-head{display:flex;align-items:center;gap:10px}
+    .post-meta{min-width:0;flex:1}
+    .post-author{font-size:13px;font-weight:850;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .verified-mark{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--purple);color:#fff;font-size:10px}
+    .post-sub{font-size:10px;color:var(--muted);margin-top:2px}
+    .post-audience{font-size:9px;font-weight:850;color:var(--purple-dark);background:var(--lavender);padding:5px 8px;border-radius:99px;white-space:nowrap}
+    .post-text{font-size:13px;line-height:1.65;margin:14px 0 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+    .artwork{min-height:164px;border-radius:16px;padding:21px;display:flex;flex-direction:column;justify-content:space-between;color:white;background:linear-gradient(135deg,#36105f,#7d37c0 65%,#b68ce2);overflow:hidden;position:relative}
+    .artwork:after{content:"";position:absolute;width:190px;height:190px;border:1px solid rgba(255,255,255,.2);border-radius:50%;right:-22px;bottom:-115px;box-shadow:0 0 0 22px rgba(255,255,255,.05),0 0 0 45px rgba(255,255,255,.04)}
+    .artwork.teal-art{background:linear-gradient(135deg,#145960,#299c91)}
+    .artwork.gold-art{background:linear-gradient(135deg,#775018,#d6a545)}
+    .artwork-kicker{font-size:9px;font-weight:850;letter-spacing:.18em;text-transform:uppercase;opacity:.85;position:relative;z-index:1}
+    .artwork-title{font-family:Georgia,serif;font-size:27px;line-height:1.08;max-width:390px;position:relative;z-index:1}
+    .artwork-foot{font-size:10px;opacity:.85;position:relative;z-index:1}
+    .post-stats{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:10px;padding:12px 1px 9px;border-bottom:1px solid #f0ebf4}
+    .reaction-row{display:flex;gap:5px;flex-wrap:wrap;padding:11px 0 2px}
+    .react{border:1px solid var(--line);background:#fff;border-radius:99px;padding:7px 10px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#60546c}
+    .react[aria-pressed="true"]{background:var(--lavender);border-color:#d6c0f1;color:var(--purple-dark)}
+    .react .emoji{font-size:15px}
+    .post-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap;border-top:1px solid #f0ebf4;margin-top:10px;padding-top:9px}
+    .action{border:0;background:transparent;color:#6c6077;padding:8px 10px;border-radius:10px;font-size:11px;font-weight:800}
+    .action:hover{background:#f6f1fb;color:var(--purple-dark)}
+    .comments{border-top:1px solid #f0ebf4;margin-top:10px;padding-top:12px}
+    .comment{display:flex;gap:8px;margin:10px 0}
+    .comment .avatar{width:31px;height:31px;font-size:9px}
+    .comment-box{background:#f8f6fa;border-radius:12px;padding:9px 11px;flex:1;min-width:0}
+    .comment-name{font-size:11px;font-weight:850}
+    .comment-text{font-size:11px;margin-top:3px;overflow-wrap:anywhere}
+    .reply-link{border:0;background:none;color:var(--purple);font-size:10px;font-weight:800;padding:5px 0 0}
+    .reply-form,.comment-form{display:flex;gap:7px;margin-top:9px}
+    .reply-form input,.comment-form input{min-width:0;flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:11px}
+    .reply-form button,.comment-form button{border:0;border-radius:10px;background:var(--purple);color:white;padding:8px 11px;font-size:10px;font-weight:800}
+    .reply-list{margin-left:38px;border-left:2px solid #e9def7;padding-left:10px}
+    .empty{padding:28px 16px;text-align:center;color:var(--muted);font-size:13px;background:#fff;border:1px dashed #d9cbe8;border-radius:16px}
+    .right-card{padding:16px}
+    .side-title{font-family:Georgia,serif;color:var(--purple-dark);font-size:17px;margin:0 0 12px}
+    .entitlement{background:linear-gradient(150deg,#2d0b50,#6428a4);color:white;border-radius:15px;padding:15px}
+    .entitlement .member-pill{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.15);color:#fff}
+    .entitlement strong{display:block;font-family:Georgia,serif;font-size:21px;margin:10px 0 3px}
+    .entitlement p{font-size:10px;color:#e8dff1;margin:0}
+    .member-row{display:flex;align-items:center;gap:9px;margin:11px 0}
+    .member-row .avatar{width:34px;height:34px;font-size:10px}
+    .member-role{font-size:10px;color:var(--muted)}
+    .guideline{font-size:11px;color:#5d5267;padding:9px 0;border-top:1px solid #f0ebf4}
+    .guideline:first-of-type{border-top:0}
+    .guideline b{color:var(--purple-dark)}
+    .footer-note{text-align:center;color:#90869a;font-size:10px;margin:24px 0 0}
+    dialog{border:1px solid var(--line);border-radius:20px;padding:0;width:min(440px,calc(100% - 28px));box-shadow:0 28px 90px rgba(30,8,52,.25);color:var(--ink)}
+    dialog::backdrop{background:rgba(25,10,42,.55);backdrop-filter:blur(3px)}
+    .dialog-inner{padding:22px}
+    .dialog-inner h2{font-family:Georgia,serif;color:var(--purple-dark);font-size:23px;margin:0 0 7px}
+    .dialog-inner p{font-size:12px;color:var(--muted);line-height:1.6}
+    .share-preview{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fbf9fd;font-size:12px;margin:13px 0}
+    .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+    .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24103b;color:white;padding:11px 15px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);transition:.22s;z-index:50;max-width:calc(100% - 30px);text-align:center}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    @media(max-width:1080px){.layout{grid-template-columns:190px minmax(0,1fr)}.right-rail{grid-column:2;position:static;grid-template-columns:repeat(2,minmax(0,1fr))}.right-rail .wide{grid-column:span 2}}
+    @media(max-width:720px){
+      .topbar-inner{padding:10px 14px}.brand-mark{width:37px;height:37px}.brand-name{font-size:11px}.brand-sub{font-size:9px}.top-actions .member-pill{display:none}
+      .page{padding:0 12px 45px;margin:15px auto}.hero{padding:21px 19px;border-radius:21px}.hero p{font-size:12px}
+      .layout{display:flex;flex-direction:column}.left-rail{position:static;width:100%;order:0}.left-rail .profile-panel{display:none}.left-rail .nav-list{display:flex;overflow-x:auto;padding-bottom:3px}.left-rail .small-label,.left-rail .rail-note{display:none}.nav-link{white-space:nowrap;background:white;border:1px solid var(--line);padding:8px 11px}
+      .feed-column{width:100%;order:1}.right-rail{display:grid;grid-template-columns:1fr 1fr;order:2;width:100%;gap:10px}.right-rail .wide{grid-column:span 2}
+      .panel,.post,.compose{border-radius:17px}.compose{padding:13px}.post{padding:14px}.feed-head{align-items:flex-start;flex-direction:column}.search{width:100%;max-width:none}
+      .post-audience{display:none}.hero:after{right:-130px}.right-card{padding:13px}
+    }
+    @media(max-width:420px){.right-rail{grid-template-columns:1fr}.right-rail .wide{grid-column:auto}.demo-pill{font-size:9px;padding:5px 7px}.top-avatar{width:34px;height:34px}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" aria-label="De Champions Digital Services">
+        <div class="brand-mark" aria-hidden="true">DCDS</div>
+        <div><div class="brand-name">DE CHAMPIONS DIGITAL SERVICES</div><div class="brand-sub">Create · Learn · Innovate · Earn</div></div>
+      </div>
+      <div class="top-actions">
+        <span class="demo-pill">● Demo only</span>
+        <span class="member-pill">✦ Verified+ Member</span>
+        <div class="top-avatar" aria-label="Synthetic demo member">DC</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-content">
+        <div class="eyebrow">DCDS · VERIFIED+ EXCLUSIVE NETWORK</div>
+        <h1 id="heroTitle">Your people. Your ideas. Your network.</h1>
+        <p>A premium members' space to share your work, celebrate progress, exchange ideas and build meaningful connections across the DCDS ecosystem.</p>
+        <div class="hero-bottom">
+          <span class="hero-note">✦ Active membership required</span>
+          <span class="hero-note">🔒 Verified+ members only</span>
+          <span class="hero-note">💜 Create · Connect · Grow</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="layout">
+      <aside class="left-rail" aria-label="Network navigation">
+        <section class="panel profile-panel">
+          <div class="demo-profile">
+            <div class="avatar">DC</div>
+            <div><div class="person-name">Demo Member</div><div class="person-sub">Your preview profile</div></div>
+          </div>
+          <div class="small-label">Your space</div>
+          <nav class="nav-list">
+            <a class="nav-link active" href="#feed"><span class="nav-icon">⌂</span>Network feed</a>
+            <a class="nav-link" href="#discover"><span class="nav-icon">◎</span>Discover members</a>
+            <a class="nav-link" href="#guidelines"><span class="nav-icon">♡</span>Community values</a>
+          </nav>
+          <div class="small-label">Preview information</div>
+          <p class="mini-note rail-note">This page uses fictional profiles and temporary in-memory interactions. Nothing is sent to a DCDS account.</p>
+        </section>
+        <nav class="panel nav-list mobile-nav" aria-label="Quick navigation">
+          <a class="nav-link active" href="#feed"><span class="nav-icon">⌂</span>Feed</a>
+          <a class="nav-link" href="#discover"><span class="nav-icon">◎</span>Discover</a>
+          <a class="nav-link" href="#guidelines"><span class="nav-icon">♡</span>Values</a>
+        </nav>
+      </aside>
+
+      <section class="feed-column" id="feed" aria-label="Verified+ network feed">
+        <div class="feed-head">
+          <div><div class="eyebrow" style="color:var(--purple);">THE MEMBERS' LOUNGE</div><h2 class="feed-title">Exclusive network feed</h2></div>
+          <input class="search" id="feedSearch" type="search" placeholder="Search demo posts or members…" aria-label="Search demo posts or members">
+        </div>
+
+        <form class="card compose" id="composeForm">
+          <div class="compose-top">
+            <div class="avatar" aria-hidden="true">DC</div>
+            <textarea id="postText" maxlength="1200" placeholder="Share an idea, a milestone or something you're creating…" aria-label="Write a network post" required></textarea>
+          </div>
+          <div class="compose-bottom">
+            <span class="audience">🔒 Audience: Verified+ members</span>
+            <button class="btn btn-primary" type="submit">＋ Publish demo post</button>
+          </div>
+        </form>
+
+        <div class="filters" role="group" aria-label="Filter network feed">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">For you</button>
+          <button class="filter" type="button" data-filter="projects" aria-pressed="false">Creative projects</button>
+          <button class="filter" type="button" data-filter="learning" aria-pressed="false">Learning & growth</button>
+          <button class="filter" type="button" data-filter="community" aria-pressed="false">Community</button>
+        </div>
+        <div id="feedPosts" aria-live="polite"></div>
+        <div class="empty" id="emptyState" hidden>No demo posts match this view. Try another filter or search.</div>
+      </section>
+
+      <aside class="right-rail">
+        <section class="panel right-card">
+          <div class="entitlement">
+            <span class="member-pill">✦ Demo entitlement</span>
+            <strong>Verified+ Active</strong>
+            <p>Preview state only · Not connected to billing or identity records</p>
+          </div>
+          <p class="mini-note" style="margin-top:12px">In the real product, access will be checked securely by DCDS services, not by this visual preview.</p>
+        </section>
+
+        <section class="panel right-card" id="discover">
+          <h3 class="side-title">Members to discover</h3>
+          <div class="member-row"><div class="avatar teal">AO</div><div><div class="person-name">Amara Okoye</div><div class="member-role">Visual designer · Demo profile</div></div></div>
+          <div class="member-row"><div class="avatar rose">ZB</div><div><div class="person-name">Zara Bello</div><div class="member-role">AI creator · Demo profile</div></div></div>
+          <div class="member-row"><div class="avatar blue">KM</div><div><div class="person-name">Kofi Mensah</div><div class="member-role">Web developer · Demo profile</div></div></div>
+          <p class="mini-note">Fictional sample members only. No real presence or account directory is shown.</p>
+        </section>
+
+        <section class="panel right-card wide" id="guidelines">
+          <h3 class="side-title">A network worth belonging to</h3>
+          <div class="guideline"><b>Share with purpose.</b> Celebrate your work, ideas and progress.</div>
+          <div class="guideline"><b>Respect every member.</b> Disagreement is welcome; harassment is not.</div>
+          <div class="guideline"><b>Protect privacy.</b> Never post someone else's private information.</div>
+          <div class="guideline"><b>Keep it genuine.</b> No spam, impersonation or artificial engagement.</div>
+          <div class="guideline"><b>Share stays in scope.</b> A members-only post never becomes public by a repost.</div>
+        </section>
+      </aside>
+    </div>
+
+    <p class="footer-note">DCDS Verified+ · Interactive UI prototype · Synthetic demo data only · No backend, account, payment or identity connection</p>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <form method="dialog" class="dialog-inner" id="shareForm">
+      <h2 id="shareTitle">Share with your network</h2>
+      <p>This demo share stays inside the Verified+ members-only audience. It does not create a public link or expand the original post's audience.</p>
+      <div class="share-preview" id="sharePreview"></div>
+      <div class="audience">🔒 Verified+ members only</div>
+      <div class="dialog-actions">
+        <button class="btn btn-quiet" value="cancel" type="button" id="cancelShare">Cancel</button>
+        <button class="btn btn-primary" value="share" type="submit">Share inside network</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+
+    // All demo state is local to this page lifetime. Nothing is persisted or transmitted.
+    const demoPosts = [
+      {
+        id: 1, author: "Amara Okoye", initials: "AO", tone: "teal",
+        role: "Visual designer · Demo profile", time: "Just now · Sample post",
+        category: "projects", kind: "art",
+        text: "Just wrapped up a fresh visual direction for a small creative brand. I wanted the identity to feel confident, warm and unmistakably memorable. What detail catches your eye first?",
+        artwork: {kicker:"CREATIVE SHOWCASE · DEMO", title:"Design with intention.", foot:"A fictional project preview · DCDS Verified+"},
+        reactions: {"👍":18,"❤️":12,"💖":7,"😂":2},
+        comments: [
+          {name:"Zara Bello",initials:"ZB",tone:"rose",text:"The balance and spacing are beautiful. The colour story feels warm too.",replies:[{name:"Amara Okoye",initials:"AO",tone:"teal",text:"Thank you! I was aiming for a calm but confident feel."}]},
+          {name:"Kofi Mensah",initials:"KM",tone:"blue",text:"That headline hierarchy is clean. Nice work!",replies:[]}
+        ]
+      },
+      {
+        id: 2, author: "Kofi Mensah", initials: "KM", tone: "blue",
+        role: "Web developer · Demo profile", time: "Sample post · 2h",
+        category: "learning", kind: "art",
+        text: "A reminder from this week's learning sprint: small, consistent improvements compound. I finally understood a layout problem that had been confusing me. Keep asking questions and keep building.",
+        artwork: {kicker:"LEARN · BUILD · IMPROVE", title:"Progress is built one step at a time.", foot:"Learning milestone · Synthetic demo"},
+        reactions: {"👍":24,"❤️":9,"💖":4,"🤔":3},
+        comments: [
+          {name:"Amara Okoye",initials:"AO",tone:"teal",text:"Consistency really does make the difference.",replies:[]}
+        ]
+      },
+      {
+        id: 3, author: "Zara Bello", initials: "ZB", tone: "rose",
+        role: "AI creator · Demo profile", time: "Sample post · Yesterday",
+        category: "community", kind: "text",
+        text: "What is one skill you are intentionally improving this month? Mine is turning creative ideas into clear, useful experiences. I would love to hear what everyone is working on. 💜",
+        reactions: {"❤️":15,"😂":3,"😘":2,"👍":11},
+        comments: [
+          {name:"Kofi Mensah",initials:"KM",tone:"blue",text:"Writing cleaner code and explaining my process better.",replies:[]}
+        ]
+      }
+    ];
+
+    const reactionOptions = ["👍","❤️","💖","😂","😭","😘","😀","🤔","😉"];
+    let nextId = 4;
+    let activeFilter = "all";
+    let pendingShareId = null;
+    let toastTimer = null;
+
+    const feed = document.getElementById("feedPosts");
+    const emptyState = document.getElementById("emptyState");
+    const search = document.getElementById("feedSearch");
+    const toast = document.getElementById("toast");
+    const shareDialog = document.getElementById("shareDialog");
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    function avatar(initials, tone, sizeClass) {
+      const node = element("div", "avatar " + (tone || "") + (sizeClass ? " " + sizeClass : ""), initials);
+      node.setAttribute("aria-hidden", "true");
+      return node;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+    function makePostHeader(post) {
+      const header = element("div", "post-head");
+      header.append(avatar(post.initials, post.tone));
+      const meta = element("div", "post-meta");
+      const author = element("div", "post-author");
+      author.append(document.createTextNode(post.author + " "));
+      author.append(element("span", "verified-mark", "✓"));
+      meta.append(author, element("div", "post-sub", post.role + " · " + post.time));
+      header.append(meta, element("span", "post-audience", "🔒 VERIFIED+"));
+      return header;
+    }
+
+    function makeArtwork(post) {
+      if (!post.artwork) return null;
+      const art = element("div", "artwork " + (post.tone === "teal" ? "teal-art" : post.tone === "gold" ? "gold-art" : ""));
+      art.append(
+        element("div", "artwork-kicker", post.artwork.kicker),
+        element("div", "artwork-title", post.artwork.title),
+        element("div", "artwork-foot", post.artwork.foot)
+      );
+      return art;
+    }
+
+    function makeReactionButtons(post) {
+      const row = element("div", "reaction-row");
+      reactionOptions.forEach((emoji) => {
+        const count = post.reactions[emoji] || 0;
+        if (!count && !["👍","❤️","💖","😂"].includes(emoji)) return;
+        const button = element("button", "react");
+        button.type = "button";
+        button.dataset.reaction = emoji;
+        button.setAttribute("aria-pressed", "false");
+        button.setAttribute("aria-label", "React with " + emoji + ", " + count + " reactions");
+        button.append(element("span", "emoji", emoji), element("span", "count", String(count)));
+        row.append(button);
+      });
+      return row;
+    }
+
+    function makeComment(comment, post) {
+      const wrap = element("div", "comment");
+      wrap.append(avatar(comment.initials, comment.tone));
+      const box = element("div", "comment-box");
+      box.append(element("div", "comment-name", comment.name), element("div", "comment-text", comment.text));
+      const replyButton = element("button", "reply-link", "↳ Reply");
+      replyButton.type = "button";
+      replyButton.dataset.reply = "true";
+      box.append(replyButton);
+
+      const replies = element("div", "reply-list");
+      (comment.replies || []).forEach((reply) => {
+        const item = element("div", "comment");
+        item.append(avatar(reply.initials, reply.tone));
+        const replyBox = element("div", "comment-box");
+        replyBox.append(element("div", "comment-name", reply.name), element("div", "comment-text", reply.text));
+        item.append(replyBox);
+        replies.append(item);
+      });
+
+      wrap.append(box);
+      const group = element("div");
+      group.append(wrap, replies);
+      return group;
+    }
+
+    function makeReplyForm(comment, post) {
+      const form = element("form", "reply-form");
+      const input = element("input");
+      input.type = "text";
+      input.maxLength = 400;
+      input.placeholder = "Write a friendly reply…";
+      input.setAttribute("aria-label", "Write a reply");
+      const submit = element("button", "", "Reply");
+      submit.type = "submit";
+      form.append(input, submit);
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const value = input.value.trim();
+        if (!value) return;
+        comment.replies = comment.replies || [];
+        comment.replies.push({name:"Demo Member",initials:"DC",tone:"",text:value});
+        renderFeed();
+        showToast("Reply added to this local demo.");
+      });
+      return form;
+    }
+
+    function makeComments(post) {
+      const section = element("section", "comments");
+      section.hidden = true;
+      section.setAttribute("aria-label", "Comments on " + post.author + "'s post");
+      const list = element("div");
+      (post.comments || []).forEach((comment) => list.append(makeComment(comment, post)));
+      section.append(list);
+
+      const form = element("form", "comment-form");
+      const input = element("input");
+      input.type = "text";
+      input.maxLength = 500;
+      input.placeholder = "Add a thoughtful comment…";
+      input.setAttribute("aria-label", "Add a comment");
+      const submit = element("button", "", "Comment");
+      submit.type = "submit";
+      form.append(input, submit);
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const value = input.value.trim();
+        if (!value) return;
+        post.comments = post.comments || [];
+        post.comments.push({name:"Demo Member",initials:"DC",tone:"",text:value,replies:[]});
+        renderFeed();
+        const updated = feed.querySelector('[data-post-id="' + post.id + '"] .comments');
+        if (updated) updated.hidden = false;
+        showToast("Comment added to this local demo.");
+      });
+      section.append(form);
+      post._commentsNode = section;
+      return section;
+    }
+
+    function renderPost(post) {
+      const card = element("article", "card post");
+      card.dataset.postId = String(post.id);
+      card.dataset.category = post.category || "community";
+      card.append(makePostHeader(post), element("p", "post-text", post.text));
+      const artwork = makeArtwork(post);
+      if (artwork) card.append(artwork);
+
+      const stats = element("div", "post-stats");
+      const reactionTotal = Object.values(post.reactions || {}).reduce((sum, value) => sum + value, 0);
+      stats.append(
+        element("span", "", "♡ " + reactionTotal + " reactions"),
+        element("span", "", (post.comments || []).length + " comments · " + (post.shares || 0) + " shares")
+      );
+      card.append(stats, makeReactionButtons(post));
+
+      const actions = element("div", "post-actions");
+      const commentButton = element("button", "action", "▤  Comment");
+      commentButton.type = "button";
+      commentButton.dataset.toggleComments = "true";
+      const shareButton = element("button", "action", "↗  Share");
+      shareButton.type = "button";
+      shareButton.dataset.share = "true";
+      actions.append(commentButton, shareButton);
+      card.append(actions, makeComments(post));
+      return card;
+    }
+
+    function renderFeed() {
+      const query = search.value.trim().toLowerCase();
+      const visible = demoPosts.filter((post) => {
+        const filterMatch = activeFilter === "all" || post.category === activeFilter;
+        const textMatch = !query || (post.author + " " + post.role + " " + post.text).toLowerCase().includes(query);
+        return filterMatch && textMatch;
+      });
+      feed.replaceChildren(...visible.map(renderPost));
+      emptyState.hidden = visible.length !== 0;
+    }
+
+    document.getElementById("composeForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = document.getElementById("postText");
+      const text = input.value.trim();
+      if (!text) return;
+      demoPosts.unshift({
+        id: nextId++, author:"Demo Member", initials:"DC", tone:"",
+        role:"Your preview profile", time:"Just now · Local demo",
+        category:"community", kind:"text", text,
+        reactions:{}, comments:[], shares:0
+      });
+      input.value = "";
+      activeFilter = "all";
+      document.querySelectorAll("[data-filter]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.filter === "all"));
+      });
+      renderFeed();
+      showToast("Your demo post is now at the top of this preview.");
+    });
+
+    document.querySelectorAll("[data-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        activeFilter = button.dataset.filter;
+        document.querySelectorAll("[data-filter]").forEach((item) => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+        renderFeed();
+      });
+    });
+
+    search.addEventListener("input", renderFeed);
+
+    feed.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      const card = button.closest("[data-post-id]");
+      if (!card) return;
+      const post = demoPosts.find((item) => String(item.id) === card.dataset.postId);
+      if (!post) return;
+
+      if (button.dataset.reaction) {
+        const emoji = button.dataset.reaction;
+        post.reactions[emoji] = (post.reactions[emoji] || 0) + 1;
+        renderFeed();
+        showToast("Reaction added in this local demo.");
+      } else if (button.dataset.toggleComments) {
+        const comments = card.querySelector(".comments");
+        comments.hidden = !comments.hidden;
+      } else if (button.dataset.reply) {
+        const existing = button.parentElement.querySelector(".reply-form");
+        if (existing) { existing.remove(); return; }
+        const commentGroup = button.closest(".comment").parentElement;
+        const commentIndex = Array.from(commentGroup.parentElement.children).indexOf(commentGroup);
+        const comment = post.comments[commentIndex];
+        if (comment) button.parentElement.append(makeReplyForm(comment, post));
+      } else if (button.dataset.share) {
+        pendingShareId = post.id;
+        document.getElementById("sharePreview").textContent = post.author + ": " + post.text.slice(0, 170);
+        shareDialog.showModal();
+      }
+    });
+
+    document.getElementById("cancelShare").addEventListener("click", () => {
+      pendingShareId = null;
+      shareDialog.close();
+    });
+
+    document.getElementById("shareForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (pendingShareId === null) return;
+      const original = demoPosts.find((post) => post.id === pendingShareId);
+      if (!original) return;
+      original.shares = (original.shares || 0) + 1;
+      demoPosts.unshift({
+        id: nextId++, author:"Demo Member", initials:"DC", tone:"",
+        role:"Shared inside Verified+ · Local demo", time:"Just now",
+        category:"community", kind:"repost",
+        text:"Shared a post from " + original.author + ". The original audience remains Verified+ members only.",
+        artwork:null, reactions:{}, comments:[], shares:0
+      });
+      pendingShareId = null;
+      shareDialog.close();
+      renderFeed();
+      showToast("Shared inside the demo network. The audience did not change.");
+    });
+
+    renderFeed();
+  </script>
+</body>
+</html>
