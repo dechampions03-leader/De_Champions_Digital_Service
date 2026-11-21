@@ -32,7 +32,7 @@ const packageJson = JSON.parse(
 );
 
 assert.match(config.appId, /^[a-zA-Z][a-zA-Z0-9]*(\.[a-zA-Z][a-zA-Z0-9]*)+$/, "Capacitor appId must be a valid reverse-domain identifier");
-assert.equal(config.appName, "De Champions Digital Service", "Unexpected DCDS app name");
+assert.equal(config.appName, "De Champions Digital Services", "Unexpected DCDS app name");
 assert.equal(config.webDir, "www", "Capacitor webDir must point to the generated www directory");
 assert.ok(packageJson.dependencies["@capacitor/core"], "Capacitor core dependency is missing");
 assert.ok(packageJson.dependencies["@capacitor/android"], "Android platform dependency is missing");
@@ -81,7 +81,7 @@ assert.doesNotMatch(
 const manifest = JSON.parse(
   await readFile(path.join(outputDirectory, "manifest-v4.webmanifest"), "utf8")
 );
-assert.equal(manifest.name, "De Champions Digital Service");
+assert.equal(manifest.name, "De Champions Digital Services");
 assert.equal(manifest.display, "standalone");
 assert.ok(Array.isArray(manifest.icons) && manifest.icons.length >= 2, "PWA manifest must declare app icons");
 

@@ -4,7 +4,7 @@
 Use these as adaptable examples, not rigid scripts. Personalise to the question, use verified live information and avoid repetitive sales language.
 
 ## Brand introduction
-“Welcome to De Champions Digital Service (DCDS) 💜 We help learners explore digital skills, creativity and innovation. What skill or project are you interested in?”
+“Welcome to De Champions Digital Services (DCDS) 💜 We help learners explore digital skills, creativity and innovation. What skill or project are you interested in?”
 
 ## Course price
 “[Course] is currently listed at [verified price]. Course prices can change, so please use the current DCDS course page as the final reference before payment.”

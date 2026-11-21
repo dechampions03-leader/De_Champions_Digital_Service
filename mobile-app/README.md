@@ -1,10 +1,10 @@
 # DCDS Capacitor mobile app
 
-This folder adds a separate Capacitor 8 packaging layer for De Champions Digital Service. The existing root website remains the source of truth and is not moved or rewritten.
+This folder adds a separate Capacitor 8 packaging layer for De Champions Digital Servicess. The existing root website remains the source of truth and is not moved or rewritten.
 
 ## Identity
 
-- App name: De Champions Digital Service
+- App name: De Champions Digital Servicess
 - Proposed application ID: `com.dechampions.dcds`
 - Capacitor web directory: `www` (generated during builds; not committed)
 

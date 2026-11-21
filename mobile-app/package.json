@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Capacitor mobile application shell for De Champions Digital Service",
+  "description": "Capacitor mobile application shell for De Champions Digital Services",
   "engines": {
     "node": ">=22.0.0"
   },

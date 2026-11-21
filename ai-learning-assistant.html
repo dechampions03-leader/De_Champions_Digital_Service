@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 
 <meta name="theme-color" content="#35105f">
-<meta name="description" content="The shared De Champions Digital Service AI learning companion.">
+<meta name="description" content="The shared De Champions Digital Services AI learning companion.">
 <title>DCDS AI Learning Assistant</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="ai-config/captcha-public-config.js"></script>
@@ -126,7 +126,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 </head>
 <body>
 <header class="top">
- <div class="brand">DE CHAMPIONS DIGITAL SERVICE · DCDS</div>
+ <div class="brand">DE CHAMPIONS DIGITAL SERVICES · DCDS</div>
  <div class="top-actions"><a href="student-dashboard.html">Student dashboard</a><a href="index.html">Main website</a></div>
 </header>
 <main>
@@ -185,7 +185,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="memory-actions"><button id="clearLearningMemory" type="button">Clear memory</button><div><button class="primary" id="saveLearningMemory" type="button">Save memory</button></div></div>
    </section>
    <div class="messages" id="messages" role="log" aria-live="polite">
-    <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Service. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, search approved DCDS information, find lessons in your enrolled courses and explore general topics beyond the prepared knowledge files. What would you like to work on today?</div></div></div>
+    <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Services. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, search approved DCDS information, find lessons in your enrolled courses and explore general topics beyond the prepared knowledge files. What would you like to work on today?</div></div></div>
    </div>
    <div class="typing" id="typing" hidden>DCDS AI is thinking…</div>
    <form class="composer" id="chatForm">
@@ -219,7 +219,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  </div>
  <div class="status" id="status" role="status">Connecting to your DCDS AI service…</div>
 </main>
-<footer>© 2026 De Champions Digital Service.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
+<footer>© 2026 De Champions Digital Services.<strong>CREATE • LEARN • INNOVATE • EARN.</strong></footer>
 <script>
 (async function(){
  const SUPABASE_URL='https://qxsenflgaweeadvggnyp.supabase.co';
@@ -292,7 +292,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   {name:'Paystack',aliases:['paystack'],href:'https://paystack.com/'}
  ];
 
- let welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I’m DCDS AI, your learning companion. I can teach digital skills, explain general topics, help you explore DCDS courses and guide you through practical steps. What would you like to learn today?";
+ let welcomeMessage="Hello! 👋 Welcome to De Champions Digital Services. I’m DCDS AI, your learning companion. I can teach digital skills, explain general topics, help you explore DCDS courses and guide you through practical steps. What would you like to learn today?";
  function configureWelcomeGreeting(mode){
   const metadata=currentUser?.user_metadata&&typeof currentUser.user_metadata==='object'?currentUser.user_metadata:{};
   const candidate=metadata.full_name||metadata.name||metadata.display_name||'';
@@ -307,7 +307,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     ?`Hello ${firstName}! 👋 Welcome back to your DCDS AI Learning Assistant. I’m here to help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`
     :`Hello! 👋 Welcome to your DCDS AI Learning Assistant. I’m here to help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`;
   }else{
-   welcomeMessage="Hello! 👋 Welcome to De Champions Digital Service. I’m DCDS AI, your public learning companion. I can explain general topics, teach digital skills and help you explore public DCDS information. What would you like to learn today?";
+   welcomeMessage="Hello! 👋 Welcome to De Champions Digital Services. I’m DCDS AI, your public learning companion. I can explain general topics, teach digital skills and help you explore public DCDS information. What would you like to learn today?";
   }
   conversation.length=0;
   messagesEl.replaceChildren();
