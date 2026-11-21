@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#35105f">
-  <meta name="description" content="DCDS Verified+ exclusive community interactive prototype. Synthetic demonstration only.">
+  <meta name="description" content="DCDS Verified+ member network prototype. Synthetic demonstration only.">
   <title>Verified+ Network Preview | DCDS</title>
   <style>
     :root{
@@ -66,6 +66,12 @@
     .compose-top{display:flex;gap:11px;align-items:flex-start}
     .compose textarea{resize:vertical;min-height:74px;max-height:240px;flex:1;border:1px solid var(--line);background:#fcfbfd;border-radius:14px;padding:12px 13px;font-size:13px;line-height:1.5;color:var(--ink)}
     .compose-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:13px}
+    .role-preview{display:grid;grid-template-columns:auto minmax(220px,1fr);gap:7px 12px;align-items:center;background:#fff;border:1px solid var(--line);padding:12px 14px;border-radius:15px;margin:0 0 12px}
+    .role-preview label{font-size:12px;font-weight:850;color:var(--purple-dark)}
+    .role-preview select{border:1px solid var(--line);background:#fcfbfd;border-radius:10px;padding:8px 10px;font-size:11px;color:var(--ink);min-width:0}
+    .role-preview .mini-note{grid-column:1/-1}
+    .policy-hint{font-size:11px;color:#786a87;margin:-6px 3px 15px}
+    .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
     .audience{font-size:11px;color:var(--purple-dark);font-weight:800;background:var(--lavender);padding:7px 10px;border-radius:99px}
     .btn{border:0;border-radius:12px;padding:10px 15px;font-size:12px;font-weight:800}
     .btn-primary{background:var(--purple);color:#fff;box-shadow:0 7px 16px rgba(118,40,216,.18)}
@@ -138,7 +144,7 @@
       .page{padding:0 12px 45px;margin:15px auto}.hero{padding:21px 19px;border-radius:21px}.hero p{font-size:12px}
       .layout{display:flex;flex-direction:column}.left-rail{position:static;width:100%;order:0}.left-rail .profile-panel{display:none}.left-rail .nav-list{display:flex;overflow-x:auto;padding-bottom:3px}.mobile-nav{display:flex}.left-rail .small-label,.left-rail .rail-note{display:none}.nav-link{white-space:nowrap;background:white;border:1px solid var(--line);padding:8px 11px}
       .feed-column{width:100%;order:1}.right-rail{display:grid;grid-template-columns:1fr 1fr;order:2;width:100%;gap:10px}.right-rail .wide{grid-column:span 2}
-      .panel,.post,.compose{border-radius:17px}.compose{padding:13px}.post{padding:14px}.feed-head{align-items:flex-start;flex-direction:column}.search{width:100%;max-width:none}
+      .panel,.post,.compose{border-radius:17px}.compose{padding:13px}.post{padding:14px}.feed-head{align-items:flex-start;flex-direction:column}.search{width:100%;max-width:none}.role-preview{grid-template-columns:1fr}.role-preview .mini-note{grid-column:auto}
       .post-audience{display:none}.hero:after{right:-130px}.right-card{padding:13px}
     }
     @media(max-width:420px){.right-rail{grid-template-columns:1fr}.right-rail .wide{grid-column:auto}.demo-pill{font-size:9px;padding:5px 7px}.top-avatar{width:34px;height:34px}}
@@ -153,7 +159,7 @@
       </div>
       <div class="top-actions">
         <span class="demo-pill">● Demo only</span>
-        <span class="member-pill">✦ Verified+ Member</span>
+        <span class="member-pill" id="rolePill">✦ Verified+ Publisher</span>
         <div class="top-avatar" aria-label="Synthetic demo member">DC</div>
       </div>
     </div>
@@ -162,13 +168,13 @@
   <main class="page">
     <section class="hero" aria-labelledby="heroTitle">
       <div class="hero-content">
-        <div class="eyebrow">DCDS · VERIFIED+ EXCLUSIVE NETWORK</div>
+        <div class="eyebrow">DCDS · VERIFIED+ MEMBER NETWORK</div>
         <h1 id="heroTitle">Your people. Your ideas. Your network.</h1>
-        <p>A premium members' space to share your work, celebrate progress, exchange ideas and build meaningful connections across the DCDS ecosystem.</p>
+        <p>A DCDS learning and professional network. Verified+ members publish original posts; all signed-in DCDS members can view and engage with approved content.</p>
         <div class="hero-bottom">
-          <span class="hero-note">✦ Active membership required</span>
-          <span class="hero-note">🔒 Verified+ members only</span>
-          <span class="hero-note">💜 Create · Connect · Grow</span>
+          <span class="hero-note">✦ Verified+ publishing privilege</span>
+          <span class="hero-note">👥 All signed-in DCDS members can view</span>
+          <span class="hero-note">💜 DCDS activities only</span>
         </div>
       </div>
     </section>
@@ -198,26 +204,36 @@
 
       <section class="feed-column" id="feed" aria-label="Verified+ network feed">
         <div class="feed-head">
-          <div><div class="eyebrow" style="color:var(--purple);">THE MEMBERS' LOUNGE</div><h2 class="feed-title">Exclusive network feed</h2></div>
+          <div><div class="eyebrow" style="color:var(--purple);">THE DCDS MEMBER NETWORK</div><h2 class="feed-title">Member network feed</h2></div>
           <input class="search" id="feedSearch" type="search" placeholder="Search demo posts or members…" aria-label="Search demo posts or members">
+        </div>
+
+        <div class="role-preview">
+          <label for="demoRole">Preview account access</label>
+          <select id="demoRole" aria-describedby="roleDescription">
+            <option value="verified">Verified+ active member — can publish</option>
+            <option value="standard">Standard / unverified member — view & engage</option>
+          </select>
+          <p class="mini-note" id="roleDescription">Verified+ members can publish original posts. Both roles can view approved posts and engage.</p>
         </div>
 
         <form class="card compose" id="composeForm">
           <div class="compose-top">
             <div class="avatar" aria-hidden="true">DC</div>
-            <textarea id="postText" maxlength="1200" placeholder="Share an idea, a milestone or something you're creating…" aria-label="Write a network post" required></textarea>
+            <textarea id="postText" maxlength="1200" placeholder="Share a DCDS-related project, lesson or professional milestone…" aria-label="Write a DCDS-related network post" required></textarea>
           </div>
           <div class="compose-bottom">
-            <span class="audience">🔒 Audience: Verified+ members</span>
-            <button class="btn btn-primary" type="submit">＋ Publish demo post</button>
+            <span class="audience" id="composerAudience">👥 Audience: DCDS members</span>
+            <button class="btn btn-primary" id="publishDemoPost" type="submit">＋ Publish demo post</button>
           </div>
         </form>
+        <p class="policy-hint" id="composerHint">Only DCDS-related content is permitted. External/social links and unrelated social posts are blocked by policy.</p>
 
         <div class="filters" role="group" aria-label="Filter network feed">
           <button class="filter" type="button" data-filter="all" aria-pressed="true">For you</button>
           <button class="filter" type="button" data-filter="projects" aria-pressed="false">Creative projects</button>
           <button class="filter" type="button" data-filter="learning" aria-pressed="false">Learning & growth</button>
-          <button class="filter" type="button" data-filter="community" aria-pressed="false">Community</button>
+          <button class="filter" type="button" data-filter="community" aria-pressed="false">DCDS community</button>
         </div>
         <div id="feedPosts" aria-live="polite"></div>
         <div class="empty" id="emptyState" hidden>No demo posts match this view. Try another filter or search.</div>
@@ -227,10 +243,10 @@
         <section class="panel right-card">
           <div class="entitlement">
             <span class="member-pill">✦ Demo entitlement</span>
-            <strong>Verified+ Active</strong>
-            <p>Preview state only · Not connected to billing or identity records</p>
+            <strong id="entitlementTitle">Verified+ Publisher</strong>
+            <p id="entitlementCopy">Preview state only · Not connected to billing or identity records</p>
           </div>
-          <p class="mini-note" style="margin-top:12px">In the real product, access will be checked securely by DCDS services, not by this visual preview.</p>
+          <p class="mini-note" style="margin-top:12px">Both account types can see approved posts and engage. Only an eligible active Verified+ member can publish original posts. Production access must be checked server-side.</p>
         </section>
 
         <section class="panel right-card" id="discover">
@@ -242,25 +258,25 @@
         </section>
 
         <section class="panel right-card wide" id="guidelines">
-          <h3 class="side-title">A network worth belonging to</h3>
-          <div class="guideline"><b>Share with purpose.</b> Celebrate your work, ideas and progress.</div>
-          <div class="guideline"><b>Respect every member.</b> Disagreement is welcome; harassment is not.</div>
-          <div class="guideline"><b>Protect privacy.</b> Never post someone else's private information.</div>
-          <div class="guideline"><b>Keep it genuine.</b> No spam, impersonation or artificial engagement.</div>
-          <div class="guideline"><b>Share stays in scope.</b> A members-only post never becomes public by a repost.</div>
+          <h3 class="side-title">Strict DCDS network rules</h3>
+          <div class="guideline"><b>Stay on-brand.</b> Posts must concern DCDS learning, digital skills, creativity, projects or professional growth.</div>
+          <div class="guideline"><b>No social wall.</b> Dating, lifestyle chatter, unrelated memes, invitations and off-topic promotions are removed.</div>
+          <div class="guideline"><b>No external links.</b> Social URLs, contact links, QR codes and off-platform invitations are blocked unless DCDS formally allowlists the exact destination.</div>
+          <div class="guideline"><b>Every interaction counts.</b> Comments, replies and reshares follow the same rules as posts.</div>
+          <div class="guideline"><b>Strikes have consequences.</b> Repeated violations lead to posting restrictions or network suspension; appeals are available.</div>
         </section>
       </aside>
     </div>
 
-    <p class="footer-note">DCDS Verified+ · Interactive UI prototype · Synthetic demo data only · No backend, account, payment or identity connection</p>
+    <p class="footer-note">DCDS Verified+ Member Network · Interactive prototype · Synthetic data only · No backend, moderation engine, account, payment or identity connection</p>
   </main>
 
   <dialog id="shareDialog" aria-labelledby="shareTitle">
     <form method="dialog" class="dialog-inner" id="shareForm">
       <h2 id="shareTitle">Share with your network</h2>
-      <p>This demo share stays inside the Verified+ members-only audience. It does not create a public link or expand the original post's audience.</p>
+      <p>This demo reshare stays inside the signed-in DCDS member feed as an attributed reference card. No caption or external link is added, and the original audience is never expanded.</p>
       <div class="share-preview" id="sharePreview"></div>
-      <div class="audience">🔒 Verified+ members only</div>
+      <div class="audience">👥 Signed-in DCDS members</div>
       <div class="dialog-actions">
         <button class="btn btn-quiet" value="cancel" type="button" id="cancelShare">Cancel</button>
         <button class="btn btn-primary" value="share" type="submit">Share inside network</button>
@@ -341,6 +357,52 @@
       toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
     }
 
+
+    function hasDisallowedExternalLink(value) {
+      const candidates = value.match(/(?:https?:\/\/|www\.)[^\s<]+/ig) || [];
+      return candidates.some((candidate) => {
+        const normalized = /^https?:\/\//i.test(candidate) ? candidate : "https://" + candidate;
+        try {
+          const parsed = new URL(normalized);
+          const allowedHost = parsed.hostname === "dechampions03-leader.github.io";
+          const allowedPath = parsed.pathname.startsWith("/De_Champions_Digital_Service");
+          return !(allowedHost && allowedPath);
+        } catch (_) {
+          return true;
+        }
+      });
+    }
+
+    function rejectExternalLink(value) {
+      if (!hasDisallowedExternalLink(value)) return false;
+      showToast("External links are not allowed in this DCDS network preview. Only formally approved DCDS links may pass.");
+      return true;
+    }
+
+    function updatePreviewRole() {
+      const verifiedPublisher = document.getElementById("demoRole").value === "verified";
+      const postInput = document.getElementById("postText");
+      const submit = document.getElementById("publishDemoPost");
+      postInput.disabled = !verifiedPublisher;
+      submit.disabled = !verifiedPublisher;
+      postInput.placeholder = verifiedPublisher
+        ? "Share a DCDS-related project, lesson or professional milestone…"
+        : "Original posting is reserved for active Verified+ members.";
+      document.getElementById("composerHint").textContent = verifiedPublisher
+        ? "Only DCDS-related content is permitted. External/social links and unrelated social posts are blocked by policy."
+        : "Standard accounts can view, react, comment, reply and reshare attributed cards, but cannot create original posts.";
+      document.getElementById("rolePill").textContent = verifiedPublisher
+        ? "✦ Verified+ Publisher" : "Standard Member · Engage";
+      document.getElementById("entitlementTitle").textContent = verifiedPublisher
+        ? "Verified+ Publisher" : "Standard Member";
+      document.getElementById("entitlementCopy").textContent = verifiedPublisher
+        ? "Synthetic preview role · No real identity or billing check"
+        : "Synthetic preview role · View and engage only";
+      document.getElementById("roleDescription").textContent = verifiedPublisher
+        ? "This role can publish original DCDS-related posts. Both roles can view approved posts and engage."
+        : "This role can view approved posts and engage, but the original-post composer is disabled.";
+    }
+
     function makePostHeader(post) {
       const header = element("div", "post-head");
       header.append(avatar(post.initials, post.tone));
@@ -349,7 +411,7 @@
       author.append(document.createTextNode(post.author + " "));
       author.append(element("span", "verified-mark", "✓"));
       meta.append(author, element("div", "post-sub", post.role + " · " + post.time));
-      header.append(meta, element("span", "post-audience", "🔒 VERIFIED+"));
+      header.append(meta, element("span", "post-audience", "DCDS MEMBERS"));
       return header;
     }
 
@@ -419,6 +481,7 @@
         event.preventDefault();
         const value = input.value.trim();
         if (!value) return;
+        if (rejectExternalLink(value)) return;
         comment.replies = comment.replies || [];
         comment.replies.push({name:"Demo Member",initials:"DC",tone:"",text:value});
         renderFeed();
@@ -450,6 +513,7 @@
         event.preventDefault();
         const value = input.value.trim();
         if (!value) return;
+        if (rejectExternalLink(value)) return;
         post.comments = post.comments || [];
         post.comments.push({name:"Demo Member",initials:"DC",tone:"",text:value,replies:[]});
         renderFeed();
@@ -472,7 +536,7 @@
         quoted.append(
           element("div", "comment-name", "Original post · " + post.sharedFrom.author),
           element("div", "comment-text", post.sharedFrom.text),
-          element("span", "post-audience", "🔒 VERIFIED+ MEMBERS")
+          element("span", "post-audience", "DCDS MEMBERS")
         );
         card.append(quoted);
       }
@@ -510,11 +574,16 @@
       emptyState.hidden = visible.length !== 0;
     }
 
+    document.getElementById("demoRole").addEventListener("change", updatePreviewRole);
+    updatePreviewRole();
+
     document.getElementById("composeForm").addEventListener("submit", (event) => {
       event.preventDefault();
       const input = document.getElementById("postText");
       const text = input.value.trim();
       if (!text) return;
+      if (document.getElementById("demoRole").value !== "verified") return;
+      if (rejectExternalLink(text)) return;
       demoPosts.unshift({
         id: nextId++, author:"Demo Member", initials:"DC", tone:"",
         role:"Your preview profile", time:"Just now · Local demo",
@@ -595,16 +664,16 @@
       original.shares = (original.shares || 0) + 1;
       demoPosts.unshift({
         id: nextId++, author:"Demo Member", initials:"DC", tone:"",
-        role:"Shared inside Verified+ · Local demo", time:"Just now",
+        role:"Shared inside DCDS · Local demo", time:"Just now",
         category:"community", kind:"repost", myReaction:null,
-        text:"Shared a post from " + original.author + ". The original audience remains Verified+ members only.",
+        text:"Shared a post from " + original.author + ". The original audience remains signed-in DCDS members.",
         sharedFrom:{author:original.author,text:original.text},
         artwork:null, reactions:{}, comments:[], shares:0
       });
       pendingShareId = null;
       shareDialog.close();
       renderFeed();
-      showToast("Shared inside the demo network. The audience did not change.");
+      showToast("Shared inside the DCDS demo feed. The audience did not change.");
     });
 
     renderFeed();
