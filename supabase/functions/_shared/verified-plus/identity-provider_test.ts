@@ -144,6 +144,58 @@ Deno.test("rejects malformed case, applicant, country, and idempotency values", 
   );
 });
 
+Deno.test("does not reuse a session for another applicant or country", async () => {
+  const adapter = createAdapter();
+  await startSession(adapter);
+
+  await assertRejects(
+    () =>
+      adapter.startVerification({
+        caseId: "case-test-0001",
+        applicantId: "synthetic-user-other",
+        countryCode: "NG",
+        returnUrl: `${TEST_ORIGIN}/verified-plus/return`,
+        idempotencyKey: "request-test-0001",
+      }),
+    "INVALID_INPUT",
+  );
+
+  await assertRejects(
+    () =>
+      adapter.startVerification({
+        caseId: "case-test-0001",
+        applicantId: "synthetic-user-0001",
+        countryCode: "GB",
+        returnUrl: `${TEST_ORIGIN}/verified-plus/return`,
+        idempotencyKey: "request-test-0001",
+      }),
+    "INVALID_INPUT",
+  );
+});
+
+Deno.test("rejects an outcome whose country differs from the created case", async () => {
+  const adapter = createAdapter();
+  const session = await startSession(adapter);
+  const signed = await createSyntheticNotificationForTest(
+    {
+      caseId: "case-test-0001",
+      providerReference: session.providerReference,
+      providerEventId: "event-test-country-mismatch",
+      decision: "verified",
+      occurredAt: new Date(BASE_TIME).toISOString(),
+      countryCode: "GB",
+    },
+    TEST_SECRET,
+    BASE_TIME,
+  );
+
+  const outcome = await adapter.verifyNotification({
+    ...signed,
+    receivedAt: new Date(BASE_TIME).toISOString(),
+  });
+  assertEquals(outcome, null, "Country mismatch must be rejected");
+});
+
 Deno.test("does not expose an outcome before a validated notification", async () => {
   const adapter = createAdapter();
   const session = await startSession(adapter);
