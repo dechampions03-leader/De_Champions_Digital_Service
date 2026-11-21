@@ -151,6 +151,8 @@ The [DCDS Verified+ Brand Content and Enforcement Policy](dcds-verified-plus-bra
 
 The [Moderation Engine Server Contract](dcds-verified-plus-moderation-engine-contract.md) specifies the provider-neutral domain layer and its server-authoritative access, content, strike and administrator permission checks. The pure domain module and synthetic tests are prepared; persistent cases and live request handlers remain blocked pending migration reconciliation.
 
+The [Moderation Persistence and RLS Design](dcds-verified-plus-moderation-persistence-and-rls-design.md) maps proposed Verified+ content, reports, cases, strikes, restrictions, appeals and audit records to dedicated access policies. It deliberately keeps the existing room/cohort Student Community moderation domain separate.
+
 Core controls:
 - reject or hide off-brand content and unapproved external links before they become visible;
 - apply topic, spam, harassment, impersonation, scam, malicious-link and media checks to posts, comments, replies and reshares;
