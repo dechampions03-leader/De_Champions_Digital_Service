@@ -187,6 +187,14 @@ Every exposed table requires deliberate RLS, grants and indexes. Policies must v
 7. Complete Development-only integration and age-cohort safety tests.
 8. Obtain privacy/security approval and explicit production release approval before deployment or public activation.
 
+## 10A. Synthetic UI prototype
+
+A standalone [Verified+ community preview](../verified-plus-community-preview.html) has been added on the feature branch. It demonstrates a fictional members-only feed, post composer, emoji reactions, comments, replies, member filters, and attributed in-network reshares.
+
+The preview is static and self-contained. It does not call an API, connect to Supabase, read an authenticated account, persist state, or send content outside the browser page. All changes disappear when the page is reloaded. It is not linked from the live homepage and is not a production feature.
+
+A GitHub Actions check validates that these boundaries remain true and that the existing teen-community safety rules remain present.
+
 ## 11. Acceptance criteria
 
 The exclusive network is not ready until all of the following are demonstrated:
