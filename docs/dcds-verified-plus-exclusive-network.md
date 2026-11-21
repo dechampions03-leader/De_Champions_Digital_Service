@@ -149,6 +149,8 @@ The network is not a general social-media space. All posts, comments, replies, r
 
 The [DCDS Verified+ Brand Content and Enforcement Policy](dcds-verified-plus-brand-content-policy.md) defines approved topics, prohibited social/lifestyle promotion, strict external-link rules, pre-publication monitoring, moderator workflow, strike ladder, restrictions, severe-incident response, appeals and audit requirements.
 
+The [Moderation Engine Server Contract](dcds-verified-plus-moderation-engine-contract.md) specifies the provider-neutral domain layer and its server-authoritative access, content, strike and administrator permission checks. The pure domain module and synthetic tests are prepared; persistent cases and live request handlers remain blocked pending migration reconciliation.
+
 Core controls:
 - reject or hide off-brand content and unapproved external links before they become visible;
 - apply topic, spam, harassment, impersonation, scam, malicious-link and media checks to posts, comments, replies and reshares;
