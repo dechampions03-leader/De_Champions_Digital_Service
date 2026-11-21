@@ -114,6 +114,12 @@ It must not read private AI conversations, private learning memory, NIN/document
 
 Moderation records and evidence require least-privilege access, a documented retention period, append-only correction history and reporter-identity confidentiality.
 
+## 8. Persistence and RLS design
+
+The [Moderation Persistence and RLS Design](dcds-verified-plus-moderation-persistence-and-rls-design.md) maps the pure domain engine to a proposed dedicated Verified+ database boundary, including content, reports, cases, strike and restriction events, appeals, moderator grants, audit events, RLS roles, transactional writes and a test matrix.
+
+The live schema currently contains a separate room/cohort Student Community moderation system. Do not reuse its posts, reports, moderation actions, reactions or blocks for Verified+.
+
 ## 8. Launch gates and remaining work
 
 - Reconcile existing remote migration histories and tracked migration files before proposing any database migration.
