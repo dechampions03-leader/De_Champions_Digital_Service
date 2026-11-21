@@ -181,6 +181,8 @@ Do not promise that identity verification makes an account unhackable. Provide b
 
 **Moderation administration preview:** [Open the standalone synthetic DCDS Verified+ Moderation Centre](../verified-plus-moderation-preview.html). It is a separate, offline-only interface for moderation roles and human review.
 
+**Server moderation engine:** [Read the Moderation Engine Server Contract](dcds-verified-plus-moderation-engine-contract.md). Pure domain rules and Deno tests cover access gates, content decisions, 180-day strike escalation, moderator delegation, Root-only long-term actions and independent appeals. This code is not wired to an Edge Function or database yet.
+
 The feed is available to all signed-in DCDS accounts. Original publishing is a Verified+ privilege. Standard/unverified accounts may react, comment, reply and reshare an attributed reference card without a caption or external destination. Signed-out visitors receive no feed data.
 
 The network is a brand-only DCDS learning and professional-development space, not a general social-media wall. All text-bearing surfaces and media must pass the Brand Content and Enforcement Policy. External links are blocked unless the exact DCDS-controlled destination is formally allowlisted. Moderation actions are network-scoped, reason-coded, auditable and appealable. Automated checks may block or hold content, but must not permanently ban an account without human Root Administrator review.
