@@ -359,7 +359,8 @@
 
 
     function hasDisallowedExternalLink(value) {
-      const candidates = value.match(/(?:https?:\/\/|www\.)[^\s<]+/ig) || [];
+      const candidates = value.match(/(?:https?:\/\/|www\.)[^\s<]+|\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|co|ng|app|dev|me|xyz)(?:\/[^\s<]*)?/ig) || [];
+      if (/(?:^|\\s)@[a-z0-9_.]{2,}/i.test(value)) return true;
       return candidates.some((candidate) => {
         const normalized = /^https?:\/\//i.test(candidate) ? candidate : "https://" + candidate;
         try {
