@@ -61,7 +61,7 @@ assert.ok(
   "Capacitor native launches must activate the existing DCDS brand intro"
 );
 assert.match(mobileHome, /DE CHAMPIONS/);
-assert.match(mobileHome, /DIGITAL SERVICE/);
+assert.match(mobileHome, /DIGITAL SERVICES/);
 assert.match(mobileHome, /CREATE/);
 assert.match(mobileHome, /INNOVATE/);
 assert.match(mobileHome, /minimumVisibleMs=10000/, "Existing DCDS launch timing should be preserved");
