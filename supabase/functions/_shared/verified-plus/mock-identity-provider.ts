@@ -35,6 +35,8 @@ interface MockOptions {
 
 interface MockSession {
   caseId: string;
+  applicantId: string;
+  countryCode: string;
   providerReference: string;
   expiresAt: string;
 }
@@ -269,11 +271,24 @@ export class SyntheticIdentityProviderAdapter
     const idempotencyKey = `${input.caseId}:${input.idempotencyKey}`;
     let session = this.idempotentSessions.get(idempotencyKey);
 
+    if (
+      session &&
+      (session.applicantId !== input.applicantId ||
+        session.countryCode !== input.countryCode)
+    ) {
+      throw new IdentityProviderAdapterError(
+        "INVALID_INPUT",
+        "An idempotency key cannot be reused for a different applicant or country.",
+      );
+    }
+
     if (!session || Date.parse(session.expiresAt) <= this.now().getTime()) {
       this.sequence += 1;
       const providerReference = `mock-ref-${String(this.sequence).padStart(6, "0")}`;
       session = {
         caseId: input.caseId,
+        applicantId: input.applicantId,
+        countryCode: input.countryCode,
         providerReference,
         expiresAt: new Date(
           this.now().getTime() + this.sessionTtlMs,
@@ -399,6 +414,8 @@ export class SyntheticIdentityProviderAdapter
     if (
       !session ||
       session.caseId !== notification.caseId ||
+      (notification.countryCode !== undefined &&
+        session.countryCode !== notification.countryCode) ||
       Date.parse(session.expiresAt) <= currentAtMs ||
       this.processedEventIds.has(notification.providerEventId)
     ) {
