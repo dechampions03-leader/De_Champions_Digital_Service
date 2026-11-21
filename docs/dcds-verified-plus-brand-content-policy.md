@@ -148,4 +148,6 @@ Before real accounts can publish or engage, demonstrate:
 
 **Interactive administration preview:** [Open the standalone synthetic Moderation Centre](../verified-plus-moderation-preview.html). It demonstrates the review queue, moderator/Root Admin permission split, strike ladder, appeals, severe-case holds, typed Root-only permanent network-ban confirmation and append-only-style demo audit view. All case data is fictional and changes are local to the page.
 
-**Implementation status:** Policy specification and static administration preview only. The preview cannot enforce production moderation. No moderation engine, account restriction, database table, API, Supabase policy or production control is enabled by this document.
+**Server-domain engine contract:** [DCDS Verified+ Moderation Engine Server Contract](dcds-verified-plus-moderation-engine-contract.md). A pure provider-neutral domain module and synthetic test suite now cover access authorization, first-pass content checks, strike planning and moderator-action permissions.
+
+**Implementation status:** The domain engine is prepared and CI-tested, but it is not connected to a live Edge Function or persistent store. The administration preview remains synthetic. No live moderation endpoint, database table, account restriction, API route, Supabase policy or Production control is enabled.
