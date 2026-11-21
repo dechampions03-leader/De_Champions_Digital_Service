@@ -103,7 +103,7 @@ Do not publish an annual plan in the initial release. A previously proposed NGN 
 
 ### Payment rules
 
-- Use the existing DCDS payment gateway integration only after its current create-payment, webhook and verification flows have been reviewed for this new product.
+- Build a dedicated membership checkout/order path. The current `create-payment` function creates course-specific orders, and the existing `orders.course_id` column is NOT NULL; the current admin verification path also assumes course orders and course enrolment. Do not route Verified+ membership purchases through that course-enrolment pipeline. Reuse the established Flutterwave provider-verification and webhook-security patterns only after adapting them to a separate membership order.
 - Create an order/reference for the membership purchase and bind it to the authenticated user and selected plan.
 - Confirm amounts, currency, transaction status and gateway reference server-side; never trust a client-side success redirect.
 - Make webhook and verification processing idempotent.
@@ -241,7 +241,7 @@ The initial read-only audit found:
 - Student community profiles have cohort/privacy restrictions and age/guardian controls. They are not a substitute for public universal profiles.
 - The production-candidate project reports 80 applied migrations, Development reports 54, while the current `main` repository tree contains 48 tracked migration files. This migration-history divergence is a blocker for applying new SQL until reconciled.
 - Supabase security advisors report existing RLS-no-policy and SECURITY DEFINER execution findings in both environments. These need triage; an RLS-enabled table with no policy is generally closed to API roles, but it may also break expected application functionality. SECURITY DEFINER functions callable by authenticated users must be checked for correct internal authorization and grants.
-- Existing payment and VTU systems must remain isolated from the new membership ledger.
+- Existing payment and VTU systems must remain isolated from the new membership ledger. The current Flutterwave webhook validates the webhook hash and re-verifies the transaction with Flutterwave before further processing; this is a useful security pattern to preserve. The current course checkout is not a drop-in membership checkout because it is tied to `orders.course_id` and course enrolment.
 
 ## 11. Implementation phases
 
