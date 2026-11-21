@@ -13,6 +13,7 @@ on:
       - main
     paths:
       - "supabase/functions/_shared/verified-plus/**"
+      - "verified-plus-community-preview.html"
       - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
 
 permissions:
@@ -78,15 +79,15 @@ jobs:
           }
 
           forbidden_patterns = {
-              "network fetch": r"\\bfetch\\s*\\(",
+              "network fetch": r"\bfetch\s*\(",
               "XHR": r"XMLHttpRequest",
               "WebSocket": r"WebSocket",
               "local storage": r"localStorage",
               "session storage": r"sessionStorage",
               "IndexedDB": r"indexedDB",
-              "native external share": r"navigator\\.share",
-              "external window opening": r"window\\.open",
-              "remote asset URL": r"(?:src|href)\\s*=\\s*[\"']https?://",
+              "native external share": r"navigator\.share",
+              "external window opening": r"window\.open",
+              "remote asset URL": r"""(?:src|href)\s*=\s*["']https?://""",
           }
           for label, pattern in forbidden_patterns.items():
               checks["no " + label] = re.search(pattern, page, re.IGNORECASE) is None
@@ -96,4 +97,10 @@ jobs:
               print(("PASS " if passed else "FAIL ") + name)
           if failures:
               raise SystemExit(f"{len(failures)} Verified+ preview safety checks failed.")
+
+          script = re.search(r"<script>\s*(.*?)\s*</script>", page, re.DOTALL)
+          if not script:
+              raise SystemExit("FAIL no inline preview script found")
+          Path("/tmp/verified-plus-community-preview.js").write_text(script.group(1), encoding="utf-8")
           PY
+          node --check /tmp/verified-plus-community-preview.js
