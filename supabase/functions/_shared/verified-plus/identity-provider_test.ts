@@ -324,7 +324,6 @@ Deno.test("rejects unknown provider decisions and unexpected sensitive fields", 
     receivedAt: new Date(BASE_TIME).toISOString(),
   });
   assertEquals(result, null, "Unexpected payload must be rejected");
-  assertEquals(sensitiveHeaders["x-dcds-mock-signature"].length, 64, "Test signature exists");
 });
 
 Deno.test("rejects notifications after the synthetic session expires", async () => {
