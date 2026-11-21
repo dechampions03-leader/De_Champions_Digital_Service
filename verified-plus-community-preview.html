@@ -465,6 +465,15 @@
       card.dataset.postId = String(post.id);
       card.dataset.category = post.category || "community";
       card.append(makePostHeader(post), element("p", "post-text", post.text));
+      if (post.sharedFrom) {
+        const quoted = element("div", "share-preview");
+        quoted.append(
+          element("div", "comment-name", "Original post · " + post.sharedFrom.author),
+          element("div", "comment-text", post.sharedFrom.text),
+          element("span", "post-audience", "🔒 VERIFIED+ MEMBERS")
+        );
+        card.append(quoted);
+      }
       const artwork = makeArtwork(post);
       if (artwork) card.append(artwork);
 
@@ -587,6 +596,7 @@
         role:"Shared inside Verified+ · Local demo", time:"Just now",
         category:"community", kind:"repost", myReaction:null,
         text:"Shared a post from " + original.author + ". The original audience remains Verified+ members only.",
+        sharedFrom:{author:original.author,text:original.text},
         artwork:null, reactions:{}, comments:[], shares:0
       });
       pendingShareId = null;
