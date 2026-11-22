@@ -12,7 +12,7 @@ Persist the Verified+ Member Network as a separate DCDS product domain with secu
 The database must enforce the same product rules already specified:
 
 - all eligible signed-in DCDS accounts can read approved member-network posts;
-- only identity-approved accounts with active Monthly (30-day) or Annual (12-month) Verified+ entitlement can create original posts;
+- only identity-approved accounts with active Monthly (30-day), Annual (12-month) or Five-Year (60-month) Verified+ entitlement can create original posts;
 - eligible standard/unverified accounts can react, comment, reply and reshare attributed references;
 - no anonymous access;
 - off-brand content and unapproved external links must not become visible;
