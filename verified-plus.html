@@ -165,6 +165,16 @@
     .compare tr:last-child th,.compare tr:last-child td{border-bottom:0}
     .compare .annual-col{background:#fdf9ff}
     .compare .price-cell{color:#4e197d;font-weight:950;font-size:13px}
+    .compare-mobile{display:none}
+    .compare-mobile-card{position:relative;padding:19px;border:1px solid #e8def2;border-radius:18px;background:linear-gradient(150deg,#fff,#fcf9ff);box-shadow:0 8px 22px rgba(47,19,73,.05)}
+    .compare-mobile-card.featured{border:2px solid #a44be9;background:linear-gradient(155deg,#fff,#f7edff);box-shadow:0 14px 32px rgba(119,42,186,.13)}
+    .compare-mobile-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-bottom:13px;margin-bottom:5px;border-bottom:1px solid #eee5f5}
+    .compare-mobile-head h3{margin:9px 0 0;color:#381457;font-size:18px;font-weight:900}
+    .compare-mobile-head>strong{color:#311449;font-size:25px;font-weight:950;letter-spacing:-.06em;white-space:nowrap}
+    .compare-mobile-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;padding:10px 0;border-bottom:1px solid #f1eaf7;font-size:10px}
+    .compare-mobile-row:last-child{border-bottom:0;padding-bottom:0}
+    .compare-mobile-row span{color:#7d7088}
+    .compare-mobile-row strong{max-width:58%;color:#4d286c;text-align:right;font-weight:850}
     .faq-list{display:grid;gap:11px;max-width:880px;margin:0 auto}
     .faq-item{border:1px solid #e9def3;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(50,20,82,.035);overflow:hidden}
     .faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:17px 19px;list-style:none;color:#431866;font-size:12px;font-weight:900;cursor:pointer}
@@ -225,6 +235,8 @@
       .plan h3{font-size:19px}
       .price{font-size:39px}
       .saving{min-height:0}
+      .compare-wrap{display:none}
+      .compare-mobile{display:grid;gap:12px;max-width:520px;margin:0 auto}
       .benefit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .steps-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
       .verification-banner{grid-template-columns:auto 1fr;gap:12px;padding:17px}
@@ -459,6 +471,33 @@
           <span class="kicker">COMPARE THE TERMS</span>
           <h2 id="comparison-title">Clear prices. Clear expiry dates.</h2>
           <p>Choose by the length of membership you need. The five-year option is a long fixed term, not a lifetime subscription.</p>
+        </div>
+        <div class="compare-mobile" aria-label="Membership plan comparison for mobile">
+          <article class="compare-mobile-card">
+            <div class="compare-mobile-head"><div><span class="plan-label">Recommended</span><h3>Monthly</h3></div><strong>₦7,500</strong></div>
+            <div class="compare-mobile-row"><span>Membership duration</span><strong>30 days</strong></div>
+            <div class="compare-mobile-row"><span>Payment schedule</span><strong>One payment</strong></div>
+            <div class="compare-mobile-row"><span>Automatic renewal</span><strong>No</strong></div>
+            <div class="compare-mobile-row"><span>Identity verification fee</span><strong>Separate</strong></div>
+            <div class="compare-mobile-row"><span>Membership expiry</span><strong>After 30 days</strong></div>
+          </article>
+          <article class="compare-mobile-card featured">
+            <span class="popular">✦ BEST ANNUAL VALUE</span>
+            <div class="compare-mobile-head"><div><span class="plan-label">Best annual value</span><h3>Annual</h3></div><strong>₦75,000</strong></div>
+            <div class="compare-mobile-row"><span>Membership duration</span><strong>12 months</strong></div>
+            <div class="compare-mobile-row"><span>Payment schedule</span><strong>One upfront payment</strong></div>
+            <div class="compare-mobile-row"><span>Automatic renewal</span><strong>No</strong></div>
+            <div class="compare-mobile-row"><span>Identity verification fee</span><strong>Separate</strong></div>
+            <div class="compare-mobile-row"><span>Membership expiry</span><strong>After 12 months</strong></div>
+          </article>
+          <article class="compare-mobile-card">
+            <div class="compare-mobile-head"><div><span class="plan-label">Long-term membership</span><h3>Five-Year</h3></div><strong>₦320,000</strong></div>
+            <div class="compare-mobile-row"><span>Membership duration</span><strong>60 months</strong></div>
+            <div class="compare-mobile-row"><span>Payment schedule</span><strong>One upfront payment</strong></div>
+            <div class="compare-mobile-row"><span>Automatic renewal</span><strong>No</strong></div>
+            <div class="compare-mobile-row"><span>Identity verification fee</span><strong>Separate</strong></div>
+            <div class="compare-mobile-row"><span>Membership expiry</span><strong>After 60 months</strong></div>
+          </article>
         </div>
         <div class="compare-wrap reveal" role="region" aria-label="Membership plan comparison" tabindex="0">
           <table class="compare">
