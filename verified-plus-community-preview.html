@@ -85,7 +85,33 @@
     .post-head{display:flex;align-items:center;gap:10px}
     .post-meta{min-width:0;flex:1}
     .post-author{font-size:13px;font-weight:850;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-    .verified-mark{display:inline-grid;place-items:center;width:16px;height:16px;border-radius:50%;background:var(--purple);color:#fff;font-size:10px}
+    .verified-badge{display:inline-grid;place-items:center;flex:none;color:#fff;background:linear-gradient(145deg,#258cff 0%,#0865dc 100%);clip-path:polygon(50% 0%,61% 12%,77% 6%,84% 22%,100% 31%,91% 48%,100% 64%,84% 76%,86% 94%,66% 90%,50% 100%,34% 90%,14% 94%,16% 76%,0 64%,9% 48%,0 31%,16% 22%,23% 6%,39% 12%);filter:drop-shadow(0 2px 3px rgba(16,103,222,.24));line-height:1;font-size:0}
+    .verified-badge::before{content:"✓";font:900 .72em/1 Arial,sans-serif;color:#fff;transform:translateY(-.02em)}
+    .badge-xs{width:15px;height:15px}
+    .badge-sm{width:19px;height:19px}
+    .badge-md{width:24px;height:24px}
+    .badge-lg{width:40px;height:40px}
+    .badge-xl{width:92px;height:92px}
+    .creator-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:#f2e9ff;border:1px solid #e2d0fa;color:#53218a;font-size:10px;font-weight:850;white-space:nowrap}
+    .badge-intro{display:flex;align-items:center;gap:18px;background:linear-gradient(110deg,#fff 0%,#f3edfc 100%);border:1px solid #e7dcf4;border-radius:22px;padding:18px 22px;margin:0 0 20px;box-shadow:var(--shadow)}
+    .badge-intro-copy{min-width:0;flex:1}
+    .badge-intro-title{display:block;color:var(--purple-dark);font-family:Georgia,serif;font-size:20px;margin:3px 0 4px}
+    .badge-intro-copy p{font-size:12px;color:var(--muted);margin:0;line-height:1.55}
+    .badge-intro .creator-pill{font-size:11px}
+    .member-row{display:flex;align-items:flex-start;gap:10px;margin:14px 0;padding:0 0 14px;border-bottom:1px solid #f0ebf4}
+    .member-row:last-of-type{border-bottom:0;padding-bottom:0}
+    .member-row .avatar{width:40px;height:40px;font-size:11px}
+    .discover-details{flex:1;min-width:0}
+    .member-name-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .member-role{font-size:10px;color:var(--muted);margin-top:3px}
+    .member-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+    .member-tags .member-pill{font-size:9px;padding:4px 7px}
+    .member-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+    .member-actions .btn{min-height:36px;padding:8px 11px;font-size:10px}
+    .follow-btn.is-following{background:#f0e9f8;color:var(--purple-dark);border:1px solid #dfd0f0;box-shadow:none}
+    .comment-name-line{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+    .comment-name-line .creator-pill{font-size:9px;padding:2px 6px}
+    .demo-action-note{font-size:10px;color:var(--muted);line-height:1.5;margin:10px 0 0}
     .post-sub{font-size:10px;color:var(--muted);margin-top:2px}
     .post-audience{font-size:9px;font-weight:850;color:var(--purple-dark);background:var(--lavender);padding:5px 8px;border-radius:99px;white-space:nowrap}
     .post-text{font-size:13px;line-height:1.65;margin:14px 0 12px;white-space:pre-wrap;overflow-wrap:anywhere}
@@ -266,6 +292,16 @@
       </div>
     </section>
 
+    <section class="badge-intro" aria-label="DCDS Verified+ identity badge preview">
+      <span class="verified-badge badge-xl" role="img" aria-label="DCDS Verified+ Blue Badge"></span>
+      <div class="badge-intro-copy">
+        <div class="eyebrow" style="color:var(--purple)">OFFICIAL MEMBER IDENTITY MARK</div>
+        <strong class="badge-intro-title">DCDS Verified+ Blue Badge</strong>
+        <p>The blue rosette and white check identify an account whose DCDS identity decision is approved and whose Verified+ entitlement is active.</p>
+      </div>
+      <span class="creator-pill">✦ Creator</span>
+    </section>
+
     <div class="layout">
       <aside class="left-rail" aria-label="Network navigation">
         <section class="panel profile-panel">
@@ -337,11 +373,45 @@
         </section>
 
         <section class="panel right-card" id="discover">
-          <h3 class="side-title">Members to discover</h3>
-          <div class="member-row"><div class="avatar teal">AO</div><div><div class="person-name">Amara Okoye</div><div class="member-role">Visual designer · Demo profile</div></div></div>
-          <div class="member-row"><div class="avatar rose">ZB</div><div><div class="person-name">Zara Bello</div><div class="member-role">AI creator · Demo profile</div></div></div>
-          <div class="member-row"><div class="avatar blue">KM</div><div><div class="person-name">Kofi Mensah</div><div class="member-role">Web developer · Demo profile</div></div></div>
-          <p class="mini-note">Fictional sample members only. No real presence or account directory is shown.</p>
+          <h3 class="side-title">Discover Verified+ creators</h3>
+          <div class="member-row" data-member-card="amara">
+            <div class="avatar teal">AO</div>
+            <div class="discover-details">
+              <div class="member-name-line"><span class="person-name">Amara Okoye</span><span class="verified-badge badge-sm" role="img" aria-label="Demo Verified+ badge" title="Demo Verified+ badge"></span></div>
+              <div class="member-role">Visual designer · Demo profile</div>
+              <div class="member-tags"><span class="member-pill">✦ Verified+ Member</span><span class="creator-pill">✦ Creator</span></div>
+              <div class="member-actions">
+                <button class="btn btn-primary follow-btn" type="button" data-follow="amara" aria-pressed="false">＋ Follow</button>
+                <button class="btn btn-quiet message-btn" type="button" data-message="Amara Okoye">Message</button>
+              </div>
+            </div>
+          </div>
+          <div class="member-row" data-member-card="zara">
+            <div class="avatar rose">ZB</div>
+            <div class="discover-details">
+              <div class="member-name-line"><span class="person-name">Zara Bello</span><span class="verified-badge badge-sm" role="img" aria-label="Demo Verified+ badge" title="Demo Verified+ badge"></span></div>
+              <div class="member-role">AI creator · Demo profile</div>
+              <div class="member-tags"><span class="member-pill">✦ Verified+ Member</span><span class="creator-pill">✦ Creator</span></div>
+              <div class="member-actions">
+                <button class="btn btn-primary follow-btn" type="button" data-follow="zara" aria-pressed="false">＋ Follow</button>
+                <button class="btn btn-quiet message-btn" type="button" data-message="Zara Bello">Message</button>
+              </div>
+            </div>
+          </div>
+          <div class="member-row" data-member-card="kofi">
+            <div class="avatar blue">KM</div>
+            <div class="discover-details">
+              <div class="member-name-line"><span class="person-name">Kofi Mensah</span><span class="verified-badge badge-sm" role="img" aria-label="Demo Verified+ badge" title="Demo Verified+ badge"></span></div>
+              <div class="member-role">Web developer · Demo profile</div>
+              <div class="member-tags"><span class="member-pill">✦ Verified+ Member</span><span class="creator-pill">✦ Creator</span></div>
+              <div class="member-actions">
+                <button class="btn btn-primary follow-btn" type="button" data-follow="kofi" aria-pressed="false">＋ Follow</button>
+                <button class="btn btn-quiet message-btn" type="button" data-message="Kofi Mensah">Message</button>
+              </div>
+            </div>
+          </div>
+          <p class="demo-action-note">Follow changes are temporary in this preview. Message opens a local demonstration composer; no message is sent to a real member.</p>
+          <p class="mini-note">Fictional sample members only. Profiles, badge states and creator labels are synthetic demo data.</p>
         </section>
 
         <section class="panel right-card wide" id="guidelines">
@@ -370,6 +440,18 @@
       </div>
     </form>
   </dialog>
+  <dialog id="messageDialog" aria-labelledby="messageTitle">
+    <form class="dialog-inner" id="messageForm">
+      <h2 id="messageTitle">Message member</h2>
+      <p id="messageDescription">This is a local-only demonstration. Nothing will be delivered to a DCDS account.</p>
+      <label class="mini-note" for="demoMessageText">Your message</label>
+      <textarea id="demoMessageText" maxlength="1000" rows="4" placeholder="Write a friendly DCDS-related message…" required style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:7px;resize:vertical"></textarea>
+      <div class="dialog-actions">
+        <button class="btn btn-quiet" type="button" id="cancelMessage">Cancel</button>
+        <button class="btn btn-primary" type="submit">Preview message</button>
+      </div>
+    </form>
+  </dialog>
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
   <script>
@@ -380,7 +462,7 @@
       {
         id: 1, author: "Amara Okoye", initials: "AO", tone: "teal",
         role: "Visual designer · Demo profile", time: "Just now · Sample post",
-        category: "projects", kind: "art", myReaction: null,
+        category: "projects", kind: "art", myReaction: null, creator: true,
         text: "Just wrapped up a fresh visual direction for a small creative brand. I wanted the identity to feel confident, warm and unmistakably memorable. What detail catches your eye first?",
         artwork: {kicker:"CREATIVE SHOWCASE · DEMO", title:"Design with intention.", foot:"A fictional project preview · DCDS Verified+"},
         reactions: {"👍":18,"❤️":12,"💖":7,"😂":2},
@@ -392,7 +474,7 @@
       {
         id: 2, author: "Kofi Mensah", initials: "KM", tone: "blue",
         role: "Web developer · Demo profile", time: "Sample post · 2h",
-        category: "learning", kind: "art", myReaction: null,
+        category: "learning", kind: "art", myReaction: null, creator: true,
         text: "A reminder from this week's learning sprint: small, consistent improvements compound. I finally understood a layout problem that had been confusing me. Keep asking questions and keep building.",
         artwork: {kicker:"LEARN · BUILD · IMPROVE", title:"Progress is built one step at a time.", foot:"Learning milestone · Synthetic demo"},
         reactions: {"👍":24,"❤️":9,"💖":4,"🤔":3},
@@ -403,7 +485,7 @@
       {
         id: 3, author: "Zara Bello", initials: "ZB", tone: "rose",
         role: "AI creator · Demo profile", time: "Sample post · Yesterday",
-        category: "community", kind: "text", myReaction: null,
+        category: "community", kind: "text", myReaction: null, creator: true,
         text: "What is one skill you are intentionally improving this month? Mine is turning creative ideas into clear, useful experiences. I would love to hear what everyone is working on. 💜",
         reactions: {"❤️":15,"😂":3,"😘":2,"👍":11},
         comments: [
@@ -429,6 +511,18 @@
       if (className) node.className = className;
       if (text !== undefined) node.textContent = text;
       return node;
+    }
+
+    function verifiedBadge(sizeClass = "badge-sm") {
+      const badge = element("span", "verified-badge " + sizeClass);
+      badge.setAttribute("role", "img");
+      badge.setAttribute("aria-label", "DCDS Verified+ Blue Badge · demo preview");
+      badge.title = "DCDS Verified+ identity badge · demo only";
+      return badge;
+    }
+
+    function creatorPill() {
+      return element("span", "creator-pill", "✦ Creator");
     }
 
     function avatar(initials, tone, sizeClass) {
@@ -496,8 +590,8 @@
       header.append(avatar(post.initials, post.tone));
       const meta = element("div", "post-meta");
       const author = element("div", "post-author");
-      author.append(document.createTextNode(post.author + " "));
-      author.append(element("span", "verified-mark", "✓"));
+      author.append(document.createTextNode(post.author + " "), verifiedBadge("badge-sm"));
+      if (post.creator) author.append(creatorPill());
       meta.append(author, element("div", "post-sub", post.role + " · " + post.time));
       header.append(meta, element("span", "post-audience", "DCDS MEMBERS"));
       return header;
@@ -533,7 +627,10 @@
       const wrap = element("div", "comment");
       wrap.append(avatar(comment.initials, comment.tone));
       const box = element("div", "comment-box");
-      box.append(element("div", "comment-name", comment.name), element("div", "comment-text", comment.text));
+      const commentName = element("div", "comment-name-line");
+      commentName.append(element("div", "comment-name", comment.name), verifiedBadge("badge-xs"));
+      if (comment.creator) commentName.append(creatorPill());
+      box.append(commentName, element("div", "comment-text", comment.text));
       const replyButton = element("button", "reply-link", "↳ Reply");
       replyButton.type = "button";
       replyButton.dataset.reply = "true";
@@ -544,7 +641,10 @@
         const item = element("div", "comment");
         item.append(avatar(reply.initials, reply.tone));
         const replyBox = element("div", "comment-box");
-        replyBox.append(element("div", "comment-name", reply.name), element("div", "comment-text", reply.text));
+        const replyName = element("div", "comment-name-line");
+        replyName.append(element("div", "comment-name", reply.name), verifiedBadge("badge-xs"));
+        if (reply.creator) replyName.append(creatorPill());
+        replyBox.append(replyName, element("div", "comment-text", reply.text));
         item.append(replyBox);
         replies.append(item);
       });
@@ -698,6 +798,47 @@
     });
 
     search.addEventListener("input", renderFeed);
+
+    const followedMembers = new Set();
+    const messageDialog = document.getElementById("messageDialog");
+    const messageForm = document.getElementById("messageForm");
+    const messageText = document.getElementById("demoMessageText");
+    let messageRecipient = "";
+
+    document.getElementById("discover").addEventListener("click", (event) => {
+      const followButton = event.target.closest("[data-follow]");
+      if (followButton) {
+        const memberId = followButton.dataset.follow;
+        const isFollowing = followedMembers.has(memberId);
+        if (isFollowing) followedMembers.delete(memberId);
+        else followedMembers.add(memberId);
+        const followingNow = followedMembers.has(memberId);
+        followButton.classList.toggle("is-following", followingNow);
+        followButton.setAttribute("aria-pressed", String(followingNow));
+        followButton.textContent = followingNow ? "✓ Following" : "＋ Follow";
+        showToast(followingNow ? "You are now following this demo creator." : "You unfollowed this demo creator.");
+        return;
+      }
+
+      const messageButton = event.target.closest("[data-message]");
+      if (messageButton) {
+        messageRecipient = messageButton.dataset.message;
+        document.getElementById("messageTitle").textContent = "Message " + messageRecipient;
+        messageText.value = "";
+        messageDialog.showModal();
+        messageText.focus();
+      }
+    });
+
+    document.getElementById("cancelMessage").addEventListener("click", () => messageDialog.close());
+    messageForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const body = messageText.value.trim();
+      if (!body) return;
+      messageDialog.close();
+      showToast("Demo message prepared for " + messageRecipient + ". It was not sent.");
+      messageForm.reset();
+    });
 
     feed.addEventListener("click", (event) => {
       const button = event.target.closest("button");
