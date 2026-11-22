@@ -102,6 +102,8 @@ jobs:
 
           checks = {
               "public Verified+ page shows all three approved prices": "₦7,500" in public_pricing_page and "₦75,000" in public_pricing_page and "₦320,000" in public_pricing_page,
+              "public Verified+ page embeds its DCDS logo and icons for standalone viewing": 'src="data:image/png;base64,' in public_pricing_page and 'href="data:image/svg+xml,' in public_pricing_page and './assets/dcds-splash-icon-v4-192.png' not in public_pricing_page,
+              "public comparison is mobile-friendly without sideways table scrolling": 'class="compare-mobile"' in public_pricing_page and "compare-wrap{display:none}" in public_pricing_page and "Membership duration" in public_pricing_page,
               "public Verified+ page preserves the plan labels and annual emphasis": "Recommended" in public_pricing_page and "Best annual value" in public_pricing_page and "Long-term membership" in public_pricing_page and "BEST ANNUAL VALUE" in public_pricing_page,
               "public Verified+ page is responsive and accessible": 'name="viewport"' in public_pricing_page and "Skip to content" in public_pricing_page and 'aria-label="Main navigation"' in public_pricing_page and "@media(max-width:760px)" in public_pricing_page and "prefers-reduced-motion:reduce" in public_pricing_page,
               "public Verified+ page explains the two-part badge gate": "identity approval" in public_pricing_page and "active paid membership" in public_pricing_page,
