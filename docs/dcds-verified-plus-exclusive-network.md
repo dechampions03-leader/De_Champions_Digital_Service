@@ -117,7 +117,20 @@ Support in-network reshares by permitted accounts using an attributed reference 
 - A DCDS-member feed item remains limited to signed-in DCDS accounts when reshared.
 - When an original item is deleted, withdrawn or restricted, derived reshares must stop revealing its content.
 
-Direct messaging is not included by this specification. Existing Student Community direct-message restrictions remain in force.
+### Member discovery, Follow and Message
+
+Provide member discovery cards and profile views that make an eligible member's approved identity and creator presentation visible without exposing private information.
+
+- Display the DCDS Blue Badge as a blue scalloped rosette/starburst with a clear white check. Use a larger mark on the profile/header, a medium mark beside names on posts, and a compact mark in comments and member lists.
+- Render the Blue Badge only from the server-confirmed combination of approved identity status and the required active Verified+ entitlement. A badge in a mockup, user-uploaded image or client-side profile field is never proof of approval.
+- Show a separate **Creator** label where the member has enabled/qualified for that profile designation. Creator is not identity verification, a professional licence, or a membership entitlement.
+- Provide Follow/Unfollow controls. Follow relationships must respect discoverability preferences, blocks and mutes; expose only the minimum relationship information the member has chosen to make visible.
+- Provide a Message action that opens a controlled message-request or conversation flow. Message permissions, recipient contact preferences, anti-spam rate limits, block/report actions, attachment controls, retention and audit rules must be enforced server-side.
+- Direct messaging in the Verified+ network is a separate adult-member feature. Do not enable it for minors or accounts with unresolved age eligibility. Keep the existing Student Community no-direct-message and supervised-session rules unchanged.
+- Do not reveal private email addresses, phone numbers, identity data or off-platform handles through Follow or Message actions.
+- These controls remain disabled in production until the age/safeguarding policy, privacy design, access model, moderation workflow and backend authorization have passed their release gates.
+
+The existing Student Community direct-message restrictions remain in force; this Verified+ feature does not change them.
 
 ## 6. Content ownership, privacy and audience lifecycle
 
@@ -125,7 +138,9 @@ Direct messaging is not included by this specification. Existing Student Communi
 - The default network audience is all signed-in DCDS accounts. A post is not visible to signed-out visitors. Never expose the private source record or fields outside the explicitly selected, approved excerpt.
 - Make the audience visible on every post and share card.
 - Never reveal a private member's email address, phone number, home address, legal name or identity evidence through a post, profile preview, API response or interaction list.
-- Respect block and mute rules across feed retrieval, search, comments, replies, reactions, reposts and notifications.
+- Respect block and mute rules across feed retrieval, search, comments, replies, reactions, reposts, follows, message requests and notifications.
+- Respect profile discoverability and contact preferences when resolving Follow and Message actions.
+- Keep direct messages private from the public network feed; apply recipient controls, rate limits, report/block paths and approved retention rules.
 - When an author deletes a post or withdraws sharing permission, remove it from network feeds and stop derived shares from displaying its content.
 - Keep only the minimal audit/retention record required by the approved policy; do not retain removed media as a publicly reachable object.
 - Offer reporting, moderation review, account restrictions and appeals with reason-coded audit events.
@@ -181,6 +196,7 @@ Possible domain objects:
 - `dcds_verified_reposts` — attributed in-network shares;
 - `dcds_verified_bookmarks` — private member saves;
 - `dcds_verified_follows` — member follow relationships;
+- `dcds_verified_message_threads`, `dcds_verified_messages`, `dcds_verified_message_requests` — candidate private messaging objects, only after age, privacy, safeguarding, moderation and RLS design approval;
 - `dcds_verified_reports` — member reports;
 - `dcds_verified_moderation_actions` — restricted moderation audit;
 - `dcds_verified_feature_entitlements` — server-computed access only if not already provided by the central entitlement service.
@@ -202,9 +218,9 @@ Every exposed table requires deliberate RLS, grants and indexes. Policies must v
 
 ## 10A. Synthetic UI prototype
 
-A standalone [Verified+ community preview](../verified-plus-community-preview.html) has been added on the feature branch. It demonstrates the signed-in DCDS-wide feed, a role switch between Verified+ publisher and standard/unverified engager, a gated post composer, emoji reactions, comments, replies and attributed in-network reshares.
+A standalone [Verified+ community preview](../verified-plus-community-preview.html) has been updated on the feature branch. It demonstrates the signed-in DCDS-wide feed, the blue rosette-and-white-check identity badge at multiple sizes, separate Verified+ Member and Creator labels, richer creator/member discovery cards, Follow/Unfollow buttons, a local Message composer, a role switch between Verified+ publisher and standard/unverified engager, a gated post composer, emoji reactions, comments, replies and attributed in-network reshares.
 
-The preview is static and self-contained. It does not call an API, connect to Supabase, read an authenticated account, persist state, or send content outside the browser page. All changes disappear when the page is reloaded. It is not linked from the live homepage and is not a production feature.
+The preview is self-contained and uses synthetic profiles, badge states and sample posts. Follow/Unfollow changes are held in page memory only. The Message action opens a local demonstration composer; submitting it only displays a confirmation and does not send a message. The preview does not call an API, connect to Supabase, read an authenticated account, persist state, or send content outside the browser page. All changes disappear when the page is reloaded. It is not linked from the live homepage and is not a production feature.
 
 A GitHub Actions check validates that these boundaries remain true and that the existing teen-community safety rules remain present.
 
@@ -217,9 +233,12 @@ The exclusive network is not ready until all of the following are demonstrated:
 - Active Verified+ members can publish original posts. Standard/unverified signed-in accounts can view, react, comment, reply and reshare attributed cards without captions. All interactions remain inside the signed-in DCDS audience.
 - Changing or deleting a source item cannot leave an accessible stale copy or widened repost.
 - Blocks, mutes, reports, moderation and rate limits apply consistently across every interaction.
+- Eligible members can follow/unfollow within privacy and discoverability controls.
+- Message requests and direct messages are restricted to age-eligible accounts, respect recipient contact preferences, and support blocking, reporting, rate limits and privacy controls.
+- The blue rosette-and-white-check badge appears only when the trusted server-side identity and entitlement conditions are satisfied; the Creator label remains a separate profile designation.
 - Expired/suspended/revoked members cannot continue member-only access or interaction using stale sessions or client-side state.
 - Private AI conversations, student records, grades, identity documents, payment information and guardian data never appear in the feed by default.
 - Existing supervised teen-community controls remain intact.
 - All permissions are enforced server-side and tested with distinct account roles and membership states.
 
-**Current result:** The DCDS-wide viewing/engagement model, Verified+ original-publishing privilege and strict brand-only enforcement policy are specified. The static role-switch preview is illustrative only; no database tables, moderation engine, feed endpoints, access policies or production behaviour have been enabled.
+**Current result:** The DCDS-wide viewing/engagement model, Verified+ original-publishing privilege, blue rosette-and-white-check badge presentation, separate Creator profile label, Follow/Unfollow concept, gated Message concept and strict brand-only enforcement policy are specified. The updated standalone preview is illustrative only; Follow and Message interactions are local simulations. No database tables, messaging service, moderation engine, feed endpoints, access policies or production behaviour have been enabled.
