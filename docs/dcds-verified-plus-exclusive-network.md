@@ -33,7 +33,7 @@ Do not weaken or replace the existing student safety specification.
 
 The new Verified+ network requires both:
 1. a trusted DCDS identity decision that satisfies the launch eligibility rules; and
-2. an active Verified+ membership entitlement (monthly or lifetime).
+2. an active Verified+ membership entitlement (Monthly for 30 days or Annual for 12 months).
 
 Payment alone does not grant identity verification. Identity verification alone does not grant an active paid membership. A normal student/community approval does not satisfy either condition automatically.
 
@@ -148,12 +148,14 @@ The existing Student Community direct-message restrictions remain in force; this
 
 ## 7. Expiry, suspension and revocation
 
-When a monthly Verified+ membership expires or an entitlement is suspended:
+Verified+ offers only two paid durations: Monthly (30 days) and Annual (12 months). There is no lifetime membership. The network must derive current access from the server-confirmed paid-through timestamp for either plan.
+
+When a Monthly (30-day) or Annual (12-month) Verified+ membership expires, or an entitlement is suspended:
 - immediately block new original publishing and other Verified+-only privileges. General DCDS feed viewing/engagement remains available only where account status and any restriction permit it;
 - do not delete the member's original content or history merely because membership expired;
 - preserve ownership and the member's access to lawful account/data export and support paths;
 - keep existing network content available to signed-in DCDS accounts while the author's account and the item remain eligible; keep source records and private data hidden;
-- provide a clear renewal/reactivation experience.
+- provide a clear renewal/reactivation experience. Monthly and Annual terms must be presented accurately; an Annual entitlement expires after 12 months and is not perpetual.
 
 When identity verification is suspended or revoked for a security or policy reason, recalculate dependent entitlements server-side and apply the relevant access restriction. Preserve the decision and audit history. Do not silently change payment, wallet, payout, course-enrolment or VTU records.
 
