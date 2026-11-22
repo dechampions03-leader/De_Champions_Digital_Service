@@ -227,3 +227,25 @@ jobs:
           path: verified-plus-moderation-preview.html
           if-no-files-found: error
           retention-days: 14
+
+      - name: Validate public Verified+ page JavaScript
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          source = Path("verified-plus.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script>", source, re.DOTALL)
+          if not scripts:
+              raise SystemExit("FAIL no public page script found")
+          Path("/tmp/verified-plus-public-page.js").write_text("\\n".join(scripts), encoding="utf-8")
+          PY
+          node --check /tmp/verified-plus-public-page.js
+
+      - name: Package public Verified+ membership page for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: DCDS-Verified-Plus-Membership-Page
+          path: verified-plus.html
+          if-no-files-found: error
+          retention-days: 14
