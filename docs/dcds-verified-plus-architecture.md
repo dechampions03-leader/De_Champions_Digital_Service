@@ -27,6 +27,9 @@ Verified+ is a paid membership and entitlement layer. It is not a claim that pay
 | Business and professional credentials | Separate verification tracks; identity verification alone does not confer them |
 | Verified+ social network | All signed-in DCDS accounts can view and engage with approved posts; only eligible active Verified+ members can publish original posts |
 | Verified+ interactions | Verified+ members publish original posts; all signed-in accounts can react, comment, reply and reshare attributed cards without captions |
+| Blue Badge presentation | Blue rosette/starburst seal with a white check; scalable sizes beside names, on profiles, posts, comments and member lists |
+| Creator label | Separate profile presentation label; it is not identity verification, a professional credential, or a membership entitlement |
+| Member connections | Member cards provide Follow and Message actions, subject to privacy, age eligibility, contact preferences and safety controls |
 
 | Accounts | One DCDS account and one universal profile; no separate marketplace or membership account |
 
@@ -186,6 +189,12 @@ Do not promise that identity verification makes an account unhackable. Provide b
 **Persistence and RLS design:** [Read the dedicated Verified+ Moderation Persistence and RLS Design](dcds-verified-plus-moderation-persistence-and-rls-design.md). The proposed records are separate from the existing supervised Student Community and remain unimplemented pending schema reconciliation.
 
 The feed is available to all signed-in DCDS accounts. Original publishing is a Verified+ privilege. Standard/unverified accounts may react, comment, reply and reshare an attributed reference card without a caption or external destination. Signed-out visitors receive no feed data.
+
+The official DCDS Verified+ Blue Badge follows the member-provided reference direction: a bright-blue scalloped rosette/starburst with a prominent white check. Use a large, clear mark on member profiles and profile headers, a medium mark beside names on posts, and a compact mark in comments and member lists. The mark is rendered only when the server-confirmed identity decision is approved and the required Verified+ entitlement is active; the frontend must never infer or grant it from a client-controlled flag.
+
+A separate **Creator** profile label may be shown for members who identify with or qualify for the DCDS creator role under the applicable profile rules. It is not a verification badge, does not prove identity or professional qualification, and grants no membership or moderation privilege by itself.
+
+Member discovery cards and profiles should offer **Follow** and **Message** actions so eligible members can build professional connections. Follow state must respect profile visibility, blocks and privacy settings. Direct messages must be permission-checked, opt-in/contact-controlled, rate-limited, reportable and blockable, and must never expose private contact details. Keep the existing supervised Student Community messaging restrictions unchanged. Do not enable Verified+ direct messaging for minors or unresolved age states; the feature remains gated until age eligibility, safeguarding, privacy and server-side controls are approved. The standalone preview simulates these actions locally only.
 
 The network is a brand-only DCDS learning and professional-development space, not a general social-media wall. All text-bearing surfaces and media must pass the Brand Content and Enforcement Policy. External links are blocked unless the exact DCDS-controlled destination is formally allowlisted. Moderation actions are network-scoped, reason-coded, auditable and appealable. Automated checks may block or hold content, but must not permanently ban an account without human Root Administrator review.
 
