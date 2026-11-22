@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#4d167d">
+  <meta name="description" content="Explore DCDS Verified+ membership plans: Monthly, Annual and Five-Year. Compare membership terms, planned benefits and identity verification requirements.">
+  <meta name="robots" content="index,follow">
+  <link rel="canonical" href="https://dechampions03-leader.github.io/De_Champions_Digital_Service/verified-plus.html">
+  <link rel="icon" href="./assets/dcds-splash-icon-v4-192.png" type="image/png" sizes="192x192">
+  <link rel="apple-touch-icon" href="./assets/dcds-splash-icon-v4-192.png">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="De Champions Digital Services">
+  <meta property="og:title" content="DCDS Verified+ Membership">
+  <meta property="og:description" content="One DCDS identity. Three clear membership terms. Discover the Verified+ plans and planned member experience.">
+  <meta property="og:url" content="https://dechampions03-leader.github.io/De_Champions_Digital_Service/verified-plus.html">
+  <meta property="og:image" content="https://dechampions03-leader.github.io/De_Champions_Digital_Service/assets/dcds-app-icon-512.png">
+  <title>DCDS Verified+ Membership | De Champions Digital Services</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      color-scheme:light;
+      --purple:#7628d8;--purple-2:#963ff0;--purple-dark:#451078;--purple-deep:#21083f;
+      --lavender:#f1e6ff;--lavender-soft:#faf6ff;--gold:#e7c875;--gold-deep:#9b6b13;
+      --ink:#261638;--muted:#776a85;--line:#eadff5;--paper:#fff;--surface:#fbf8ff;
+      --shadow:0 18px 48px rgba(74,24,124,.12);--radius:24px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:100px}
+    body{margin:0;color:var(--ink);font-family:"DM Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6;background:
+      radial-gradient(ellipse at 5% 13%,#f1e4ff 0,transparent 32%),
+      radial-gradient(ellipse at 95% 44%,#f2e8ff 0,transparent 29%),
+      linear-gradient(180deg,#fffaff 0%,#f8f2ff 55%,#fffaff 100%)}
+    a{color:inherit;text-decoration:none}
+    button{font:inherit}
+    .container{width:min(1160px,calc(100% - 40px));margin-inline:auto}
+    .skip-link{position:absolute;left:12px;top:-60px;z-index:1000;padding:10px 14px;border-radius:10px;background:#fff;color:var(--purple-dark);font-weight:800}
+    .skip-link:focus{top:12px}
+    .topbar{position:sticky;top:0;z-index:50;background:rgba(255,252,255,.9);border-bottom:1px solid #e8d9f8;backdrop-filter:blur(16px);box-shadow:0 5px 25px rgba(61,17,96,.06)}
+    .nav{min-height:76px;display:flex;align-items:center;justify-content:space-between;gap:22px}
+    .brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .brand img{width:46px;height:46px;flex:0 0 46px;object-fit:contain;border-radius:12px;box-shadow:0 6px 18px rgba(65,25,112,.16)}
+    .brand-word{display:flex;flex-direction:column;gap:3px;line-height:1.15;white-space:nowrap}
+    .brand-word strong{font-size:12px;letter-spacing:.05em;font-weight:900;color:#351052}
+    .brand-word small{font-size:9px;letter-spacing:.19em;font-weight:800;color:#8751b9}
+    .nav-links{display:flex;align-items:center;gap:23px;color:#624d75;font-size:13px;font-weight:750}
+    .nav-links a{transition:color .2s}
+    .nav-links a:hover{color:var(--purple)}
+    .nav-links .current{color:var(--purple);position:relative}
+    .nav-links .current:after{content:"";position:absolute;left:0;right:0;bottom:-9px;height:2px;border-radius:4px;background:linear-gradient(90deg,#9c49e8,#e5c273)}
+    .nav-actions{display:flex;align-items:center;gap:9px}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:9px;min-height:45px;padding:11px 17px;border:1px solid transparent;border-radius:14px;font-size:13px;font-weight:850;transition:transform .2s,box-shadow .2s,border-color .2s;cursor:pointer}
+    .btn:hover{transform:translateY(-2px);box-shadow:0 10px 23px rgba(51,13,87,.16)}
+    .btn-primary{color:#fff;background:linear-gradient(120deg,#a34cf0,#7526ce 52%,#4c147e);box-shadow:0 8px 20px rgba(118,40,216,.22)}
+    .btn-soft{color:var(--purple-dark);background:#f3eaff;border-color:#e8d9f7}
+    .btn-white{background:#fff;color:var(--purple-dark);box-shadow:0 8px 22px rgba(34,8,63,.14)}
+    .mobile-toggle{display:none;width:42px;height:42px;border:1px solid var(--line);border-radius:13px;background:#fff;color:var(--purple-dark);align-items:center;justify-content:center}
+    .mobile-menu{display:none;position:absolute;top:calc(100% + 1px);left:0;right:0;padding:12px 20px 18px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 18px 35px rgba(36,16,57,.15)}
+    .mobile-menu[hidden]{display:none}
+    .mobile-menu a{display:flex;justify-content:space-between;padding:13px 4px;border-bottom:1px solid #f0e8f7;color:#4b2670;font-size:13px;font-weight:800}
+    .launch-note{background:linear-gradient(90deg,#351052,#59218b);color:#fff;text-align:center;padding:9px 15px;font-size:11px;font-weight:750;letter-spacing:.035em}
+    .launch-note strong{color:#ffe4a3}
+    .hero{position:relative;overflow:hidden;padding:76px 0 70px;background:
+      radial-gradient(ellipse at 80% 18%,rgba(197,144,255,.36) 0,transparent 34%),
+      radial-gradient(ellipse at 4% 100%,rgba(191,143,244,.22) 0,transparent 42%),
+      linear-gradient(145deg,#fff 0%,#fbf7ff 54%,#f5eaff 100%)}
+    .hero:before{content:"";position:absolute;width:520px;height:520px;right:-190px;top:-250px;border:1px solid rgba(139,66,210,.12);border-radius:50%;box-shadow:0 0 0 48px rgba(139,66,210,.035),0 0 0 96px rgba(139,66,210,.025)}
+    .hero:after{content:"";position:absolute;left:-130px;bottom:-280px;width:390px;height:390px;border:1px solid rgba(139,66,210,.1);border-radius:50%;box-shadow:0 0 0 42px rgba(139,66,210,.035),0 0 0 84px rgba(139,66,210,.025)}
+    .hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:1.1fr .9fr;align-items:center;gap:58px}
+    .eyebrow{display:inline-flex;align-items:center;gap:8px;padding:8px 13px;border:1px solid #e3d2f5;border-radius:99px;background:rgba(255,255,255,.75);color:#7a31c4;font-size:10px;font-weight:900;letter-spacing:.18em;text-transform:uppercase}
+    .eyebrow i{display:block;width:7px;height:7px;border-radius:50%;background:#9b50e3;box-shadow:0 0 0 4px #ead9fa}
+    h1,h2,h3,p{margin-top:0}
+    .hero h1{max-width:690px;margin:22px 0 17px;color:#32114f;font-family:"Playfair Display",Georgia,serif;font-size:clamp(43px,6vw,72px);line-height:1.045;letter-spacing:-.045em;font-weight:800}
+    .hero h1 em{font-style:normal;background:linear-gradient(100deg,#a344e8 0%,#7524c9 55%,#4c147e 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .hero-copy{max-width:600px;margin:0 0 27px;color:#746581;font-size:16px;line-height:1.85}
+    .hero-actions{display:flex;flex-wrap:wrap;gap:11px}
+    .hero-foot{display:flex;align-items:center;gap:11px;margin-top:22px;color:#796d88;font-size:11px;font-weight:700}
+    .avatars{display:flex;align-items:center}
+    .avatars span{display:grid;place-items:center;width:27px;height:27px;margin-left:-6px;border:2px solid #fff;border-radius:50%;background:linear-gradient(145deg,#e5d1fa,#9c65d2);color:#fff;font-size:9px;font-weight:900}
+    .avatars span:first-child{margin-left:0}
+    .hero-showcase{position:relative;max-width:460px;margin-left:auto;width:100%}
+    .showcase-glow{position:absolute;inset:8% 4%;border-radius:50%;background:#c58df7;filter:blur(65px);opacity:.28}
+    .showcase-card{position:relative;padding:30px;border:1px solid rgba(255,255,255,.88);border-radius:30px;background:linear-gradient(145deg,rgba(255,255,255,.94),rgba(249,241,255,.84));box-shadow:0 28px 75px rgba(75,25,120,.16),inset 0 1px 0 #fff;backdrop-filter:blur(16px)}
+    .showcase-top{display:flex;align-items:center;justify-content:space-between;gap:12px}
+    .showcase-top small{color:#8b60ad;font-size:9px;font-weight:900;letter-spacing:.17em}
+    .live-preview{padding:6px 10px;border-radius:99px;background:#f4edfb;color:#7141a0;font-size:9px;font-weight:900;letter-spacing:.09em}
+    .badge-stage{display:grid;place-items:center;padding:22px 0 12px}
+    .badge-svg{width:126px;height:126px;filter:drop-shadow(0 13px 22px rgba(102,45,161,.22))}
+    .showcase-card h2{text-align:center;margin:8px 0 4px;color:#381359;font-family:"Playfair Display",Georgia,serif;font-size:31px;letter-spacing:-.025em}
+    .showcase-card>p{text-align:center;margin:0;color:#81728e;font-size:12px}
+    .status-list{display:grid;gap:10px;margin-top:22px}
+    .status-row{display:flex;align-items:center;gap:11px;padding:11px 13px;border:1px solid #eee3f7;border-radius:14px;background:#fff}
+    .status-icon{display:grid;place-items:center;width:30px;height:30px;flex:0 0 30px;border-radius:10px;background:#f1e5ff;color:#7c31c8;font-size:14px}
+    .status-row strong{display:block;color:#49216a;font-size:11px}
+    .status-row small{display:block;color:#8a7c97;font-size:10px}
+    .hero-micro{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:15px}
+    .micro-stat{padding:12px 9px;border:1px solid #ecdef7;border-radius:13px;background:rgba(255,255,255,.72);text-align:center}
+    .micro-stat strong{display:block;color:#5b208f;font-size:16px;font-weight:900}
+    .micro-stat span{display:block;color:#8b7b98;font-size:9px;font-weight:750}
+    .trust-row{border-top:1px solid #eee4f7;border-bottom:1px solid #eee4f7;background:rgba(255,255,255,.78)}
+    .trust-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;padding:19px 0}
+    .trust-item{display:flex;align-items:center;justify-content:center;gap:9px;color:#675577;font-size:11px;font-weight:800;text-align:center}
+    .trust-item b{display:grid;place-items:center;width:24px;height:24px;border-radius:8px;background:#f0e4ff;color:#8033c8;font-size:13px}
+    .section{padding:84px 0}
+    .section-white{background:linear-gradient(145deg,#fff 0%,#fbf7ff 53%,#fff 100%)}
+    .section-head{text-align:center;max-width:760px;margin:0 auto 40px}
+    .kicker{color:#8c36dc;font-size:10px;font-weight:950;letter-spacing:.22em;text-transform:uppercase}
+    .section-head h2{margin:12px 0 12px;color:#351052;font-family:"Playfair Display",Georgia,serif;font-size:clamp(31px,4.4vw,48px);line-height:1.12;letter-spacing:-.03em}
+    .section-head p{max-width:650px;margin:0 auto;color:#7a6d86;font-size:14px;line-height:1.8}
+    .pricing-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:20px;align-items:stretch;margin-top:18px}
+    .plan{position:relative;display:flex;flex-direction:column;min-width:0;padding:26px 23px 23px;border:1px solid #e8dcf2;border-radius:23px;background:linear-gradient(150deg,#fff 0%,#fdfaff 100%);box-shadow:0 12px 32px rgba(45,17,72,.07);transition:transform .24s,box-shadow .24s,border-color .24s}
+    .plan:hover{transform:translateY(-5px);border-color:#d0b2ed;box-shadow:0 22px 48px rgba(74,24,124,.13)}
+    .plan.featured{z-index:2;transform:translateY(-15px);border:2px solid #a44be9;padding:25px 22px 22px;box-shadow:0 25px 62px rgba(119,42,186,.2),0 0 0 7px rgba(176,113,228,.08);background:linear-gradient(155deg,#fff 0%,#fcf7ff 65%,#f4e8ff 100%)}
+    .plan.featured:hover{transform:translateY(-20px)}
+    .plan-label{display:inline-flex;align-items:center;align-self:flex-start;min-height:27px;padding:5px 11px;border-radius:99px;background:#f2e8fb;color:#7534af;font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase}
+    .plan.featured .plan-label{background:linear-gradient(100deg,#9c3ee8,#6c1cb6);color:#fff}
+    .plan.long .plan-label{background:#fbf3dd;color:#906311}
+    .popular{position:absolute;left:50%;top:-14px;transform:translateX(-50%);display:inline-flex;align-items:center;gap:5px;padding:6px 14px;border-radius:99px;background:linear-gradient(100deg,#7c27c9,#b34ff0);color:#fff;font-size:9px;font-weight:950;letter-spacing:.1em;text-transform:uppercase;box-shadow:0 7px 18px rgba(118,40,216,.28);white-space:nowrap}
+    .plan h3{margin:17px 0 2px;color:#381457;font-size:20px;font-weight:900;letter-spacing:-.03em}
+    .plan-duration{margin:0;color:#81728c;font-size:11px;font-weight:650}
+    .price-line{display:flex;align-items:baseline;gap:6px;margin:23px 0 3px;white-space:nowrap}
+    .price{color:#251238;font-size:clamp(30px,3.1vw,39px);font-weight:950;letter-spacing:-.065em;line-height:1.1}
+    .price-unit{color:#80718c;font-size:11px;font-weight:750}
+    .billing{margin:6px 0 17px;color:#8c7f96;font-size:10px}
+    .saving{min-height:61px;margin:0 0 17px;padding:12px;border:1px solid #f0e5fb;border-radius:13px;background:linear-gradient(110deg,#fbf7ff,#fff);color:#685477;font-size:11px;line-height:1.6}
+    .saving strong{color:#7426bf}
+    .saving.neutral{background:#faf7fc}
+    .plan-divider{height:1px;margin:0 0 12px;background:#eee5f5}
+    .plan-features{display:grid;gap:10px;margin:0;padding:0;list-style:none;color:#584966;font-size:11px}
+    .plan-features li{display:flex;gap:9px;align-items:flex-start}
+    .check{display:grid;place-items:center;width:18px;height:18px;flex:0 0 18px;border-radius:50%;background:linear-gradient(145deg,#a64ef0,#7025c4);color:#fff;font-size:10px;font-weight:950}
+    .plan-cta{width:100%;margin-top:auto;padding-top:21px}
+    .plan .btn{width:100%;min-height:43px;font-size:11px}
+    .plan-note{margin:12px 0 0;text-align:center;color:#91849b;font-size:9px;line-height:1.6}
+    .pricing-footnote{max-width:800px;margin:29px auto 0;text-align:center;color:#81748e;font-size:11px;line-height:1.8}
+    .pricing-footnote strong{color:#5f347e}
+    .verification-banner{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:18px;margin-top:35px;padding:21px 24px;border:1px solid #e5d4f4;border-radius:20px;background:radial-gradient(ellipse at 100% 0%,#f0e1ff 0,transparent 43%),linear-gradient(110deg,#fff,#faf5ff);box-shadow:0 9px 24px rgba(62,22,95,.06)}
+    .verification-symbol{display:grid;place-items:center;width:48px;height:48px;border-radius:15px;background:linear-gradient(145deg,#eee0ff,#d4b0fa);color:#61239a;font-size:22px}
+    .verification-banner h3{margin:0 0 3px;color:#3f185e;font-size:14px}
+    .verification-banner p{margin:0;color:#7d6e89;font-size:11px;line-height:1.65}
+    .verification-banner .separate{padding:7px 10px;border-radius:99px;background:#fff3d8;color:#8b610c;font-size:9px;font-weight:950;letter-spacing:.07em;white-space:nowrap}
+    .benefit-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:17px}
+    .benefit{position:relative;overflow:hidden;min-width:0;padding:23px;border:1px solid #eadff4;border-radius:19px;background:linear-gradient(150deg,#fff,#fcf9ff);box-shadow:0 9px 25px rgba(50,20,82,.045)}
+    .benefit:after{content:"";position:absolute;right:-28px;top:-35px;width:110px;height:110px;border-radius:50%;background:radial-gradient(circle,#ead7ff 0,rgba(234,215,255,0) 70%);pointer-events:none}
+    .benefit-icon{display:grid;place-items:center;width:43px;height:43px;border-radius:14px;background:linear-gradient(145deg,#f1e5ff,#e4d0fb);color:#7628c3;font-size:19px}
+    .benefit h3{margin:14px 0 6px;color:#3a1756;font-size:15px}
+    .benefit p{margin:0;color:#7b6e87;font-size:11px;line-height:1.75}
+    .planned-note{margin:23px auto 0;padding:13px 16px;border-left:3px solid #d5b36c;border-radius:0 12px 12px 0;background:#fffaf0;color:#7a6847;font-size:11px;line-height:1.7}
+    .steps-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;counter-reset:steps}
+    .step{position:relative;padding:20px;border:1px solid #e9def3;border-radius:18px;background:#fff;box-shadow:0 8px 20px rgba(47,19,73,.045)}
+    .step-number{display:grid;place-items:center;width:34px;height:34px;border-radius:11px;background:linear-gradient(145deg,#f2e7ff,#e5d1fb);color:#7529bb;font-size:12px;font-weight:950}
+    .step h3{margin:14px 0 6px;color:#421966;font-size:13px}
+    .step p{margin:0;color:#81748c;font-size:10px;line-height:1.7}
+    .coverage-note{margin-top:20px;padding:16px 18px;border:1px solid #dfd0ee;border-radius:15px;background:rgba(255,255,255,.75);color:#766782;font-size:11px;line-height:1.75}
+    .coverage-note strong{color:#502174}
+    .compare-wrap{overflow-x:auto;border:1px solid #e8def2;border-radius:20px;background:#fff;box-shadow:0 12px 30px rgba(47,19,73,.05)}
+    .compare{width:100%;border-collapse:collapse;min-width:650px}
+    .compare th,.compare td{padding:16px 18px;text-align:center;border-bottom:1px solid #f0e9f6;font-size:11px}
+    .compare thead th{background:#f8f2ff;color:#4c1b73;font-size:11px;font-weight:950}
+    .compare thead th:first-child{text-align:left;border-radius:18px 0 0 0}
+    .compare tbody th{text-align:left;color:#625071;font-weight:800}
+    .compare td{color:#70617e;font-weight:650}
+    .compare tr:last-child th,.compare tr:last-child td{border-bottom:0}
+    .compare .annual-col{background:#fdf9ff}
+    .compare .price-cell{color:#4e197d;font-weight:950;font-size:13px}
+    .faq-list{display:grid;gap:11px;max-width:880px;margin:0 auto}
+    .faq-item{border:1px solid #e9def3;border-radius:16px;background:#fff;box-shadow:0 6px 18px rgba(50,20,82,.035);overflow:hidden}
+    .faq-item summary{display:flex;align-items:center;justify-content:space-between;gap:15px;padding:17px 19px;list-style:none;color:#431866;font-size:12px;font-weight:900;cursor:pointer}
+    .faq-item summary::-webkit-details-marker{display:none}
+    .faq-item summary:after{content:"+";display:grid;place-items:center;width:25px;height:25px;flex:0 0 25px;border-radius:8px;background:#f1e5ff;color:#7628c3;font-size:17px;font-weight:600;transition:transform .2s}
+    .faq-item[open] summary:after{content:"−";transform:rotate(180deg)}
+    .faq-answer{padding:0 19px 17px;color:#7b6e87;font-size:11px;line-height:1.8}
+    .faq-answer p{margin:0 0 8px}
+    .faq-answer p:last-child{margin-bottom:0}
+    .cta{position:relative;overflow:hidden;padding:65px 0;background:radial-gradient(ellipse at 85% 0%,#9e53d6 0,transparent 35%),linear-gradient(115deg,#250b40,#4d167d 61%,#7023b7);color:#fff;text-align:center}
+    .cta:before{content:"";position:absolute;left:-150px;bottom:-290px;width:440px;height:440px;border:1px solid #ffffff20;border-radius:50%;box-shadow:0 0 0 45px #ffffff08,0 0 0 90px #ffffff05}
+    .cta-inner{position:relative;z-index:1;max-width:760px;margin:0 auto}
+    .cta .kicker{color:#f4d98e}
+    .cta h2{margin:12px 0;color:#fff;font-family:"Playfair Display",Georgia,serif;font-size:clamp(31px,4.2vw,47px);line-height:1.12}
+    .cta p{margin:0 auto 22px;color:#eadcf8;font-size:13px;line-height:1.8}
+    .cta-actions{display:flex;justify-content:center;gap:11px;flex-wrap:wrap}
+    .cta .btn-soft{background:#ffffff15;border-color:#ffffff35;color:#fff}
+    .footer{padding:33px 0 28px;background:#1b092e;color:#fff}
+    .footer-main{display:flex;align-items:flex-start;justify-content:space-between;gap:28px}
+    .footer-brand strong{font-size:13px;letter-spacing:.06em}
+    .footer-brand p{margin:5px 0;color:#cdbbdf;font-size:10px}
+    .footer-links{display:flex;flex-wrap:wrap;gap:17px}
+    .footer-links a{color:#e8d9f5;font-size:10px;font-weight:800}
+    .footer-links a:hover{text-decoration:underline;text-underline-offset:4px}
+    .footer-bottom{display:flex;justify-content:space-between;gap:15px;margin-top:24px;padding-top:16px;border-top:1px solid #ffffff20;color:#bdaaca;font-size:9px}
+    .footer-bottom a{color:#e6d2fa;font-weight:800}
+    .disclaimer{margin:22px auto 0;padding:12px 15px;border:1px solid #ffffff20;border-radius:12px;background:#ffffff0a;color:#d3c2e2;font-size:9px;line-height:1.7}
+    .reveal{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .7s cubic-bezier(.2,.75,.25,1)}
+    .reveal.visible{opacity:1;transform:translateY(0)}
+    a:focus-visible,button:focus-visible,summary:focus-visible{outline:3px solid #d6b5ff;outline-offset:3px}
+    @media(max-width:980px){
+      .nav-links{gap:13px;font-size:11px}
+      .nav .btn{padding:10px 12px;font-size:11px}
+      .hero-grid{gap:35px}
+      .hero h1{font-size:clamp(42px,6vw,60px)}
+      .plan{padding:23px 18px}
+      .plan.featured{padding:22px 17px}
+      .price{font-size:32px}
+    }
+    @media(max-width:760px){
+      .container{width:calc(100% - 30px)}
+      .nav{min-height:68px}
+      .nav-links{display:none}
+      .nav .nav-cta{display:none}
+      .mobile-toggle{display:flex}
+      .mobile-menu:not([hidden]){display:block}
+      .hero{padding:57px 0 52px}
+      .hero-grid{grid-template-columns:1fr;gap:33px}
+      .hero-copy{font-size:14px}
+      .hero-showcase{max-width:460px;margin:0 auto}
+      .trust-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px 8px}
+      .trust-item{font-size:10px;justify-content:flex-start}
+      .section{padding:65px 0}
+      .pricing-grid{grid-template-columns:1fr;max-width:490px;margin:0 auto;gap:17px}
+      .plan,.plan.featured{padding:24px 22px;transform:none}
+      .plan.featured:hover{transform:translateY(-4px)}
+      .plan.featured{order:0;margin-top:7px}
+      .plan h3{font-size:19px}
+      .price{font-size:39px}
+      .saving{min-height:0}
+      .benefit-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .steps-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .verification-banner{grid-template-columns:auto 1fr;gap:12px;padding:17px}
+      .verification-banner .separate{grid-column:2;justify-self:start}
+      .footer-main{flex-direction:column}
+    }
+    @media(max-width:480px){
+      .brand img{width:40px;height:40px;flex-basis:40px}
+      .brand-word strong{font-size:10px}
+      .brand-word small{font-size:8px}
+      .launch-note{font-size:9px;line-height:1.6}
+      .hero h1{font-size:43px}
+      .hero-actions .btn{width:100%}
+      .showcase-card{padding:22px}
+      .badge-svg{width:108px;height:108px}
+      .hero-micro{gap:7px}
+      .micro-stat{padding:10px 5px}
+      .micro-stat strong{font-size:14px}
+      .micro-stat span{font-size:8px}
+      .section-head h2{font-size:34px}
+      .benefit-grid{grid-template-columns:1fr}
+      .steps-grid{grid-template-columns:1fr}
+      .verification-banner{grid-template-columns:1fr;text-align:left}
+      .verification-banner .separate{grid-column:1}
+      .footer-bottom{flex-direction:column}
+      .cta-actions .btn{width:100%}
+    }
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+      .reveal{opacity:1;transform:none}
+    }
+  </style>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="topbar">
+    <div class="container nav">
+      <a class="brand" href="index.html" aria-label="De Champions Digital Services home">
+        <img src="./assets/dcds-splash-icon-v4-192.png" alt="DCDS logo" width="192" height="192">
+        <span class="brand-word"><strong>DE CHAMPIONS</strong><small>DIGITAL SERVICES</small></span>
+      </a>
+      <nav class="nav-links" aria-label="Main navigation">
+        <a href="index.html">Home</a>
+        <a href="#plans">Membership plans</a>
+        <a href="#benefits">Benefits</a>
+        <a href="#how-it-works">How it works</a>
+        <a href="#faq">FAQs</a>
+      </nav>
+      <div class="nav-actions">
+        <a class="btn btn-primary nav-cta" href="#plans">Explore plans <span aria-hidden="true">↗</span></a>
+        <button class="mobile-toggle" id="mobileToggle" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileMenu">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+    <nav class="mobile-menu" id="mobileMenu" aria-label="Mobile navigation" hidden>
+      <a href="index.html">Home <span>↗</span></a>
+      <a href="#plans">Membership plans <span>↓</span></a>
+      <a href="#benefits">Benefits <span>↓</span></a>
+      <a href="#how-it-works">How it works <span>↓</span></a>
+      <a href="#faq">FAQs <span>↓</span></a>
+    </nav>
+  </header>
+
+  <div class="launch-note"><strong>VERIFIED+ PRODUCT PREVIEW</strong> &nbsp; Membership checkout and identity verification are not live yet. Please do not send payment for these plans.</div>
+
+  <main id="main">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="container hero-grid">
+        <div class="hero-copy-block reveal">
+          <span class="eyebrow"><i aria-hidden="true"></i> DCDS VERIFIED+ MEMBERSHIP</span>
+          <h1 id="hero-title">Your next chapter deserves a <em>stronger identity.</em></h1>
+          <p class="hero-copy">One DCDS account. A clearer way to present your identity, connect with the DCDS community and access a planned set of premium member experiences.</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="#plans">Explore membership plans <span aria-hidden="true">→</span></a>
+            <a class="btn btn-soft" href="#how-it-works">Understand verification</a>
+          </div>
+          <div class="hero-foot">
+            <span class="avatars" aria-hidden="true"><span>D</span><span>C</span><span>+</span></span>
+            <span>Built around identity, privacy and responsible access.</span>
+          </div>
+        </div>
+
+        <div class="hero-showcase reveal">
+          <div class="showcase-glow" aria-hidden="true"></div>
+          <div class="showcase-card">
+            <div class="showcase-top"><small>THE DCDS IDENTITY EXPERIENCE</small><span class="live-preview">DESIGN PREVIEW</span></div>
+            <div class="badge-stage">
+              <svg class="badge-svg" viewBox="0 0 140 140" role="img" aria-label="Illustration of the planned blue Verified+ identity badge">
+                <defs><linearGradient id="blueBadgeFill" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4ea2ff"/><stop offset="1" stop-color="#1264d9"/></linearGradient></defs>
+                <path d="M70 5 81 13 95 9 102 22 116 25 117 40 130 49 125 63 134 76 124 88 126 103 111 109 106 124 91 124 79 136 66 128 52 134 42 121 27 119 25 104 12 95 17 81 7 68 17 56 14 41 28 34 33 20 48 20 59 7Z" fill="url(#blueBadgeFill)" stroke="#fff" stroke-width="3"/>
+                <path d="m42 72 18 18 39-42" fill="none" stroke="#fff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </div>
+            <h2>Verified+ Identity</h2>
+            <p>A badge is earned through verification, not purchased.</p>
+            <div class="status-list">
+              <div class="status-row"><span class="status-icon" aria-hidden="true">✓</span><span><strong>Identity decision</strong><small>Must be approved through a supported verification route</small></span></div>
+              <div class="status-row"><span class="status-icon" aria-hidden="true">◇</span><span><strong>Active membership</strong><small>Must have a current paid membership term</small></span></div>
+            </div>
+          </div>
+          <div class="hero-micro" aria-label="Membership options">
+            <div class="micro-stat"><strong>30 days</strong><span>Monthly</span></div>
+            <div class="micro-stat"><strong>12 months</strong><span>Annual</span></div>
+            <div class="micro-stat"><strong>60 months</strong><span>Five-Year</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="trust-row" aria-label="Membership principles">
+      <div class="container trust-grid">
+        <div class="trust-item"><b aria-hidden="true">◇</b> One DCDS account</div>
+        <div class="trust-item"><b aria-hidden="true">✓</b> Identity-first badge</div>
+        <div class="trust-item"><b aria-hidden="true">◎</b> Privacy-conscious design</div>
+        <div class="trust-item"><b aria-hidden="true">↻</b> Clear membership expiry</div>
+      </div>
+    </section>
+
+    <section class="section" id="plans" aria-labelledby="plans-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">CHOOSE YOUR MEMBERSHIP</span>
+          <h2 id="plans-title">Three ways to move forward.</h2>
+          <p>Every plan is built around the same Verified+ membership experience. Choose the term that suits you—short and flexible, annual value or long-term access.</p>
+        </div>
+
+        <div class="pricing-grid">
+          <article class="plan reveal" aria-labelledby="monthly-title">
+            <span class="plan-label">Recommended</span>
+            <h3 id="monthly-title">Monthly</h3>
+            <p class="plan-duration">30-day membership</p>
+            <div class="price-line"><span class="price">₦7,500</span><span class="price-unit">/ 30 days</span></div>
+            <p class="billing">One payment for one 30-day term</p>
+            <div class="saving neutral">A flexible way to begin and renew month by month.</div>
+            <div class="plan-divider"></div>
+            <ul class="plan-features">
+              <li><span class="check">✓</span><span>30 days of active Verified+ membership</span></li>
+              <li><span class="check">✓</span><span>Member-directed renewal</span></li>
+              <li><span class="check">✓</span><span>No automatic recurring charge</span></li>
+            </ul>
+            <div class="plan-cta"><a class="btn btn-soft" href="https://wa.me/2348109146285?text=Hello%20DCDS%2C%20I%27d%20like%20to%20ask%20about%20the%20Verified%2B%20Monthly%20plan." target="_blank" rel="noopener noreferrer">Ask about this plan <span aria-hidden="true">↗</span></a></div>
+            <p class="plan-note">Ends after 30 days unless you choose to renew.</p>
+          </article>
+
+          <article class="plan featured reveal" aria-labelledby="annual-title">
+            <span class="popular">✦ BEST ANNUAL VALUE</span>
+            <span class="plan-label">Best annual value</span>
+            <h3 id="annual-title">Annual</h3>
+            <p class="plan-duration">12-month membership</p>
+            <div class="price-line"><span class="price">₦75,000</span><span class="price-unit">/ year</span></div>
+            <p class="billing">One upfront payment for 12 months</p>
+            <div class="saving">Save <strong>₦15,000 (16.7%)</strong> against twelve Monthly payments.</div>
+            <div class="plan-divider"></div>
+            <ul class="plan-features">
+              <li><span class="check">✓</span><span>12 months of active Verified+ membership</span></li>
+              <li><span class="check">✓</span><span>One payment for the full term</span></li>
+              <li><span class="check">✓</span><span>No automatic recurring charge</span></li>
+            </ul>
+            <div class="plan-cta"><a class="btn btn-primary" href="https://wa.me/2348109146285?text=Hello%20DCDS%2C%20I%27d%20like%20to%20ask%20about%20the%20Verified%2B%20Annual%20plan." target="_blank" rel="noopener noreferrer">Ask about this plan <span aria-hidden="true">↗</span></a></div>
+            <p class="plan-note">Ends after 12 months unless you choose to renew.</p>
+          </article>
+
+          <article class="plan long reveal" aria-labelledby="five-year-title">
+            <span class="plan-label">Long-term membership</span>
+            <h3 id="five-year-title">Five-Year</h3>
+            <p class="plan-duration">60-month membership</p>
+            <div class="price-line"><span class="price">₦320,000</span><span class="price-unit">/ 5 years</span></div>
+            <p class="billing">One upfront payment for the full 60 months</p>
+            <div class="saving">Save <strong>₦55,000 (14.7%)</strong> against five consecutive Annual terms.</div>
+            <div class="plan-divider"></div>
+            <ul class="plan-features">
+              <li><span class="check">✓</span><span>60 months of active Verified+ membership</span></li>
+              <li><span class="check">✓</span><span>One payment for the full five-year term</span></li>
+              <li><span class="check">✓</span><span>No automatic recurring charge</span></li>
+            </ul>
+            <div class="plan-cta"><a class="btn btn-soft" href="https://wa.me/2348109146285?text=Hello%20DCDS%2C%20I%27d%20like%20to%20ask%20about%20the%20Verified%2B%20Five-Year%20plan." target="_blank" rel="noopener noreferrer">Ask about this plan <span aria-hidden="true">↗</span></a></div>
+            <p class="plan-note">A fixed five-year term—not lifetime access. Ends after 60 months.</p>
+          </article>
+        </div>
+
+        <p class="pricing-footnote"><strong>One identity standard across all three plans.</strong> The duration changes; payment does not bypass identity approval. No plan grants lifetime access, professional licensing or guaranteed earnings.</p>
+
+        <aside class="verification-banner reveal" aria-label="Separate identity verification fee notice">
+          <div class="verification-symbol" aria-hidden="true">◇</div>
+          <div><h3>Identity verification is a separate step and fee.</h3><p>The identity-verification fee is not included in ₦7,500, ₦75,000 or ₦320,000. Its amount will be shown before verification begins, after provider charges, payment fees and applicable taxes are confirmed.</p></div>
+          <span class="separate">CHARGED SEPARATELY</span>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section section-white" id="benefits" aria-labelledby="benefits-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">THE VERIFIED+ EXPERIENCE</span>
+          <h2 id="benefits-title">More than a badge.</h2>
+          <p>Verified+ is planned as a connected membership layer across the DCDS learning, identity and professional ecosystem.</p>
+        </div>
+        <div class="benefit-grid">
+          <article class="benefit reveal"><span class="benefit-icon" aria-hidden="true">✓</span><h3>Verified identity badge</h3><p>A blue identity mark displayed only after a supported government ID check has been approved and your membership is active.</p></article>
+          <article class="benefit reveal"><span class="benefit-icon" aria-hidden="true">◈</span><h3>Advanced privacy controls</h3><p>Planned controls for profile visibility, discoverability, online presence and account sessions.</p></article>
+          <article class="benefit reveal"><span class="benefit-icon" aria-hidden="true">✦</span><h3>Verified+ member network</h3><p>Planned access to original publishing privileges in the DCDS member network, subject to age, safety and moderation rules.</p></article>
+          <article class="benefit reveal"><span class="benefit-icon" aria-hidden="true">◎</span><h3>Ad-free member experience</h3><p>Planned removal of ordinary DCDS display advertising from authenticated areas while your membership is active.</p></article>
+          <article class="benefit reveal"><span class="benefit-icon" aria-hidden="true">▤</span><h3>TRUSTMARKET eligibility</h3><p>Eligible members may apply to become sellers. Identity verification and membership do not automatically approve a seller account.</p></article>
+          <article class="benefit reveal"><span class="benefit-icon" aria-hidden="true">☆</span><h3>Priority and early access</h3><p>Planned priority support and selected early feature access as the DCDS ecosystem expands.</p></article>
+        </div>
+        <p class="planned-note"><strong>Launch transparency:</strong> These benefits describe the planned Verified+ experience. They are not represented as active services today. Features will be enabled only after their security, privacy, age-safety and operational release checks are complete.</p>
+      </div>
+    </section>
+
+    <section class="section" id="how-it-works" aria-labelledby="how-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">A CLEAR, SEPARATE PROCESS</span>
+          <h2 id="how-title">How membership and identity work.</h2>
+          <p>Identity approval and paid membership are two different decisions. Both must be valid before the Blue Badge is displayed.</p>
+        </div>
+        <div class="steps-grid">
+          <article class="step reveal"><span class="step-number">01</span><h3>Choose your membership term</h3><p>Select Monthly, Annual or Five-Year. The price and end date are shown clearly before any payment is requested.</p></article>
+          <article class="step reveal"><span class="step-number">02</span><h3>Select your document country</h3><p>Choose the country that issued your identity document. Available document types will depend on confirmed provider coverage.</p></article>
+          <article class="step reveal"><span class="step-number">03</span><h3>Complete identity verification</h3><p>Use the supported provider's secure verification journey. A failed, incomplete or unsupported check does not grant a badge.</p></article>
+          <article class="step reveal"><span class="step-number">04</span><h3>Payment is confirmed separately</h3><p>DCDS independently confirms the membership payment. The badge is eligible only when identity approval and an active entitlement both pass.</p></article>
+        </div>
+        <div class="coverage-note reveal"><strong>Worldwide applicant design:</strong> DCDS intends to support applicants internationally. The exact countries, government documents and checks available at launch will be confirmed with the selected provider. Not every document is guaranteed to be accepted in every country. Where automated support is unavailable, the application must follow a safe review route rather than being auto-approved.</div>
+      </div>
+    </section>
+
+    <section class="section section-white" id="comparison" aria-labelledby="comparison-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">COMPARE THE TERMS</span>
+          <h2 id="comparison-title">Clear prices. Clear expiry dates.</h2>
+          <p>Choose by the length of membership you need. The five-year option is a long fixed term, not a lifetime subscription.</p>
+        </div>
+        <div class="compare-wrap reveal" role="region" aria-label="Membership plan comparison" tabindex="0">
+          <table class="compare">
+            <thead><tr><th scope="col">Membership terms</th><th scope="col">Monthly</th><th scope="col" class="annual-col">Annual</th><th scope="col">Five-Year</th></tr></thead>
+            <tbody>
+              <tr><th scope="row">Total price</th><td class="price-cell">₦7,500</td><td class="price-cell annual-col">₦75,000</td><td class="price-cell">₦320,000</td></tr>
+              <tr><th scope="row">Membership duration</th><td>30 days</td><td class="annual-col">12 months</td><td>60 months</td></tr>
+              <tr><th scope="row">Payment schedule</th><td>One payment</td><td class="annual-col">One upfront payment</td><td>One upfront payment</td></tr>
+              <tr><th scope="row">Automatic renewal</th><td>No</td><td class="annual-col">No</td><td>No</td></tr>
+              <tr><th scope="row">Identity verification fee</th><td>Separate</td><td class="annual-col">Separate</td><td>Separate</td></tr>
+              <tr><th scope="row">Membership expiry</th><td>After 30 days</td><td class="annual-col">After 12 months</td><td>After 60 months</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="faq" aria-labelledby="faq-title">
+      <div class="container">
+        <div class="section-head reveal">
+          <span class="kicker">GOOD TO KNOW</span>
+          <h2 id="faq-title">Questions, answered.</h2>
+          <p>Important details before choosing a Verified+ membership term.</p>
+        </div>
+        <div class="faq-list">
+          <details class="faq-item reveal"><summary>Does paying for Verified+ automatically give me the Blue Badge?</summary><div class="faq-answer"><p>No. Payment does not prove identity. The Blue Badge requires a successful, approved identity decision and an active paid membership term. These are checked separately.</p></div></details>
+          <details class="faq-item reveal"><summary>Is identity verification included in the membership price?</summary><div class="faq-answer"><p>No. The identity-verification fee is separate from all three membership prices. Its amount has not yet been approved and must be displayed before the identity check begins.</p></div></details>
+          <details class="faq-item reveal"><summary>Can people outside Nigeria apply?</summary><div class="faq-answer"><p>DCDS is designing an international applicant journey. Actual country and document acceptance will depend on the selected provider's confirmed coverage. DCDS will show supported choices before an applicant starts.</p></div></details>
+          <details class="faq-item reveal"><summary>Is the Five-Year plan a lifetime membership?</summary><div class="faq-answer"><p>No. It is a single upfront payment for 60 months. The entitlement expires after five years unless you choose and pay for a new term. It does not create a perpetual benefit.</p></div></details>
+          <details class="faq-item reveal"><summary>Will my membership renew automatically?</summary><div class="faq-answer"><p>No automatic renewal is planned for these terms. You choose whether to renew. DCDS will show the expiry date and renewal terms before checkout opens.</p></div></details>
+          <details class="faq-item reveal"><summary>Can Verified+ automatically make me a DCDS seller or Creator?</summary><div class="faq-answer"><p>No. TRUSTMARKET seller approval and Creator recognition are separate decisions. Identity verification and a paid membership do not automatically confer business approval, professional qualifications or Creator recognition.</p></div></details>
+          <details class="faq-item reveal"><summary>Can I pay for a membership right now?</summary><div class="faq-answer"><p>Not through this page. This is an informational product preview. Secure checkout and the identity-verification provider are not live yet. Please do not transfer money for these plans until DCDS publishes an official checkout route.</p></div></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta">
+      <div class="container cta-inner reveal">
+        <span class="kicker">CREATE. LEARN. INNOVATE. EARN.</span>
+        <h2>Build your next chapter with DCDS.</h2>
+        <p>Have a question about the Verified+ plan structure? Talk to the DCDS team. This enquiry does not take payment or start identity verification.</p>
+        <div class="cta-actions">
+          <a class="btn btn-white" href="https://wa.me/2348109146285?text=Hello%20DCDS%2C%20I%20have%20a%20question%20about%20Verified%2B%20membership." target="_blank" rel="noopener noreferrer">Talk to DCDS on WhatsApp <span aria-hidden="true">↗</span></a>
+          <a class="btn btn-soft" href="mailto:dechampions82@gmail.com?subject=Question%20about%20DCDS%20Verified%2B">Email DCDS</a>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-main">
+        <div class="footer-brand">
+          <strong>DCDS · DE CHAMPIONS DIGITAL SERVICES</strong>
+          <p>CREATE • LEARN • INNOVATE • EARN.</p>
+          <p>Empowering creativity. Developing digital skills. Building possibilities.</p>
+        </div>
+        <nav class="footer-links" aria-label="Footer navigation">
+          <a href="index.html">DCDS Home</a>
+          <a href="privacy-policy.html">Privacy Policy</a>
+          <a href="mailto:dechampions82@gmail.com">Contact DCDS</a>
+          <a href="#main">Back to top ↑</a>
+        </nav>
+      </div>
+      <div class="disclaimer">Verified+ is a proposed membership experience. Prices are the approved DCDS product catalogue, but payment processing, identity verification and member features are not live through this page. Identity-verification charges are separate. All identity, marketplace, professional and Creator decisions remain independent and subject to their own approval processes.</div>
+      <div class="footer-bottom"><span>© 2026 De Champions Digital Services.</span><span>Built with care for the DCDS community.</span></div>
+    </div>
+  </footer>
+
+  <script>
+    (function(){
+      const toggle=document.getElementById("mobileToggle");
+      const menu=document.getElementById("mobileMenu");
+      if(toggle&&menu){
+        const close=()=>{menu.hidden=true;toggle.setAttribute("aria-expanded","false");toggle.setAttribute("aria-label","Open navigation menu");};
+        toggle.addEventListener("click",()=>{
+          const opening=menu.hidden;
+          menu.hidden=!opening;
+          toggle.setAttribute("aria-expanded",String(opening));
+          toggle.setAttribute("aria-label",opening?"Close navigation menu":"Open navigation menu");
+        });
+        menu.querySelectorAll("a").forEach(link=>link.addEventListener("click",close));
+        document.addEventListener("keydown",event=>{if(event.key==="Escape")close();});
+        document.addEventListener("click",event=>{if(!menu.hidden&&!menu.contains(event.target)&&!toggle.contains(event.target))close();});
+      }
+      const items=document.querySelectorAll(".reveal");
+      if("IntersectionObserver" in window&&!window.matchMedia("(prefers-reduced-motion: reduce)").matches){
+        const observer=new IntersectionObserver(entries=>{
+          entries.forEach(entry=>{
+            if(entry.isIntersecting){entry.target.classList.add("visible");observer.unobserve(entry.target);}
+          });
+        },{threshold:.12,rootMargin:"0px 0px -24px 0px"});
+        items.forEach(item=>observer.observe(item));
+      }else{items.forEach(item=>item.classList.add("visible"));}
+    })();
+  </script>
+</body>
+</html>
