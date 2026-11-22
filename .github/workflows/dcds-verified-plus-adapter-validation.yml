@@ -84,11 +84,17 @@ jobs:
           student_safety = Path("docs/dcds-student-community-safety-and-moderation.md").read_text(encoding="utf-8")
           brand_policy = Path("docs/dcds-verified-plus-brand-content-policy.md").read_text(encoding="utf-8")
           network_spec = Path("docs/dcds-verified-plus-exclusive-network.md").read_text(encoding="utf-8")
+          architecture = Path("docs/dcds-verified-plus-architecture.md").read_text(encoding="utf-8")
           persistence_design = Path("docs/dcds-verified-plus-moderation-persistence-and-rls-design.md").read_text(encoding="utf-8")
           moderation_contract = Path("docs/dcds-verified-plus-moderation-engine-contract.md").read_text(encoding="utf-8")
           migration_reconciliation = Path("docs/dcds-migration-reconciliation.md").read_text(encoding="utf-8")
 
           checks = {
+              "monthly Verified+ plan is NGN 7,500 for 30 days": "NGN 7,500" in architecture and "30 days" in architecture and "| Monthly | NGN 7,500 | 30 days |" in architecture,
+              "annual Verified+ plan is NGN 75,000 for 12 months": "NGN 75,000" in architecture and "| Annual | NGN 75,000 | 12 months, paid upfront |" in architecture,
+              "lifetime Verified+ membership is explicitly unavailable": "Lifetime membership is discontinued" in architecture and "no perpetual paid entitlement" in architecture,
+              "identity verification fee stays separate from membership": "separate applicant-paid fee" in architecture and "outside both membership prices" in architecture,
+              "network and moderation policies use Monthly/Annual entitlements": "Monthly for 30 days or Annual for 12 months" in network_spec and "Monthly (30-day) or Annual (12-month)" in network_spec ,
               "Blue Badge is a blue SVG rosette with a white check": 'fill: "#1678ed"' in page and 'stroke: "#fff"' in page and 'function verifiedBadge(sizeClass' in page and 'paintVerifiedBadge(node);' in page,
               "Creator medal seal is gold while star and both ribbons remain purple": 'fill: "#e8ad12", stroke: "#b87900"' in page and page.count('fill: "#7628d8", stroke: "#56209f"') >= 3,
               "Creator medal accessible label says gold with purple star and ribbons": "gold seal with purple star and purple ribbons" in page,
