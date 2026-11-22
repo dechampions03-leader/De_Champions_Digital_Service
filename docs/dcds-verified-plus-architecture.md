@@ -104,6 +104,8 @@ The identity-verification vendor is not selected in this specification. Do not l
 
 See [the Verified+ pricing and commercial policy](dcds-verified-plus-pricing-and-commercial-policy.md) for the approved three-plan catalogue, separate applicant-paid identity-verification fee and financial release guardrails.
 
+**Visual preview:** [Open the offline Verified+ membership pricing preview](../verified-plus-pricing-preview.html). It demonstrates the three approved price cards and is not connected to checkout or payments.
+
 ### Launch catalogue
 
 | Plan | Price | Duration |
