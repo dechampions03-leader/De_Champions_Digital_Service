@@ -282,6 +282,13 @@
     .creator-medal-md{width:32px;height:40px}
     .creator-medal-lg{width:54px;height:66px}
     .creator-medal-showcase{width:90px;height:110px}
+    /* Compact creator marks in feed and comments; keep the full 3D medal in the showcase. */
+    .post-author>.creator-pill{gap:4px;padding:2px 6px;font-size:9px;line-height:1.1;white-space:nowrap}
+    .post-author>.creator-pill .creator-medal-xs{width:16px;height:20px}
+    .comment-name-line>.creator-pill{gap:3px;padding:2px 5px;font-size:9px;line-height:1.1}
+    .comment-name-line>.creator-pill .creator-medal-xs{width:14px;height:17px}
+    .post-author .verified-badge{width:18px;height:18px}
+
     .creator-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:#f2e9ff;border:1px solid #e2d0fa;color:#53218a;font-size:10px;font-weight:850;white-space:nowrap}
     .badge-intro{
       display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
