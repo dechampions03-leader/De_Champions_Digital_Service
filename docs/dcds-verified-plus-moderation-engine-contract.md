@@ -22,7 +22,7 @@ Before calling authorizeNetworkAction, an Edge Function must derive:
 - authenticated user ID/session from verified JWT/session context;
 - active/locked/deleted account status from authoritative account records;
 - identity decision from the identity domain, not user-editable metadata;
-- monthly/lifetime membership entitlement and current expiry from the membership domain;
+- Monthly/Annual membership entitlement and current expiry from the membership domain (30-day or 12-month paid period);
 - network age eligibility from the final DCDS age policy;
 - current network-only restriction and expiry from the moderation domain.
 
