@@ -49,9 +49,9 @@ A provider's temporary error, timeout, unavailable service, incomplete capture, 
 
 ### Independent membership state
 
-Membership remains separately modelled as inactive, active monthly, active lifetime, expired, cancelled, or suspended, as defined in the Verified+ architecture.
+Membership remains separately modelled as inactive, active monthly, active annual, expired, cancelled, or suspended, as defined in the Verified+ architecture. Monthly lasts 30 days; Annual lasts 12 months. Lifetime membership is not offered.
 
-The public Blue Badge is eligible to display only when the required identity decision and membership entitlement conditions both pass. Do not change identity history just because a paid monthly membership expires. Do not grant membership because identity verification succeeds.
+The public Blue Badge is eligible to display only when the required identity decision and a currently active Monthly or Annual membership entitlement both pass. Do not change identity history just because a paid monthly or annual membership expires. Do not grant membership because identity verification or its separate fee payment succeeds.
 
 ### Seller admission
 
