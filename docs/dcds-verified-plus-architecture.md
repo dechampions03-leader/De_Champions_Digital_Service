@@ -18,9 +18,9 @@ Verified+ is a paid membership and entitlement layer. It is not a claim that pay
 | Blue Badge identity eligibility | Nigerian and international members |
 | Nigerian identity route | An authorised provider-supported NIN verification route or another accepted government document |
 | International identity route | Accepted government-issued identity documents supported by the selected verification provider |
-| Monthly Verified+ | NGN 3,500 for 30 days |
-| Lifetime Verified+ | NGN 25,000 one-time payment |
-| Annual plan | Not part of the initial launch |
+| Monthly Verified+ | NGN 7,500 for 30 days |
+| Annual Verified+ | NGN 75,000 for 12 months, paid upfront |
+| Lifetime Verified+ | Not offered; no perpetual paid entitlement |
 | Advanced privacy | Additional controls for active Verified+ members; baseline privacy remains available to everyone |
 | Advertising | Standard members may be eligible for ordinary DCDS display ads; active Verified+ members receive an ad-free authenticated experience |
 | TRUSTMARKET sellers | Must be Verified+ eligible, apply separately, and pass provider approval |
@@ -39,11 +39,11 @@ Verified+ is a paid membership and entitlement layer. It is not a claim that pay
 Maintain two independent records:
 
 1. **Identity decision:** pending, verified, rejected, requires-review, suspended, or revoked.
-2. **Membership entitlement:** inactive, active monthly, active lifetime, expired, cancelled, or suspended.
+2. **Membership entitlement:** inactive, active monthly, active annual, expired, cancelled, or suspended.
 
 A successful identity check is not a payment confirmation. A successful payment is not an identity approval. Seller approval is a third, independent decision.
 
-Working expiry rule: keep the historical identity decision so a monthly member does not have to repeat verification on every renewal, but disable paid Verified+ entitlements when the 30-day membership expires. The public Blue Badge should be displayed only when the required identity and membership conditions are both satisfied. Confirm final badge wording and expiry UX before implementation.
+Working expiry rule: keep the historical identity decision so a member does not have to repeat verification on every renewal, but disable paid Verified+ entitlements when the paid period ends: 30 days for Monthly or 12 months for Annual. The public Blue Badge should be displayed only when the required identity and a currently active monthly or annual membership are both confirmed. Annual payment does not create a perpetual entitlement.
 
 ## 3. Universal Profile
 
@@ -101,17 +101,22 @@ The identity-verification vendor is not selected in this specification. Do not l
 
 ## 5. Verified+ membership, billing and entitlements
 
+See [the Verified+ pricing and commercial policy](dcds-verified-plus-pricing-and-commercial-policy.md) for the approved two-plan catalogue, separate applicant-paid identity-verification fee and financial release guardrails.
+
 ### Launch catalogue
 
 | Plan | Price | Duration |
 |---|---:|---|
-| Monthly | NGN 3,500 | 30 days |
-| Lifetime | NGN 25,000 | No recurring membership fee |
+| Monthly | NGN 7,500 | 30 days |
+| Annual | NGN 75,000 | 12 months, paid upfront |
 
-Do not publish an annual plan in the initial release. A previously proposed NGN 30,000 annual plan would cost more than lifetime membership and is therefore excluded pending separate pricing review.
+The Annual plan costs NGN 15,000 less than twelve Monthly payments (NGN 90,000), a 16.7% saving for a member paying annually. The annual term still expires after 12 months; it is not lifetime access. Lifetime membership is discontinued and must not appear in checkout, marketing or entitlement grants. Previous draft pricing is retired.
 
 ### Payment rules
 
+- Offer only the Monthly (NGN 7,500 / 30 days) and Annual (NGN 75,000 / 12 months) membership plans. Never create a lifetime or perpetual paid entitlement.
+- Keep identity verification as a separate applicant-paid fee, outside both membership prices. Show the fee before the identity check begins; its amount remains unapproved until provider pricing, payment-processing charges and applicable taxes are confirmed. Do not charge an applicant again for a retry caused by a DCDS or provider technical error.
+- A membership renewal must follow the member's explicit renewal choice and clear terms; do not silently enrol a member in recurring charges.
 - Build a dedicated membership checkout/order path. The current `create-payment` function creates course-specific orders, and the existing `orders.course_id` column is NOT NULL; the current admin verification path also assumes course orders and course enrolment. Do not route Verified+ membership purchases through that course-enrolment pipeline. Reuse the established Flutterwave provider-verification and webhook-security patterns only after adapting them to a separate membership order.
 - Create an order/reference for the membership purchase and bind it to the authenticated user and selected plan.
 - Confirm amounts, currency, transaction status and gateway reference server-side; never trust a client-side success redirect.
@@ -119,7 +124,7 @@ Do not publish an annual plan in the initial release. A previously proposed NGN 
 - Do not grant entitlements from a pending, failed, mismatched, reversed, or unverified payment.
 - Keep membership accounting separate from student course enrolments, VTU orders, payouts and wallet/balance records.
 - Do not introduce an internal wallet or escrow in this release.
-- Provide clear renewal, expiry, cancellation, refund and chargeback terms before checkout.
+- Provide clear monthly/annual renewal, expiry, cancellation, refund and chargeback terms before checkout. The Annual entitlement ends after 12 months unless a new paid term is confirmed.
 
 ### Entitlement service
 
@@ -291,7 +296,7 @@ See [the migration reconciliation report](dcds-migration-reconciliation.md) for 
 1. **Reconciliation gate (blocking):** confirm production project mapping, add/review the missing Supabase CLI configuration, reconcile timestamp history using an isolated Development target, compare the preserved baseline with current schemas, inspect relevant RLS policies and payment functions, and prove a clean local rebuild. Do not run migration repair or database reset against production.
 2. **Universal profile:** add profile model, unique usernames, privacy settings and a migration/backfill plan without changing legacy records.
 3. **Identity verification:** select an authorised vendor, complete privacy/DPIA and data-retention work, then implement provider adapter and reviewer console.
-4. **Verified+ membership:** add the two approved plans, secure checkout, webhook idempotency, entitlement service, renewal and expiry handling.
+4. **Verified+ membership:** add the approved Monthly and Annual plans, secure checkout, webhook idempotency, entitlement service, renewal and 30-day/12-month expiry handling.
 5. **Verified+ experience:** ad suppression, privacy centre, account guardian and advanced profile capabilities.
 6. **TRUSTMARKET admission:** seller application/review first, then listings, orders, reviews and dispute processes.
 7. **Release gates:** development integration tests, RLS and authorization tests, payment/webhook replay tests, privacy/security review, staging acceptance and explicit production release approval.
@@ -300,13 +305,17 @@ See [the migration reconciliation report](dcds-migration-reconciliation.md) for 
 
 - Confirm the intended minimum age for government-ID and biometric verification. Recommended launch gate: adults 18+ only; preserve existing age-appropriate DCDS experiences for younger members.
 - Select and contract an authorised identity-verification provider for Nigerian and international routes.
-- Confirm whether the public Blue Badge is hidden immediately on monthly expiry while the historical identity-verification record remains.
-- Define monthly renewal, cancellation, refund, chargeback and lifetime-member terms.
+- Confirm whether the public Blue Badge is hidden immediately on monthly or annual expiry while the historical identity-verification record remains.
+- Define monthly and annual renewal choices, cancellation, refund, chargeback, and expiry notices. Lifetime membership is not an open decision and must remain unavailable.
 - Decide whether unverified members may browse TRUSTMARKET and act as buyers; seller admission remains Verified+ plus separate approval.
 - Define international display prices and payment currencies after provider and tax costs are known.
 - Confirm the production Supabase project and reconcile migration history before preparing any migration.
 
-## 13. Non-goals for the initial release
+## 13. Pricing sustainability guardrail
+
+The approved NGN prices are product decisions, not proof that the service is profitable. Before public checkout is enabled, DCDS must prepare a cost forecast covering identity-provider charges (funded by the separate applicant fee), payment processing and tax, hosting, security, moderation, customer support, operational labour and a contingency reserve. Review actual costs and renewal/retention data at least quarterly. Do not promise fixed prices internationally until currency, tax and provider costs are confirmed.
+
+## 14. Non-goals for the initial release
 
 - No internal wallet or escrow.
 - No automatic seller approval from a Blue Badge.
