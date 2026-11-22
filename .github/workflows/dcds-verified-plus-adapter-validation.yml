@@ -12,6 +12,7 @@ on:
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
       - "docs/dcds-verified-plus-pricing-and-commercial-policy.md"
+      - "verified-plus-pricing-preview.html"
       - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
       - "docs/dcds-verified-plus-moderation-engine-contract.md"
       - "docs/dcds-migration-reconciliation.md"
@@ -78,6 +79,8 @@ jobs:
           from pathlib import Path
           import re
 
+          pricing_page_path = Path("verified-plus-pricing-preview.html")
+          pricing_page = pricing_page_path.read_text(encoding="utf-8")
           page_path = Path("verified-plus-community-preview.html")
           page = page_path.read_text(encoding="utf-8")
           moderation_path = Path("verified-plus-moderation-preview.html")
@@ -95,13 +98,19 @@ jobs:
           migration_reconciliation = Path("docs/dcds-migration-reconciliation.md").read_text(encoding="utf-8")
 
           checks = {
+              "five-year Verified+ plan is NGN 320,000 for 60 months": "NGN 320,000" in architecture and "| Five-Year | NGN 320,000 | 60 months, paid upfront |" in architecture and "60 months" in architecture,
+              "five-year pricing is 14.7 percent below five Annual terms": "NGN 55,000 less" in pricing_policy and "14.7%" in pricing_policy and "NGN 375,000" in pricing_policy,
+              "five-year membership is a fixed term, not lifetime": "Five-Year access ends after 60 months" in pricing_policy and "not a lifetime or perpetual entitlement" in pricing_policy,
+              "pricing preview displays all three exact prices and duration": "₦7,500" in pricing_page and "₦75,000" in pricing_page and "₦320,000" in pricing_page and "60-month membership" in pricing_page,
+              "pricing preview carries the approved plan labels": "Recommended" in pricing_page and "Best annual value" in pricing_page and "Long-term membership" in pricing_page,
+              "pricing preview cannot collect payments": "Preview only" in pricing_page and "does not collect payment" in pricing_page and "payment processing" in pricing_page,
               "monthly Verified+ plan is NGN 7,500 for 30 days": "NGN 7,500" in architecture and "30 days" in architecture and "| Monthly | NGN 7,500 | 30 days |" in architecture,
               "annual Verified+ plan is NGN 75,000 for 12 months": "NGN 75,000" in architecture and "| Annual | NGN 75,000 | 12 months, paid upfront |" in architecture,
               "lifetime Verified+ membership is explicitly unavailable": "Lifetime membership is discontinued" in architecture and "no perpetual paid entitlement" in architecture,
-              "identity verification fee stays separate from membership": "separate applicant-paid fee" in architecture and "outside both membership prices" in architecture and "not included in the NGN 7,500 Monthly or NGN 75,000 Annual membership price" in pricing_policy,
-              "commercial policy records exactly the approved Monthly and Annual prices": "| Monthly | NGN 7,500 | 30 days |" in pricing_policy and "| Annual | NGN 75,000 | 12 months |" in pricing_policy,
+              "identity verification fee stays separate from all membership plans": "separate applicant-paid fee" in architecture and "outside both membership prices" in architecture and "not included in the NGN 7,500 Monthly or NGN 75,000 Annual membership price" in pricing_policy and "NGN 320,000 Five-Year membership price" in pricing_policy,
+              "commercial policy records exactly the approved three membership prices": "| Monthly | NGN 7,500 | 30 days |" in pricing_policy and "| Annual | NGN 75,000 | 12 months |" in pricing_policy and "| Five-Year | NGN 320,000 | 60 months |" in pricing_policy,
               "commercial policy discontinues lifetime entitlements": "Lifetime membership is discontinued" in pricing_policy and "Do not offer, advertise, sell, or grant" in pricing_policy,
-              "provider, network and moderation contracts use Monthly/Annual entitlements": "active monthly, active annual" in provider_contract and "Monthly for 30 days or Annual for 12 months" in network_spec and "Monthly/Annual membership entitlement" in moderation_contract,
+              "provider, network, moderation and persistence contracts use all three entitlements": "active monthly, active annual, active five-year" in provider_contract and "Monthly for 30 days, Annual for 12 months or Five-Year for 60 months" in network_spec and "Monthly/Annual/Five-Year membership entitlement" in moderation_contract and "Monthly (30-day), Annual (12-month) or Five-Year (60-month)" in persistence_design,
               "Blue Badge is a blue SVG rosette with a white check": 'fill: "#1678ed"' in page and 'stroke: "#fff"' in page and 'function verifiedBadge(sizeClass' in page and 'paintVerifiedBadge(node);' in page,
               "Creator medal seal is gold while star and both ribbons remain purple": 'id: "dcdsCreatorGold"' in page and '"stop-color": "#e89b00"' in page and 'id: "dcdsCreatorPurple"' in page and '"stop-color": "#7628d8"' in page and 'id: "dcdsCreatorRibbon"' in page and 'fill: "url(#dcdsCreatorRibbon)"' in page and page.count('fill: "url(#dcdsCreatorRibbon)"') >= 2,
               "Creator medal accessible label says gold with purple star and ribbons": "gold seal with purple star and purple ribbons" in page,
