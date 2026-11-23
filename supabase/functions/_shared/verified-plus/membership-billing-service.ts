@@ -96,6 +96,16 @@ export interface VerifiedPlusBillingRepository {
   ): Promise<VerifiedPlusPendingCheckout | null>;
 
   /**
+   * Returns only an already-finalized order owned by this member. This lookup
+   * prevents a repeat browser redirect from reprocessing the same initial
+   * charge or attempting to recreate a subscription that may since be cancelled.
+   */
+  findFinalizedCheckoutForMember(
+    memberId: string,
+    txRef: string,
+  ): Promise<{ readonly alreadyFinalized: true; readonly paidThroughAt: string } | null>;
+
+  /**
    * Atomic, idempotent database finalizer. It must bind the provider transaction
    * to this exact membership order and must never touch course enrolments.
    * One-time mode must store no provider subscription ID.
@@ -329,6 +339,9 @@ export class VerifiedPlusBillingService {
     ) {
       throw new VerifiedPlusBillingServiceError("INVALID_INPUT", "The membership payment verification request is invalid.");
     }
+
+    const finalized = await this.repository.findFinalizedCheckoutForMember(input.memberId, input.txRef);
+    if (finalized) return finalized;
 
     const order = await this.repository.findPendingCheckoutForMember(input.memberId, input.txRef);
     if (!order || order.status !== "pending") {
