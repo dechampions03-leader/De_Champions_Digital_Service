@@ -866,3 +866,38 @@
 .dcds-celebration-art[data-scene="traditional-medicine"]{
  background:radial-gradient(ellipse at 50% 46%,rgba(117,200,143,.23),transparent 62%),linear-gradient(135deg,#20483b,#315449 60%,#1d3036);
 }
+
+
+/* Additional event-specific scene styling: health, safety, heritage and faith. */
+.dcds-celebration-art[data-scene="autism"],
+.dcds-celebration-art[data-scene="aids-awareness"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(115,177,224,.25),transparent 62%),linear-gradient(135deg,#213c5a,#30395d 60%,#1c233b);
+}
+.dcds-celebration-art[data-scene="water-safety"]{
+ background:radial-gradient(ellipse at 50% 75%,rgba(80,190,225,.3),transparent 60%),linear-gradient(135deg,#14496c,#285879 60%,#1b2a48);
+}
+.dcds-celebration-art[data-scene="indigenous-peoples"],
+.dcds-celebration-art[data-scene="african-history"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(213,170,113,.22),transparent 62%),linear-gradient(135deg,#443342,#46364e 60%,#25233a);
+}
+.dcds-celebration-art[data-scene="men"],
+.dcds-celebration-art[data-scene="commonwealth"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(115,179,227,.22),transparent 62%),linear-gradient(135deg,#203b5b,#303b5e 60%,#1d253d);
+}
+.dcds-celebration-art[data-scene="ash-wednesday"],
+.dcds-celebration-art[data-scene="maundy-thursday"],
+.dcds-celebration-art[data-scene="holy-saturday"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(193,168,218,.2),transparent 60%),linear-gradient(135deg,#352c4b,#292640 65%,#171629);
+}
+.dcds-celebration-art[data-scene="palm-sunday"]{
+ background:radial-gradient(ellipse at 50% 50%,rgba(131,192,139,.23),transparent 62%),linear-gradient(135deg,#22443b,#314b49 60%,#202c3d);
+}
+.dcds-celebration-art[data-scene="tour-nigeria"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(106,190,211,.24),transparent 60%),linear-gradient(135deg,#17485f,#2b4c67 60%,#1e2d47);
+}
+.dcds-celebration-art[data-scene="sango"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(239,156,83,.26),transparent 60%),linear-gradient(135deg,#522c30,#462546 60%,#211832);
+}
+.dcds-celebration-art[data-scene="beer-festival"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(232,189,93,.25),transparent 60%),linear-gradient(135deg,#493528,#473348 60%,#231b31);
+}
