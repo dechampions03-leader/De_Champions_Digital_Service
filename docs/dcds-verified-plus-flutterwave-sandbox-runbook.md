@@ -82,16 +82,11 @@ Run this only after the Development secret is confirmed to be Test mode and afte
 
 Flutterwave documents three further charge attempts at 30-minute intervals after a failed charge, and says it cancels the subscription after those failed attempts. DCDS must reconcile that provider state and never assume a failed payment renews membership.
 
-## 6. Webhook signature compatibility
+## 6. Webhook signature verification
 
-The current DCDS-Development `flutterwave-webhook` uses the legacy `verif-hash` header and constant-time comparison. The current Flutterwave webhook documentation describes `flutterwave-signature` as an HMAC-SHA256 value computed from the exact raw request body and the configured secret hash.
+The current Flutterwave webhook guide documents the `verif-hash` request header. It tells merchants to compare that value with the secret hash configured in the Flutterwave dashboard and stored server-side. The current DCDS-Development `flutterwave-webhook` uses this same header and a constant-time comparison.
 
-The new adapter verifies both formats:
-
-- `verif-hash`: constant-time comparison to the configured webhook hash, compatible with the current DCDS Development webhook pattern.
-- `flutterwave-signature`: recompute HMAC-SHA256 over the raw request bytes and compare the Base64 digest in constant time.
-
-Do not parse/re-serialize the JSON before checking the signature. Do not change the existing course/VTU webhook during this separate Verified+ work.
+The new adapter supports only the documented `verif-hash` method and rejects missing or mismatched headers. Do not treat an undocumented signature header as a substitute. Keep the webhook secret in the Development Edge Function secrets store; never put it in the client or repository. Do not change the existing course/VTU webhook during this separate Verified+ work.
 
 ## 7. Current test coverage and what has not been proven
 
