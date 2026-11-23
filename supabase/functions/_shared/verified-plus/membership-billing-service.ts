@@ -15,6 +15,7 @@ import {
   type RecurringBillingConsentProof,
   type VerifiedPlusPlanId,
   type VerifiedPlusSubscription,
+  type VerifiedPlusCancellationReason,
 } from "./membership-billing.ts";
 import {
   validateVerifiedPlusTransaction,
@@ -122,7 +123,8 @@ export interface VerifiedPlusBillingRepository {
   beginMemberCancellation(
     memberId: string,
     subscriptionId: string,
-    reason: string | null,
+    reason: VerifiedPlusCancellationReason | null,
+    feedback: string | null,
     requestedAt: string,
   ): Promise<void>;
 
@@ -214,7 +216,8 @@ export interface VerifyVerifiedPlusCheckoutInput {
 
 export interface CancelVerifiedPlusAutoRenewInput {
   readonly memberId: string;
-  readonly reason?: string | null;
+  readonly reason?: VerifiedPlusCancellationReason | null;
+  readonly feedback?: string | null;
   readonly requestedAt?: string;
 }
 
@@ -446,6 +449,7 @@ export class VerifiedPlusBillingService {
       input.memberId,
       subscription.subscriptionId,
       input.reason ?? null,
+      input.feedback?.trim().slice(0, 1000) || null,
       requestedAt,
     );
 
