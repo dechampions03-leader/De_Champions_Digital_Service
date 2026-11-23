@@ -13,6 +13,37 @@
   const clockFmt = new Intl.DateTimeFormat('en-NG', {timeZone:zone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
+  const sceneProfiles = [
+    {key:'hijri', test:/al-hijra|islamic new year/i, props:['🏮','🕌','⭐']},
+    {key:'mawlid', test:/mawlid/i, props:['🕌','🏮','🌙']},
+    {key:'new-year', test:/new year/i, props:['🎊','✨','🥂']},
+    {key:'valentine', test:/valentine/i, props:['🌹','💌','💗']},
+    {key:'women', test:/women/i, props:['🌸','✊🏽','✨']},
+    {key:'happiness', test:/happiness/i, props:['🎈','🌈','☀️']},
+    {key:'water', test:/water day/i, props:['🌊','🫧','💦']},
+    {key:'health', test:/health day/i, props:['➕','🩺','💚']},
+    {key:'earth', test:/earth day/i, props:['🍃','🦋','🌱']},
+    {key:'workers', test:/workers/i, props:['⚙️','🔧','⭐']},
+    {key:'children', test:/children/i, props:['🎈','🧸','🪁']},
+    {key:'environment', test:/environment/i, props:['🍃','🦋','🌼']},
+    {key:'democracy', test:/democracy/i, props:['🇳🇬','🗳️','⭐']},
+    {key:'skills', test:/youth skills/i, props:['🚀','💡','🎓']},
+    {key:'youth', test:/youth/i, props:['🌟','🚀','🎨']},
+    {key:'peace', test:/peace/i, props:['🕊️','🫒','🤍']},
+    {key:'independence', test:/independence/i, props:['🇳🇬','⭐','🎆']},
+    {key:'teachers', test:/teachers/i, props:['📚','✏️','🎓']},
+    {key:'christmas', test:/christmas/i, props:['🎁','❄️','🛷']},
+    {key:'boxing', test:/boxing day/i, props:['🎀','💝','✨']},
+    {key:'mothering', test:/mothering|mother'?s day/i, props:['🌷','💗','🌹']},
+    {key:'eid', test:/eid/i, props:['🌙','🏮','⭐']},
+    {key:'good-friday', test:/good friday/i, props:['🕊️','🌿','✨']},
+    {key:'easter-monday', test:/easter monday/i, props:['🐇','🌷','🦋']},
+    {key:'easter', test:/easter/i, props:['🐣','🌷','🦋']},
+    {key:'fathers', test:/father/i, props:['👔','🎖️','⭐']}
+  ];
+  const sceneForEvent = name => sceneProfiles.find(profile=>profile.test.test(name)) || {
+    key:'celebration', props:['✨','🎉','⭐']
+  };
   const localParts = date => {
     const p = Object.fromEntries(fmtParts.formatToParts(date).map(x => [x.type, x.value]));
     return {year:+p.year,month:+p.month,day:+p.day,hour:+p.hour,minute:+p.minute,second:+p.second};
@@ -38,7 +69,7 @@
     const events=[];
     const add=(month,day,data)=>{
       const start=lagosMidnight(year,month,day);
-      events.push({...data,year,month,day,key:dateKey(year,month,day),start,end:new Date(start.getTime()+dayMs)});
+      events.push({...data,scene:sceneForEvent(data.name).key,year,month,day,key:dateKey(year,month,day),start,end:new Date(start.getTime()+dayMs)});
     };
     const fixed=[
       [1,1,'New Year’s Day '+year,'🎆','A fresh year, new ideas and new possibilities.','HAPPY NEW YEAR '+year+'!','#e8bf61','#8f43da','New year'],
@@ -106,7 +137,13 @@
     setTheme(event);
     const celebrating=Boolean(active);
     root.classList.toggle('is-celebrating',celebrating);
+    const scene=sceneForEvent(event.name);
+    $('event-art').dataset.scene=scene.key;
+    $('event-art').setAttribute('aria-label',scene.key.replace(/-/g,' ')+' celebration scene');
     $('event-emoji').textContent=event.emoji;
+    $('event-scene-prop-one').textContent=scene.props[0];
+    $('event-scene-prop-two').textContent=scene.props[1];
+    $('event-scene-prop-three').textContent=scene.props[2];
     $('event-title').textContent=event.name;
     $('event-date').textContent=dateFmt.format(event.start)+(event.tentative?' · EXPECTED DATE — MAY SHIFT WITH MOON SIGHTING':'');
     $('event-kicker').textContent=celebrating?'TODAY · CELEBRATION MODE':'COUNTING DOWN TO THE NEXT CELEBRATION';
