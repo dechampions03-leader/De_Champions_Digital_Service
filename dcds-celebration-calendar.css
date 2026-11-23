@@ -31,7 +31,7 @@
 .dcds-celebration-foot{display:flex;justify-content:space-between;align-items:center;gap:10px;padding-top:12px;border-top:1px solid #ffffff26;color:#d9cce8;font:800 9px/1.4 'DM Sans',Arial,sans-serif;letter-spacing:.12em;text-transform:uppercase}
 .dcds-celebration-foot strong{color:var(--event-accent)}
 .dcds-celebration-sparkles{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-.dcds-celebration-sparkles i{position:absolute;left:calc(var(--spark-index) * 13.7%);top:calc(var(--spark-index) * 7.9%);width:4px;height:4px;border-radius:50%;background:var(--event-accent);box-shadow:0 0 12px var(--event-accent);opacity:0;animation:dcdsSparkle 3.8s ease-in-out infinite;animation-delay:calc(var(--spark-index) * -.37s)}
+.dcds-celebration-sparkles i{position:absolute;left:var(--spark-left);top:var(--spark-top);width:4px;height:4px;border-radius:50%;background:var(--event-accent);box-shadow:0 0 12px var(--event-accent);opacity:0;animation:dcdsSparkle 3.8s ease-in-out infinite;animation-delay:calc(var(--spark-index) * -.37s)}
 .dcds-celebration-frame.is-celebrating .dcds-countdown{display:none}.dcds-celebration-frame.is-celebrating .dcds-celebration-message{display:flex}
 .dcds-celebration-frame.is-celebrating .dcds-celebration-screen{background:radial-gradient(ellipse at 50% 45%,var(--event-glow),transparent 66%),linear-gradient(135deg,color-mix(in srgb,var(--event-secondary) 32%,#17101f),#17101f 55%,color-mix(in srgb,var(--event-accent) 16%,#100d19))}
 .dcds-celebration-frame.is-celebrating .dcds-celebration-art{animation:dcdsEventFloat 2.1s ease-in-out infinite}
