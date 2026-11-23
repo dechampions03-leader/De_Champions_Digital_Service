@@ -120,8 +120,14 @@
       return;
     }
     const diff=Math.max(0,event.start.getTime()-now.getTime());
-    const days=Math.floor(diff/dayMs),hours=Math.floor((diff%dayMs)/hourMs);
-    const minutes=Math.floor((diff%hourMs)/60000),seconds=Math.floor((diff%60000)/1000);
+    // Round the remaining duration up to the next whole second. This makes
+    // the countdown's seconds change on the same wall-clock second as the clock.
+    const totalSeconds=Math.ceil(diff/1000);
+    const secondsPerDay=dayMs/1000;
+    const days=Math.floor(totalSeconds/secondsPerDay);
+    const hours=Math.floor((totalSeconds%secondsPerDay)/3600);
+    const minutes=Math.floor((totalSeconds%3600)/60);
+    const seconds=totalSeconds%60;
     $('count-days').textContent=String(days).padStart(2,'0');
     $('count-hours').textContent=pad(hours);
     $('count-minutes').textContent=pad(minutes);
@@ -135,5 +141,6 @@
     const millisecondsIntoSecond=nowMs%1000;
     window.setTimeout(tick,Math.max(1,1000-millisecondsIntoSecond));
   };
-  tick();
+  const firstDelay=1000-(Date.now()%1000);
+  window.setTimeout(tick,firstDelay===1000?1:firstDelay);
 })();
