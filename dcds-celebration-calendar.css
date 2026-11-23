@@ -87,3 +87,35 @@
  .dcds-celebration-in-showcase .dcds-celebration-title{font-size:22px}
  .dcds-celebration-in-showcase .dcds-countdown-value{font-size:17px}
 }
+
+
+/* Final showcase polish: fully remove the decorative support leg so it cannot
+   overlap the launch label or following showcase text on small screens. */
+.dcds-celebration-in-showcase .dcds-celebration-frame::after{
+  content:none!important;
+  display:none!important;
+  visibility:hidden!important;
+  width:0!important;
+  height:0!important;
+  border:0!important;
+  box-shadow:none!important;
+  background:none!important;
+}
+.dcds-celebration-in-showcase .dcds-celebration-frame{
+  margin-bottom:0!important;
+}
+.dcds-celebration-in-showcase{
+  margin:0 auto clamp(38px,6vw,58px)!important;
+  padding:0 0 2px;
+}
+.dcds-celebration-in-showcase + .dcds-showcase-intro{
+  position:relative;
+  z-index:2;
+  clear:both;
+}
+@media(max-width:680px){
+  .dcds-celebration-in-showcase{margin-bottom:42px!important}
+  .dcds-celebration-in-showcase .dcds-celebration-frame::after{
+    content:none!important;display:none!important;visibility:hidden!important;
+  }
+}
