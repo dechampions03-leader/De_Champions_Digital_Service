@@ -1,6 +1,6 @@
 # DCDS Verified+ Flutterwave Sandbox Integration Runbook
 
-**Status:** Provider adapter and mocked contract tests added; live sandbox verification pending  
+**Status:** Provider adapter, provider-neutral billing orchestration service and mocked contract tests added; live sandbox verification pending  
 **Target branch:** `feature/dcds-verified-plus-ecosystem`  
 **Environment:** DCDS-Development only  
 **Production impact:** None. This runbook and adapter do not create provider plans, charge customers, create database objects, change secrets or deploy Edge Functions.
@@ -8,11 +8,12 @@
 ## 1. What is implemented in the repository
 
 - `membership-billing.ts`: server-domain rules for explicit renewal consent, plan prices, member-owned cancellation and paid-through entitlement.
-- `flutterwave-recurring-provider.ts`: provider-neutral Flutterwave V3 adapter methods for creating a plan, starting the first hosted subscription payment, looking up a subscription by its initial transaction, verifying a transaction and cancelling one individual subscription.
-- `flutterwave-recurring-provider_test.ts`: mocked HTTP contract tests for the provider request paths and payloads, plan prices/intervals, subscription cancellation, subscription lookup, transaction checks and webhook signature verification.
+- `flutterwave-recurring-provider.ts`: provider-neutral Flutterwave V3 adapter methods for creating a plan, starting recurring or one-time hosted checkout, looking up a subscription by its initial transaction, verifying a transaction and cancelling one individual subscription.
+- `membership-billing-service.ts`: repository/provider orchestration for separate one-time and recurring checkout, server-side payment verification, subscription binding, replay-safe initial-payment finalization, and member-owned cancellation with optional structured reason/feedback.
+- `flutterwave-recurring-provider_test.ts` and `membership-billing-service_test.ts`: mocked provider and service contract tests for plan requests, consent, one-time vs recurring checkout, transaction/subscription verification, duplicate payment-return replay, cancellation and preservation of paid-through access.
 - `dcds-verified-plus-auto-renewal-and-cancellation-spec.md`: the approved member-facing product and security rules.
 
-The adapter does not persist membership orders, store provider plan/subscription references, update entitlement state, send receipts or create a member cancellation screen. Those require a reconciled schema and a separately secured Development Edge Function.
+The adapter and orchestration service still do not include a concrete Supabase repository implementation, persist membership orders, store provider plan/subscription references, update entitlement state, send receipts, create a member cancellation screen or expose a billing API. Their repository interface deliberately requires the dedicated Verified+ tables and atomic RPCs that can only be implemented after the migration baseline is reconciled. A separate authenticated Development Edge Function and verified webhook handler are still required.
 
 ## 2. Flutterwave contract used
 
