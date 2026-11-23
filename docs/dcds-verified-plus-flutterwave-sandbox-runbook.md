@@ -74,7 +74,7 @@ Run this only after the Development secret is confirmed to be Test mode and afte
 2. Use a dedicated DCDS test account to opt in explicitly to renewal. The control must start unchecked; no consent means no recurring plan ID is sent to checkout.
 3. Start the hosted NGN payment using the server-owned amount, provider plan ID and the member's confirmed account email. Flutterwave's Payment Plans flow is card-only.
 4. Complete a Flutterwave test-card charge. Verify the returned transaction ID, DCDS reference, exact amount, NGN currency, successful status and customer email by calling the transaction verification endpoint.
-5. Query subscriptions using the first transaction ID, and then match the returned provider subscription ID, plan ID, amount, email and active status to the pending DCDS membership order.
+5. Query subscriptions using the first transaction ID. The adapter's `resolveSubscriptionFromInitialCharge` helper requires exactly one active match for the trusted provider plan ID, the approved amount and the customer's email before the DCDS server persists the provider subscription ID.
 6. Test one individual cancellation using the returned subscription ID. Re-query subscriptions and confirm the exact subscription is cancelled; do not cancel the reusable plan.
 7. Confirm the DCDS paid-through timestamp stays unchanged after cancellation and member access lasts until that timestamp.
 8. Trigger/inspect successful, failed and cancelled subscription events. Verify the webhook signature against the exact raw request body, re-query critical charge details with the API and process each event idempotently.
