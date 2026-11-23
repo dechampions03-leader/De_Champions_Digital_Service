@@ -687,3 +687,217 @@
  0%,100%{transform:translateY(2px) scale(.96);filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
  50%{transform:translateY(-5px) scale(1.06);filter:drop-shadow(0 0 15px rgba(255,220,139,.65))}
 }
+
+
+/* Event type label: distinguish official public holidays, observances and festival periods. */
+.dcds-celebration-category{
+ display:table;
+ width:max-content;
+ max-width:100%;
+ margin:7px 0 0;
+ padding:5px 9px;
+ border:1px solid color-mix(in srgb,var(--event-accent) 42%,transparent);
+ border-radius:999px;
+ color:#e9e0f5;
+ background:color-mix(in srgb,var(--event-accent) 10%,transparent);
+ font:800 7px/1.25 'DM Sans',Arial,sans-serif;
+ letter-spacing:.09em;
+ text-transform:uppercase;
+}
+.dcds-celebration-category:empty{display:none}
+.dcds-celebration-copy .dcds-celebration-category{margin-top:7px}
+.dcds-celebration-art[data-scene="armed-forces"],
+.dcds-celebration-art[data-scene="air-force"],
+.dcds-celebration-art[data-scene="navy"],
+.dcds-celebration-art[data-scene="army"]{
+ background:radial-gradient(ellipse at 50% 42%,rgba(220,190,120,.2),transparent 62%),linear-gradient(135deg,#2b3544,#384357 58%,#1c2639);
+}
+.dcds-celebration-art[data-scene="remembrance"],
+.dcds-celebration-art[data-scene="justice"],
+.dcds-celebration-art[data-scene="trafficking"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(199,173,224,.2),transparent 60%),linear-gradient(135deg,#302643,#27243e 65%,#17182e);
+}
+.dcds-celebration-art[data-scene="braille"],
+.dcds-celebration-art[data-scene="education"],
+.dcds-celebration-art[data-scene="languages"],
+.dcds-celebration-art[data-scene="books"],
+.dcds-celebration-art[data-scene="literacy"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(164,195,231,.2),transparent 62%),linear-gradient(135deg,#322b55,#303858 62%,#1b213b);
+}
+.dcds-celebration-art[data-scene="clean-energy"],
+.dcds-celebration-art[data-scene="science"],
+.dcds-celebration-art[data-scene="women-science"],
+.dcds-celebration-art[data-scene="tropical-health"],
+.dcds-celebration-art[data-scene="health"],
+.dcds-celebration-art[data-scene="nursing"],
+.dcds-celebration-art[data-scene="diabetes"],
+.dcds-celebration-art[data-scene="mental-health"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(104,203,179,.23),transparent 62%),linear-gradient(135deg,#173e49,#253c57 58%,#1a293e);
+}
+.dcds-celebration-art[data-scene="theatre"],
+.dcds-celebration-art[data-scene="press"],
+.dcds-celebration-art[data-scene="cultural-diversity"],
+.dcds-celebration-art[data-scene="friendship"],
+.dcds-celebration-art[data-scene="family"],
+.dcds-celebration-art[data-scene="girl-child"],
+.dcds-celebration-art[data-scene="children-rights"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(222,159,209,.22),transparent 62%),linear-gradient(135deg,#4b264b,#32224e 62%,#231b3e);
+}
+.dcds-celebration-art[data-scene="wildlife"],
+.dcds-celebration-art[data-scene="zero-waste"],
+.dcds-celebration-art[data-scene="ozone"],
+.dcds-celebration-art[data-scene="earth"],
+.dcds-celebration-art[data-scene="environment"]{
+ background:radial-gradient(ellipse at 50% 52%,rgba(104,207,139,.25),transparent 62%),linear-gradient(135deg,#16443d,#263e4b 58%,#172c35);
+}
+.dcds-celebration-art[data-scene="africa"],
+.dcds-celebration-art[data-scene="public-service"],
+.dcds-celebration-art[data-scene="population"],
+.dcds-celebration-art[data-scene="volunteer"],
+.dcds-celebration-art[data-scene="humanitarian"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(222,185,106,.23),transparent 60%),linear-gradient(135deg,#3e2b4d,#273b50 62%,#1c2f3a);
+}
+.dcds-celebration-art[data-scene="small-business"],
+.dcds-celebration-art[data-scene="mandela"],
+.dcds-celebration-art[data-scene="workplace"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(225,188,113,.21),transparent 62%),linear-gradient(135deg,#333449,#314257 58%,#20283c);
+}
+.dcds-celebration-art[data-scene="tourism"],
+.dcds-celebration-art[data-scene="beach"],
+.dcds-celebration-art[data-scene="navy"]{
+ background:radial-gradient(ellipse at 50% 55%,rgba(75,188,223,.25),transparent 60%),linear-gradient(135deg,#174b67,#234b69 58%,#1b2b49);
+}
+.dcds-celebration-art[data-scene="ramadan"],
+.dcds-celebration-art[data-scene="durbar"]{
+ background:radial-gradient(ellipse at 50% 42%,rgba(122,203,182,.25),transparent 62%),linear-gradient(135deg,#143b4b,#1d345b 58%,#241a45);
+}
+.dcds-celebration-art[data-scene="argungu"],
+.dcds-celebration-art[data-scene="osun"],
+.dcds-celebration-art[data-scene="new-yam"],
+.dcds-celebration-art[data-scene="ige-agba"],
+.dcds-celebration-art[data-scene="igbogo"]{
+ background:radial-gradient(ellipse at 50% 47%,rgba(117,198,144,.24),transparent 62%),linear-gradient(135deg,#1d4b42,#31514d 58%,#29334b);
+}
+.dcds-celebration-art[data-scene="argungu"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="osun"] .dcds-scene-main{animation-name:dcdsSceneBubble}
+.dcds-celebration-art[data-scene="new-yam"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="ige-agba"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="igbogo"] .dcds-scene-prop{animation-name:dcdsSceneDrift}
+.dcds-celebration-art[data-scene="mmanwu"],
+.dcds-celebration-art[data-scene="olojo"],
+.dcds-celebration-art[data-scene="ofala"],
+.dcds-celebration-art[data-scene="igue"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(230,176,103,.25),transparent 60%),linear-gradient(135deg,#4b2d3b,#352342 60%,#1d1b32);
+}
+.dcds-celebration-art[data-scene="mmanwu"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="olojo"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="ofala"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="igue"] .dcds-scene-main{animation-name:dcdsSceneFloat}
+.dcds-celebration-art[data-scene="calabar"],
+.dcds-celebration-art[data-scene="nyalo"],
+.dcds-celebration-art[data-scene="music-festival"],
+.dcds-celebration-art[data-scene="countdown-festival"]{
+ background:radial-gradient(ellipse at 50% 42%,rgba(230,163,110,.28),transparent 60%),linear-gradient(135deg,#4e204d,#422553 58%,#202044);
+}
+.dcds-celebration-art[data-scene="calabar"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="nyalo"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="music-festival"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="countdown-festival"] .dcds-scene-prop{animation-name:dcdsSceneBurst}
+.dcds-celebration-art[data-scene="food"] .dcds-scene-main{animation-name:dcdsSceneGift}
+@media(max-width:680px){
+ .dcds-celebration-category{font-size:6px;padding:4px 7px;margin-top:6px}
+}
+@media(prefers-reduced-motion:reduce){
+ .dcds-celebration-art .dcds-scene-main,
+ .dcds-celebration-art .dcds-scene-prop,
+ .dcds-celebration-art .dcds-scene-glint{animation:none!important}
+}
+
+
+/* Regional and festival-specific experiences for Nigerian cultural occasions. */
+.dcds-celebration-art[data-scene="isese"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(220,163,103,.24),transparent 62%),linear-gradient(135deg,#3f2a42,#34234b 60%,#1d2438);
+}
+.dcds-celebration-art[data-scene="isese"] .dcds-scene-main{animation-name:dcdsSceneFloat}
+.dcds-celebration-art[data-scene="eid-durbar"]{
+ background:radial-gradient(ellipse at 50% 44%,rgba(218,186,111,.25),transparent 60%),linear-gradient(135deg,#4a342b,#33445a 58%,#20253d);
+}
+.dcds-celebration-art[data-scene="eid-durbar"] .dcds-scene-prop{animation-name:dcdsSceneLift}
+
+
+/* Additional national-security and pan-African celebration themes. */
+.dcds-celebration-art[data-scene="national-police"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(114,174,218,.24),transparent 62%),linear-gradient(135deg,#172d4a,#263d5d 58%,#171f37);
+}
+.dcds-celebration-art[data-scene="national-police"] .dcds-scene-main{animation-name:dcdsSceneLift}
+.dcds-celebration-art[data-scene="national-youth"],
+.dcds-celebration-art[data-scene="africa-youth"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(227,190,102,.23),transparent 62%),linear-gradient(135deg,#3c2850,#27466a 60%,#1c2b43);
+}
+.dcds-celebration-art[data-scene="africa-youth"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="national-youth"] .dcds-scene-prop{animation-name:dcdsSceneLift}
+.dcds-celebration-art[data-scene="african-peace"],
+.dcds-celebration-art[data-scene="africa-union"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(137,202,186,.23),transparent 62%),linear-gradient(135deg,#24444e,#303b5b 60%,#192b3d);
+}
+.dcds-celebration-art[data-scene="africa-environment"]{
+ background:radial-gradient(ellipse at 50% 52%,rgba(106,204,137,.26),transparent 62%),linear-gradient(135deg,#17443c,#2c5149 58%,#1d303c);
+}
+.dcds-celebration-art[data-scene="africa-child"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(230,193,113,.22),transparent 62%),linear-gradient(135deg,#4b3151,#314a63 60%,#272b43);
+}
+.dcds-celebration-art[data-scene="africa-science"],
+.dcds-celebration-art[data-scene="africa-statistics"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(141,184,224,.24),transparent 60%),linear-gradient(135deg,#273653,#3b3b66 58%,#1d2642);
+}
+.dcds-celebration-art[data-scene="africa-sport"] .dcds-scene-main{animation-name:dcdsSceneBounce}
+
+
+.dcds-celebration-art[data-scene="africa-women"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(196,127,225,.26),transparent 60%),linear-gradient(135deg,#4a225f,#37244f 60%,#231b3d);
+}
+.dcds-celebration-art[data-scene="africa-food"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(223,190,110,.25),transparent 60%),linear-gradient(135deg,#513a32,#4d5141 60%,#28293c);
+}
+.dcds-celebration-art[data-scene="africa-development"],
+.dcds-celebration-art[data-scene="africa-industry"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(149,189,220,.23),transparent 62%),linear-gradient(135deg,#2c3d55,#3e3d5c 60%,#21283e);
+}
+.dcds-celebration-art[data-scene="traditional-medicine"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(117,200,143,.23),transparent 62%),linear-gradient(135deg,#20483b,#315449 60%,#1d3036);
+}
+
+
+/* Additional event-specific scene styling: health, safety, heritage and faith. */
+.dcds-celebration-art[data-scene="autism"],
+.dcds-celebration-art[data-scene="aids-awareness"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(115,177,224,.25),transparent 62%),linear-gradient(135deg,#213c5a,#30395d 60%,#1c233b);
+}
+.dcds-celebration-art[data-scene="water-safety"]{
+ background:radial-gradient(ellipse at 50% 75%,rgba(80,190,225,.3),transparent 60%),linear-gradient(135deg,#14496c,#285879 60%,#1b2a48);
+}
+.dcds-celebration-art[data-scene="indigenous-peoples"],
+.dcds-celebration-art[data-scene="african-history"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(213,170,113,.22),transparent 62%),linear-gradient(135deg,#443342,#46364e 60%,#25233a);
+}
+.dcds-celebration-art[data-scene="men"],
+.dcds-celebration-art[data-scene="commonwealth"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(115,179,227,.22),transparent 62%),linear-gradient(135deg,#203b5b,#303b5e 60%,#1d253d);
+}
+.dcds-celebration-art[data-scene="ash-wednesday"],
+.dcds-celebration-art[data-scene="maundy-thursday"],
+.dcds-celebration-art[data-scene="holy-saturday"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(193,168,218,.2),transparent 60%),linear-gradient(135deg,#352c4b,#292640 65%,#171629);
+}
+.dcds-celebration-art[data-scene="palm-sunday"]{
+ background:radial-gradient(ellipse at 50% 50%,rgba(131,192,139,.23),transparent 62%),linear-gradient(135deg,#22443b,#314b49 60%,#202c3d);
+}
+.dcds-celebration-art[data-scene="tour-nigeria"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(106,190,211,.24),transparent 60%),linear-gradient(135deg,#17485f,#2b4c67 60%,#1e2d47);
+}
+.dcds-celebration-art[data-scene="sango"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(239,156,83,.26),transparent 60%),linear-gradient(135deg,#522c30,#462546 60%,#211832);
+}
+.dcds-celebration-art[data-scene="beer-festival"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(232,189,93,.25),transparent 60%),linear-gradient(135deg,#493528,#473348 60%,#231b31);
+}
