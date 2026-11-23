@@ -40,7 +40,6 @@ const checkoutConsent = {
 const checkoutInput = {
   txRef: "DCDS-VP-00000000-0000-4000-8000-000000000001",
   planId: "monthly" as const,
-  providerPlanId: 12345,
   email: "member@example.com",
   customerName: "DCDS Test Member",
   redirectUrl: "https://dechampions03-leader.github.io/De_Champions_Digital_Service/payment-return.html",
@@ -135,7 +134,9 @@ Deno.test("plan creation rejects a provider plan that changes the amount, curren
 Deno.test("adapter blocks recurring checkout without stored member consent", async () => {
   const client = new FlutterwaveRecurringPayments({
     secretKey,
-    validatedPlanIds: ["monthly"],
+    providerPlanIds: { monthly: 12345, annual: 12346 },
+    providerPlanIds: { monthly: 12345, annual: 12346 },
+    validatedPlanIds: ["monthly", "annual"],
     fetcher: mockFetch(() => jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } })),
   });
   let blocked = false;
@@ -165,18 +166,54 @@ Deno.test("adapter blocks Five-Year checkout until the exact interval is sandbox
       ...checkoutInput,
       planId: "five_year",
       consent: fiveYearConsent,
-      providerPlanId: 12347,
-    });
+        });
   } catch (error) {
     blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "PROVIDER_INTERVAL_NOT_VALIDATED";
   }
   assert(blocked, "Five-Year checkout must remain blocked before sandbox acceptance");
 });
 
+Deno.test("checkout reads the provider plan ID from trusted plan configuration, not request input", async () => {
+  let captured: Record<string, unknown> | null = null;
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    providerPlanIds: { monthly: 98765 },
+    validatedPlanIds: ["monthly"],
+    fetcher: mockFetch((url, init) => {
+      captured = JSON.parse(String(init?.body));
+      return jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } });
+    }),
+  });
+  await client.createSubscriptionCheckout(checkoutInput);
+  assert(captured !== null, "Checkout payload captured");
+  equal(captured!.payment_plan, 98765, "Provider plan comes from trusted configuration");
+});
+
+Deno.test("checkout is blocked when no trusted provider plan ID is configured", async () => {
+  let calls = 0;
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    validatedPlanIds: ["monthly"],
+    fetcher: mockFetch(() => {
+      calls++;
+      return jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } });
+    }),
+  });
+  let blocked = false;
+  try {
+    await client.createSubscriptionCheckout(checkoutInput);
+  } catch (error) {
+    blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "INVALID_INPUT";
+  }
+  assert(blocked, "Missing provider plan mapping rejected");
+  equal(calls, 0, "No provider request for unmapped plan");
+});
+
 Deno.test("checkout sends the server-approved amount, NGN and provider plan ID", async () => {
   let captured: Record<string, unknown> | null = null;
   const client = new FlutterwaveRecurringPayments({
     secretKey,
+    providerPlanIds: { monthly: 12345 },
     validatedPlanIds: ["monthly"],
     fetcher: mockFetch((url, init) => {
       equal(url, "https://api.flutterwave.com/v3/payments", "Hosted checkout endpoint");
@@ -197,6 +234,7 @@ Deno.test("checkout sends the server-approved amount, NGN and provider plan ID",
 Deno.test("checkout rejects off-site return URLs and non-Flutterwave hosted destinations", async () => {
   const client = new FlutterwaveRecurringPayments({
     secretKey,
+    providerPlanIds: { monthly: 12345 },
     validatedPlanIds: ["monthly"],
     fetcher: mockFetch(() => jsonResponse({ status: "success", data: { link: "https://evil.example/pay" } })),
   });
@@ -221,6 +259,7 @@ Deno.test("invalid plan, tx reference and email never call Flutterwave", async (
   let calls = 0;
   const client = new FlutterwaveRecurringPayments({
     secretKey,
+    providerPlanIds: { monthly: 12345 },
     validatedPlanIds: ["monthly"],
     fetcher: mockFetch(() => {
       calls++;
@@ -228,7 +267,6 @@ Deno.test("invalid plan, tx reference and email never call Flutterwave", async (
     }),
   });
   for (const bad of [
-    { ...checkoutInput, providerPlanId: 0 },
     { ...checkoutInput, txRef: "bad-ref" },
     { ...checkoutInput, email: "not-an-email" },
   ]) {
