@@ -8,6 +8,8 @@
 
 import {
   VERIFIED_PLUS_PLAN_TERMS,
+  validateRecurringBillingConsent,
+  type RecurringBillingConsentProof,
   type VerifiedPlusPlanId,
 } from "./membership-billing.ts";
 
@@ -29,6 +31,10 @@ export interface FlutterwaveCheckoutInput {
   readonly redirectUrl: string;
   /** Opaque DCDS membership-order reference; never put identity evidence here. */
   readonly membershipOrderReference: string;
+  /** Authenticated member ID resolved by server code, never from browser metadata. */
+  readonly memberId: string;
+  /** Previously persisted, explicit, unticked-control consent evidence. */
+  readonly consent: RecurringBillingConsentProof | null;
 }
 
 export interface FlutterwaveCheckoutResult {
@@ -75,7 +81,10 @@ export class FlutterwaveRecurringPaymentError extends Error {
       | "PROVIDER_RESPONSE"
       | "PLAN_MISMATCH"
       | "TRANSACTION_MISMATCH"
-      | "SUBSCRIPTION_MISMATCH",
+      | "SUBSCRIPTION_MISMATCH"
+      | "CONSENT_REQUIRED"
+      | "CONSENT_INVALID"
+      | "PROVIDER_INTERVAL_NOT_VALIDATED",
     message: string,
     public readonly httpStatus?: number,
   ) {
@@ -97,6 +106,8 @@ export interface FlutterwaveRecurringPaymentOptions {
   readonly baseUrl?: string;
   readonly fetcher?: Fetcher;
   readonly timeoutMs?: number;
+  /** Only plans that passed their exact Flutterwave sandbox interval tests. */
+  readonly validatedPlanIds?: readonly VerifiedPlusPlanId[];
 }
 
 function isPositiveInteger(value: number): boolean {
@@ -122,6 +133,7 @@ export class FlutterwaveRecurringPayments {
   private readonly baseUrl: string;
   private readonly fetcher: Fetcher;
   private readonly timeoutMs: number;
+  private readonly validatedPlanIds: ReadonlySet<VerifiedPlusPlanId>;
 
   constructor(options: FlutterwaveRecurringPaymentOptions) {
     const secretKey = options.secretKey.trim();
@@ -136,6 +148,7 @@ export class FlutterwaveRecurringPayments {
     this.baseUrl = (options.baseUrl ?? "https://api.flutterwave.com/v3").replace(/\/$/, "");
     this.fetcher = options.fetcher ?? fetch;
     this.timeoutMs = options.timeoutMs ?? 15000;
+    this.validatedPlanIds = new Set(options.validatedPlanIds ?? []);
     if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs < 1000 || this.timeoutMs > 60000) {
       throw new FlutterwaveRecurringPaymentError("CONFIGURATION", "The provider request timeout is invalid.");
     }
@@ -235,9 +248,26 @@ export class FlutterwaveRecurringPayments {
       !validDcdsReference(input.txRef) ||
       !validEmail(input.email) ||
       !isPositiveInteger(input.providerPlanId) ||
-      !validDcdsReference(input.membershipOrderReference)
+      !validDcdsReference(input.membershipOrderReference) ||
+      !input.memberId.trim()
     ) {
       throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "The Verified+ checkout details are invalid.");
+    }
+
+    const consentDecision = validateRecurringBillingConsent({
+      memberId: input.memberId,
+      planId: input.planId,
+      consent: input.consent,
+      providerIntervalValidated: this.validatedPlanIds.has(input.planId),
+    });
+    if (!consentDecision.allowed) {
+      if (consentDecision.code === "CONSENT_REQUIRED") {
+        throw new FlutterwaveRecurringPaymentError("CONSENT_REQUIRED", consentDecision.reason);
+      }
+      if (consentDecision.code === "PROVIDER_INTERVAL_NOT_VALIDATED") {
+        throw new FlutterwaveRecurringPaymentError("PROVIDER_INTERVAL_NOT_VALIDATED", consentDecision.reason);
+      }
+      throw new FlutterwaveRecurringPaymentError("CONSENT_INVALID", consentDecision.reason);
     }
     let redirect: URL;
     try {
