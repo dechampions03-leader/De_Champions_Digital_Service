@@ -59,6 +59,16 @@ Deno.test("adapter defaults to Test mode and refuses a Live secret key", () => {
   assert(blocked, "Live key must not be accepted by default");
 });
 
+Deno.test("adapter rejects unknown key formats in Test mode", () => {
+  let blocked = false;
+  try {
+    new FlutterwaveRecurringPayments({ secretKey: "not-a-flutterwave-key" });
+  } catch (error) {
+    blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "CONFIGURATION";
+  }
+  assert(blocked, "Unknown key format rejected");
+});
+
 Deno.test("adapter rejects a Test key when Live mode is explicitly selected", () => {
   let blocked = false;
   try {
