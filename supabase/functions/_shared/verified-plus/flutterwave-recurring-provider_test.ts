@@ -278,6 +278,68 @@ Deno.test("checkout sends the server-approved amount, NGN and provider plan ID",
   equal(result.transactionReference, checkoutInput.txRef, "Transaction reference");
 });
 
+Deno.test("one-time membership checkout sends exact amount and does not attach a recurring plan", async () => {
+  let captured: { value?: Record<string, unknown> } = {};
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    fetcher: mockFetch((url, init) => {
+      equal(url, "https://api.flutterwave.com/v3/payments", "One-time checkout endpoint");
+      equal(init?.method, "POST", "One-time checkout method");
+      captured.value = JSON.parse(String(init?.body));
+      return jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/one-time-test" } });
+    }),
+  });
+  const result = await client.createOneTimeMembershipCheckout({
+    txRef: checkoutInput.txRef,
+    planId: "annual",
+    email: checkoutInput.email,
+    customerName: checkoutInput.customerName,
+    redirectUrl: checkoutInput.redirectUrl,
+    membershipOrderReference: checkoutInput.membershipOrderReference,
+  });
+  const body = captured.value;
+  assert(body !== undefined, "One-time request captured");
+  equal(body.amount, 75000, "Annual one-time amount");
+  equal(body.currency, "NGN", "One-time currency");
+  equal("payment_plan" in body, false, "No recurring plan attached");
+  equal((body.meta as Record<string, unknown>).dcds_auto_renew, false, "Automatic renewal explicitly off");
+  equal(result.transactionReference, checkoutInput.txRef, "One-time transaction reference");
+});
+
+Deno.test("one-time membership checkout validates its DCDS redirect and provider checkout host", async () => {
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    fetcher: mockFetch(() => jsonResponse({ status: "success", data: { link: "https://evil.example/pay" } })),
+  });
+  let badReturn = false;
+  try {
+    await client.createOneTimeMembershipCheckout({
+      txRef: checkoutInput.txRef,
+      planId: "monthly",
+      email: checkoutInput.email,
+      redirectUrl: "https://evil.example/return",
+      membershipOrderReference: checkoutInput.membershipOrderReference,
+    });
+  } catch (error) {
+    badReturn = error instanceof FlutterwaveRecurringPaymentError && error.code === "INVALID_INPUT";
+  }
+  assert(badReturn, "Off-site return URL rejected");
+
+  let badCheckout = false;
+  try {
+    await client.createOneTimeMembershipCheckout({
+      txRef: checkoutInput.txRef,
+      planId: "monthly",
+      email: checkoutInput.email,
+      redirectUrl: checkoutInput.redirectUrl,
+      membershipOrderReference: checkoutInput.membershipOrderReference,
+    });
+  } catch (error) {
+    badCheckout = error instanceof FlutterwaveRecurringPaymentError && error.code === "PROVIDER_RESPONSE";
+  }
+  assert(badCheckout, "Unapproved checkout host rejected");
+});
+
 Deno.test("checkout rejects off-site return URLs and non-Flutterwave hosted destinations", async () => {
   const client = new FlutterwaveRecurringPayments({
     secretKey,
