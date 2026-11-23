@@ -144,6 +144,7 @@ Deno.test("checkout sends the server-approved amount, NGN and provider plan ID",
   let captured: Record<string, unknown> | null = null;
   const client = new FlutterwaveRecurringPayments({
     secretKey,
+    validatedPlanIds: ["monthly"],
     fetcher: mockFetch((url, init) => {
       equal(url, "https://api.flutterwave.com/v3/payments", "Hosted checkout endpoint");
       equal(init?.method, "POST", "Hosted checkout method");
