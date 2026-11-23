@@ -14,6 +14,8 @@
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const sceneProfiles = [
+    {key:'hijri', test:/al-hijra|islamic new year/i, props:['🏮','🕌','⭐']},
+    {key:'mawlid', test:/mawlid/i, props:['🕌','🏮','🌙']},
     {key:'new-year', test:/new year/i, props:['🎊','✨','🥂']},
     {key:'valentine', test:/valentine/i, props:['🌹','💌','💗']},
     {key:'women', test:/women/i, props:['🌸','✊🏽','✨']},
@@ -34,8 +36,6 @@
     {key:'boxing', test:/boxing day/i, props:['🎀','💝','✨']},
     {key:'mothering', test:/mothering|mother'?s day/i, props:['🌷','💗','🌹']},
     {key:'eid', test:/eid/i, props:['🌙','🏮','⭐']},
-    {key:'hijri', test:/al-hijra|islamic new year/i, props:['🏮','🕌','⭐']},
-    {key:'mawlid', test:/mawlid/i, props:['🕌','🏮','🌙']},
     {key:'good-friday', test:/good friday/i, props:['🕊️','🌿','✨']},
     {key:'easter-monday', test:/easter monday/i, props:['🐇','🌷','🦋']},
     {key:'easter', test:/easter/i, props:['🐣','🌷','🦋']},
