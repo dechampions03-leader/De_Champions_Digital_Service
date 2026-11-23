@@ -13,7 +13,7 @@ export type VerifiedPlusBillingCurrency = "NGN";
 export interface VerifiedPlusPlanTerms {
   readonly planId: VerifiedPlusPlanId;
   readonly amountMinor: number;
-  readonly currency: VerifiedPlusBillingCurrency;
+  readonly currency: string;
   readonly entitlementTerm: {
     readonly unit: "days" | "months";
     readonly value: number;
