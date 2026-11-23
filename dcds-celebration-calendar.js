@@ -99,7 +99,7 @@
     $('current-weekday').textContent=weekdayFmt.format(now).toUpperCase();
     $('current-day-number').textContent=String(p.day);
     $('current-month-year').textContent=monthYearFmt.format(now).toUpperCase();
-    $('current-time').textContent=clockFmt.format(now).replace(/[\\u00a0\\u202f]/g,' ').toUpperCase();
+    $('current-time').textContent=clockFmt.format(now).replace(/\s+/g,' ').trim().toUpperCase();
     const active=events.find(event=>event.key===today&&now>=event.start&&now<event.end);
     const event=active||events.find(item=>item.start>now);
     if(!event)return;
