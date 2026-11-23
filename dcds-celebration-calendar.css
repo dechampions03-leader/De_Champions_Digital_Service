@@ -402,3 +402,48 @@
    font-weight:800;
  }
 }
+
+
+/* LED crossfade: alternate bulbs fade fully down while the other group rises. */
+.dcds-celebration-wrap .dcds-celebration-led-left i,
+.dcds-celebration-wrap .dcds-celebration-led-right i{
+ animation-name:dcdsLedCrossfade;
+ animation-duration:2.8s;
+ animation-timing-function:ease-in-out;
+ animation-iteration-count:infinite;
+ animation-fill-mode:both;
+}
+.dcds-celebration-wrap .dcds-celebration-led-left i:nth-child(odd),
+.dcds-celebration-wrap .dcds-celebration-led-right i:nth-child(odd){
+ animation-delay:-1.4s!important;
+}
+.dcds-celebration-wrap .dcds-celebration-led-left i:nth-child(even),
+.dcds-celebration-wrap .dcds-celebration-led-right i:nth-child(even){
+ animation-delay:0s!important;
+}
+.dcds-celebration-frame.is-celebrating .dcds-celebration-led-left i,
+.dcds-celebration-frame.is-celebrating .dcds-celebration-led-right i{
+ animation-name:dcdsLedCrossfade!important;
+ animation-duration:2.8s!important;
+}
+@keyframes dcdsLedCrossfade{
+ 0%,100%{
+   opacity:.08;
+   filter:brightness(.38) saturate(.72);
+   transform:scale(.82);
+ }
+ 50%{
+   opacity:1;
+   filter:brightness(2.4) saturate(1.6);
+   transform:scale(1.08);
+ }
+}
+@media(prefers-reduced-motion:reduce){
+ .dcds-celebration-wrap .dcds-celebration-led-left i,
+ .dcds-celebration-wrap .dcds-celebration-led-right i{
+   animation:none!important;
+   opacity:1;
+   filter:brightness(1.5);
+   transform:none;
+ }
+}

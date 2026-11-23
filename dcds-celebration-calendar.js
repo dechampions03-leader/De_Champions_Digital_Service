@@ -83,8 +83,8 @@
     add(6,nthWeekday(year,6,0,3),{name:'Father’s Day',emoji:'👔',description:'Celebrating fathers and father figures and the care they give.',greeting:'HAPPY FATHER’S DAY!',accent:'#75c5ed',secondary:'#4454a7',label:'Father’s Day'});
     return events;
   };
-  const allEvents=()=>{
-    const p=localParts(new Date());
+  const allEvents=now=>{
+    const p=localParts(now);
     return [...eventsForYear(p.year),...eventsForYear(p.year+1)].sort((a,b)=>a.start-b.start);
   };
   const setTheme=event=>{
@@ -94,8 +94,8 @@
     const rgb=[0,2,4].map(i=>parseInt(hex.slice(i,i+2),16)).join(',');
     root.style.setProperty('--event-glow','rgba('+rgb+',.42)');
   };
-  const render=()=>{
-    const now=new Date(),p=localParts(now),today=dateKey(p.year,p.month,p.day),events=allEvents();
+  const render=now=>{
+    const p=localParts(now),today=dateKey(p.year,p.month,p.day),events=allEvents(now);
     $('current-weekday').textContent=weekdayFmt.format(now).toUpperCase();
     $('current-day-number').textContent=String(p.day);
     $('current-month-year').textContent=monthYearFmt.format(now).toUpperCase();
@@ -120,13 +120,27 @@
       return;
     }
     const diff=Math.max(0,event.start.getTime()-now.getTime());
-    const days=Math.floor(diff/dayMs),hours=Math.floor((diff%dayMs)/hourMs);
-    const minutes=Math.floor((diff%hourMs)/60000),seconds=Math.floor((diff%60000)/1000);
+    // Round the remaining duration up to the next whole second. This makes
+    // the countdown's seconds change on the same wall-clock second as the clock.
+    const totalSeconds=Math.ceil(diff/1000);
+    const secondsPerDay=dayMs/1000;
+    const days=Math.floor(totalSeconds/secondsPerDay);
+    const hours=Math.floor((totalSeconds%secondsPerDay)/3600);
+    const minutes=Math.floor((totalSeconds%3600)/60);
+    const seconds=totalSeconds%60;
     $('count-days').textContent=String(days).padStart(2,'0');
     $('count-hours').textContent=pad(hours);
     $('count-minutes').textContent=pad(minutes);
     $('count-seconds').textContent=pad(seconds);
   };
-  render();
-  window.setInterval(render,1000);
+  // Align every display update to the device clock's exact second boundary.
+  // The calendar date, wall clock and remaining countdown all use one timestamp.
+  const tick=()=>{
+    const nowMs=Date.now();
+    render(new Date(nowMs));
+    const millisecondsIntoSecond=nowMs%1000;
+    window.setTimeout(tick,Math.max(1,1000-millisecondsIntoSecond));
+  };
+  const firstDelay=1000-(Date.now()%1000);
+  window.setTimeout(tick,firstDelay===1000?1:firstDelay);
 })();
