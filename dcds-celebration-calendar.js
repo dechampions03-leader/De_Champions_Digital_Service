@@ -8,6 +8,9 @@
   const hourMs = 3600000, dayMs = 86400000;
   const fmtParts = new Intl.DateTimeFormat('en-GB', {timeZone:zone,year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
   const dateFmt = new Intl.DateTimeFormat('en-GB', {timeZone:zone,weekday:'long',day:'numeric',month:'long',year:'numeric'});
+  const weekdayFmt = new Intl.DateTimeFormat('en-GB', {timeZone:zone,weekday:'long'});
+  const monthYearFmt = new Intl.DateTimeFormat('en-GB', {timeZone:zone,month:'long',year:'numeric'});
+  const clockFmt = new Intl.DateTimeFormat('en-NG', {timeZone:zone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const localParts = date => {
@@ -93,6 +96,10 @@
   };
   const render=()=>{
     const now=new Date(),p=localParts(now),today=dateKey(p.year,p.month,p.day),events=allEvents();
+    $('current-weekday').textContent=weekdayFmt.format(now).toUpperCase();
+    $('current-day-number').textContent=String(p.day);
+    $('current-month-year').textContent=monthYearFmt.format(now).toUpperCase();
+    $('current-time').textContent=clockFmt.format(now).replace(/\s+/g,' ').trim().toUpperCase();
     const active=events.find(event=>event.key===today&&now>=event.start&&now<event.end);
     const event=active||events.find(item=>item.start>now);
     if(!event)return;
