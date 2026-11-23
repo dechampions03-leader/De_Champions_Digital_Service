@@ -357,3 +357,48 @@
    to{opacity:1;transform:translateY(0)}
  }
 }
+
+
+/* Celebration Hub heading refinement: white capsule label + bold showcase-level title. */
+.dcds-celebration-intro-kicker{
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ gap:8px;
+ margin:0 auto 11px;
+ padding:9px 17px;
+ color:#7027b9;
+ background:rgba(255,255,255,.96);
+ border:1px solid #dfc9f6;
+ border-radius:999px;
+ box-shadow:0 4px 14px rgba(74,31,110,.07),inset 0 1px 0 #fff;
+ font:900 9px/1.15 'DM Sans',Arial,sans-serif;
+ letter-spacing:.17em;
+}
+.dcds-celebration-intro-kicker span{
+ color:#8051aa;
+ font-size:14px;
+ line-height:1;
+ text-shadow:none;
+}
+.dcds-celebration-intro h2{
+ color:#351052;
+ font-weight:800;
+ font-size:clamp(28px,5.8vw,42px);
+ line-height:1.1;
+ letter-spacing:-.035em;
+ text-shadow:0 1px 0 rgba(255,255,255,.35);
+}
+@media(max-width:680px){
+ .dcds-celebration-intro-kicker{
+   margin-bottom:9px;
+   padding:8px 15px;
+   font-size:8px;
+   letter-spacing:.15em;
+ }
+ .dcds-celebration-intro h2{
+   font-size:clamp(25px,7vw,34px);
+   line-height:1.1;
+   font-weight:800;
+ }
+}
