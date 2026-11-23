@@ -51,6 +51,20 @@ export interface FlutterwaveVerifiedTransaction {
   readonly customer?: { email?: string };
 }
 
+export interface FlutterwaveSubscriptionRecord {
+  readonly id: number | string;
+  readonly amount?: number;
+  readonly plan?: number | string;
+  readonly status?: string;
+  readonly customer?: { customer_email?: string; email?: string };
+}
+
+export interface FlutterwaveSubscriptionLookup {
+  readonly transactionId?: string;
+  readonly email?: string;
+  readonly planId?: number;
+}
+
 export class FlutterwaveRecurringPaymentError extends Error {
   constructor(
     public readonly code:
@@ -189,6 +203,7 @@ export class FlutterwaveRecurringPayments {
       "POST",
       {
         amount: terms.amount,
+        currency: terms.currency,
         name: "DCDS Verified+ " + PLAN_LABELS[planId] + " NGN",
         interval: terms.renewalInterval.providerIntervalText,
         // No duration: continue until the member cancels. Five-Year remains
@@ -290,6 +305,44 @@ export class FlutterwaveRecurringPayments {
     return { subscriptionId: id, status: "cancelled" };
   }
 
+  /**
+   * Looks up the individual subscription created by a first charge. Prefer
+   * transactionId because email plus plan can match several subscriptions.
+   */
+  async listSubscriptions(query: FlutterwaveSubscriptionLookup): Promise<FlutterwaveSubscriptionRecord[]> {
+    const params = new URLSearchParams();
+    if (query.transactionId) {
+      if (!/^\d{1,30}$/.test(query.transactionId)) {
+        throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "The initial Flutterwave transaction ID is invalid.");
+      }
+      params.set("transaction_id", query.transactionId);
+    }
+    if (query.email) {
+      if (!validEmail(query.email)) {
+        throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "The subscription email filter is invalid.");
+      }
+      params.set("email", query.email);
+    }
+    if (query.planId !== undefined) {
+      if (!isPositiveInteger(query.planId)) {
+        throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "The Flutterwave plan ID filter is invalid.");
+      }
+      params.set("plan", String(query.planId));
+    }
+    if (!params.size) {
+      throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "A transaction, email or plan filter is required.");
+    }
+
+    const data = await this.request<FlutterwaveSubscriptionRecord[]>(
+      "/subscriptions?" + params.toString(),
+      "GET",
+    );
+    if (!Array.isArray(data)) {
+      throw new FlutterwaveRecurringPaymentError("PROVIDER_RESPONSE", "Flutterwave returned an invalid subscription list.");
+    }
+    return data;
+  }
+
   async verifyTransaction(transactionId: string): Promise<FlutterwaveVerifiedTransaction> {
     const id = transactionId.trim();
     if (!/^\d{1,30}$/.test(id)) {
@@ -304,6 +357,41 @@ export class FlutterwaveRecurringPayments {
     }
     return data;
   }
+}
+
+/**
+ * Validate the initial or renewal charge against server-owned membership
+ * terms. A successful HTTP response alone never grants a DCDS entitlement.
+ */
+export function validateVerifiedPlusTransaction(input: {
+  readonly transaction: FlutterwaveVerifiedTransaction;
+  readonly expectedTransactionId: string;
+  readonly expectedReference: string;
+  readonly expectedPlanId: VerifiedPlusPlanId;
+  readonly expectedCustomerEmail: string;
+}): string | null {
+  const transaction=input.transaction;
+  const expected=VERIFIED_PLUS_PLAN_TERMS[input.expectedPlanId];
+  if (String(transaction.id ?? "") !== input.expectedTransactionId) {
+    return "Flutterwave transaction ID does not match the pending membership payment.";
+  }
+  if (String(transaction.tx_ref ?? "") !== input.expectedReference) {
+    return "Flutterwave transaction reference does not match the membership order.";
+  }
+  if (String(transaction.status ?? "").toLowerCase() !== "successful") {
+    return "Flutterwave has not marked the membership charge as successful.";
+  }
+  if (Number(transaction.amount) !== expected.amount) {
+    return "Flutterwave transaction amount does not match the approved membership price.";
+  }
+  if (String(transaction.currency ?? "").toUpperCase() !== expected.currency) {
+    return "Flutterwave transaction currency does not match the approved membership currency.";
+  }
+  const email=String(transaction.customer?.email ?? "").trim().toLowerCase();
+  if (!email || email !== input.expectedCustomerEmail.trim().toLowerCase()) {
+    return "Flutterwave customer email does not match the member's billing email.";
+  }
+  return null;
 }
 
 /**
