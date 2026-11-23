@@ -64,9 +64,11 @@ jobs:
           deno check supabase/functions/_shared/verified-plus/identity-provider_test.ts
           deno check supabase/functions/_shared/verified-plus/moderation-engine.ts
           deno check supabase/functions/_shared/verified-plus/moderation-engine_test.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing_test.ts
 
       - name: Run synthetic-only tests
-        run: deno test --no-check supabase/functions/_shared/verified-plus/identity-provider_test.ts supabase/functions/_shared/verified-plus/moderation-engine_test.ts
+        run: deno test --no-check supabase/functions/_shared/verified-plus/identity-provider_test.ts supabase/functions/_shared/verified-plus/moderation-engine_test.ts supabase/functions/_shared/verified-plus/membership-billing_test.ts
 
       - name: Verify mock adapter is not wired into a live Edge Function
         shell: bash
