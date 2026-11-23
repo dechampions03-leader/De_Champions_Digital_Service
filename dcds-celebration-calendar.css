@@ -823,3 +823,31 @@
  background:radial-gradient(ellipse at 50% 44%,rgba(218,186,111,.25),transparent 60%),linear-gradient(135deg,#4a342b,#33445a 58%,#20253d);
 }
 .dcds-celebration-art[data-scene="eid-durbar"] .dcds-scene-prop{animation-name:dcdsSceneLift}
+
+
+/* Additional national-security and pan-African celebration themes. */
+.dcds-celebration-art[data-scene="national-police"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(114,174,218,.24),transparent 62%),linear-gradient(135deg,#172d4a,#263d5d 58%,#171f37);
+}
+.dcds-celebration-art[data-scene="national-police"] .dcds-scene-main{animation-name:dcdsSceneLift}
+.dcds-celebration-art[data-scene="national-youth"],
+.dcds-celebration-art[data-scene="africa-youth"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(227,190,102,.23),transparent 62%),linear-gradient(135deg,#3c2850,#27466a 60%,#1c2b43);
+}
+.dcds-celebration-art[data-scene="africa-youth"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="national-youth"] .dcds-scene-prop{animation-name:dcdsSceneLift}
+.dcds-celebration-art[data-scene="african-peace"],
+.dcds-celebration-art[data-scene="africa-union"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(137,202,186,.23),transparent 62%),linear-gradient(135deg,#24444e,#303b5b 60%,#192b3d);
+}
+.dcds-celebration-art[data-scene="africa-environment"]{
+ background:radial-gradient(ellipse at 50% 52%,rgba(106,204,137,.26),transparent 62%),linear-gradient(135deg,#17443c,#2c5149 58%,#1d303c);
+}
+.dcds-celebration-art[data-scene="africa-child"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(230,193,113,.22),transparent 62%),linear-gradient(135deg,#4b3151,#314a63 60%,#272b43);
+}
+.dcds-celebration-art[data-scene="africa-science"],
+.dcds-celebration-art[data-scene="africa-statistics"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(141,184,224,.24),transparent 60%),linear-gradient(135deg,#273653,#3b3b66 58%,#1d2642);
+}
+.dcds-celebration-art[data-scene="africa-sport"] .dcds-scene-main{animation-name:dcdsSceneBounce}
