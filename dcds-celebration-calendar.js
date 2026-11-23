@@ -20,6 +20,16 @@
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const sceneProfiles = [
+    {key:'africa-youth', test:/africa youth day/i, props:['🌍','🚀','⭐']},
+    {key:'national-youth', test:/national youth day/i, props:['🇳🇬','🚀','🎓']},
+    {key:'african-peace', test:/african day of peace/i, props:['🕊️','🌍','✨']},
+    {key:'africa-environment', test:/africa environment|wangari maathai/i, props:['🌳','🌍','🍃']},
+    {key:'africa-child', test:/african day of the child|day of the african child/i, props:['🧒🏾','🌍','🎓']},
+    {key:'africa-science', test:/scientific renaissance|science/i, props:['🔬','🌍','💡']},
+    {key:'africa-sport', test:/african sport/i, props:['🏅','⚽','🌍']},
+    {key:'africa-statistics', test:/statistics/i, props:['📊','🌍','📈']},
+    {key:'national-police', test:/national police day/i, props:['👮🏾','🛡️','⭐']},
+    {key:'africa-union', test:/african union|africa border|african integration|africa day|african public service/i, props:['🌍','🤝','⭐']},
     {key:'hijri', test:/al-hijra|islamic new year/i, props:['🏮','🕌','⭐']},
     {key:'mawlid', test:/mawlid/i, props:['🕌','🏮','🌙']},
     {key:'new-year', test:/new year/i, props:['🎊','✨','🥂']},
@@ -112,6 +122,8 @@
     if(/new year.s day|workers.day|democracy day \(nigeria\)|nigeria independence day|christmas day|boxing day|good friday|easter monday/i.test(name)) return 'Nigerian public holiday';
     if(/armed forces|air force day|navy day|army day|children.s day \(nigeria\)/i.test(name)) return 'Nigerian national observance';
     if(/isese day/i.test(name)) return 'State-level observance · participating South-West states';
+    if(/national police day|national youth day/i.test(name)) return 'Nigerian national observance';
+    if(/african |africa /i.test(name)) return 'African Union observance';
     if(/ramadan|eid|al-hijra|ashura|mawlid|ash wednesday|palm sunday|maundy thursday|holy saturday|easter sunday|mothering sunday/i.test(name)) return 'Religious observance';
     if(/festival|durbar|ofala|osun|argungu|new yam|mmanwu|igue|olojo|igbogo|calabar|nyalo|regatta|carnival/i.test(name)) return 'Nigerian cultural festival';
     if(/africa day/i.test(name)) return 'African Union observance';
@@ -258,6 +270,36 @@
       [12,31,'New Year’s Eve','🎇','Celebrating the year’s journey and welcoming a new beginning.','HAPPY NEW YEAR’S EVE!','#e8bf61','#8f43da','New Year’s Eve']
     ];
     annualObservances.forEach(([m,d,name,emoji,description,greeting,accent,secondary,label])=>
+      add(m,d,{name,emoji,description,greeting,accent,secondary,label,category:categoryForEvent(name)})
+    );
+    const NigeriaAndAfricanObservances=[
+      [1,31,'African Day of Peace and Reconciliation','🕊️','Promoting dialogue, peacebuilding and reconciliation across Africa.','AFRICAN DAY OF PEACE & RECONCILIATION!','#a8c9e5','#426a9a','Peace in Africa'],
+      [3,1,'African Day of School Feeding','🍲','Highlighting school meals as a support for children’s nutrition, health and education across Africa.','AFRICAN DAY OF SCHOOL FEEDING!','#e5c376','#5a8b63','School feeding'],
+      [3,3,'Africa Environment and Wangari Maathai Day','🌳','Celebrating environmental leadership, tree planting and care for Africa’s natural heritage.','AFRICA ENVIRONMENT DAY!','#78c98c','#296d55','African environment'],
+      [4,7,'National Police Day (Nigeria)','👮🏾','Honouring Nigeria Police Force personnel and remembering officers who died in service.','HAPPY NATIONAL POLICE DAY!','#8bb9df','#334c80','National Police Day'],
+      [4,7,'African Union Day of Remembrance of the 1994 Genocide Against the Tutsi','🕯️','Remembering victims of the 1994 Genocide Against the Tutsi in Rwanda and honouring survivors.','A DAY OF REMEMBRANCE AND REFLECTION!','#b7a8c8','#473c62','Remembrance'],
+      [4,23,'Day of the Battle of Cuito Cuanavale','🕊️','Remembering a pivotal moment in the history of southern Africa and its liberation struggles.','AFRICAN HISTORY & REMEMBRANCE!','#c6b08b','#65517b','African history'],
+      [6,7,'Africa Border Day','🌍','Promoting cooperation, peace and development across Africa’s borders.','AFRICA BORDER DAY!','#8bbbd6','#476b8a','Border cooperation'],
+      [6,23,'African Public Service Day','🏛️','Recognising public servants and the role of effective public institutions in Africa.','AFRICAN PUBLIC SERVICE DAY!','#88b7db','#48548a','Public service'],
+      [6,30,'Day of Africa’s Scientific Renaissance','🔬','Celebrating African science, research, invention and innovation.','AFRICA SCIENTIFIC RENAISSANCE!','#9ac4e2','#51488f','Science and innovation'],
+      [7,7,'African Integration Day','🤝','Celebrating unity, regional cooperation and integration across Africa.','AFRICAN INTEGRATION DAY!','#e0be76','#566b89','African unity'],
+      [7,11,'African Anti-Corruption Day','⚖️','Promoting transparency, accountability and integrity across African institutions.','AFRICAN ANTI-CORRUPTION DAY!','#8ac7a4','#416b69','Integrity'],
+      [7,25,'Africa Day of Seas and Oceans','🌊','Encouraging the protection and sustainable use of Africa’s seas and oceans.','PROTECT AFRICA’S SEAS AND OCEANS!','#74c7df','#285f8b','Seas and oceans'],
+      [7,31,'Africa’s Women Day','💜','Celebrating African women’s achievements, leadership and contributions.','HAPPY AFRICA’S WOMEN DAY!','#c18be0','#70428f','African women'],
+      [8,10,'Africa Day of Decentralisation and Local Development','🏘️','Promoting effective local governance and community-led development across Africa.','LOCAL DEVELOPMENT, SHARED PROGRESS!','#d9bd7e','#5c7088','Local development'],
+      [8,10,'Africa Civil Registration and Vital Statistics Day','📋','Promoting reliable civil registration and vital statistics systems across Africa.','AFRICA CIVIL REGISTRATION DAY!','#8fb9da','#4b5b8f','Civil registration'],
+      [8,31,'African Traditional Medicine Day','🌿','Recognising traditional medicine heritage and encouraging safe, evidence-informed health practice.','AFRICAN TRADITIONAL MEDICINE DAY!','#82c39c','#386b5a','Traditional medicine'],
+      [9,9,'African Union Day','🌍','Celebrating African unity, cooperation and the institutions of the African Union.','HAPPY AFRICAN UNION DAY!','#e1c078','#526b8a','African Union'],
+      [10,21,'Africa Human Rights Day','⚖️','Promoting human dignity, justice and the protection of human rights across Africa.','AFRICA HUMAN RIGHTS DAY!','#8ebdde','#53558e','Human rights'],
+      [10,30,'Africa Food Security and Nutrition Day','🌾','Advancing food security, nutrition and resilient food systems across Africa.','AFRICA FOOD SECURITY & NUTRITION DAY!','#d6bc78','#55865b','Food security'],
+      [11,1,'National Youth Day (Nigeria)','🚀','Celebrating Nigerian young people and promoting youth participation, opportunity and development.','HAPPY NATIONAL YOUTH DAY!','#e8c35e','#7950dc','Nigerian youth'],
+      [11,1,'Africa Youth Day','🌍','Amplifying the voices of African youth and recognising young people as agents of change.','HAPPY AFRICA YOUTH DAY!','#e8c35e','#4b6a9c','African youth'],
+      [11,18,'African Statistics Day','📊','Highlighting quality statistics and data for planning and development in Africa.','AFRICAN STATISTICS DAY!','#9cbbe1','#4a568a','African statistics'],
+      [11,20,'Africa Industrialisation Day','🏭','Promoting industrial development, innovation, productive capacity and jobs across Africa.','AFRICA INDUSTRIALISATION DAY!','#d8b879','#655282','Industry'],
+      [12,7,'Africa Telecommunications and ICT Day','📡','Celebrating communication networks and digital inclusion across Africa.','AFRICA TELECOMMUNICATIONS & ICT DAY!','#89c6df','#52458b','Digital Africa'],
+      [12,14,'Day of African Sport','🏅','Celebrating sport, physical activity and African sporting talent.','HAPPY DAY OF AFRICAN SPORT!','#e4c06f','#5a528c','African sport']
+    ];
+    NigeriaAndAfricanObservances.forEach(([m,d,name,emoji,description,greeting,accent,secondary,label])=>
       add(m,d,{name,emoji,description,greeting,accent,secondary,label,category:categoryForEvent(name)})
     );
     // Easter dates are calculated for each Gregorian year.
