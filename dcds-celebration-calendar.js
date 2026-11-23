@@ -123,7 +123,7 @@
     if(/armed forces|air force day|navy day|army day|children.s day \(nigeria\)/i.test(name)) return 'Nigerian national observance';
     if(/isese day/i.test(name)) return 'State-level observance · participating South-West states';
     if(/national police day|national youth day/i.test(name)) return 'Nigerian national observance';
-    if(/african |africa /i.test(name)) return 'African Union observance';
+    if(/african|africa /i.test(name)) return 'African Union observance';
     if(/ramadan|eid|al-hijra|ashura|mawlid|ash wednesday|palm sunday|maundy thursday|holy saturday|easter sunday|mothering sunday/i.test(name)) return 'Religious observance';
     if(/festival|durbar|ofala|osun|argungu|new yam|mmanwu|igue|olojo|igbogo|calabar|nyalo|regatta|carnival/i.test(name)) return 'Nigerian cultural festival';
     if(/africa day/i.test(name)) return 'African Union observance';
