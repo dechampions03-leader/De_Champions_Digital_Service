@@ -70,9 +70,11 @@ jobs:
           deno check supabase/functions/_shared/verified-plus/membership-billing_test.ts
           deno check supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts
           deno check supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing-service.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing-service_test.ts
 
       - name: Run synthetic-only tests
-        run: deno test --no-check supabase/functions/_shared/verified-plus/identity-provider_test.ts supabase/functions/_shared/verified-plus/moderation-engine_test.ts supabase/functions/_shared/verified-plus/membership-billing_test.ts supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts
+        run: deno test --no-check supabase/functions/_shared/verified-plus/identity-provider_test.ts supabase/functions/_shared/verified-plus/moderation-engine_test.ts supabase/functions/_shared/verified-plus/membership-billing_test.ts supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts supabase/functions/_shared/verified-plus/membership-billing-service_test.ts
 
       - name: Verify mock adapter is not wired into a live Edge Function
         shell: bash
@@ -106,6 +108,8 @@ jobs:
           membership_billing = Path("supabase/functions/_shared/verified-plus/membership-billing.ts").read_text(encoding="utf-8")
           flutterwave_adapter = Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8")
           flutterwave_adapter_tests = Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts").read_text(encoding="utf-8")
+          billing_service = Path("supabase/functions/_shared/verified-plus/membership-billing-service.ts").read_text(encoding="utf-8")
+          billing_service_tests = Path("supabase/functions/_shared/verified-plus/membership-billing-service_test.ts").read_text(encoding="utf-8")
 
           flutterwave_runbook = Path("docs/dcds-verified-plus-flutterwave-sandbox-runbook.md").read_text(encoding="utf-8")
           provider_contract = Path("docs/dcds-verified-plus-provider-adapter-contract.md").read_text(encoding="utf-8")
@@ -147,6 +151,12 @@ jobs:
               "billing release respects the existing database migration blocker": "migration-reconciliation report identifies mismatched Supabase migration histories" in renewal_policy and "Do not create or apply membership billing tables" in renewal_policy,
               "manual renewal uses a separate Flutterwave checkout with no payment plan": "createOneTimeMembershipCheckout" in flutterwave_adapter and "payment_plan" not in flutterwave_adapter.split("async createOneTimeMembershipCheckout", 1)[1].split("async cancelSubscription", 1)[0],
               "one-time checkout tests prove auto-renew is disabled": "one-time membership checkout sends exact amount and does not attach a recurring plan" in flutterwave_adapter_tests and '"payment_plan" in body' in flutterwave_adapter_tests and "dcds_auto_renew" in flutterwave_adapter_tests,
+              "billing service separates one-time and recurring checkout": "createOneTimeMembershipCheckout" in billing_service and "createSubscriptionCheckout" in billing_service and "auto_renew" in billing_service and "one_time" in billing_service,
+              "billing service verifies charges before finalization": "verifyInitialPayment" in billing_service and "validateVerifiedPlusTransaction" in billing_service and "finalizeInitialPayment" in billing_service,
+              "billing service resolves an individual recurring subscription before entitlement": "resolveSubscriptionFromInitialCharge" in billing_service and "providerSubscriptionId" in billing_service,
+              "billing service supports member-owned cancellation and provider confirmation": "cancelAutoRenew" in billing_service and "getOwnedAutoRenewSubscription" in billing_service and "confirmProviderCancellation" in billing_service,
+              "billing service makes payment finalization replay-safe": "findFinalizedCheckoutForMember" in billing_service and "if (finalized) return finalized" in billing_service,
+              "billing service tests cover separate checkout, verified payments, replay and cancellation": "manual one-time checkout" in billing_service_tests and "initial recurring payment" in billing_service_tests and "repeated verification" in billing_service_tests and "self-service cancellation" in billing_service_tests,
               "Flutterwave recurring checkout enforces explicit persisted consent": "validateRecurringBillingConsent" in flutterwave_adapter and "input.consent" in flutterwave_adapter,
               "Flutterwave provider plan IDs come only from the server-side plan mapping": "providerPlanIds[input.planId]" in flutterwave_adapter and "providerPlanIds?: Partial<Record<VerifiedPlusPlanId, number>>" in flutterwave_adapter and "readonly providerPlanId:" not in flutterwave_adapter.split("export class FlutterwaveRecurringPayments", 1)[0] and "input.providerPlanId" not in flutterwave_adapter,
               "Flutterwave sandbox qualification is available only in Test mode": "allowSandboxQualification" in flutterwave_adapter and "environment !== \"test\"" in flutterwave_adapter,
