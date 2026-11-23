@@ -9,6 +9,7 @@ import {
   VERIFIED_PLUS_PLAN_TERMS,
   type RecurringBillingConsentProof,
   type VerifiedPlusSubscription,
+  type VerifiedPlusCancellationReason,
 } from "./membership-billing.ts";
 import type {
   FlutterwaveCancellationResult,
@@ -86,7 +87,7 @@ class FakeRepository implements VerifiedPlusBillingRepository {
   startFailureCode: string | null = null;
   finalization: Parameters<VerifiedPlusBillingRepository["finalizeInitialPayment"]>[0] | null = null;
   finalizedCheckout: { readonly alreadyFinalized: true; readonly paidThroughAt: string } | null = null;
-  cancelStart: { memberId: string; subscriptionId: string; reason: string | null; requestedAt: string } | null = null;
+  cancelStart: { memberId: string; subscriptionId: string; reason: VerifiedPlusCancellationReason | null; feedback: string | null; requestedAt: string } | null = null;
   cancelConfirmation: VerifiedPlusSubscription | null = null;
   cancelFailureCode: string | null = null;
 
@@ -128,8 +129,8 @@ class FakeRepository implements VerifiedPlusBillingRepository {
   async getOwnedAutoRenewSubscription(): Promise<VerifiedPlusSubscription | null> {
     return this.ownedSubscription;
   }
-  async beginMemberCancellation(memberId: string, subscriptionId: string, reason: string | null, requestedAt: string): Promise<void> {
-    this.cancelStart = { memberId, subscriptionId, reason, requestedAt };
+  async beginMemberCancellation(memberId: string, subscriptionId: string, reason: VerifiedPlusCancellationReason | null, feedback: string | null, requestedAt: string): Promise<void> {
+    this.cancelStart = { memberId, subscriptionId, reason, feedback, requestedAt };
   }
   async markMemberCancellationAttemptFailed(_memberId: string, _subscriptionId: string, safeErrorCode: string): Promise<void> {
     this.cancelFailureCode = safeErrorCode;
@@ -333,6 +334,21 @@ Deno.test("self-service cancellation calls only the owned provider subscription 
   equal(result.paidThroughAt, paidThroughAt, "Paid-through access preserved");
   equal(repository.cancelConfirmation?.paidThroughAt, paidThroughAt, "Persisted paid-through access");
   equal(repository.cancelConfirmation?.billingState, "cancelled_auto_renew", "Persisted cancellation state");
+});
+
+Deno.test("member cancellation accepts optional approved reason and separate feedback", async () => {
+  const repository = new FakeRepository();
+  repository.ownedSubscription = subscription();
+  const provider = new FakeProvider();
+  const service = new VerifiedPlusBillingService(repository, provider);
+  await service.cancelAutoRenew({
+    memberId,
+    reason: "too_expensive",
+    feedback: "I may return later.",
+    requestedAt: "2026-11-23T08:00:00.000Z",
+  });
+  equal(repository.cancelStart?.reason, "too_expensive", "Structured cancellation reason");
+  equal(repository.cancelStart?.feedback, "I may return later.", "Optional free-text feedback");
 });
 
 Deno.test("provider cancellation failures remain retryable and never claim success", async () => {
