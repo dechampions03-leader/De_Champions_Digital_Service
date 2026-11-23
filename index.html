@@ -25,6 +25,7 @@
 <meta name="twitter:title" content="De Champions Digital Services">
 <meta name="twitter:description" content="Practical digital skills, creative learning and innovation.">
 <title>De Champions Digital Services | Create. Learn. Innovate. Earn.</title>
+<link rel="stylesheet" href="./dcds-celebration-calendar.css">
 <script type="application/ld+json">
 {
   "@context":"https://schema.org",
@@ -464,6 +465,39 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
  <div class="dcds-ticker-label"><i aria-hidden="true"></i> DCDS UPDATES</div>
  <div class="dcds-ticker-viewport"><div class="dcds-ticker-track" id="dcdsTickerTrack"></div></div>
 </div>
+
+<section class="dcds-celebration-wrap" aria-label="DCDS automatic celebration and countdown">
+ <div class="dcds-celebration-frame" id="dcds-celebration-display">
+  <div class="dcds-celebration-led dcds-celebration-led-left" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <div class="dcds-celebration-screen">
+   <div class="dcds-celebration-sparkles" aria-hidden="true"><i style="--spark-index:1;--spark-left:8%;--spark-top:19%"></i><i style="--spark-index:2;--spark-left:22%;--spark-top:74%"></i><i style="--spark-index:3;--spark-left:39%;--spark-top:10%"></i><i style="--spark-index:4;--spark-left:56%;--spark-top:83%"></i><i style="--spark-index:5;--spark-left:72%;--spark-top:22%"></i><i style="--spark-index:6;--spark-left:88%;--spark-top:65%"></i><i style="--spark-index:7;--spark-left:48%;--spark-top:50%"></i></div>
+   <div class="dcds-celebration-head">
+    <span class="dcds-celebration-brand"><span class="dcds-celebration-brand-mark">D</span> DE CHAMPIONS DIGITAL SERVICE</span>
+    <span class="dcds-celebration-status" id="event-status">UPCOMING CELEBRATION</span>
+   </div>
+   <div class="dcds-celebration-body">
+    <div class="dcds-celebration-art" id="event-emoji" aria-hidden="true">🎄</div>
+    <div class="dcds-celebration-copy">
+     <p class="dcds-celebration-kicker" id="event-kicker">COUNTING DOWN TO THE NEXT CELEBRATION</p>
+     <h2 class="dcds-celebration-title" id="event-title">Christmas Day</h2>
+     <p class="dcds-celebration-date" id="event-date">25 December 2026</p>
+     <div class="dcds-countdown" aria-label="Countdown to the next celebration">
+      <div class="dcds-countdown-unit"><strong class="dcds-countdown-value" id="count-days">--</strong><span class="dcds-countdown-label">Days</span></div>
+      <div class="dcds-countdown-unit"><strong class="dcds-countdown-value" id="count-hours">--</strong><span class="dcds-countdown-label">Hours</span></div>
+      <div class="dcds-countdown-unit"><strong class="dcds-countdown-value" id="count-minutes">--</strong><span class="dcds-countdown-label">Minutes</span></div>
+      <div class="dcds-countdown-unit"><strong class="dcds-countdown-value" id="count-seconds">--</strong><span class="dcds-countdown-label">Seconds</span></div>
+     </div>
+     <div class="dcds-celebration-message" aria-live="polite">
+      <h3 class="dcds-celebration-greeting" id="event-greeting">MERRY CHRISTMAS!</h3>
+      <p class="dcds-celebration-description" id="event-description">Wishing everyone peace, love, generosity and a joyful Christmas season.</p>
+     </div>
+    </div>
+   </div>
+   <div class="dcds-celebration-foot"><span id="event-footer-label">Next up: Christmas</span><strong id="event-calendar-note">DCDS · NIGERIA TIME · AUTOMATIC LIVE COUNTDOWN</strong></div>
+  </div>
+  <div class="dcds-celebration-led dcds-celebration-led-right" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+ </div>
+</section>
 
 <main>
 <section class="hero" id="home"><div class="hero-orbit hero-orbit-one" aria-hidden="true"></div><div class="hero-orbit hero-orbit-two" aria-hidden="true"></div><div class="container hero-grid"><div class="hero-copy">
@@ -2820,4 +2854,5 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
  }catch(error){console.warn("DCDS showcase media could not be loaded:",error);}
 })();
 </script>
+<script src="./dcds-celebration-calendar.js" defer></script>
 </body></html>
