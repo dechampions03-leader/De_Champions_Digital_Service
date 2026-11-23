@@ -38,7 +38,7 @@
       events.push({...data,year,month,day,key:dateKey(year,month,day),start,end:new Date(start.getTime()+dayMs)});
     };
     const fixed=[
-      [1,1,'New Year’s Day','🎆','A fresh year, new ideas and new possibilities.','HAPPY NEW YEAR!','#e8bf61','#8f43da','New year'],
+      [1,1,'New Year’s Day '+year,'🎆','A fresh year, new ideas and new possibilities.','HAPPY NEW YEAR '+year+'!','#e8bf61','#8f43da','New year'],
       [2,14,'Valentine’s Day','❤️','Celebrate kindness, friendship and the people who make life brighter.','HAPPY VALENTINE’S DAY!','#ff668b','#9f245e','Love and kindness'],
       [3,8,'International Women’s Day','💜','Celebrating the achievements, strength and contributions of women everywhere.','HAPPY INTERNATIONAL WOMEN’S DAY!','#b66af1','#6d35ba','Women’s Day'],
       [3,20,'International Day of Happiness','😊','Share joy, encourage one another and make room for happiness.','HAPPY DAY OF HAPPINESS!','#f5d56d','#35a98b','Choose happiness'],
