@@ -245,10 +245,12 @@ export class FlutterwaveRecurringPayments {
   async createSubscriptionCheckout(input: FlutterwaveCheckoutInput): Promise<FlutterwaveCheckoutResult> {
     const terms = VERIFIED_PLUS_PLAN_TERMS[input.planId];
     if (
+      !terms ||
       !validDcdsReference(input.txRef) ||
       !validEmail(input.email) ||
       !isPositiveInteger(input.providerPlanId) ||
       !validDcdsReference(input.membershipOrderReference) ||
+      typeof input.memberId !== "string" ||
       !input.memberId.trim()
     ) {
       throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "The Verified+ checkout details are invalid.");
