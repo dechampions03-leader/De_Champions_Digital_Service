@@ -197,3 +197,23 @@ Production remains untouched until:
 - No production deployment was triggered.
 
 **Current status:** Migration reconciliation is a release blocker. Frontend design and provider-interface work can be prepared behind disabled feature flags, but database-backed Verified+ activation and TRUSTMARKET transactions must wait for a reconciled development schema.
+
+
+## Latest DCDS-Development revalidation — 2026-11-23
+
+This follow-up was a read-only check of DCDS-Development (tjgsxbmkpvktlqulbktv) after the Verified+ billing adapter work was added to the feature branch.
+
+| Check | Result |
+|---|---:|
+| Project status | ACTIVE_HEALTHY |
+| Applied remote migration records | 54 |
+| Public tables | 81 |
+| Verified+ billing / identity / membership-specific tables | 0 |
+| Newly deployed Verified+ billing Edge Functions | 0 |
+| DDL or data-changing operations in this revalidation | 0 |
+
+A targeted information-schema search for tables containing verified_plus, membership, subscription, or billing returned only public.dcds_community_memberships. Its columns are id, room_id, user_id, role, status, created_at, and updated_at. Its RLS policies restrict member reads to the member's own room membership (or the existing DCDS admin helper) and administrator writes to the community administration path. This is the supervised Student Community room-membership table, not a Verified+ paid membership, subscription, entitlement, or billing ledger. Do not repurpose it.
+
+The Development Edge Function inventory still contains the existing course-payment, VTU, webhook and AI functions, but no Verified+ billing checkout, cancellation or membership webhook function. Existing create-payment and verify-payment are course-specific and must remain separate from Verified+.
+
+**Decision remains unchanged:** migration reconciliation is still a hard blocker. Do not apply a new migration, execute DDL, deploy a billing function, create Flutterwave plans, or change Development/Production secrets as part of this revalidation. The dedicated Verified+ schema, RLS, transactional RPCs and webhook persistence must wait for a reconciled, reproducible Development migration baseline.
