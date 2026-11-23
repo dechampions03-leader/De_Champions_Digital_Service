@@ -101,9 +101,12 @@
     key:'celebration', props:['✨','🎉','⭐']
   };
   const categoryForEvent = name => {
-    if(/new year|valentine|women|happiness|water day|health day|earth day|environment day|youth skills|international youth|peace|teachers|world |international day|africa day|tourism day|friendship|poetry|literacy|science|malaria|aids|human rights|disabilit|volunteer|tolerance|refugee|migrant|breastfeeding|nurses|family/i.test(name)) return 'International observance';
-    if(/workers|democracy day|independence|national day|armed forces|air force day|navy day|army day|children.s day|christmas|boxing day|good friday|easter monday|eid|maulud/i.test(name)) return 'Nigerian public holiday or national observance';
+    if(/new year.s day|workers.day|democracy day \(nigeria\)|nigeria independence day|christmas day|boxing day|good friday|easter monday/i.test(name)) return 'Nigerian public holiday';
+    if(/armed forces|air force day|navy day|army day|children.s day \(nigeria\)/i.test(name)) return 'Nigerian national observance';
+    if(/ramadan|eid|al-hijra|ashura|mawlid|ash wednesday|palm sunday|maundy thursday|holy saturday|easter sunday|mothering sunday/i.test(name)) return 'Religious observance';
     if(/festival|durbar|ofala|osun|argungu|new yam|mmanwu|igue|olojo|igbogo|calabar|nyalo|regatta|carnival/i.test(name)) return 'Nigerian cultural festival';
+    if(/nigerian|nigeria|africa day|commonwealth day|children.s day/i.test(name)) return 'Nigerian national observance';
+    if(/world |international day|international women|international youth|african child/i.test(name)) return 'International observance';
     return 'Community and cultural observance';
   };
   const localParts = date => {
@@ -336,12 +339,13 @@
     // display cycle so none is silently hidden behind another event.
     const activeExact=activeExactEvents.length?activeExactEvents[Math.floor(now.getTime()/12000)%activeExactEvents.length]:null;
     const activeSeasons=events.filter(event=>event.season&&now>=event.start&&now<event.end);
-    const activeSeason=activeSeasons.length?activeSeasons[Math.floor(now.getTime()/12000)%activeSeasons.length]:null;
+    const activeSeasonCandidate=activeSeasons.length?activeSeasons[Math.floor(now.getTime()/12000)%activeSeasons.length]:null;
     const upcomingExact=events.find(item=>!item.season&&item.start>now);
     // Keep dated observances visible when one is close, even during a broad
     // cultural-season window. Month-only dates never mask an exact event due soon.
     const exactEventDueSoon=Boolean(upcomingExact&&upcomingExact.start.getTime()-now.getTime()<=7*dayMs);
-    const active=activeExact||(exactEventDueSoon?null:activeSeason);
+    const activeSeason=(!activeExact&&!exactEventDueSoon)?activeSeasonCandidate:null;
+    const active=activeExact||activeSeason;
     const event=active||(exactEventDueSoon?upcomingExact:events.find(item=>item.start>now));
     if(!event)return;
     setTheme(event);
@@ -355,7 +359,7 @@
     $('event-scene-prop-two').textContent=scene.props[1];
     $('event-scene-prop-three').textContent=scene.props[2];
     $('event-title').textContent=event.name;
-    $('event-date').textContent=(event.dateLabel||dateFmt.format(event.start))+(event.tentative&&!event.dateLabel?' · EXPECTED / PROVISIONAL DATE':'');
+    $('event-date').textContent=(event.dateLabel||dateFmt.format(event.start))+(event.tentative&&!event.dateLabel?(event.category&&/public holiday|eid|mawlud/i.test(event.category+' '+event.name)?' · TENTATIVE — MAY SHIFT WITH MOON SIGHTING':' · EXPECTED DATE — LOCAL CONFIRMATION PENDING'):'');
     $('event-category').textContent=event.category||categoryForEvent(event.name);
     $('event-kicker').textContent=activeSeason?'FESTIVAL WINDOW · LOCAL PROGRAMME DATES VARY':(celebrating?'TODAY · CELEBRATION MODE':(event.season?'COUNTING DOWN TO THE FESTIVAL PERIOD':'COUNTING DOWN TO THE NEXT CELEBRATION'));
     $('event-status').textContent=activeSeason?'FESTIVAL PERIOD':(celebrating?'TODAY IS THE DAY':'UPCOMING CELEBRATION');
