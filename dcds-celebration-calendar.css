@@ -851,3 +851,18 @@
  background:radial-gradient(ellipse at 50% 45%,rgba(141,184,224,.24),transparent 60%),linear-gradient(135deg,#273653,#3b3b66 58%,#1d2642);
 }
 .dcds-celebration-art[data-scene="africa-sport"] .dcds-scene-main{animation-name:dcdsSceneBounce}
+
+
+.dcds-celebration-art[data-scene="africa-women"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(196,127,225,.26),transparent 60%),linear-gradient(135deg,#4a225f,#37244f 60%,#231b3d);
+}
+.dcds-celebration-art[data-scene="africa-food"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(223,190,110,.25),transparent 60%),linear-gradient(135deg,#513a32,#4d5141 60%,#28293c);
+}
+.dcds-celebration-art[data-scene="africa-development"],
+.dcds-celebration-art[data-scene="africa-industry"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(149,189,220,.23),transparent 62%),linear-gradient(135deg,#2c3d55,#3e3d5c 60%,#21283e);
+}
+.dcds-celebration-art[data-scene="traditional-medicine"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(117,200,143,.23),transparent 62%),linear-gradient(135deg,#20483b,#315449 60%,#1d3036);
+}
