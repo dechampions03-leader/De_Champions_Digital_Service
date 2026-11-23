@@ -23,7 +23,7 @@ function mockFetch(
   return async (input, init) => handler(String(input), init);
 }
 
-const secretKey = "FLWSECK_TEST_NOT_A_REAL_SECRET";
+const secretKey = "FLWSECK_TEST-UNIT-TEST-NOT-A-REAL-SECRET";
 const checkoutConsent = {
   memberId: "member-123",
   planId: "monthly" as const,
@@ -48,6 +48,29 @@ const checkoutInput = {
   memberId: "member-123",
   consent: checkoutConsent,
 };
+
+Deno.test("adapter defaults to Test mode and refuses a Live secret key", () => {
+  let blocked = false;
+  try {
+    new FlutterwaveRecurringPayments({ secretKey: "FLWSECK-LIVE-PLACEHOLDER" });
+  } catch (error) {
+    blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "CONFIGURATION";
+  }
+  assert(blocked, "Live key must not be accepted by default");
+});
+
+Deno.test("adapter rejects a Test key when Live mode is explicitly selected", () => {
+  let blocked = false;
+  try {
+    new FlutterwaveRecurringPayments({
+      secretKey,
+      environment: "live",
+    });
+  } catch (error) {
+    blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "CONFIGURATION";
+  }
+  assert(blocked, "Test key must not be accepted in Live mode");
+});
 
 Deno.test("createPaymentPlan provisions each exact approved NGN plan with no fixed duration", async () => {
   for (const planId of ["monthly", "annual", "five_year"] as const) {
