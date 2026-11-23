@@ -147,7 +147,8 @@ export class FlutterwaveRecurringPayments {
     }
     const environment = options.environment ?? "test";
     const isTestKey = secretKey.startsWith("FLWSECK_TEST-");
-    if ((environment === "test" && !isTestKey) || (environment === "live" && isTestKey)) {
+    const isRecognizedLiveKey = secretKey.startsWith("FLWSECK-") && !isTestKey;
+    if ((environment === "test" && !isTestKey) || (environment === "live" && !isRecognizedLiveKey)) {
       throw new FlutterwaveRecurringPaymentError(
         "CONFIGURATION",
         "Flutterwave key prefix does not match the explicitly selected payment environment.",
