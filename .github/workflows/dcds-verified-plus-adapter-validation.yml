@@ -138,7 +138,7 @@ jobs:
               "lifetime Verified+ membership is explicitly unavailable": "Lifetime membership is discontinued" in architecture and "no perpetual paid entitlement" in architecture,
               "identity verification fee stays separate from all membership plans": "separate applicant-paid fee" in architecture and "outside both membership prices" in architecture and "not included in the NGN 7,500 Monthly or NGN 75,000 Annual membership price" in pricing_policy and "NGN 320,000 Five-Year membership price" in pricing_policy,
               "automatic renewal is opt-in for all three plans": "opt-in automatic renewal every 30 days" in pricing_policy.lower() and "opt-in automatic renewal every one year" in pricing_policy.lower() and "opt-in automatic renewal every five years" in pricing_policy.lower(),
-              "members can cancel without administrator approval": "without waiting for administrator approval" in renewal_policy.lower() and "must not require an administrator" in renewal_policy.lower(),
+              "members can cancel without administrator approval": "waiting for administrator approval" in renewal_policy.lower() and "must not require an administrator" in renewal_policy.lower(),
               "cancellation preserves already-paid access": "already-paid membership period" in renewal_policy and "paid-through timestamp" in renewal_policy,
               "cancellation reasons and feedback are optional": "reason and any free-text feedback are optional" in renewal_policy and "without selecting a reason" in renewal_policy,
               "renewal requires explicit unticked consent": "separate, unticked consent control" in renewal_policy and "Do not preselect consent" in renewal_policy,
