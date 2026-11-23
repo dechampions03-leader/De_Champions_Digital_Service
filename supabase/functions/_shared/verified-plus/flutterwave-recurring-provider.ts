@@ -35,6 +35,15 @@ export interface FlutterwaveCheckoutInput {
   readonly consent: RecurringBillingConsentProof | null;
 }
 
+export interface FlutterwaveOneTimeCheckoutInput {
+  readonly txRef: string;
+  readonly planId: VerifiedPlusPlanId;
+  readonly email: string;
+  readonly customerName?: string;
+  readonly redirectUrl: string;
+  readonly membershipOrderReference: string;
+}
+
 export interface FlutterwaveCheckoutResult {
   readonly checkoutUrl: string;
   readonly transactionReference: string;
@@ -332,6 +341,71 @@ export class FlutterwaveRecurringPayments {
         customizations: {
           title: "De Champions Digital Service",
           description: "Verified+ " + PLAN_LABELS[input.planId] + " membership",
+        },
+      },
+    );
+
+    let checkout: URL;
+    try {
+      checkout = new URL(String(data.link ?? ""));
+    } catch {
+      throw new FlutterwaveRecurringPaymentError("PROVIDER_RESPONSE", "Flutterwave did not return a valid hosted checkout link.");
+    }
+    if (checkout.protocol !== "https:" || checkout.hostname !== "checkout.flutterwave.com") {
+      throw new FlutterwaveRecurringPaymentError("PROVIDER_RESPONSE", "Flutterwave returned an unapproved checkout destination.");
+    }
+    return { checkoutUrl: checkout.toString(), transactionReference: input.txRef };
+  }
+
+  /**
+   * Starts a one-off membership payment when the member has not opted into
+   * automatic renewal. No payment_plan is sent, so Flutterwave must not
+   * subscribe the card for future billing.
+   */
+  async createOneTimeMembershipCheckout(
+    input: FlutterwaveOneTimeCheckoutInput,
+  ): Promise<FlutterwaveCheckoutResult> {
+    const terms = VERIFIED_PLUS_PLAN_TERMS[input.planId];
+    if (
+      !terms ||
+      !validDcdsReference(input.txRef) ||
+      !validEmail(input.email) ||
+      !validDcdsReference(input.membershipOrderReference)
+    ) {
+      throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "The one-time Verified+ checkout details are invalid.");
+    }
+
+    let redirect: URL;
+    try {
+      redirect = new URL(input.redirectUrl);
+    } catch {
+      throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "The checkout return URL is invalid.");
+    }
+    if (redirect.protocol !== "https:" || redirect.hostname !== "dechampions03-leader.github.io") {
+      throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "The checkout return URL is not an approved DCDS HTTPS destination.");
+    }
+
+    const data = await this.request<{ link?: string }>(
+      "/payments",
+      "POST",
+      {
+        tx_ref: input.txRef,
+        amount: terms.amount,
+        currency: terms.currency,
+        redirect_url: redirect.toString(),
+        customer: {
+          email: input.email,
+          ...(input.customerName ? { name: input.customerName.slice(0, 120) } : {}),
+        },
+        meta: {
+          dcds_product: "verified_plus",
+          dcds_plan: input.planId,
+          dcds_membership_order: input.membershipOrderReference,
+          dcds_auto_renew: false,
+        },
+        customizations: {
+          title: "De Champions Digital Service",
+          description: "Verified+ " + PLAN_LABELS[input.planId] + " one-time membership payment",
         },
       },
     );
