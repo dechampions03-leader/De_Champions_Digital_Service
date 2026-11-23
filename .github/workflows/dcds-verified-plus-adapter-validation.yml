@@ -12,6 +12,7 @@ on:
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
       - "docs/dcds-verified-plus-pricing-and-commercial-policy.md"
+      - "docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md"
       - "verified-plus-pricing-preview.html"
       - "verified-plus.html"
       - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
@@ -94,6 +95,7 @@ jobs:
           network_spec = Path("docs/dcds-verified-plus-exclusive-network.md").read_text(encoding="utf-8")
           architecture = Path("docs/dcds-verified-plus-architecture.md").read_text(encoding="utf-8")
           pricing_policy = Path("docs/dcds-verified-plus-pricing-and-commercial-policy.md").read_text(encoding="utf-8")
+          renewal_policy = Path("docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md").read_text(encoding="utf-8")
           provider_contract = Path("docs/dcds-verified-plus-provider-adapter-contract.md").read_text(encoding="utf-8")
           moderation_contract = Path("docs/dcds-verified-plus-moderation-engine-contract.md").read_text(encoding="utf-8")
           persistence_design = Path("docs/dcds-verified-plus-moderation-persistence-and-rls-design.md").read_text(encoding="utf-8")
@@ -123,6 +125,14 @@ jobs:
               "annual Verified+ plan is NGN 75,000 for 12 months": "NGN 75,000" in architecture and "| Annual | NGN 75,000 | 12 months, paid upfront |" in architecture,
               "lifetime Verified+ membership is explicitly unavailable": "Lifetime membership is discontinued" in architecture and "no perpetual paid entitlement" in architecture,
               "identity verification fee stays separate from all membership plans": "separate applicant-paid fee" in architecture and "outside both membership prices" in architecture and "not included in the NGN 7,500 Monthly or NGN 75,000 Annual membership price" in pricing_policy and "NGN 320,000 Five-Year membership price" in pricing_policy,
+              "automatic renewal is opt-in for all three plans": "opt-in automatic renewal every 30 days" in pricing_policy and "opt-in automatic renewal every one year" in pricing_policy and "opt-in automatic renewal every five years" in pricing_policy,
+              "members can cancel without administrator approval": "without administrator approval" in renewal_policy and "must not require an administrator" in renewal_policy,
+              "cancellation preserves already-paid access": "already-paid membership period" in renewal_policy and "paid-through timestamp" in renewal_policy,
+              "cancellation reasons and feedback are optional": "reason and any free-text feedback are optional" in renewal_policy and "without selecting a reason" in renewal_policy,
+              "renewal requires explicit unticked consent": "separate, unticked consent control" in renewal_policy and "Do not preselect consent" in renewal_policy,
+              "Five-Year renewal interval must pass sandbox validation": "every five years" in renewal_policy and "must be created and tested in the Flutterwave sandbox" in renewal_policy,
+              "billing integration never stores raw card credentials": "Never collect or store raw card numbers, CVV, PIN or OTP" in renewal_policy,
+              "billing release respects the existing database migration blocker": "migration-reconciliation report identifies mismatched Supabase migration histories" in renewal_policy and "Do not create or apply membership billing tables" in renewal_policy,
               "commercial policy records exactly the approved three membership prices": "| Monthly | NGN 7,500 | 30 days |" in pricing_policy and "| Annual | NGN 75,000 | 12 months |" in pricing_policy and "| Five-Year | NGN 320,000 | 60 months |" in pricing_policy,
               "commercial policy discontinues lifetime entitlements": "Lifetime membership is discontinued" in pricing_policy and "Do not offer, advertise, sell, or grant" in pricing_policy,
               "provider, network, moderation and persistence contracts use all three entitlements": "active monthly, active annual, active five-year" in provider_contract and "Monthly for 30 days, Annual for 12 months or Five-Year for 60 months" in network_spec and "Monthly/Annual/Five-Year membership entitlement" in moderation_contract and "Monthly (30-day), Annual (12-month) or Five-Year (60-month)" in persistence_design,
