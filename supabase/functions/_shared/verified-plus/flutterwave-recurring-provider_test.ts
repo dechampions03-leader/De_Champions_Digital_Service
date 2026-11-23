@@ -84,14 +84,14 @@ Deno.test("adapter rejects a Test key when Live mode is explicitly selected", ()
 Deno.test("createPaymentPlan provisions each exact approved NGN plan with no fixed duration", async () => {
   for (const planId of ["monthly", "annual", "five_year"] as const) {
     const terms = VERIFIED_PLUS_PLAN_TERMS[planId];
-    let capturedBody: Record<string, unknown> | null = null;
+    const capturedBody: { value?: Record<string, unknown> } = {};
     const client = new FlutterwaveRecurringPayments({
       secretKey,
       fetcher: mockFetch(async (url, init) => {
         equal(url, "https://api.flutterwave.com/v3/payment-plans", "Plan endpoint");
         equal(init?.method, "POST", "Plan method");
         equal((init?.headers as Record<string,string>).Authorization, "Bearer " + secretKey, "Bearer secret header");
-        capturedBody = JSON.parse(String(init?.body));
+        capturedBody.value = JSON.parse(String(init?.body));
         return jsonResponse({
           status: "success",
           data: {
@@ -105,11 +105,12 @@ Deno.test("createPaymentPlan provisions each exact approved NGN plan with no fix
       }),
     });
     const plan = await client.createPaymentPlan(planId);
-    assert(capturedBody !== null, "Plan request body captured");
-    equal(capturedBody!.amount, terms.amount, planId + " exact amount");
-    equal(capturedBody!.currency, "NGN", planId + " explicit currency");
-    equal(capturedBody!.interval, terms.renewalInterval.providerIntervalText, planId + " exact interval");
-    equal("duration" in capturedBody!, false, "Plan has no automatic end duration");
+    const planBody = capturedBody.value;
+    assert(planBody !== undefined, "Plan request body captured");
+    equal(planBody.amount, terms.amount, planId + " exact amount");
+    equal(planBody.currency, "NGN", planId + " explicit currency");
+    equal(planBody.interval, terms.renewalInterval.providerIntervalText, planId + " exact interval");
+    equal("duration" in planBody, false, "Plan has no automatic end duration");
     equal(plan.id, 12345, "Returned plan id");
   }
 });
@@ -218,19 +219,20 @@ Deno.test("Sandbox interval qualification cannot be enabled with Live mode", () 
 });
 
 Deno.test("checkout reads the provider plan ID from trusted plan configuration, not request input", async () => {
-  let captured: Record<string, unknown> | null = null;
+  const captured: { value?: Record<string, unknown> } = {};
   const client = new FlutterwaveRecurringPayments({
     secretKey,
     providerPlanIds: { monthly: 98765 },
     validatedPlanIds: ["monthly"],
     fetcher: mockFetch((url, init) => {
-      captured = JSON.parse(String(init?.body));
+      captured.value = JSON.parse(String(init?.body));
       return jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } });
     }),
   });
   await client.createSubscriptionCheckout(checkoutInput);
-  assert(captured !== null, "Checkout payload captured");
-  equal(captured!.payment_plan, 98765, "Provider plan comes from trusted configuration");
+  const checkoutBody = captured.value;
+  assert(checkoutBody !== undefined, "Checkout payload captured");
+  equal(checkoutBody.payment_plan, 98765, "Provider plan comes from trusted configuration");
 });
 
 Deno.test("checkout is blocked when no trusted provider plan ID is configured", async () => {
@@ -254,7 +256,7 @@ Deno.test("checkout is blocked when no trusted provider plan ID is configured", 
 });
 
 Deno.test("checkout sends the server-approved amount, NGN and provider plan ID", async () => {
-  let captured: Record<string, unknown> | null = null;
+  const captured: { value?: Record<string, unknown> } = {};
   const client = new FlutterwaveRecurringPayments({
     secretKey,
     providerPlanIds: { monthly: 12345 },
@@ -262,16 +264,17 @@ Deno.test("checkout sends the server-approved amount, NGN and provider plan ID",
     fetcher: mockFetch((url, init) => {
       equal(url, "https://api.flutterwave.com/v3/payments", "Hosted checkout endpoint");
       equal(init?.method, "POST", "Hosted checkout method");
-      captured = JSON.parse(String(init?.body));
+      captured.value = JSON.parse(String(init?.body));
       return jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } });
     }),
   });
   const result = await client.createSubscriptionCheckout(checkoutInput);
-  assert(captured !== null, "Checkout payload captured");
-  equal(captured!.amount, 7500, "Monthly amount in NGN units");
-  equal(captured!.currency, "NGN", "NGN currency");
-  equal(captured!.payment_plan, 12345, "Provider recurring plan");
-  equal((captured!.customer as Record<string,unknown>).email, checkoutInput.email, "Customer email");
+  const checkoutBody = captured.value;
+  assert(checkoutBody !== undefined, "Checkout payload captured");
+  equal(checkoutBody.amount, 7500, "Monthly amount in NGN units");
+  equal(checkoutBody.currency, "NGN", "NGN currency");
+  equal(checkoutBody.payment_plan, 12345, "Provider recurring plan");
+  equal((checkoutBody.customer as Record<string,unknown>).email, checkoutInput.email, "Customer email");
   equal(result.transactionReference, checkoutInput.txRef, "Transaction reference");
 });
 
