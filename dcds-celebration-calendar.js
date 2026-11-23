@@ -20,6 +20,20 @@
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const sceneProfiles = [
+    {key:'autism', test:/autism/i, props:['🧩','🫶','💙']},
+    {key:'water-safety', test:/drowning prevention|water safety/i, props:['🛟','🌊','🫧']},
+    {key:'indigenous-peoples', test:/indigenous peoples/i, props:['🌿','🪶','🌍']},
+    {key:'men', test:/men.s day/i, props:['🤝','💙','⭐']},
+    {key:'aids-awareness', test:/aids day/i, props:['❤️','🎗️','🤝']},
+    {key:'african-history', test:/cuito|battle of/i, props:['🕊️','🌍','🕯️']},
+    {key:'ash-wednesday', test:/ash wednesday/i, props:['✝️','🕯️','🌿']},
+    {key:'palm-sunday', test:/palm sunday/i, props:['🌿','✝️','🕊️']},
+    {key:'maundy-thursday', test:/maundy thursday/i, props:['🕯️','🍞','🍷']},
+    {key:'holy-saturday', test:/holy saturday/i, props:['🕯️','🕊️','✨']},
+    {key:'commonwealth', test:/commonwealth/i, props:['🌐','🤝','⭐']},
+    {key:'tour-nigeria', test:/tour nigeria/i, props:['🚌','🧳','🇳🇬']},
+    {key:'sango', test:/sango/i, props:['⚡','🥁','🔥']},
+    {key:'beer-festival', test:/beer festival/i, props:['🍺','🎶','🎪']},
     {key:'africa-women', test:/africa.s women day/i, props:['💜','🌍','🌸']},
     {key:'africa-food', test:/school feeding|food security|nutrition/i, props:['🍲','🌾','🌍']},
     {key:'africa-development', test:/decentralisation|local development|civil registration|africa border|african integration/i, props:['🏘️','🤝','🌍']},
