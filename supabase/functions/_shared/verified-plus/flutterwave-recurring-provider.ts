@@ -526,8 +526,3 @@ function constantTimeStringEqual(a: string, b: string): boolean {
   return difference === 0;
 }
 
-function bytesToBase64(bytes: Uint8Array): string {
-  let binary = "";
-  for (const byte of bytes) binary += String.fromCharCode(byte);
-  return btoa(binary);
-}
