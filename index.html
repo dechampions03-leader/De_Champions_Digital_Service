@@ -513,7 +513,14 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
     </div>
    </div>
    <div class="dcds-celebration-body">
-    <div class="dcds-celebration-art" id="event-emoji" aria-hidden="true">🎄</div>
+    <div class="dcds-celebration-art" id="event-art" data-scene="christmas" role="img" aria-label="Christmas celebration scene">
+     <span class="dcds-scene-main" id="event-emoji" aria-hidden="true">🎄</span>
+     <span class="dcds-scene-prop dcds-scene-prop-one" id="event-scene-prop-one" aria-hidden="true">🎁</span>
+     <span class="dcds-scene-prop dcds-scene-prop-two" id="event-scene-prop-two" aria-hidden="true">❄️</span>
+     <span class="dcds-scene-prop dcds-scene-prop-three" id="event-scene-prop-three" aria-hidden="true">🛷</span>
+     <span class="dcds-scene-glint dcds-scene-glint-one" aria-hidden="true">✦</span>
+     <span class="dcds-scene-glint dcds-scene-glint-two" aria-hidden="true">✧</span>
+    </div>
     <div class="dcds-celebration-copy">
      <p class="dcds-celebration-kicker" id="event-kicker">COUNTING DOWN TO THE NEXT CELEBRATION</p>
      <h2 class="dcds-celebration-title" id="event-title">Christmas Day</h2>
@@ -2873,5 +2880,5 @@ if ("serviceWorker" in navigator && location.protocol === "https:") {
  }catch(error){console.warn("DCDS showcase media could not be loaded:",error);}
 })();
 </script>
-<script src="./dcds-celebration-calendar.js?v=20261123-synced-ticks" defer></script>
+<script src="./dcds-celebration-calendar.js?v=20261123-event-scenes" defer></script>
 </body></html>
