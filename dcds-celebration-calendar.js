@@ -54,13 +54,23 @@
       [9,21,'International Day of Peace','🕊️','Promoting peace, understanding, unity and hope in every community.','INTERNATIONAL DAY OF PEACE!','#9bd9ef','#4b88c9','Peace and unity'],
       [10,1,'Nigeria Independence Day','🇳🇬','Celebrating Nigeria, its people, culture and hopes for a brighter future.','HAPPY INDEPENDENCE DAY!','#67d28c','#16834e','Nigeria'],
       [10,5,'World Teachers’ Day','📚','Thanking teachers and educators for helping people learn and grow.','HAPPY WORLD TEACHERS’ DAY!','#e9c66a','#6d48b6','Thank you, teachers'],
-      [12,10,'Human Rights Day','⚖️','Standing for dignity, equality, freedom and the rights of every person.','HUMAN RIGHTS DAY!','#73c5e7','#6b4eb5','Dignity and equality'],
       [12,25,'Christmas Day','🎄','Wishing everyone peace, love, generosity and a joyful Christmas season.','MERRY CHRISTMAS!','#58d58a','#c53c53','Season of giving'],
       [12,26,'Boxing Day','🎁','A day for generosity, gratitude, rest and time with loved ones.','HAPPY BOXING DAY!','#e9c46a','#b33a55','Share the joy']
     ];
     fixed.forEach(([m,d,name,emoji,description,greeting,accent,secondary,label])=>add(m,d,{name,emoji,description,greeting,accent,secondary,label}));
     // Easter dates are calculated for each Gregorian year.
     const easter=easterSunday(year);
+    const motheringSunday=addDaysUTC(new Date(Date.UTC(year,easter.month-1,easter.day)),-21);
+    add(motheringSunday.month,motheringSunday.day,{name:'Mothering Sunday',emoji:'💐',description:'Celebrating mothers and mother figures for their love, care and support.',greeting:'HAPPY MOTHERING SUNDAY!',accent:'#f2a7c9',secondary:'#9a4d9c',label:'Mothering Sunday'});
+    // 2027 Islamic dates are preliminary calendar estimates for Nigeria and may shift with moon sighting.
+    if(year===2027){
+      add(3,10,{name:'Eid al-Fitr (expected)',emoji:'🌙',description:'Wishing Muslim families in Nigeria and around the world a joyful Eid filled with peace, gratitude and generosity.',greeting:'HAPPY EID AL-FITR!',accent:'#79d6bd',secondary:'#256b93',label:'Eid al-Fitr',tentative:true});
+      add(3,11,{name:'Eid al-Fitr Holiday (expected)',emoji:'🌙',description:'Wishing you a peaceful Eid holiday with family, friends and community.',greeting:'EID MUBARAK!',accent:'#79d6bd',secondary:'#256b93',label:'Eid holiday',tentative:true});
+      add(5,17,{name:'Eid al-Adha · Eid-el-Kabir (expected)',emoji:'🌙',description:'Wishing Muslim communities a blessed Eid of faith, generosity and sharing.',greeting:'HAPPY EID-EL-KABIR!',accent:'#8bd7b4',secondary:'#287b65',label:'Eid-el-Kabir',tentative:true});
+      add(5,18,{name:'Eid al-Adha Holiday (expected)',emoji:'🌙',description:'May the spirit of sacrifice, care and generosity continue throughout the Eid season.',greeting:'EID MUBARAK!',accent:'#8bd7b4',secondary:'#287b65',label:'Eid holiday',tentative:true});
+      add(6,6,{name:'Islamic New Year · Al-Hijra (expected)',emoji:'🌙',description:'Wishing Muslim communities a peaceful and meaningful new Islamic year.',greeting:'HAPPY ISLAMIC NEW YEAR!',accent:'#80c6db',secondary:'#3c5d9b',label:'Al-Hijra',tentative:true});
+      add(8,15,{name:'Eid-el-Maulud · Mawlid (expected)',emoji:'🕌',description:'A day observed by many Muslims in remembrance of the Prophet Muhammad.',greeting:'WARM WISHES ON MAWLID!',accent:'#9ed2b0',secondary:'#36775f',label:'Mawlid',tentative:true});
+    }
     const goodFriday=addDaysUTC(new Date(Date.UTC(year,easter.month-1,easter.day)),-2);
     const easterMonday=addDaysUTC(new Date(Date.UTC(year,easter.month-1,easter.day)),1);
     add(goodFriday.month,goodFriday.day,{name:'Good Friday',emoji:'✝️',description:'A day of reflection and remembrance for Christians around the world.',greeting:'BLESSINGS ON GOOD FRIDAY!',accent:'#c4a0e8',secondary:'#55317d',label:'Good Friday'});
@@ -91,7 +101,7 @@
     root.classList.toggle('is-celebrating',celebrating);
     $('event-emoji').textContent=event.emoji;
     $('event-title').textContent=event.name;
-    $('event-date').textContent=dateFmt.format(event.start);
+    $('event-date').textContent=dateFmt.format(event.start)+(event.tentative?' · EXPECTED DATE — MAY SHIFT WITH MOON SIGHTING':'');
     $('event-kicker').textContent=celebrating?'TODAY · CELEBRATION MODE':'COUNTING DOWN TO THE NEXT CELEBRATION';
     $('event-status').textContent=celebrating?'TODAY IS THE DAY':'UPCOMING CELEBRATION';
     $('event-greeting').textContent=event.greeting;
