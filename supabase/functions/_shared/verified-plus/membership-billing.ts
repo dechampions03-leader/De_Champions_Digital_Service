@@ -12,7 +12,7 @@ export type VerifiedPlusBillingCurrency = "NGN";
 
 export interface VerifiedPlusPlanTerms {
   readonly planId: VerifiedPlusPlanId;
-  readonly amountMinor: number;
+  readonly amount: number;
   readonly currency: string;
   readonly entitlementTerm: {
     readonly unit: "days" | "months";
@@ -30,7 +30,7 @@ export const VERIFIED_PLUS_PLAN_TERMS: Readonly<
 > = {
   monthly: {
     planId: "monthly",
-    amountMinor: 7500,
+    amount: 7500,
     currency: "NGN",
     entitlementTerm: { unit: "days", value: 30 },
     renewalInterval: {
@@ -41,7 +41,7 @@ export const VERIFIED_PLUS_PLAN_TERMS: Readonly<
   },
   annual: {
     planId: "annual",
-    amountMinor: 75000,
+    amount: 75000,
     currency: "NGN",
     entitlementTerm: { unit: "months", value: 12 },
     renewalInterval: {
@@ -52,7 +52,7 @@ export const VERIFIED_PLUS_PLAN_TERMS: Readonly<
   },
   five_year: {
     planId: "five_year",
-    amountMinor: 320000,
+    amount: 320000,
     currency: "NGN",
     entitlementTerm: { unit: "months", value: 60 },
     renewalInterval: {
@@ -68,7 +68,7 @@ export type BillingConsentChannel = "checkout" | "manage_subscription";
 export interface RecurringBillingConsentProof {
   readonly memberId: string;
   readonly planId: VerifiedPlusPlanId;
-  readonly amountMinor: number;
+  readonly amount: number;
   readonly currency: VerifiedPlusBillingCurrency;
   readonly providerIntervalText: string;
   readonly termsVersion: string;
@@ -132,7 +132,7 @@ export function validateRecurringBillingConsent(input: {
   }
 
   const terms = VERIFIED_PLUS_PLAN_TERMS[input.planId];
-  if (consent.amountMinor !== terms.amountMinor) {
+  if (consent.amount !== terms.amount) {
     return deny("AMOUNT_MISMATCH", "The consent amount does not match the approved membership price.");
   }
   if (consent.currency !== terms.currency) {
