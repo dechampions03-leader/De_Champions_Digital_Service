@@ -687,3 +687,128 @@
  0%,100%{transform:translateY(2px) scale(.96);filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
  50%{transform:translateY(-5px) scale(1.06);filter:drop-shadow(0 0 15px rgba(255,220,139,.65))}
 }
+
+
+/* Event type label: distinguish official public holidays, observances and festival periods. */
+.dcds-celebration-category{
+ display:table;
+ width:max-content;
+ max-width:100%;
+ margin:7px 0 0;
+ padding:5px 9px;
+ border:1px solid color-mix(in srgb,var(--event-accent) 42%,transparent);
+ border-radius:999px;
+ color:#e9e0f5;
+ background:color-mix(in srgb,var(--event-accent) 10%,transparent);
+ font:800 7px/1.25 'DM Sans',Arial,sans-serif;
+ letter-spacing:.09em;
+ text-transform:uppercase;
+}
+.dcds-celebration-category:empty{display:none}
+.dcds-celebration-copy .dcds-celebration-category{margin-top:7px}
+.dcds-celebration-art[data-scene="armed-forces"],
+.dcds-celebration-art[data-scene="air-force"],
+.dcds-celebration-art[data-scene="navy"],
+.dcds-celebration-art[data-scene="army"]{
+ background:radial-gradient(ellipse at 50% 42%,rgba(220,190,120,.2),transparent 62%),linear-gradient(135deg,#2b3544,#384357 58%,#1c2639);
+}
+.dcds-celebration-art[data-scene="remembrance"],
+.dcds-celebration-art[data-scene="justice"],
+.dcds-celebration-art[data-scene="trafficking"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(199,173,224,.2),transparent 60%),linear-gradient(135deg,#302643,#27243e 65%,#17182e);
+}
+.dcds-celebration-art[data-scene="braille"],
+.dcds-celebration-art[data-scene="education"],
+.dcds-celebration-art[data-scene="languages"],
+.dcds-celebration-art[data-scene="books"],
+.dcds-celebration-art[data-scene="literacy"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(164,195,231,.2),transparent 62%),linear-gradient(135deg,#322b55,#303858 62%,#1b213b);
+}
+.dcds-celebration-art[data-scene="clean-energy"],
+.dcds-celebration-art[data-scene="science"],
+.dcds-celebration-art[data-scene="women-science"],
+.dcds-celebration-art[data-scene="tropical-health"],
+.dcds-celebration-art[data-scene="health"],
+.dcds-celebration-art[data-scene="nursing"],
+.dcds-celebration-art[data-scene="diabetes"],
+.dcds-celebration-art[data-scene="mental-health"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(104,203,179,.23),transparent 62%),linear-gradient(135deg,#173e49,#253c57 58%,#1a293e);
+}
+.dcds-celebration-art[data-scene="theatre"],
+.dcds-celebration-art[data-scene="press"],
+.dcds-celebration-art[data-scene="cultural-diversity"],
+.dcds-celebration-art[data-scene="friendship"],
+.dcds-celebration-art[data-scene="family"],
+.dcds-celebration-art[data-scene="girl-child"],
+.dcds-celebration-art[data-scene="children-rights"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(222,159,209,.22),transparent 62%),linear-gradient(135deg,#4b264b,#32224e 62%,#231b3e);
+}
+.dcds-celebration-art[data-scene="wildlife"],
+.dcds-celebration-art[data-scene="zero-waste"],
+.dcds-celebration-art[data-scene="ozone"],
+.dcds-celebration-art[data-scene="earth"],
+.dcds-celebration-art[data-scene="environment"]{
+ background:radial-gradient(ellipse at 50% 52%,rgba(104,207,139,.25),transparent 62%),linear-gradient(135deg,#16443d,#263e4b 58%,#172c35);
+}
+.dcds-celebration-art[data-scene="africa"],
+.dcds-celebration-art[data-scene="public-service"],
+.dcds-celebration-art[data-scene="population"],
+.dcds-celebration-art[data-scene="volunteer"],
+.dcds-celebration-art[data-scene="humanitarian"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(222,185,106,.23),transparent 60%),linear-gradient(135deg,#3e2b4d,#273b50 62%,#1c2f3a);
+}
+.dcds-celebration-art[data-scene="small-business"],
+.dcds-celebration-art[data-scene="mandela"],
+.dcds-celebration-art[data-scene="workplace"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(225,188,113,.21),transparent 62%),linear-gradient(135deg,#333449,#314257 58%,#20283c);
+}
+.dcds-celebration-art[data-scene="tourism"],
+.dcds-celebration-art[data-scene="beach"],
+.dcds-celebration-art[data-scene="navy"]{
+ background:radial-gradient(ellipse at 50% 55%,rgba(75,188,223,.25),transparent 60%),linear-gradient(135deg,#174b67,#234b69 58%,#1b2b49);
+}
+.dcds-celebration-art[data-scene="ramadan"],
+.dcds-celebration-art[data-scene="durbar"]{
+ background:radial-gradient(ellipse at 50% 42%,rgba(122,203,182,.25),transparent 62%),linear-gradient(135deg,#143b4b,#1d345b 58%,#241a45);
+}
+.dcds-celebration-art[data-scene="argungu"],
+.dcds-celebration-art[data-scene="osun"],
+.dcds-celebration-art[data-scene="new-yam"],
+.dcds-celebration-art[data-scene="ige-agba"],
+.dcds-celebration-art[data-scene="igbogo"]{
+ background:radial-gradient(ellipse at 50% 47%,rgba(117,198,144,.24),transparent 62%),linear-gradient(135deg,#1d4b42,#31514d 58%,#29334b);
+}
+.dcds-celebration-art[data-scene="argungu"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="osun"] .dcds-scene-main{animation-name:dcdsSceneBubble}
+.dcds-celebration-art[data-scene="new-yam"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="ige-agba"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="igbogo"] .dcds-scene-prop{animation-name:dcdsSceneDrift}
+.dcds-celebration-art[data-scene="mmanwu"],
+.dcds-celebration-art[data-scene="olojo"],
+.dcds-celebration-art[data-scene="ofala"],
+.dcds-celebration-art[data-scene="igue"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(230,176,103,.25),transparent 60%),linear-gradient(135deg,#4b2d3b,#352342 60%,#1d1b32);
+}
+.dcds-celebration-art[data-scene="mmanwu"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="olojo"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="ofala"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="igue"] .dcds-scene-main{animation-name:dcdsSceneFloat}
+.dcds-celebration-art[data-scene="calabar"],
+.dcds-celebration-art[data-scene="nyalo"],
+.dcds-celebration-art[data-scene="music-festival"],
+.dcds-celebration-art[data-scene="countdown-festival"]{
+ background:radial-gradient(ellipse at 50% 42%,rgba(230,163,110,.28),transparent 60%),linear-gradient(135deg,#4e204d,#422553 58%,#202044);
+}
+.dcds-celebration-art[data-scene="calabar"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="nyalo"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="music-festival"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="countdown-festival"] .dcds-scene-prop{animation-name:dcdsSceneBurst}
+.dcds-celebration-art[data-scene="food"] .dcds-scene-main{animation-name:dcdsSceneGift}
+@media(max-width:680px){
+ .dcds-celebration-category{font-size:6px;padding:4px 7px;margin-top:6px}
+}
+@media(prefers-reduced-motion:reduce){
+ .dcds-celebration-art .dcds-scene-main,
+ .dcds-celebration-art .dcds-scene-prop,
+ .dcds-celebration-art .dcds-scene-glint{animation:none!important}
+}
