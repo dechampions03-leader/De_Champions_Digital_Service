@@ -65,7 +65,9 @@ jobs:
           deno check supabase/functions/_shared/verified-plus/moderation-engine.ts
           deno check supabase/functions/_shared/verified-plus/moderation-engine_test.ts
           deno check supabase/functions/_shared/verified-plus/membership-billing.ts
-          deno check supabase/functions/_shared/verified-plus/membership-billing_test.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing_test.ts supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts
+          deno check supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts
+          deno check supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts
 
       - name: Run synthetic-only tests
         run: deno test --no-check supabase/functions/_shared/verified-plus/identity-provider_test.ts supabase/functions/_shared/verified-plus/moderation-engine_test.ts supabase/functions/_shared/verified-plus/membership-billing_test.ts
