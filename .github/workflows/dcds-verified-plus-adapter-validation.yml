@@ -30,6 +30,7 @@ on:
       - "docs/dcds-verified-plus-exclusive-network.md"
       - "docs/dcds-verified-plus-architecture.md"
       - "docs/dcds-verified-plus-pricing-and-commercial-policy.md"
+      - "docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md"
       - "verified-plus-pricing-preview.html"
       - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
       - "docs/dcds-verified-plus-moderation-engine-contract.md"
