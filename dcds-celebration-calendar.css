@@ -623,3 +623,67 @@
 @media(prefers-reduced-motion:reduce){
  .dcds-scene-main,.dcds-scene-prop,.dcds-scene-glint{animation:none!important}
 }
+
+
+/* Additional distinct palettes and motion for the remaining calendar occasions. */
+.dcds-celebration-art[data-scene="women"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(192,119,239,.3),transparent 62%),linear-gradient(135deg,#4a1e69,#30204f 60%,#25163e);
+}
+.dcds-celebration-art[data-scene="women"] .dcds-scene-prop{animation-name:dcdsSceneRibbon}
+@keyframes dcdsSceneRibbon{
+ 0%,100%{transform:translateY(5px) rotate(-13deg) scale(.9);opacity:.7}
+ 50%{transform:translateY(-8px) rotate(13deg) scale(1.12);opacity:1}
+}
+.dcds-celebration-art[data-scene="happiness"] .dcds-scene-main{animation-name:dcdsSceneJoy}
+@keyframes dcdsSceneJoy{
+ 0%,100%{transform:translateY(3px) rotate(-5deg) scale(.96)}
+ 50%{transform:translateY(-9px) rotate(5deg) scale(1.08)}
+}
+.dcds-celebration-art[data-scene="health"]{
+ background:radial-gradient(ellipse at 50% 52%,rgba(98,211,154,.24),transparent 62%),linear-gradient(135deg,#17483f,#203f4d 62%,#172f39);
+}
+.dcds-celebration-art[data-scene="health"] .dcds-scene-main{animation-name:dcdsSceneHeartbeat}
+@keyframes dcdsSceneHeartbeat{
+ 0%,100%{transform:scale(1)}
+ 42%{transform:scale(1.04)}
+ 50%{transform:scale(1.12)}
+ 60%{transform:scale(1.02)}
+}
+.dcds-celebration-art[data-scene="democracy"],
+.dcds-celebration-art[data-scene="independence"]{
+ background:linear-gradient(110deg,rgba(0,130,76,.35) 0 23%,transparent 23% 77%,rgba(0,130,76,.35) 77%),linear-gradient(135deg,#153d35,#243c4e 58%,#183329);
+}
+.dcds-celebration-art[data-scene="democracy"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="independence"] .dcds-scene-prop{animation-name:dcdsSceneFlagWave}
+@keyframes dcdsSceneFlagWave{
+ 0%,100%{transform:skewY(-7deg) translateY(3px)}
+ 50%{transform:skewY(7deg) translateY(-5px)}
+}
+.dcds-celebration-art[data-scene="skills"],
+.dcds-celebration-art[data-scene="youth"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(224,178,90,.22),transparent 60%),linear-gradient(135deg,#302052,#273c63 55%,#1b294a);
+}
+.dcds-celebration-art[data-scene="skills"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="youth"] .dcds-scene-prop{animation-name:dcdsSceneLift}
+.dcds-celebration-art[data-scene="workers"]{
+ background:radial-gradient(ellipse at 50% 47%,rgba(220,185,115,.2),transparent 62%),linear-gradient(135deg,#33334a,#39435b 58%,#22273e);
+}
+.dcds-celebration-art[data-scene="teachers"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(234,195,111,.23),transparent 62%),linear-gradient(135deg,#43304c,#383150 58%,#241b39);
+}
+.dcds-celebration-art[data-scene="fathers"]{
+ background:radial-gradient(ellipse at 50% 46%,rgba(112,179,227,.26),transparent 62%),linear-gradient(135deg,#1e3656,#293a5f 58%,#251e47);
+}
+.dcds-celebration-art[data-scene="children"] .dcds-scene-main{animation-name:dcdsSceneBounce}
+@keyframes dcdsSceneBounce{
+ 0%,100%{transform:translateY(0) scale(1)}
+ 35%{transform:translateY(-8px) scale(1.05)}
+ 55%{transform:translateY(0) scale(.97)}
+ 75%{transform:translateY(-4px) scale(1.02)}
+}
+.dcds-celebration-art[data-scene="hijri"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="mawlid"] .dcds-scene-main{animation-name:dcdsSceneMoonGlow}
+@keyframes dcdsSceneMoonGlow{
+ 0%,100%{transform:translateY(2px) scale(.96);filter:drop-shadow(0 4px 8px rgba(0,0,0,.25))}
+ 50%{transform:translateY(-5px) scale(1.06);filter:drop-shadow(0 0 15px rgba(255,220,139,.65))}
+}
