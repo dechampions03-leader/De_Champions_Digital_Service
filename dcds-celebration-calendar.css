@@ -203,3 +203,69 @@
  .dcds-celebration-in-showcase .dcds-countdown-value{font-size:19px}
  .dcds-celebration-in-showcase .dcds-countdown-label{font-size:6px}
 }
+
+
+/* DCDS live Nigeria calendar and clock: a compact date strip under the brand. */
+.dcds-current-datetime{
+ position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:12px;
+ width:min(720px,100%);margin:0 auto;padding:9px 13px;
+ border:1px solid #ffffff24;border-radius:13px;
+ background:linear-gradient(100deg,#ffffff10,#ffffff06 55%,#ffffff0d);
+ box-shadow:inset 0 1px 0 #ffffff18,0 4px 13px #0002;
+}
+.dcds-current-date{display:flex;align-items:center;gap:10px;min-width:0}
+.dcds-current-calendar-icon{
+ flex:0 0 auto;display:grid;place-items:center;width:31px;height:31px;border-radius:9px;
+ color:var(--event-accent);font:700 19px/1 Arial,sans-serif;
+ border:1px solid color-mix(in srgb,var(--event-accent) 48%,transparent);
+ background:color-mix(in srgb,var(--event-accent) 13%,transparent);
+ box-shadow:0 0 14px var(--event-glow);
+}
+.dcds-current-date-copy{display:flex;flex-direction:column;gap:3px;min-width:0}
+.dcds-current-weekday{color:#f2e7ff;font:800 8px/1.15 'DM Sans',Arial,sans-serif;letter-spacing:.16em}
+.dcds-current-date-line{display:flex;align-items:baseline;gap:7px;min-width:0}
+.dcds-current-date-line strong{color:#fff;font:800 22px/.95 'DM Sans',Arial,sans-serif;font-variant-numeric:tabular-nums}
+.dcds-current-date-line span{color:#e2d5ef;font:800 9px/1.2 'DM Sans',Arial,sans-serif;letter-spacing:.1em;white-space:nowrap}
+.dcds-current-time-box{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:0 0 auto}
+.dcds-current-time-label{color:var(--event-accent);font:800 7px/1.2 'DM Sans',Arial,sans-serif;letter-spacing:.15em}
+.dcds-current-time{color:#fff;font:800 16px/1 'DM Sans',Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:.02em;text-shadow:0 0 12px var(--event-glow)}
+/* Stronger side LEDs with the same slow, staggered breathing pulse. */
+.dcds-celebration-led-left i{
+ background:var(--event-accent);
+ box-shadow:0 0 8px 2px var(--event-accent),0 0 20px 5px var(--event-accent),0 0 38px 9px var(--event-glow),inset 0 0 6px #fff;
+ animation:dcdsLedPulse 1.8s ease-in-out infinite alternate;
+}
+.dcds-celebration-led-right i{
+ background:var(--event-secondary);
+ box-shadow:0 0 8px 2px var(--event-secondary),0 0 20px 5px var(--event-secondary),0 0 38px 9px var(--event-glow),inset 0 0 6px #fff;
+ animation:dcdsLedPulse 1.8s ease-in-out infinite alternate;
+}
+.dcds-celebration-led i:nth-child(2n){animation-delay:.45s}
+.dcds-celebration-led i:nth-child(3n){animation-delay:.9s}
+@keyframes dcdsLedPulse{
+ from{opacity:.78;filter:brightness(1.18) saturate(1.12)}
+ to{opacity:1;filter:brightness(2.25) saturate(1.5)}
+}
+@media(max-width:680px){
+ .dcds-current-datetime{padding:8px 10px;gap:8px;border-radius:11px}
+ .dcds-current-date{gap:8px}
+ .dcds-current-calendar-icon{width:28px;height:28px;font-size:17px}
+ .dcds-current-weekday{font-size:7px;letter-spacing:.13em}
+ .dcds-current-date-line{gap:6px}
+ .dcds-current-date-line strong{font-size:21px}
+ .dcds-current-date-line span{font-size:8px;letter-spacing:.07em}
+ .dcds-current-time-label{font-size:6px;letter-spacing:.1em}
+ .dcds-current-time{font-size:14px}
+ .dcds-celebration-led-left i,.dcds-celebration-led-right i{
+   box-shadow:0 0 7px 2px currentColor,0 0 17px 4px currentColor,0 0 31px 7px var(--event-glow),inset 0 0 5px #fff;
+ }
+}
+@media(max-width:360px){
+ .dcds-current-datetime{padding:7px 7px;gap:5px}
+ .dcds-current-date{gap:6px}
+ .dcds-current-calendar-icon{width:25px;height:25px}
+ .dcds-current-date-line strong{font-size:19px}
+ .dcds-current-date-line span{font-size:7px;letter-spacing:.04em}
+ .dcds-current-time{font-size:12px}
+ .dcds-current-time-label{font-size:5px}
+}
