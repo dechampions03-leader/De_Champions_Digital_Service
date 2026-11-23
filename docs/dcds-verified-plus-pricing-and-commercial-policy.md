@@ -49,7 +49,7 @@ The Verified+ Blue Badge is shown only when the identity decision is approved an
 - Grant entitlements only after verified successful payment. Pending, failed, reversed or mismatched payments grant no access.
 - Monthly access ends after 30 days; Annual access ends after 12 months; Five-Year access ends after 60 months. No plan is perpetual.
 - The Five-Year amount is charged once upfront for the full 60-month term. It does not silently renew or create recurring charges.
-- Automatic renewal is available for all three plans only after the member gives a separate, explicit opt-in consent. Do not preselect consent or silently enrol a member; without consent, renewal remains manual.
+- Automatic renewal is available for all three plans only after the member gives a separate, explicit opt-in consent. Do not preselect consent or silently enrol a member; without consent, checkout is one-time only and future renewal is manual.
 - After a member confirms cancellation, stop future automatic charges without administrator approval. Keep the already-paid membership active through its paid-through timestamp; cancellation does not erase the remaining paid term.
 - The amount, currency, interval and next billing date must be shown before recurring consent. A price change requires advance notice and fresh consent before charging the new amount.
 - The exact Flutterwave Five-Year interval must pass a sandbox test before Five-Year automatic renewal is activated. If it fails, retain manual renewal for that plan rather than substituting a different billing cadence.
