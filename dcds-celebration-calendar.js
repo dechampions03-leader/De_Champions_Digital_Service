@@ -11,6 +11,12 @@
   const weekdayFmt = new Intl.DateTimeFormat('en-GB', {timeZone:zone,weekday:'long'});
   const monthYearFmt = new Intl.DateTimeFormat('en-GB', {timeZone:zone,month:'long',year:'numeric'});
   const clockFmt = new Intl.DateTimeFormat('en-NG', {timeZone:zone,hour:'numeric',minute:'2-digit',second:'2-digit',hour12:true});
+  let hijriFormatter=null;
+  try{
+    hijriFormatter=new Intl.DateTimeFormat('en-u-ca-islamic-umalqura',{timeZone:zone,year:'numeric',month:'numeric',day:'numeric'});
+  }catch(_){
+    try{hijriFormatter=new Intl.DateTimeFormat('en-u-ca-islamic-civil',{timeZone:zone,year:'numeric',month:'numeric',day:'numeric'});}catch(__){}
+  }
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const sceneProfiles = [
@@ -132,6 +138,24 @@
     const g=Math.floor((b-f+1)/3),h=(19*a+b-d-g+15)%30,i=Math.floor(c/4),k=c%4,l=(32+2*e+2*i-h-k)%7;
     const m=Math.floor((a+11*h+22*l)/451),month=Math.floor((h+l-7*m+114)/31);
     return {month,day:((h+l-7*m+114)%31)+1};
+  };
+  const hijriYearCache=new Map();
+  const hijriDateInGregorianYear=(year,targetMonth,targetDay)=>{
+    if(!hijriFormatter)return null;
+    if(!hijriYearCache.has(year)){
+      const found={};
+      for(let month=1;month<=12;month++){
+        const daysInMonth=new Date(Date.UTC(year,month,0)).getUTCDate();
+        for(let day=1;day<=daysInMonth;day++){
+          const localNoon=new Date(Date.UTC(year,month-1,day,12,0,0));
+          const p=Object.fromEntries(hijriFormatter.formatToParts(localNoon).map(part=>[part.type,part.value]));
+          const key=Number(p.month)+'-'+Number(p.day);
+          if(!found[key])found[key]={month,day};
+        }
+      }
+      hijriYearCache.set(year,found);
+    }
+    return hijriYearCache.get(year)[targetMonth+'-'+targetDay]||null;
   };
   const eventsForYear = year => {
     const events=[];
@@ -311,6 +335,39 @@
       add(6,6,{name:'Islamic New Year · Al-Hijra (expected)',emoji:'🌙',description:'Wishing Muslim communities a peaceful and meaningful new Islamic year.',greeting:'HAPPY ISLAMIC NEW YEAR!',accent:'#80c6db',secondary:'#3c5d9b',label:'Al-Hijra',tentative:true,category:'Islamic observance · tentative'});
       add(6,15,{name:'Day of Ashura (expected)',emoji:'🌙',description:'An important day in the Islamic calendar, observed in different ways across Muslim communities.',greeting:'BLESSINGS ON ASHURA!',accent:'#80c6db',secondary:'#3c5d9b',label:'Ashura',tentative:true,category:'Islamic observance · tentative'});
       add(8,15,{name:'Eid-el-Maulud · Mawlid (expected)',emoji:'🕌',description:'A day observed by many Muslims in remembrance of the Prophet Muhammad.',greeting:'WARM WISHES ON MAWLID!',accent:'#9ed2b0',secondary:'#36775f',label:'Mawlid',tentative:true,category:'Nigerian public holiday · tentative'});
+    } else if(year>2027){
+      // For later years, calculate provisional dates using the browser's
+      // Umm al-Qura Hijri calendar. Nigerian moon-sighting declarations win.
+      const lunar=(month,day)=>hijriDateInGregorianYear(year,month,day);
+      const lunarAdd=(month,day,data)=>{
+        const date=lunar(month,day);
+        if(date)add(date.month,date.day,{...data,tentative:true,dateNote:'Calculated Hijri-calendar estimate · confirm with Nigerian moon-sighting announcement'});
+      };
+      lunarAdd(9,1,{name:'Ramadan Begins (estimated)',emoji:'🌙',description:'Wishing Muslim communities a meaningful month of fasting, prayer, reflection and generosity.',greeting:'RAMADAN MUBARAK!',accent:'#79d6bd',secondary:'#256b93',label:'Ramadan',category:'Islamic observance · tentative'});
+      lunarAdd(9,27,{name:'Laylat al-Qadr (estimated)',emoji:'🌙',description:'A sacred night observed during the final ten nights of Ramadan; this calendar date is an estimate.',greeting:'BLESSINGS ON LAYLAT AL-QADR!',accent:'#8dd6c2',secondary:'#2a5b80',label:'Laylat al-Qadr',category:'Islamic observance · tentative'});
+      const fitr=lunar(10,1);
+      if(fitr){
+        add(fitr.month,fitr.day,{name:'Eid al-Fitr (estimated)',emoji:'🌙',description:'Wishing Muslim families in Nigeria and around the world a joyful Eid filled with peace, gratitude and generosity.',greeting:'HAPPY EID AL-FITR!',accent:'#79d6bd',secondary:'#256b93',label:'Eid al-Fitr',tentative:true,dateNote:'Calculated Hijri-calendar estimate · confirm with Nigerian moon-sighting announcement',category:'Nigerian public holiday · tentative'});
+        const fitrHoliday=addDaysUTC(new Date(Date.UTC(year,fitr.month-1,fitr.day)),1);
+        add(fitrHoliday.month,fitrHoliday.day,{name:'Eid al-Fitr Holiday (estimated)',emoji:'🌙',description:'Wishing you a peaceful Eid holiday with family, friends and community.',greeting:'EID MUBARAK!',accent:'#79d6bd',secondary:'#256b93',label:'Eid holiday',tentative:true,dateNote:'Calculated Hijri-calendar estimate · confirm with Nigerian moon-sighting announcement',category:'Nigerian public holiday · tentative'});
+        const fitrDurbarEnd=addDaysUTC(new Date(Date.UTC(year,fitr.month-1,fitr.day)),2);
+        addSeason(fitr.month,fitr.day,fitrDurbarEnd.month,fitrDurbarEnd.day,{name:'Northern Nigeria Eid Durbar Festival Window',emoji:'🐎',description:'A northern Nigerian cultural celebration associated with Eid, featuring royal horse parades, music and traditional pageantry.',greeting:'EID DURBAR FESTIVAL!',accent:'#d8b56b',secondary:'#75472e',label:'Eid Durbar',dateLabel:'Around Eid · dates and local programme vary by emirate',category:'Nigerian cultural festival',tentative:true});
+      }
+      const arafah=lunar(12,9);
+      if(arafah){
+        add(arafah.month,arafah.day,{name:'Day of Arafah (estimated)',emoji:'🕋',description:'A significant day in the Hajj season observed by Muslim communities.',greeting:'BLESSINGS ON THE DAY OF ARAFAH!',accent:'#8bd7b4',secondary:'#287b65',label:'Day of Arafah',tentative:true,dateNote:'Calculated Hijri-calendar estimate · confirm with Nigerian moon-sighting announcement',category:'Islamic observance · tentative'});
+        const adha=lunar(12,10);
+        if(adha){
+          add(adha.month,adha.day,{name:'Eid al-Adha · Eid-el-Kabir (estimated)',emoji:'🌙',description:'Wishing Muslim communities a blessed Eid of faith, generosity and sharing.',greeting:'HAPPY EID-EL-KABIR!',accent:'#8bd7b4',secondary:'#287b65',label:'Eid-el-Kabir',tentative:true,dateNote:'Calculated Hijri-calendar estimate · confirm with Nigerian moon-sighting announcement',category:'Nigerian public holiday · tentative'});
+          const adhaHoliday=addDaysUTC(new Date(Date.UTC(year,adha.month-1,adha.day)),1);
+          add(adhaHoliday.month,adhaHoliday.day,{name:'Eid al-Adha Holiday (estimated)',emoji:'🌙',description:'May the spirit of sacrifice, care and generosity continue throughout the Eid season.',greeting:'EID MUBARAK!',accent:'#8bd7b4',secondary:'#287b65',label:'Eid holiday',tentative:true,dateNote:'Calculated Hijri-calendar estimate · confirm with Nigerian moon-sighting announcement',category:'Nigerian public holiday · tentative'});
+          const adhaDurbarEnd=addDaysUTC(new Date(Date.UTC(year,adha.month-1,adha.day)),2);
+          addSeason(adha.month,adha.day,adhaDurbarEnd.month,adhaDurbarEnd.day,{name:'Northern Nigeria Eid-el-Kabir Durbar Festival Window',emoji:'🐎',description:'A northern Nigerian Durbar season associated with Eid-el-Kabir, including royal horse parades and traditional performances.',greeting:'EID-EL-KABIR DURBAR!',accent:'#d8b56b',secondary:'#75472e',label:'Eid Durbar',dateLabel:'Around Eid-el-Kabir · dates and local programme vary by emirate',category:'Nigerian cultural festival',tentative:true});
+        }
+      }
+      lunarAdd(1,1,{name:'Islamic New Year · Al-Hijra (estimated)',emoji:'🌙',description:'Wishing Muslim communities a peaceful and meaningful new Islamic year.',greeting:'HAPPY ISLAMIC NEW YEAR!',accent:'#80c6db',secondary:'#3c5d9b',label:'Al-Hijra',category:'Islamic observance · tentative'});
+      lunarAdd(1,10,{name:'Day of Ashura (estimated)',emoji:'🌙',description:'An important day in the Islamic calendar, observed in different ways across Muslim communities.',greeting:'BLESSINGS ON ASHURA!',accent:'#80c6db',secondary:'#3c5d9b',label:'Ashura',category:'Islamic observance · tentative'});
+      lunarAdd(3,12,{name:'Eid-el-Maulud · Mawlid (estimated)',emoji:'🕌',description:'A day observed by many Muslims in remembrance of the Prophet Muhammad.',greeting:'WARM WISHES ON MAWLID!',accent:'#9ed2b0',secondary:'#36775f',label:'Mawlid',category:'Nigerian public holiday · tentative'});
     }
     const goodFriday=addDaysUTC(new Date(Date.UTC(year,easter.month-1,easter.day)),-2);
     const easterMonday=addDaysUTC(new Date(Date.UTC(year,easter.month-1,easter.day)),1);
@@ -363,7 +420,7 @@
     $('event-scene-prop-two').textContent=scene.props[1];
     $('event-scene-prop-three').textContent=scene.props[2];
     $('event-title').textContent=event.name;
-    $('event-date').textContent=(event.dateLabel||dateFmt.format(event.start))+(event.tentative&&!event.dateLabel?(event.category&&/public holiday|eid|mawlud/i.test(event.category+' '+event.name)?' · TENTATIVE — MAY SHIFT WITH MOON SIGHTING':' · EXPECTED DATE — LOCAL CONFIRMATION PENDING'):'');
+    $('event-date').textContent=(event.dateLabel||dateFmt.format(event.start))+(event.dateNote?' · '+event.dateNote:(event.tentative&&!event.dateLabel?(event.category&&/public holiday|eid|mawlud/i.test(event.category+' '+event.name)?' · TENTATIVE — MAY SHIFT WITH MOON SIGHTING':' · EXPECTED DATE — LOCAL CONFIRMATION PENDING'):''));
     $('event-category').textContent=event.category||categoryForEvent(event.name);
     $('event-kicker').textContent=activeSeason?'FESTIVAL WINDOW · LOCAL PROGRAMME DATES VARY':(celebrating?'TODAY · CELEBRATION MODE':(event.season?'COUNTING DOWN TO THE FESTIVAL PERIOD':'COUNTING DOWN TO THE NEXT CELEBRATION'));
     $('event-status').textContent=activeSeason?'FESTIVAL PERIOD':(celebrating?'TODAY IS THE DAY':'UPCOMING CELEBRATION');
