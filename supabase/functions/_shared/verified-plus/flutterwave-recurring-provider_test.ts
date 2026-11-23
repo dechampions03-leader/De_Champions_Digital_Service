@@ -2,6 +2,7 @@ import {
   FlutterwaveRecurringPaymentError,
   FlutterwaveRecurringPayments,
   verifyFlutterwaveWebhookSignature,
+  validateVerifiedPlusTransaction,
 } from "./flutterwave-recurring-provider.ts";
 import {
   VERIFIED_PLUS_PLAN_TERMS,
@@ -59,6 +60,7 @@ Deno.test("createPaymentPlan provisions each exact approved NGN plan with no fix
     const plan = await client.createPaymentPlan(planId);
     assert(capturedBody !== null, "Plan request body captured");
     equal(capturedBody!.amount, terms.amount, planId + " exact amount");
+    equal(capturedBody!.currency, "NGN", planId + " explicit currency");
     equal(capturedBody!.interval, terms.renewalInterval.providerIntervalText, planId + " exact interval");
     equal("duration" in capturedBody!, false, "Plan has no automatic end duration");
     equal(plan.id, 12345, "Returned plan id");
@@ -200,6 +202,55 @@ Deno.test("transaction verification uses the numeric ID endpoint and verifies re
   const tx = await client.verifyTransaction("777");
   equal(String(tx.id), "777", "Verified transaction identity");
   equal(tx.status, "successful", "Verified status");
+}); 
+
+Deno.test("transaction validation checks ID, reference, amount, currency, status and customer email", () => {
+  const base = {
+    id: 777,
+    tx_ref: checkoutInput.txRef,
+    amount: 7500,
+    currency: "NGN",
+    status: "successful",
+    customer: { email: checkoutInput.email },
+  };
+  equal(validateVerifiedPlusTransaction({
+    transaction: base,
+    expectedTransactionId: "777",
+    expectedReference: checkoutInput.txRef,
+    expectedPlanId: "monthly",
+    expectedCustomerEmail: checkoutInput.email,
+  }), null, "Matching monthly charge");
+  equal(validateVerifiedPlusTransaction({
+    transaction: { ...base, amount: 7501 },
+    expectedTransactionId: "777",
+    expectedReference: checkoutInput.txRef,
+    expectedPlanId: "monthly",
+    expectedCustomerEmail: checkoutInput.email,
+  }) !== null, true, "Wrong amount rejected");
+  equal(validateVerifiedPlusTransaction({
+    transaction: { ...base, customer: { email: "attacker@example.com" } },
+    expectedTransactionId: "777",
+    expectedReference: checkoutInput.txRef,
+    expectedPlanId: "monthly",
+    expectedCustomerEmail: checkoutInput.email,
+  }) !== null, true, "Wrong customer email rejected");
+});
+
+Deno.test("subscription lookup is scoped by the first verified transaction ID", async () => {
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    fetcher: mockFetch((url, init) => {
+      equal(url, "https://api.flutterwave.com/v3/subscriptions?transaction_id=777&email=member%40example.com&plan=12345", "Subscription query");
+      equal(init?.method, "GET", "Subscription lookup method");
+      return jsonResponse({
+        status: "success",
+        data: [{ id: 4147, amount: 7500, plan: 12345, status: "active", customer: { customer_email: "member@example.com" } }],
+      });
+    }),
+  });
+  const rows = await client.listSubscriptions({ transactionId: "777", email: checkoutInput.email, planId: 12345 });
+  equal(rows.length, 1, "One matching subscription");
+  equal(String(rows[0].id), "4147", "Provider subscription ID");
 });
 
 Deno.test("provider HTTP failures do not expose provider body or secret credentials", async () => {
