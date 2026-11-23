@@ -106,6 +106,8 @@ export interface FlutterwaveRecurringPaymentOptions {
   readonly baseUrl?: string;
   readonly fetcher?: Fetcher;
   readonly timeoutMs?: number;
+  /** Defaults to Test mode. Live mode must be an explicit future release choice. */
+  readonly environment?: "test" | "live";
   /** Only plans that passed their exact Flutterwave sandbox interval tests. */
   readonly validatedPlanIds?: readonly VerifiedPlusPlanId[];
 }
@@ -141,6 +143,14 @@ export class FlutterwaveRecurringPayments {
       throw new FlutterwaveRecurringPaymentError(
         "CONFIGURATION",
         "Flutterwave server secret is not configured.",
+      );
+    }
+    const environment = options.environment ?? "test";
+    const isTestKey = secretKey.startsWith("FLWSECK_TEST-");
+    if ((environment === "test" && !isTestKey) || (environment === "live" && isTestKey)) {
+      throw new FlutterwaveRecurringPaymentError(
+        "CONFIGURATION",
+        "Flutterwave key prefix does not match the explicitly selected payment environment.",
       );
     }
 
