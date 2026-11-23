@@ -11,9 +11,9 @@ DCDS Verified+ has three paid membership durations:
 
 | Plan | Price | Paid duration | Renewal |
 |---|---:|---|---|
-| Monthly | NGN 7,500 | 30 days | Member may manually renew for another 30-day term |
-| Annual | NGN 75,000 | 12 months | Member may manually renew for another 12-month term |
-| Five-Year | NGN 320,000 | 60 months | One upfront payment; member may choose another 60-month term at expiry |
+| Monthly | NGN 7,500 | 30 days | Opt-in automatic renewal every 30 days; member can cancel any time |
+| Annual | NGN 75,000 | 12 months | Opt-in automatic renewal every one year; member can cancel any time |
+| Five-Year | NGN 320,000 | 60 months | Opt-in automatic renewal every five years; member can cancel any time |
 
 The Annual plan is NGN 15,000 less than twelve Monthly payments (NGN 90,000), a 16.7% saving for members who pay annually.
 
@@ -49,7 +49,11 @@ The Verified+ Blue Badge is shown only when the identity decision is approved an
 - Grant entitlements only after verified successful payment. Pending, failed, reversed or mismatched payments grant no access.
 - Monthly access ends after 30 days; Annual access ends after 12 months; Five-Year access ends after 60 months. No plan is perpetual.
 - The Five-Year amount is charged once upfront for the full 60-month term. It does not silently renew or create recurring charges.
-- Do not silently enrol members in recurring charges. Any future automatic renewal requires clear disclosure and the member's explicit consent; otherwise the member renews manually.
+- Automatic renewal is available for all three plans only after the member gives a separate, explicit opt-in consent. Do not preselect consent or silently enrol a member; without consent, renewal remains manual.
+- After a member confirms cancellation, stop future automatic charges without administrator approval. Keep the already-paid membership active through its paid-through timestamp; cancellation does not erase the remaining paid term.
+- The amount, currency, interval and next billing date must be shown before recurring consent. A price change requires advance notice and fresh consent before charging the new amount.
+- The exact Flutterwave Five-Year interval must pass a sandbox test before Five-Year automatic renewal is activated. If it fails, retain manual renewal for that plan rather than substituting a different billing cadence.
+- See [the automatic-renewal and self-service cancellation specification](dcds-verified-plus-auto-renewal-and-cancellation-spec.md) for consent, cancellation, webhook, entitlement and release requirements.
 - Provide advance expiry notices and clear renewal, cancellation, refund and chargeback terms before checkout.
 - Keep identity-verification fees, membership revenue, course payments, VTU orders, wallet/balance records, referrals and payouts in their proper separate accounting domains.
 
