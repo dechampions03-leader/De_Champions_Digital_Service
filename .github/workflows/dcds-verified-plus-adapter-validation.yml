@@ -106,6 +106,8 @@ jobs:
           membership_billing = Path("supabase/functions/_shared/verified-plus/membership-billing.ts").read_text(encoding="utf-8")
           flutterwave_adapter = Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8")
           flutterwave_adapter_tests = Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts").read_text(encoding="utf-8")
+          flutterwave_adapter_tests = flutterwave_adapter_tests
+
           flutterwave_runbook = Path("docs/dcds-verified-plus-flutterwave-sandbox-runbook.md").read_text(encoding="utf-8")
           provider_contract = Path("docs/dcds-verified-plus-provider-adapter-contract.md").read_text(encoding="utf-8")
           moderation_contract = Path("docs/dcds-verified-plus-moderation-engine-contract.md").read_text(encoding="utf-8")
@@ -146,6 +148,9 @@ jobs:
               "billing release respects the existing database migration blocker": "migration-reconciliation report identifies mismatched Supabase migration histories" in renewal_policy and "Do not create or apply membership billing tables" in renewal_policy,
               "Flutterwave recurring checkout enforces explicit persisted consent": "validateRecurringBillingConsent" in flutterwave_adapter and "input.consent" in flutterwave_adapter,
               "Flutterwave provider plan IDs come only from the server-side plan mapping": "providerPlanIds[input.planId]" in flutterwave_adapter and "providerPlanIds?: Partial<Record<VerifiedPlusPlanId, number>>" in flutterwave_adapter and "providerPlanId" not in flutterwave_adapter.slice(0, flutterwave_adapter.indexOf("export class FlutterwaveRecurringPayments")),
+              "Flutterwave sandbox qualification is available only in Test mode": "allowSandboxQualification" in flutterwave_adapter and "environment !== \"test\"" in flutterwave_adapter,
+              "Flutterwave subscription resolver checks initial transaction plan amount and customer email": "resolveSubscriptionFromInitialCharge" in flutterwave_adapter and "Number(record.amount) === terms.amount" in flutterwave_adapter and "customer_email" in flutterwave_adapter,
+              "Flutterwave tests cover sandbox-only interval qualification": "Test mode can explicitly qualify a custom interval" in flutterwave_adapter_tests and "Sandbox interval qualification cannot be enabled with Live mode" in flutterwave_adapter_tests,
               "Flutterwave provider tests prove request data cannot override a provider plan ID": "checkout reads the provider plan ID from trusted plan configuration" in flutterwave_adapter_tests and "checkout is blocked when no trusted provider plan ID is configured" in flutterwave_adapter_tests,
               "Flutterwave recurring checkout requires sandbox-approved plan IDs": "validatedPlanIds.has(input.planId)" in flutterwave_adapter and "PROVIDER_INTERVAL_NOT_VALIDATED" in flutterwave_adapter,
               "Flutterwave adapter defaults to Test keys and rejects malformed Live keys": 'options.environment ?? "test"' in flutterwave_adapter and 'startsWith("FLWSECK_TEST-")' in flutterwave_adapter and "isRecognizedLiveKey" in flutterwave_adapter,
