@@ -20,6 +20,11 @@
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const sceneProfiles = [
+    {key:'africa-women', test:/africa.s women day/i, props:['💜','🌍','🌸']},
+    {key:'africa-food', test:/school feeding|food security|nutrition/i, props:['🍲','🌾','🌍']},
+    {key:'africa-development', test:/decentralisation|local development|civil registration|africa border|african integration/i, props:['🏘️','🤝','🌍']},
+    {key:'africa-industry', test:/industrialisation/i, props:['🏭','⚙️','📈']},
+    {key:'traditional-medicine', test:/traditional medicine/i, props:['🌿','🩺','🌍']},
     {key:'africa-youth', test:/africa youth day/i, props:['🌍','🚀','⭐']},
     {key:'national-youth', test:/national youth day/i, props:['🇳🇬','🚀','🎓']},
     {key:'african-peace', test:/african day of peace/i, props:['🕊️','🌍','✨']},
@@ -230,7 +235,7 @@
       [6,1,'Nigerian Navy Day','⚓','Honouring the service and contribution of the Nigerian Navy.','SALUTE TO THE NIGERIAN NAVY!','#83c8e8','#1c567b','Navy'],
       [6,14,'World Blood Donor Day','🩸','Thanking voluntary blood donors and encouraging safe blood donation.','THANK YOU, BLOOD DONORS!','#ef8297','#a33558','Blood donors'],
       [6,16,'Day of the African Child','🧒🏾','Promoting the rights, protection, education and wellbeing of African children.','DAY OF THE AFRICAN CHILD!','#efc36a','#4d8c8b','African children'],
-      [6,20,'World Refugee Day','🕊️','Standing with refugees and recognising their courage, rights and resilience.','STAND WITH REFUGEES!','#9cc9e2','#4c638f','Refugees'],
+      [6,20,'African Refugee Day / World Refugee Day','🕊️','Standing with refugees and recognising their courage, rights and resilience.','STAND WITH REFUGEES!','#9cc9e2','#4c638f','Refugees'],
       [6,23,'United Nations Public Service Day','🏛️','Recognising public service and the people who serve their communities.','PUBLIC SERVICE DAY!','#8ab8db','#4a548b','Public service'],
       [6,27,'World Micro, Small and Medium-sized Enterprises Day','🏪','Celebrating small businesses and entrepreneurs who create jobs and opportunity.','CELEBRATE SMALL BUSINESSES!','#e3bb70','#684a94','Small business'],
       [7,6,'Nigerian Army Day','🎖️','Honouring the service and contribution of the Nigerian Army.','SALUTE TO THE NIGERIAN ARMY!','#b7c69d','#4a654f','Army'],
@@ -382,7 +387,7 @@
       add(6,6,{name:'Islamic New Year · Al-Hijra (expected)',emoji:'🌙',description:'Wishing Muslim communities a peaceful and meaningful new Islamic year.',greeting:'HAPPY ISLAMIC NEW YEAR!',accent:'#80c6db',secondary:'#3c5d9b',label:'Al-Hijra',tentative:true,category:'Islamic observance · tentative'});
       add(6,15,{name:'Day of Ashura (expected)',emoji:'🌙',description:'An important day in the Islamic calendar, observed in different ways across Muslim communities.',greeting:'BLESSINGS ON ASHURA!',accent:'#80c6db',secondary:'#3c5d9b',label:'Ashura',tentative:true,category:'Islamic observance · tentative'});
       add(8,15,{name:'Eid-el-Maulud · Mawlid (expected)',emoji:'🕌',description:'A day observed by many Muslims in remembrance of the Prophet Muhammad.',greeting:'WARM WISHES ON MAWLID!',accent:'#9ed2b0',secondary:'#36775f',label:'Mawlid',tentative:true,category:'Nigerian public holiday · tentative'});
-    } else if(year>2027){
+    } else if(year>=2026){
       // For later years, calculate provisional dates using the browser's
       // Umm al-Qura Hijri calendar. Nigerian moon-sighting declarations win.
       const lunar=(month,day)=>hijriDateInGregorianYear(year,month,day);
