@@ -69,7 +69,8 @@ export interface RecurringBillingConsentProof {
   readonly memberId: string;
   readonly planId: VerifiedPlusPlanId;
   readonly amount: number;
-  readonly currency: VerifiedPlusBillingCurrency;
+  /** Raw persisted value: validate it at runtime before any provider call. */
+  readonly currency: string;
   readonly providerIntervalText: string;
   readonly termsVersion: string;
   readonly consentedAt: string;
