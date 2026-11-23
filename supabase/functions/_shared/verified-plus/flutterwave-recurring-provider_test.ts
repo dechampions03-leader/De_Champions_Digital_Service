@@ -362,51 +362,30 @@ Deno.test("provider HTTP failures do not expose provider body or secret credenti
   assert(safe, "Provider error is sanitised");
 });
 
-Deno.test("current HMAC webhook signature verifies exact raw bytes", async () => {
-  const body = new TextEncoder().encode("{\"event\":\"charge.completed\"}");
-  const secret = "DCDS_TEST_WEBHOOK_HASH";
-  const cryptoKey = await crypto.subtle.importKey(
-    "raw",
-    new TextEncoder().encode(secret),
-    { name: "HMAC", hash: "SHA-256" },
-    false,
-    ["sign"],
-  );
-  const digest = new Uint8Array(await crypto.subtle.sign("HMAC", cryptoKey, body));
-  let binary = "";
-  for (const byte of digest) binary += String.fromCharCode(byte);
-  const signature = btoa(binary);
-  const headers = new Headers({ "flutterwave-signature": signature });
+Deno.test("documented Flutterwave verif-hash header is checked against the configured secret", () => {
+  const headers = new Headers({ "verif-hash": "sandbox-webhook-secret" });
   equal(
-    await verifyFlutterwaveWebhookSignature({ rawBody: body, headers, secretHash: secret }),
+    verifyFlutterwaveWebhookSignature({ headers, secretHash: "sandbox-webhook-secret" }),
     true,
-    "Valid HMAC signature",
+    "Matching configured secret hash",
   );
   equal(
-    await verifyFlutterwaveWebhookSignature({ rawBody: new TextEncoder().encode("{}"), headers, secretHash: secret }),
+    verifyFlutterwaveWebhookSignature({ headers: new Headers({ "verif-hash": "wrong" }), secretHash: "sandbox-webhook-secret" }),
     false,
-    "Altered raw body rejected",
+    "Mismatched secret hash rejected",
   );
 });
 
-Deno.test("legacy DCDS verif-hash webhook header remains supported with constant-time comparison", async () => {
-  const headers = new Headers({ "verif-hash": "legacy-test-hash" });
+Deno.test("missing Flutterwave secret hash or verif-hash header is rejected", () => {
   equal(
-    await verifyFlutterwaveWebhookSignature({
-      rawBody: new Uint8Array([1, 2, 3]),
-      headers,
-      secretHash: "legacy-test-hash",
-    }),
-    true,
-    "Legacy DCDS header",
+    verifyFlutterwaveWebhookSignature({ headers: new Headers(), secretHash: "sandbox-webhook-secret" }),
+    false,
+    "Missing request header rejected",
   );
   equal(
-    await verifyFlutterwaveWebhookSignature({
-      rawBody: new Uint8Array([1, 2, 3]),
-      headers: new Headers({ "verif-hash": "wrong" }),
-      secretHash: "legacy-test-hash",
-    }),
+    verifyFlutterwaveWebhookSignature({ headers: new Headers({ "verif-hash": "sandbox-webhook-secret" }), secretHash: "" }),
     false,
-    "Invalid legacy header rejected",
+    "Missing server secret rejected",
   );
 });
+
