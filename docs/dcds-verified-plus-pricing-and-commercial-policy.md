@@ -53,7 +53,7 @@ The Verified+ Blue Badge is shown only when the identity decision is approved an
 - After a member confirms cancellation, stop future automatic charges without administrator approval. Keep the already-paid membership active through its paid-through timestamp; cancellation does not erase the remaining paid term.
 - The amount, currency, interval and next billing date must be shown before recurring consent. A price change requires advance notice and fresh consent before charging the new amount.
 - The exact Flutterwave Five-Year interval must pass a sandbox test before Five-Year automatic renewal is activated. If it fails, retain manual renewal for that plan rather than substituting a different billing cadence.
-- See [the automatic-renewal and self-service cancellation specification](dcds-verified-plus-auto-renewal-and-cancellation-spec.md) for consent, cancellation, webhook, entitlement and release requirements.
+- See [the automatic-renewal and self-service cancellation specification](dcds-verified-plus-auto-renewal-and-cancellation-spec.md) for consent, cancellation, webhook, entitlement and release requirements. The [Flutterwave sandbox runbook](dcds-verified-plus-flutterwave-sandbox-runbook.md) records the provider API mapping, test-mode controls and outstanding live sandbox checks.
 - Provide advance expiry notices and clear renewal, cancellation, refund and chargeback terms before checkout.
 - Keep identity-verification fees, membership revenue, course payments, VTU orders, wallet/balance records, referrals and payouts in their proper separate accounting domains.
 
