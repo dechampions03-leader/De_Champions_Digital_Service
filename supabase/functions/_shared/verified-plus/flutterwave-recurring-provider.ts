@@ -329,7 +329,7 @@ export class FlutterwaveRecurringPayments {
       }
       params.set("plan", String(query.planId));
     }
-    if (!params.size) {
+    if (params.toString() === "") {
       throw new FlutterwaveRecurringPaymentError("INVALID_INPUT", "A transaction, email or plan filter is required.");
     }
 
