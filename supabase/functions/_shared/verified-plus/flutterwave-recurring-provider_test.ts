@@ -135,7 +135,6 @@ Deno.test("adapter blocks recurring checkout without stored member consent", asy
   const client = new FlutterwaveRecurringPayments({
     secretKey,
     providerPlanIds: { monthly: 12345, annual: 12346 },
-    providerPlanIds: { monthly: 12345, annual: 12346 },
     validatedPlanIds: ["monthly", "annual"],
     fetcher: mockFetch(() => jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } })),
   });
@@ -157,6 +156,7 @@ Deno.test("adapter blocks Five-Year checkout until the exact interval is sandbox
   };
   const client = new FlutterwaveRecurringPayments({
     secretKey,
+    providerPlanIds: { monthly: 12345, annual: 12346, five_year: 12347 },
     validatedPlanIds: ["monthly", "annual"],
     fetcher: mockFetch(() => jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } })),
   });
