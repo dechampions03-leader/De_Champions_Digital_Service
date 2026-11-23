@@ -44,7 +44,7 @@ Maintain two independent records:
 
 A successful identity check is not a payment confirmation. A successful payment is not an identity approval. Seller approval is a third, independent decision.
 
-Working expiry rule: keep the historical identity decision so a member does not have to repeat verification on every renewal, but disable paid Verified+ entitlements when the paid period ends: 30 days for Monthly, 12 months for Annual or 60 months for Five-Year. The public Blue Badge should be displayed only when the required identity and a currently active monthly, annual or five-year membership are both confirmed. No paid term creates a perpetual entitlement.
+Working expiry rule: keep the historical identity decision so a member does not have to repeat verification on every renewal, but disable paid Verified+ entitlements when the paid period ends: 30 days for Monthly, 12 months for Annual or 60 months for Five-Year. The public Blue Badge should be displayed only when the required identity and a currently active monthly, annual or five-year membership are both confirmed. No paid term creates a perpetual entitlement. Automatic renewal is opt-in for each plan, and members can cancel it themselves at any time without administrator approval; the paid entitlement remains active through the already-paid-through timestamp. See the [Automatic Renewal and Self-Service Cancellation Specification](dcds-verified-plus-auto-renewal-and-cancellation-spec.md).
 
 ## 3. Universal Profile
 
@@ -122,7 +122,10 @@ The Annual plan costs NGN 15,000 less than twelve Monthly payments (NGN 90,000),
 
 - Offer only the Monthly (NGN 7,500 / 30 days), Annual (NGN 75,000 / 12 months) and Five-Year (NGN 320,000 / 60 months) membership plans. Never create a lifetime or perpetual paid entitlement.
 - Keep identity verification as a separate applicant-paid fee, outside both membership prices and also outside the Five-Year price. Show the fee before the identity check begins; its amount remains unapproved until provider pricing, payment-processing charges and applicable taxes are confirmed. Do not charge an applicant again for a retry caused by a DCDS or provider technical error.
-- A membership renewal must follow the member's explicit renewal choice and clear terms; do not silently enrol a member in recurring charges.
+- Automatic renewal is available for Monthly, Annual and Five-Year only after a separate explicit member opt-in; do not preselect consent or silently enrol a member.
+- Provide member-controlled cancellation without administrator approval. Stop future provider charges after confirmed cancellation, while preserving the already-paid entitlement through its paid-through timestamp.
+- Disclose price, currency, cadence, next charge date and cancellation path before consent. Require fresh consent for a changed renewal price.
+- Follow the [Automatic Renewal and Self-Service Cancellation Specification](dcds-verified-plus-auto-renewal-and-cancellation-spec.md); do not enable a plan's recurring billing until its exact interval and cancellation behaviour pass sandbox tests.
 - Build a dedicated membership checkout/order path. The current `create-payment` function creates course-specific orders, and the existing `orders.course_id` column is NOT NULL; the current admin verification path also assumes course orders and course enrolment. Do not route Verified+ membership purchases through that course-enrolment pipeline. Reuse the established Flutterwave provider-verification and webhook-security patterns only after adapting them to a separate membership order.
 - Create an order/reference for the membership purchase and bind it to the authenticated user and selected plan.
 - Confirm amounts, currency, transaction status and gateway reference server-side; never trust a client-side success redirect.
@@ -302,7 +305,7 @@ See [the migration reconciliation report](dcds-migration-reconciliation.md) for 
 1. **Reconciliation gate (blocking):** confirm production project mapping, add/review the missing Supabase CLI configuration, reconcile timestamp history using an isolated Development target, compare the preserved baseline with current schemas, inspect relevant RLS policies and payment functions, and prove a clean local rebuild. Do not run migration repair or database reset against production.
 2. **Universal profile:** add profile model, unique usernames, privacy settings and a migration/backfill plan without changing legacy records.
 3. **Identity verification:** select an authorised vendor, complete privacy/DPIA and data-retention work, then implement provider adapter and reviewer console.
-4. **Verified+ membership:** add the approved Monthly, Annual and Five-Year plans, secure checkout, webhook idempotency, entitlement service, renewal and 30-day/12-month/60-month expiry handling.
+4. **Verified+ membership:** add the approved Monthly, Annual and Five-Year plans, a separate secure membership checkout, explicit opt-in recurring consent, member self-service cancellation, verified renewal webhooks, idempotent payment handling, the entitlement service and 30-day/12-month/60-month expiry handling.
 5. **Verified+ experience:** ad suppression, privacy centre, account guardian and advanced profile capabilities.
 6. **TRUSTMARKET admission:** seller application/review first, then listings, orders, reviews and dispute processes.
 7. **Release gates:** development integration tests, RLS and authorization tests, payment/webhook replay tests, privacy/security review, staging acceptance and explicit production release approval.
@@ -312,7 +315,7 @@ See [the migration reconciliation report](dcds-migration-reconciliation.md) for 
 - Confirm the intended minimum age for government-ID and biometric verification. Recommended launch gate: adults 18+ only; preserve existing age-appropriate DCDS experiences for younger members.
 - Select and contract an authorised identity-verification provider for Nigerian and international routes.
 - Confirm whether the public Blue Badge is hidden immediately on Monthly, Annual or Five-Year expiry while the historical identity-verification record remains.
-- Define Monthly, Annual and Five-Year renewal choices, cancellation, refund, chargeback and expiry notices. The Five-Year term must end at 60 months; lifetime membership is not an open decision and must remain unavailable.
+- Complete sandbox verification of the Monthly (every 30 days), Annual (every one year) and Five-Year (every five years) recurring intervals, cancellation endpoint and provider webhook lifecycle. Members must be able to cancel without administrator approval while retaining the paid-through term. Refund and chargeback terms still require separate approval. The Five-Year term must end at 60 months; lifetime membership remains unavailable.
 - Decide whether unverified members may browse TRUSTMARKET and act as buyers; seller admission remains Verified+ plus separate approval.
 - Define international display prices and payment currencies after provider and tax costs are known.
 - Confirm the production Supabase project and reconcile migration history before preparing any migration.
