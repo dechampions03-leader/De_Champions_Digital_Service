@@ -331,11 +331,18 @@
     $('current-day-number').textContent=String(p.day);
     $('current-month-year').textContent=monthYearFmt.format(now).toUpperCase();
     $('current-time').textContent=clockFmt.format(now).replace(/\s+/g,' ').trim().toUpperCase();
-    const activeExact=events.find(event=>!event.season&&event.key===today&&now>=event.start&&now<event.end);
+    const activeExactEvents=events.filter(event=>!event.season&&event.key===today&&now>=event.start&&now<event.end);
+    // When multiple observances share a date, rotate them on the same 12-second
+    // display cycle so none is silently hidden behind another event.
+    const activeExact=activeExactEvents.length?activeExactEvents[Math.floor(now.getTime()/12000)%activeExactEvents.length]:null;
     const activeSeasons=events.filter(event=>event.season&&now>=event.start&&now<event.end);
-    const activeSeason=activeSeasons.length?activeSeasons[Math.floor(now.getTime()/(12000))%activeSeasons.length]:null;
-    const active=activeExact||activeSeason;
-    const event=active||events.find(item=>item.start>now);
+    const activeSeason=activeSeasons.length?activeSeasons[Math.floor(now.getTime()/12000)%activeSeasons.length]:null;
+    const upcomingExact=events.find(item=>!item.season&&item.start>now);
+    // Keep dated observances visible when one is close, even during a broad
+    // cultural-season window. Month-only dates never mask an exact event due soon.
+    const exactEventDueSoon=Boolean(upcomingExact&&upcomingExact.start.getTime()-now.getTime()<=7*dayMs);
+    const active=activeExact||(exactEventDueSoon?null:activeSeason);
+    const event=active||(exactEventDueSoon?upcomingExact:events.find(item=>item.start>now));
     if(!event)return;
     setTheme(event);
     const celebrating=Boolean(active);
