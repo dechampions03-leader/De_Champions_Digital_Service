@@ -27,7 +27,7 @@ function consentFor(planId: VerifiedPlusPlanId): RecurringBillingConsentProof {
   return {
     memberId: MEMBER,
     planId,
-    amountMinor: plan.amountMinor,
+    amount: plan.amount,
     currency: "NGN",
     providerIntervalText: plan.renewalInterval.providerIntervalText,
     termsVersion: "verified-plus-recurring-v1",
@@ -54,11 +54,11 @@ function subscription(
 }
 
 Deno.test("approved catalogue exposes only the three current membership terms", () => {
-  equal(VERIFIED_PLUS_PLAN_TERMS.monthly.amountMinor, 7500, "Monthly price");
+  equal(VERIFIED_PLUS_PLAN_TERMS.monthly.amount, 7500, "Monthly price");
   equal(VERIFIED_PLUS_PLAN_TERMS.monthly.entitlementTerm.value, 30, "Monthly duration");
-  equal(VERIFIED_PLUS_PLAN_TERMS.annual.amountMinor, 75000, "Annual price");
+  equal(VERIFIED_PLUS_PLAN_TERMS.annual.amount, 75000, "Annual price");
   equal(VERIFIED_PLUS_PLAN_TERMS.annual.entitlementTerm.value, 12, "Annual duration");
-  equal(VERIFIED_PLUS_PLAN_TERMS.five_year.amountMinor, 320000, "Five-Year price");
+  equal(VERIFIED_PLUS_PLAN_TERMS.five_year.amount, 320000, "Five-Year price");
   equal(VERIFIED_PLUS_PLAN_TERMS.five_year.entitlementTerm.value, 60, "Five-Year duration");
 });
 
@@ -131,7 +131,7 @@ Deno.test("consent cannot be reused by another member or a different plan", () =
 });
 
 Deno.test("consent rejects a changed amount, currency or billing interval", () => {
-  const badAmount = { ...consentFor("monthly"), amountMinor: 100 };
+  const badAmount = { ...consentFor("monthly"), amount: 100 };
   equal(validateRecurringBillingConsent({ memberId: MEMBER, planId: "monthly", consent: badAmount, providerIntervalValidated: true, now: NOW }).code, "AMOUNT_MISMATCH", "Bad amount");
 
   const badCurrency = { ...consentFor("monthly"), currency: "USD" as const };
