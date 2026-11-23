@@ -103,10 +103,13 @@
   const categoryForEvent = name => {
     if(/new year.s day|workers.day|democracy day \(nigeria\)|nigeria independence day|christmas day|boxing day|good friday|easter monday/i.test(name)) return 'Nigerian public holiday';
     if(/armed forces|air force day|navy day|army day|children.s day \(nigeria\)/i.test(name)) return 'Nigerian national observance';
+    if(/isese day/i.test(name)) return 'State-level observance · participating South-West states';
     if(/ramadan|eid|al-hijra|ashura|mawlid|ash wednesday|palm sunday|maundy thursday|holy saturday|easter sunday|mothering sunday/i.test(name)) return 'Religious observance';
     if(/festival|durbar|ofala|osun|argungu|new yam|mmanwu|igue|olojo|igbogo|calabar|nyalo|regatta|carnival/i.test(name)) return 'Nigerian cultural festival';
-    if(/nigerian|nigeria|africa day|commonwealth day|children.s day/i.test(name)) return 'Nigerian national observance';
-    if(/world |international day|international women|international youth|african child/i.test(name)) return 'International observance';
+    if(/africa day/i.test(name)) return 'African Union observance';
+    if(/valentine|father.s day|christmas eve|new year.s eve/i.test(name)) return 'Family / seasonal observance';
+    if(/nigerian|nigeria|commonwealth day|day of the african child/i.test(name)) return 'Nigerian national observance';
+    if(/world |international |international day|african child|migrant/i.test(name)) return 'International observance';
     return 'Community and cultural observance';
   };
   const localParts = date => {
@@ -258,6 +261,7 @@
     addSeason(2,1,3,31,{name:'Argungu International Fishing and Cultural Festival',emoji:'🐟',description:'A celebrated Kebbi cultural gathering featuring traditional fishing, canoe races, water competitions, wrestling and community heritage.',greeting:'ARGUNGU FESTIVAL SEASON!',accent:'#68c9d7',secondary:'#1e6178',label:'Argungu Festival',dateLabel:'Usually February–March · annual dates announced by organisers',category:'Nigerian cultural festival',tentative:true});
     addSeason(7,1,7,31,{name:'Tour Nigeria and National Cultural Travel Season',emoji:'🚌',description:'A celebration of domestic tourism, Nigerian destinations and cultural discovery across the states.',greeting:'EXPLORE NIGERIA!',accent:'#e9c36e',secondary:'#397b87',label:'Tour Nigeria',dateLabel:'July · programme dates announced by organisers',category:'Nigerian tourism event'});
     addSeason(8,1,8,7,{name:'Igbo New Yam Festival Season (Iwa Ji / Iri Ji)',emoji:'🌾',description:'Celebrating the new yam harvest and the food, gratitude and community traditions of Igbo communities.',greeting:'HAPPY NEW YAM FESTIVAL SEASON!',accent:'#d8b86e',secondary:'#6c8a48',label:'New Yam Festival',dateLabel:'Early August · local community dates vary',category:'Nigerian cultural festival',tentative:true});
+    add(8,20,{name:'Isese Day (Yoruba traditional heritage · participating South-West states)',emoji:'🪘',description:'A day celebrating Yoruba indigenous religion, traditional heritage and cultural identity. Some South-West state governments declare a local work-free day; it is not a nationwide federal public holiday.',greeting:'HAPPY ISESE DAY!',accent:'#d7a56c',secondary:'#71478e',label:'Isese Day',category:'State-level observance · participating South-West states',dateNote:'20 August · local/state observance; check each state’s annual notice'});
     addSeason(8,8,8,21,{name:'Osun-Osogbo Festival',emoji:'🌊',description:'A two-week cultural and spiritual festival in Osogbo, Osun State, with a programme of traditional rites and community gatherings.',greeting:'OSUN-OSOGBO FESTIVAL!',accent:'#6cc3aa',secondary:'#276c72',label:'Osun-Osogbo',dateLabel:'Second week of August · annual programme dates announced locally',category:'Nigerian cultural festival',tentative:true});
     addSeason(8,1,8,31,{name:'Sango Festival Season (Oyo)',emoji:'⚡',description:'A Yoruba cultural festival honouring the heritage, history, music and traditions associated with Sango in Oyo.',greeting:'SANGO FESTIVAL SEASON!',accent:'#e49d5b',secondary:'#913c3d',label:'Sango Festival',dateLabel:'August · local programme dates vary',category:'Nigerian cultural festival',tentative:true});
     addSeason(9,1,9,7,{name:'Ige-Agba Festival (Igede, Benue)',emoji:'🌾',description:'An Igede cultural and new-yam celebration held in the Oju and Obi communities of Benue State.',greeting:'IGE-AGBA FESTIVAL!',accent:'#d6b86d',secondary:'#65834b',label:'Ige-Agba',dateLabel:'First week of September · local programme dates vary',category:'Nigerian cultural festival',tentative:true});
