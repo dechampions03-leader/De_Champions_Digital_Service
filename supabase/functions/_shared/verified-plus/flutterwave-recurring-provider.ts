@@ -438,40 +438,18 @@ export function validateVerifiedPlusTransaction(input: {
 }
 
 /**
- * Verify both the legacy verif-hash used by the existing DCDS webhook and
- * the current Flutterwave flutterwave-signature HMAC-SHA256 header.
- * Call with the exact raw request bytes before parsing JSON.
+ * Verify the documented Flutterwave webhook secret-hash header.
+ * The current Flutterwave guide specifies `verif-hash` and directs the
+ * merchant to compare it with the secret hash configured in the dashboard.
  */
-export async function verifyFlutterwaveWebhookSignature(input: {
-  readonly rawBody: Uint8Array;
+export function verifyFlutterwaveWebhookSignature(input: {
   readonly headers: Headers;
   readonly secretHash: string;
-}): Promise<boolean> {
-  const secretHash = input.secretHash;
-  if (!secretHash) return false;
-
-  const legacyHash = input.headers.get("verif-hash");
-  if (legacyHash) return constantTimeStringEqual(legacyHash, secretHash);
-
-  const signature = input.headers.get("flutterwave-signature");
-  if (!signature) return false;
-
-  try {
-    const key = await crypto.subtle.importKey(
-      "raw",
-      new TextEncoder().encode(secretHash),
-      { name: "HMAC", hash: "SHA-256" },
-      false,
-      ["sign"],
-    );
-    const digest = new Uint8Array(
-      await crypto.subtle.sign("HMAC", key, input.rawBody),
-    );
-    const expected = bytesToBase64(digest);
-    return constantTimeStringEqual(signature, expected);
-  } catch {
-    return false;
-  }
+}): boolean {
+  const configuredHash = input.secretHash;
+  const receivedHash = input.headers.get("verif-hash");
+  if (!configuredHash || !receivedHash) return false;
+  return constantTimeStringEqual(receivedHash, configuredHash);
 }
 
 function constantTimeStringEqual(a: string, b: string): boolean {
