@@ -103,6 +103,9 @@ jobs:
           architecture = Path("docs/dcds-verified-plus-architecture.md").read_text(encoding="utf-8")
           pricing_policy = Path("docs/dcds-verified-plus-pricing-and-commercial-policy.md").read_text(encoding="utf-8")
           renewal_policy = Path("docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md").read_text(encoding="utf-8")
+          membership_billing = Path("supabase/functions/_shared/verified-plus/membership-billing.ts").read_text(encoding="utf-8")
+          flutterwave_adapter = Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8")
+          flutterwave_adapter_tests = Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts").read_text(encoding="utf-8")
           flutterwave_runbook = Path("docs/dcds-verified-plus-flutterwave-sandbox-runbook.md").read_text(encoding="utf-8")
           provider_contract = Path("docs/dcds-verified-plus-provider-adapter-contract.md").read_text(encoding="utf-8")
           moderation_contract = Path("docs/dcds-verified-plus-moderation-engine-contract.md").read_text(encoding="utf-8")
@@ -141,6 +144,11 @@ jobs:
               "Five-Year renewal interval must pass sandbox validation": "every five years" in renewal_policy and "must be created and tested in the Flutterwave sandbox" in renewal_policy,
               "billing integration never stores raw card credentials": "Never collect or store raw card numbers, CVV, PIN or OTP" in renewal_policy,
               "billing release respects the existing database migration blocker": "migration-reconciliation report identifies mismatched Supabase migration histories" in renewal_policy and "Do not create or apply membership billing tables" in renewal_policy,
+              "Flutterwave recurring checkout enforces explicit persisted consent": "validateRecurringBillingConsent" in flutterwave_adapter and "input.consent" in flutterwave_adapter,
+              "Flutterwave recurring checkout requires sandbox-approved plan IDs": "validatedPlanIds.has(input.planId)" in flutterwave_adapter and "PROVIDER_INTERVAL_NOT_VALIDATED" in flutterwave_adapter,
+              "Flutterwave adapter defaults to Test keys and rejects malformed Live keys": 'options.environment ?? "test"' in flutterwave_adapter and 'startsWith("FLWSECK_TEST-")' in flutterwave_adapter and "isRecognizedLiveKey" in flutterwave_adapter,
+              "Flutterwave recurring adapter tests cover consent and environment gates": "blocks recurring checkout without stored member consent" in flutterwave_adapter_tests and "adapter defaults to Test mode" in flutterwave_adapter_tests and "unknown key formats" in flutterwave_adapter_tests,
+              "membership billing domain includes the exact approved prices": "amount: 7500" in membership_billing and "amount: 75000" in membership_billing and "amount: 320000" in membership_billing,
               "Flutterwave sandbox runbook uses the individual subscription cancellation endpoint": "PUT /v3/subscriptions/{id}/cancel" in flutterwave_runbook and "Never call the plan-cancellation endpoint" in flutterwave_runbook,
               "Flutterwave runbook records test-mode and credential isolation": "Test API keys" in flutterwave_runbook and "Never place the Flutterwave secret key in browser code" in flutterwave_runbook,
               "Five-Year cadence remains blocked until sandbox acceptance": "every five years" in flutterwave_runbook and "remains a DCDS release gate" in flutterwave_runbook,
