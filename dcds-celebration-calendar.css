@@ -269,3 +269,12 @@
  .dcds-current-time{font-size:12px}
  .dcds-current-time-label{font-size:5px}
 }
+
+@media(max-width:680px){
+ .dcds-celebration-led-left i{
+   box-shadow:0 0 7px 2px var(--event-accent),0 0 18px 4px var(--event-accent),0 0 32px 7px var(--event-glow),inset 0 0 5px #fff;
+ }
+ .dcds-celebration-led-right i{
+   box-shadow:0 0 7px 2px var(--event-secondary),0 0 18px 4px var(--event-secondary),0 0 32px 7px var(--event-glow),inset 0 0 5px #fff;
+ }
+}
