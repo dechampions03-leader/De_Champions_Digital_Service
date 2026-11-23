@@ -24,8 +24,6 @@ export interface FlutterwavePlanReference {
 export interface FlutterwaveCheckoutInput {
   readonly txRef: string;
   readonly planId: VerifiedPlusPlanId;
-  /** Provider plan ID obtained from trusted server configuration/storage. */
-  readonly providerPlanId: number;
   readonly email: string;
   readonly customerName?: string;
   readonly redirectUrl: string;
@@ -108,6 +106,8 @@ export interface FlutterwaveRecurringPaymentOptions {
   readonly timeoutMs?: number;
   /** Defaults to Test mode. Live mode must be an explicit future release choice. */
   readonly environment?: "test" | "live";
+  /** Provider plan IDs loaded only from trusted server-side configuration/storage. */
+  readonly providerPlanIds?: Partial<Record<VerifiedPlusPlanId, number>>;
   /** Only plans that passed their exact Flutterwave sandbox interval tests. */
   readonly validatedPlanIds?: readonly VerifiedPlusPlanId[];
 }
@@ -135,6 +135,7 @@ export class FlutterwaveRecurringPayments {
   private readonly baseUrl: string;
   private readonly fetcher: Fetcher;
   private readonly timeoutMs: number;
+  private readonly providerPlanIds: Readonly<Partial<Record<VerifiedPlusPlanId, number>>>;
   private readonly validatedPlanIds: ReadonlySet<VerifiedPlusPlanId>;
 
   constructor(options: FlutterwaveRecurringPaymentOptions) {
@@ -159,6 +160,7 @@ export class FlutterwaveRecurringPayments {
     this.baseUrl = (options.baseUrl ?? "https://api.flutterwave.com/v3").replace(/\/$/, "");
     this.fetcher = options.fetcher ?? fetch;
     this.timeoutMs = options.timeoutMs ?? 15000;
+    this.providerPlanIds = Object.freeze({ ...(options.providerPlanIds ?? {}) });
     this.validatedPlanIds = new Set(options.validatedPlanIds ?? []);
     if (!Number.isSafeInteger(this.timeoutMs) || this.timeoutMs < 1000 || this.timeoutMs > 60000) {
       throw new FlutterwaveRecurringPaymentError("CONFIGURATION", "The provider request timeout is invalid.");
@@ -255,11 +257,12 @@ export class FlutterwaveRecurringPayments {
    */
   async createSubscriptionCheckout(input: FlutterwaveCheckoutInput): Promise<FlutterwaveCheckoutResult> {
     const terms = VERIFIED_PLUS_PLAN_TERMS[input.planId];
+    const providerPlanId = this.providerPlanIds[input.planId];
     if (
       !terms ||
       !validDcdsReference(input.txRef) ||
       !validEmail(input.email) ||
-      !isPositiveInteger(input.providerPlanId) ||
+      !isPositiveInteger(providerPlanId ?? 0) ||
       !validDcdsReference(input.membershipOrderReference) ||
       typeof input.memberId !== "string" ||
       !input.memberId.trim()
@@ -300,7 +303,7 @@ export class FlutterwaveRecurringPayments {
         amount: terms.amount,
         currency: terms.currency,
         redirect_url: redirect.toString(),
-        payment_plan: input.providerPlanId,
+        payment_plan: providerPlanId,
         customer: {
           email: input.email,
           ...(input.customerName ? { name: input.customerName.slice(0, 120) } : {}),
