@@ -13,6 +13,7 @@ on:
       - "docs/dcds-verified-plus-architecture.md"
       - "docs/dcds-verified-plus-pricing-and-commercial-policy.md"
       - "docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md"
+      - "docs/dcds-verified-plus-flutterwave-sandbox-runbook.md"
       - "verified-plus-pricing-preview.html"
       - "verified-plus.html"
       - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
@@ -101,6 +102,7 @@ jobs:
           architecture = Path("docs/dcds-verified-plus-architecture.md").read_text(encoding="utf-8")
           pricing_policy = Path("docs/dcds-verified-plus-pricing-and-commercial-policy.md").read_text(encoding="utf-8")
           renewal_policy = Path("docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md").read_text(encoding="utf-8")
+          flutterwave_runbook = Path("docs/dcds-verified-plus-flutterwave-sandbox-runbook.md").read_text(encoding="utf-8")
           provider_contract = Path("docs/dcds-verified-plus-provider-adapter-contract.md").read_text(encoding="utf-8")
           moderation_contract = Path("docs/dcds-verified-plus-moderation-engine-contract.md").read_text(encoding="utf-8")
           persistence_design = Path("docs/dcds-verified-plus-moderation-persistence-and-rls-design.md").read_text(encoding="utf-8")
@@ -138,6 +140,10 @@ jobs:
               "Five-Year renewal interval must pass sandbox validation": "every five years" in renewal_policy and "must be created and tested in the Flutterwave sandbox" in renewal_policy,
               "billing integration never stores raw card credentials": "Never collect or store raw card numbers, CVV, PIN or OTP" in renewal_policy,
               "billing release respects the existing database migration blocker": "migration-reconciliation report identifies mismatched Supabase migration histories" in renewal_policy and "Do not create or apply membership billing tables" in renewal_policy,
+              "Flutterwave sandbox runbook uses the individual subscription cancellation endpoint": "PUT /v3/subscriptions/{id}/cancel" in flutterwave_runbook and "Never call the plan-cancellation endpoint" in flutterwave_runbook,
+              "Flutterwave runbook records test-mode and credential isolation": "Test API keys" in flutterwave_runbook and "Never place the Flutterwave secret key in browser code" in flutterwave_runbook,
+              "Five-Year cadence remains blocked until sandbox acceptance": "every five years" in flutterwave_runbook and "remains a DCDS release gate" in flutterwave_runbook,
+              "provider adapter contract includes exact plan currency and cadence": "currency: terms.currency" in Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8") and "transaction_id" in Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8") and "/subscriptions/" in Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8"),
               "commercial policy records exactly the approved three membership prices": "| Monthly | NGN 7,500 | 30 days |" in pricing_policy and "| Annual | NGN 75,000 | 12 months |" in pricing_policy and "| Five-Year | NGN 320,000 | 60 months |" in pricing_policy,
               "commercial policy discontinues lifetime entitlements": "Lifetime membership is discontinued" in pricing_policy and "Do not offer, advertise, sell, or grant" in pricing_policy,
               "provider, network, moderation and persistence contracts use all three entitlements": "active monthly, active annual, active five-year" in provider_contract and "Monthly for 30 days, Annual for 12 months or Five-Year for 60 months" in network_spec and "Monthly/Annual/Five-Year membership entitlement" in moderation_contract and "Monthly (30-day), Annual (12-month) or Five-Year (60-month)" in persistence_design,
