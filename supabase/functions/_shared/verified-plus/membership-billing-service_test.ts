@@ -85,6 +85,7 @@ class FakeRepository implements VerifiedPlusBillingRepository {
   savedLink: string | null = null;
   startFailureCode: string | null = null;
   finalization: Parameters<VerifiedPlusBillingRepository["finalizeInitialPayment"]>[0] | null = null;
+  finalizedCheckout: { readonly alreadyFinalized: true; readonly paidThroughAt: string } | null = null;
   cancelStart: { memberId: string; subscriptionId: string; reason: string | null; requestedAt: string } | null = null;
   cancelConfirmation: VerifiedPlusSubscription | null = null;
   cancelFailureCode: string | null = null;
@@ -115,8 +116,13 @@ class FakeRepository implements VerifiedPlusBillingRepository {
   async findPendingCheckoutForMember(_memberId: string, _txRef: string): Promise<VerifiedPlusPendingCheckout | null> {
     return this.order;
   }
+  async findFinalizedCheckoutForMember(_memberId: string, _txRef: string) {
+    return this.finalizedCheckout;
+  }
   async finalizeInitialPayment(input: Parameters<VerifiedPlusBillingRepository["finalizeInitialPayment"]>[0]) {
+    if (this.finalizedCheckout) return this.finalizedCheckout;
     this.finalization = input;
+    this.finalizedCheckout = { alreadyFinalized: true, paidThroughAt };
     return { alreadyFinalized: false, paidThroughAt };
   }
   async getOwnedAutoRenewSubscription(): Promise<VerifiedPlusSubscription | null> {
@@ -261,6 +267,19 @@ Deno.test("provider checkout failures are stored as safe error codes without exp
   }
   assert(failed, "Provider error propagated");
   equal(repository.startFailureCode, "PROVIDER_HTTP", "Safe provider error code stored");
+});
+
+Deno.test("repeated verification returns the prior finalized entitlement without reprocessing the provider charge", async () => {
+  const repository = new FakeRepository();
+  repository.finalizedCheckout = { alreadyFinalized: true, paidThroughAt };
+  const provider = new FakeProvider();
+  const service = new VerifiedPlusBillingService(repository, provider);
+  const result = await service.verifyInitialPayment({ memberId, txRef, transactionId: "777" });
+  equal(result.alreadyFinalized, true, "Replay marks prior finalization");
+  equal(result.paidThroughAt, paidThroughAt, "Original paid-through value");
+  equal(provider.verifyCalls, 0, "Provider charge is not reprocessed");
+  equal(provider.subscriptionResolveCalls, 0, "Subscription is not rebound on replay");
+  equal(repository.finalization, null, "Finalization is not invoked twice");
 });
 
 Deno.test("initial one-time payment is verified server-side and finalized without a provider subscription", async () => {
