@@ -812,3 +812,14 @@
  .dcds-celebration-art .dcds-scene-prop,
  .dcds-celebration-art .dcds-scene-glint{animation:none!important}
 }
+
+
+/* Regional and festival-specific experiences for Nigerian cultural occasions. */
+.dcds-celebration-art[data-scene="isese"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(220,163,103,.24),transparent 62%),linear-gradient(135deg,#3f2a42,#34234b 60%,#1d2438);
+}
+.dcds-celebration-art[data-scene="isese"] .dcds-scene-main{animation-name:dcdsSceneFloat}
+.dcds-celebration-art[data-scene="eid-durbar"]{
+ background:radial-gradient(ellipse at 50% 44%,rgba(218,186,111,.25),transparent 60%),linear-gradient(135deg,#4a342b,#33445a 58%,#20253d);
+}
+.dcds-celebration-art[data-scene="eid-durbar"] .dcds-scene-prop{animation-name:dcdsSceneLift}
