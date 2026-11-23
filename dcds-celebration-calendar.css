@@ -49,3 +49,41 @@
 @keyframes dcdsSparkle{0%,100%{opacity:0;transform:translateY(8px) scale(.6)}35%,65%{opacity:.9;transform:translateY(-5px) scale(1.2)}}
 @media(max-width:680px){.dcds-celebration-wrap{width:calc(100% - 20px);margin:14px auto 20px}.dcds-celebration-frame{grid-template-columns:17px minmax(0,1fr) 17px;padding:5px;border-radius:22px}.dcds-celebration-frame:before{inset:3px;border-radius:19px}.dcds-celebration-led{gap:9px;padding:10px 0;border-radius:13px}.dcds-celebration-led i{width:8px;height:8px}.dcds-celebration-screen{margin:0 5px;min-height:330px;padding:14px 12px;border-radius:16px;gap:13px}.dcds-celebration-head{font-size:8px;letter-spacing:.1em}.dcds-celebration-brand-mark{width:22px;height:22px;font-size:11px}.dcds-celebration-status{font-size:7px}.dcds-celebration-body{grid-template-columns:1fr;gap:12px;text-align:center}.dcds-celebration-art{min-height:76px;width:100%;font-size:48px;border-radius:14px}.dcds-celebration-art:before{left:10px;top:7px}.dcds-celebration-art:after{right:10px;bottom:7px}.dcds-celebration-kicker{font-size:8px;letter-spacing:.15em}.dcds-celebration-title{font-size:clamp(25px,8vw,36px)}.dcds-celebration-date{font-size:10px;margin-top:7px}.dcds-countdown{gap:5px;margin:13px auto 0;width:100%}.dcds-countdown-unit{padding:9px 2px 7px;border-radius:9px}.dcds-countdown-value{font-size:clamp(20px,6vw,29px)}.dcds-countdown-label{font-size:7px;letter-spacing:.08em}.dcds-celebration-message{text-align:center;margin-top:12px}.dcds-celebration-greeting{font-size:clamp(27px,8vw,39px)}.dcds-celebration-description{font-size:11px}.dcds-celebration-foot{font-size:7px;letter-spacing:.07em}}
 @media(prefers-reduced-motion:reduce){.dcds-celebration-art,.dcds-celebration-led i,.dcds-celebration-art:before,.dcds-celebration-art:after,.dcds-celebration-sparkles i{animation:none!important;opacity:1}}
+
+
+/* DCDS celebration display: integrated with Creative Showcase lavender canvas. */
+.dcds-celebration-in-showcase{width:100%;max-width:1160px;margin:0 auto 42px;isolation:isolate}
+.dcds-celebration-in-showcase .dcds-celebration-frame{
+ border-color:#cdb9e4;
+ background:linear-gradient(145deg,#fffaff 0%,#e7d9f5 12%,#fbf7ff 24%,#d7c7e7 46%,#faf5ff 61%,#dfd1ee 82%,#fffaff 100%);
+ box-shadow:0 12px 30px rgba(72,35,104,.13),inset 0 1px 3px #fff,inset 0 -2px 7px rgba(77,42,111,.15)
+}
+.dcds-celebration-in-showcase .dcds-celebration-frame:before{border-color:#ffffffd9}
+.dcds-celebration-in-showcase .dcds-celebration-frame:after{display:none}
+.dcds-celebration-in-showcase .dcds-celebration-screen{box-shadow:inset 0 0 0 2px #0007,inset 0 2px 12px #fff1,0 4px 14px rgba(39,13,65,.15)}
+@media(max-width:680px){
+ .dcds-celebration-in-showcase{margin:0 auto 32px}
+ .dcds-celebration-in-showcase .dcds-celebration-frame:after{display:none}
+ .dcds-celebration-in-showcase .dcds-celebration-screen{min-height:260px}
+ .dcds-celebration-in-showcase .dcds-celebration-body{grid-template-columns:minmax(64px,.24fr) minmax(0,1fr);gap:10px;text-align:left}
+ .dcds-celebration-in-showcase .dcds-celebration-art{width:auto;min-height:112px;font-size:clamp(36px,8vw,50px);border-radius:13px}
+ .dcds-celebration-in-showcase .dcds-celebration-copy{min-width:0}
+ .dcds-celebration-in-showcase .dcds-celebration-title{font-size:clamp(22px,5.5vw,34px);overflow-wrap:anywhere}
+ .dcds-celebration-in-showcase .dcds-celebration-kicker{font-size:7px;letter-spacing:.11em}
+ .dcds-celebration-in-showcase .dcds-celebration-date{font-size:9px}
+ .dcds-celebration-in-showcase .dcds-countdown{margin:11px 0 0;gap:4px}
+ .dcds-celebration-in-showcase .dcds-countdown-unit{padding:8px 2px 6px}
+ .dcds-celebration-in-showcase .dcds-countdown-value{font-size:clamp(18px,4.8vw,25px)}
+ .dcds-celebration-in-showcase .dcds-countdown-label{font-size:6px;letter-spacing:.04em}
+ .dcds-celebration-in-showcase .dcds-celebration-message{text-align:left}
+ .dcds-celebration-in-showcase .dcds-celebration-greeting{font-size:clamp(22px,5.7vw,32px)}
+ .dcds-celebration-in-showcase .dcds-celebration-description{font-size:10px}
+ .dcds-celebration-in-showcase .dcds-celebration-foot{font-size:6px}
+}
+@media(max-width:360px){
+ .dcds-celebration-in-showcase .dcds-celebration-screen{padding:11px 9px}
+ .dcds-celebration-in-showcase .dcds-celebration-head{font-size:7px}
+ .dcds-celebration-in-showcase .dcds-celebration-body{grid-template-columns:58px minmax(0,1fr);gap:8px}
+ .dcds-celebration-in-showcase .dcds-celebration-title{font-size:22px}
+ .dcds-celebration-in-showcase .dcds-countdown-value{font-size:17px}
+}
