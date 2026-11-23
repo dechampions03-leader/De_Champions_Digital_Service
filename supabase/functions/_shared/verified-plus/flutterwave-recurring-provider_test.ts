@@ -173,6 +173,50 @@ Deno.test("adapter blocks Five-Year checkout until the exact interval is sandbox
   assert(blocked, "Five-Year checkout must remain blocked before sandbox acceptance");
 });
 
+Deno.test("Test mode can explicitly qualify a custom interval before it is enabled for live checkout", async () => {
+  const fiveYearConsent = {
+    ...checkoutConsent,
+    planId: "five_year" as const,
+    amount: 320000,
+    providerIntervalText: "every five years",
+  };
+  let requests = 0;
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    environment: "test",
+    allowSandboxQualification: true,
+    providerPlanIds: { five_year: 12347 },
+    fetcher: mockFetch((url, init) => {
+      requests++;
+      const body = JSON.parse(String(init?.body));
+      equal(body.payment_plan, 12347, "Sandbox five-year provider plan ID");
+      equal(body.amount, 320000, "Sandbox five-year amount");
+      return jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } });
+    }),
+  });
+  const result = await client.createSubscriptionCheckout({
+    ...checkoutInput,
+    planId: "five_year",
+    consent: fiveYearConsent,
+  });
+  equal(result.transactionReference, checkoutInput.txRef, "Sandbox checkout reference");
+  equal(requests, 1, "One test checkout request");
+});
+
+Deno.test("Sandbox interval qualification cannot be enabled with Live mode", () => {
+  let blocked = false;
+  try {
+    new FlutterwaveRecurringPayments({
+      secretKey: "FLWSECK-LIVE-PLACEHOLDER",
+      environment: "live",
+      allowSandboxQualification: true,
+    });
+  } catch (error) {
+    blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "CONFIGURATION";
+  }
+  assert(blocked, "Live sandbox qualification must be rejected");
+});
+
 Deno.test("checkout reads the provider plan ID from trusted plan configuration, not request input", async () => {
   let captured: Record<string, unknown> | null = null;
   const client = new FlutterwaveRecurringPayments({
@@ -381,6 +425,66 @@ Deno.test("subscription lookup is scoped by the first verified transaction ID", 
   const rows = await client.listSubscriptions({ transactionId: "777", email: checkoutInput.email, planId: 12345 });
   equal(rows.length, 1, "One matching subscription");
   equal(String(rows[0].id), "4147", "Provider subscription ID");
+});
+
+Deno.test("subscription resolution matches the first transaction, trusted plan, amount and email", async () => {
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    providerPlanIds: { monthly: 12345 },
+    validatedPlanIds: ["monthly"],
+    fetcher: mockFetch((url, init) => {
+      equal(
+        url,
+        "https://api.flutterwave.com/v3/subscriptions?transaction_id=777&email=member%40example.com&plan=12345",
+        "Find subscription by initial verified payment",
+      );
+      return jsonResponse({
+        status: "success",
+        data: [{
+          id: 4147,
+          amount: 7500,
+          plan: 12345,
+          status: "active",
+          customer: { customer_email: "member@example.com" },
+        }],
+      });
+    }),
+  });
+  const record = await client.resolveSubscriptionFromInitialCharge({
+    transactionId: "777",
+    planId: "monthly",
+    email: checkoutInput.email,
+  });
+  equal(String(record.id), "4147", "Bound recurring subscription ID");
+});
+
+Deno.test("subscription resolution rejects wrong amount or customer email", async () => {
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    providerPlanIds: { monthly: 12345 },
+    validatedPlanIds: ["monthly"],
+    fetcher: mockFetch(() => jsonResponse({
+      status: "success",
+      data: [{
+        id: 4147,
+        amount: 7501,
+        plan: 12345,
+        status: "active",
+        customer: { customer_email: "someone-else@example.com" },
+      }],
+    })),
+  });
+  let blocked = false;
+  try {
+    await client.resolveSubscriptionFromInitialCharge({
+      transactionId: "777",
+      planId: "monthly",
+      email: checkoutInput.email,
+    });
+  } catch (error) {
+    blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "SUBSCRIPTION_MISMATCH";
+  }
+  assert(blocked, "Mismatched subscription details must be rejected");
 });
 
 Deno.test("provider HTTP failures do not expose provider body or secret credentials", async () => {
