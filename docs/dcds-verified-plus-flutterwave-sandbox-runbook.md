@@ -50,7 +50,7 @@ The existing DCDS-Development functions read `FLW_SECRET_KEY` and the existing w
 - Never place the Flutterwave secret key in browser code or a public HTML file.
 - Do not copy Development secrets into Production.
 - Do not call provider plan-creation or checkout endpoints with a Live key while testing.
-- Provider plan IDs are identifiers, not authentication credentials, but keep them in server-side configuration/storage and never trust a browser-supplied plan ID.
+- Provider plan IDs are identifiers, not authentication credentials, but keep them in server-side configuration/storage and never trust a browser-supplied plan ID. The adapter maps each DCDS plan to its provider plan ID from trusted server configuration; it does not accept a provider plan ID from checkout input.
 
 The Flutterwave API endpoint remains `https://api.flutterwave.com/v3`; the API key mode selects Test or Live.
 
@@ -71,7 +71,7 @@ The new adapter's `createPaymentPlan` method is deliberately a one-time operator
 Run this only after the Development secret is confirmed to be Test mode and after a dedicated membership test record exists:
 
 1. Create the three test plans and record their IDs and provider-returned intervals.
-2. Use a dedicated DCDS test account to opt in explicitly to renewal. The control must start unchecked; no consent means no recurring plan ID is sent to checkout.
+2. Use a dedicated DCDS test account to opt in explicitly to renewal. The control must start unchecked; no consent means no recurring plan ID is sent to checkout. To qualify an unapproved custom interval such as Five-Year, explicitly enable `allowSandboxQualification` only in Test mode. This lets a test card subscription prove the cadence while the constructor refuses that switch for Live mode. After successful qualification, store the exact plan ID in `providerPlanIds` and add the plan to `validatedPlanIds`; then disable the temporary qualification switch.
 3. Start the hosted NGN payment using the server-owned amount, provider plan ID and the member's confirmed account email. Flutterwave's Payment Plans flow is card-only.
 4. Complete a Flutterwave test-card charge. Verify the returned transaction ID, DCDS reference, exact amount, NGN currency, successful status and customer email by calling the transaction verification endpoint.
 5. Query subscriptions using the first transaction ID. The adapter's `resolveSubscriptionFromInitialCharge` helper requires exactly one active match for the trusted provider plan ID, the approved amount and the customer's email before the DCDS server persists the provider subscription ID.
