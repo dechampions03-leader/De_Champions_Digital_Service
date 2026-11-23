@@ -24,6 +24,19 @@ function mockFetch(
 }
 
 const secretKey = "FLWSECK_TEST_NOT_A_REAL_SECRET";
+const checkoutConsent = {
+  memberId: "member-123",
+  planId: "monthly" as const,
+  amount: 7500,
+  currency: "NGN" as const,
+  providerIntervalText: "every 30 days",
+  termsVersion: "verified-plus-recurring-v1",
+  consentedAt: new Date(Date.now() - 60_000).toISOString(),
+  accepted: true,
+  controlWasUncheckedBeforeAction: true,
+  channel: "checkout" as const,
+};
+
 const checkoutInput = {
   txRef: "DCDS-VP-00000000-0000-4000-8000-000000000001",
   planId: "monthly" as const,
@@ -32,6 +45,8 @@ const checkoutInput = {
   customerName: "DCDS Test Member",
   redirectUrl: "https://dechampions03-leader.github.io/De_Champions_Digital_Service/payment-return.html",
   membershipOrderReference: "DCDS-VP-00000000-0000-4000-8000-000000000002",
+  memberId: "member-123",
+  consent: checkoutConsent,
 };
 
 Deno.test("createPaymentPlan provisions each exact approved NGN plan with no fixed duration", async () => {
@@ -84,6 +99,47 @@ Deno.test("plan creation rejects a provider plan that changes the amount, curren
   assert(failed, "Mismatched provider plan must be rejected");
 });
 
+Deno.test("adapter blocks recurring checkout without stored member consent", async () => {
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    validatedPlanIds: ["monthly"],
+    fetcher: mockFetch(() => jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } })),
+  });
+  let blocked = false;
+  try {
+    await client.createSubscriptionCheckout({ ...checkoutInput, consent: null });
+  } catch (error) {
+    blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "CONSENT_REQUIRED";
+  }
+  assert(blocked, "Missing member consent must block recurring checkout");
+});
+
+Deno.test("adapter blocks Five-Year checkout until the exact interval is sandbox-validated", async () => {
+  const fiveYearConsent = {
+    ...checkoutConsent,
+    planId: "five_year" as const,
+    amount: 320000,
+    providerIntervalText: "every five years",
+  };
+  const client = new FlutterwaveRecurringPayments({
+    secretKey,
+    validatedPlanIds: ["monthly", "annual"],
+    fetcher: mockFetch(() => jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/v3/hosted/pay/test" } })),
+  });
+  let blocked = false;
+  try {
+    await client.createSubscriptionCheckout({
+      ...checkoutInput,
+      planId: "five_year",
+      consent: fiveYearConsent,
+      providerPlanId: 12347,
+    });
+  } catch (error) {
+    blocked = error instanceof FlutterwaveRecurringPaymentError && error.code === "PROVIDER_INTERVAL_NOT_VALIDATED";
+  }
+  assert(blocked, "Five-Year checkout must remain blocked before sandbox acceptance");
+});
+
 Deno.test("checkout sends the server-approved amount, NGN and provider plan ID", async () => {
   let captured: Record<string, unknown> | null = null;
   const client = new FlutterwaveRecurringPayments({
@@ -107,6 +163,7 @@ Deno.test("checkout sends the server-approved amount, NGN and provider plan ID",
 Deno.test("checkout rejects off-site return URLs and non-Flutterwave hosted destinations", async () => {
   const client = new FlutterwaveRecurringPayments({
     secretKey,
+    validatedPlanIds: ["monthly"],
     fetcher: mockFetch(() => jsonResponse({ status: "success", data: { link: "https://evil.example/pay" } })),
   });
   let badReturn = false;
@@ -130,6 +187,7 @@ Deno.test("invalid plan, tx reference and email never call Flutterwave", async (
   let calls = 0;
   const client = new FlutterwaveRecurringPayments({
     secretKey,
+    validatedPlanIds: ["monthly"],
     fetcher: mockFetch(() => {
       calls++;
       return jsonResponse({ status: "success", data: { link: "https://checkout.flutterwave.com/a" } });
