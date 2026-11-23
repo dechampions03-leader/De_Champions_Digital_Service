@@ -15,7 +15,7 @@
 
 Automatic renewal is available for all three plans, but it is **opt-in**. A member must actively agree to recurring billing during checkout or through a later, clearly presented subscription-management flow. Do not preselect consent, hide it in general terms, or activate recurring billing merely because a member buys a one-time term.
 
-When automatic renewal is not enabled, the member receives the ordinary paid term and can renew manually. The membership catalogue prices and durations remain unchanged by this specification. The separate identity-verification fee remains separate and is not included in a recurring membership charge.
+When automatic renewal is not enabled, the member receives the ordinary paid term and can renew manually. One-time membership checkout must not include a Flutterwave Payment Plan ID; this keeps the member out of the recurring subscription flow. The membership catalogue prices and durations remain unchanged by this specification. The separate identity-verification fee remains separate and is not included in a recurring membership charge.
 
 The Five-Year plan remains one NGN 320,000 charge for each 60-month term. It must not be converted into five annual charges or 60 monthly instalments.
 
