@@ -110,6 +110,8 @@ export interface FlutterwaveRecurringPaymentOptions {
   readonly providerPlanIds?: Partial<Record<VerifiedPlusPlanId, number>>;
   /** Only plans that passed their exact Flutterwave sandbox interval tests. */
   readonly validatedPlanIds?: readonly VerifiedPlusPlanId[];
+  /** Explicit Test-mode-only switch to run initial interval-qualification charges. */
+  readonly allowSandboxQualification?: boolean;
 }
 
 function isPositiveInteger(value: number): boolean {
@@ -137,6 +139,8 @@ export class FlutterwaveRecurringPayments {
   private readonly timeoutMs: number;
   private readonly providerPlanIds: Readonly<Partial<Record<VerifiedPlusPlanId, number>>>;
   private readonly validatedPlanIds: ReadonlySet<VerifiedPlusPlanId>;
+  private readonly allowSandboxQualification: boolean;
+  private readonly environment: "test" | "live";
 
   constructor(options: FlutterwaveRecurringPaymentOptions) {
     const secretKey = options.secretKey.trim();
@@ -147,6 +151,7 @@ export class FlutterwaveRecurringPayments {
       );
     }
     const environment = options.environment ?? "test";
+    const allowSandboxQualification = options.allowSandboxQualification === true;
     const isTestKey = secretKey.startsWith("FLWSECK_TEST-");
     const isRecognizedLiveKey = secretKey.startsWith("FLWSECK-") && !isTestKey;
     if ((environment === "test" && !isTestKey) || (environment === "live" && !isRecognizedLiveKey)) {
@@ -159,6 +164,15 @@ export class FlutterwaveRecurringPayments {
     this.secretKey = secretKey;
     this.baseUrl = (options.baseUrl ?? "https://api.flutterwave.com/v3").replace(/\/$/, "");
     this.fetcher = options.fetcher ?? fetch;
+    if (allowSandboxQualification && environment !== "test") {
+      throw new FlutterwaveRecurringPaymentError(
+        "CONFIGURATION",
+        "Sandbox interval qualification can only be enabled with Test-mode credentials.",
+      );
+    }
+
+    this.environment = environment;
+    this.allowSandboxQualification = allowSandboxQualification;
     this.timeoutMs = options.timeoutMs ?? 15000;
     this.providerPlanIds = Object.freeze({ ...(options.providerPlanIds ?? {}) });
     this.validatedPlanIds = new Set(options.validatedPlanIds ?? []);
@@ -274,7 +288,9 @@ export class FlutterwaveRecurringPayments {
       memberId: input.memberId,
       planId: input.planId,
       consent: input.consent,
-      providerIntervalValidated: this.validatedPlanIds.has(input.planId),
+      providerIntervalValidated:
+        this.validatedPlanIds.has(input.planId) ||
+        (this.environment === "test" && this.allowSandboxQualification),
     });
     if (!consentDecision.allowed) {
       if (consentDecision.code === "CONSENT_REQUIRED") {
@@ -387,6 +403,52 @@ export class FlutterwaveRecurringPayments {
       throw new FlutterwaveRecurringPaymentError("PROVIDER_RESPONSE", "Flutterwave returned an invalid subscription list.");
     }
     return data;
+  }
+
+  /**
+   * Resolve the recurring subscription created by the first successful
+   * charge. Uses the initial transaction ID plus the trusted plan mapping,
+   * then validates the result before DCDS persists the subscription ID.
+   */
+  async resolveSubscriptionFromInitialCharge(input: {
+    transactionId: string;
+    planId: VerifiedPlusPlanId;
+    email: string;
+  }): Promise<FlutterwaveSubscriptionRecord> {
+    const expectedPlanId = this.providerPlanIds[input.planId];
+    const terms = VERIFIED_PLUS_PLAN_TERMS[input.planId];
+    if (
+      !terms ||
+      !isPositiveInteger(expectedPlanId ?? 0) ||
+      !/^\d{1,30}$/.test(input.transactionId) ||
+      !validEmail(input.email)
+    ) {
+      throw new FlutterwaveRecurringPaymentError(
+        "INVALID_INPUT",
+        "The verified transaction cannot be matched to a configured DCDS membership plan.",
+      );
+    }
+
+    const records = await this.listSubscriptions({
+      transactionId: input.transactionId,
+      email: input.email,
+      planId: expectedPlanId,
+    });
+    const matches = records.filter((record) =>
+      /^\d{1,18}$/.test(String(record.id ?? "")) &&
+      Number(record.plan) === expectedPlanId &&
+      Number(record.amount) === terms.amount &&
+      String(record.status ?? "").toLowerCase() === "active" &&
+      String(record.customer?.customer_email ?? record.customer?.email ?? "").trim().toLowerCase() === input.email.trim().toLowerCase()
+    );
+
+    if (matches.length !== 1) {
+      throw new FlutterwaveRecurringPaymentError(
+        "SUBSCRIPTION_MISMATCH",
+        "Flutterwave did not return exactly one active subscription matching the first charge, plan, amount and customer email.",
+      );
+    }
+    return matches[0];
   }
 
   async verifyTransaction(transactionId: string): Promise<FlutterwaveVerifiedTransaction> {
