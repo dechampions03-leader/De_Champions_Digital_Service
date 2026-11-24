@@ -1149,3 +1149,24 @@
 .dcds-celebration-art[data-scene="music-festival-refined"] .dcds-scene-main{
  animation-name:dcdsSceneLift;
 }
+
+
+/* Dedicated festival scenes for the distinct Calabar programme events. */
+.dcds-celebration-art[data-scene="calabar-junior-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(244,198,114,.24),transparent 62%),linear-gradient(135deg,#493054,#3d3a63 60%,#202844);
+}
+.dcds-celebration-art[data-scene="calabar-bikers-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(226,163,105,.24),transparent 62%),linear-gradient(135deg,#3d2a43,#37455b 60%,#1d273d);
+}
+.dcds-celebration-art[data-scene="nyoro-ekpe-refined"],
+.dcds-celebration-art[data-scene="calabar-parade-refined"],
+.dcds-celebration-art[data-scene="calabar-festival-refined"]{
+ background:radial-gradient(ellipse at 50% 44%,rgba(231,171,111,.25),transparent 62%),linear-gradient(135deg,#4b284b,#3c2d5a 60%,#1f203c);
+}
+.dcds-celebration-art[data-scene="nigerian-beer-festival-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(228,188,105,.22),transparent 62%),linear-gradient(135deg,#433528,#4a3b46 60%,#252239);
+}
+.dcds-celebration-art[data-scene="calabar-junior-refined"] .dcds-scene-main{animation-name:dcdsSceneBounce}
+.dcds-celebration-art[data-scene="calabar-bikers-refined"] .dcds-scene-main{animation-name:dcdsSceneLift}
+.dcds-celebration-art[data-scene="calabar-parade-refined"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="calabar-festival-refined"] .dcds-scene-prop{animation-name:dcdsSceneBurst}
