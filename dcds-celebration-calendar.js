@@ -248,7 +248,7 @@
     if(/holocaust|slave trade|cuito cuanavale|remembrance|memorial|genocide|armed forces.*remembrance/i.test(name)){
       return {tone:'remembrance',label:'REMEMBRANCE & TRIBUTE',upcoming:'REMEMBRANCE DAY',todayKicker:'REMEMBERING · HONOURING · REFLECTING',todayStatus:'DAY OF REMEMBRANCE',footer:'Remembering'};
     }
-    if(/violence against women|trafficking|cancer|hiv|aids|tuberculosis|malaria|hepatitis|diabetes|health day|mental health|autism|disabilit|accessibility|racial discrimination|social justice|human rights|anti-corruption|press freedom|refugee|girl child|children.s day|no tobacco|zero waste|clean energy|water day|water safety|drowning prevention|environment|wildlife|forest|ozone|climate|safety and health|food security|nutrition|indigenous peoples|sign languages|tolerance|habitat|school feeding|population day|seas and oceans|migrants day|braille|peace|democracy|african child|maritime|cities day|urban/i.test(name)){
+    if(/violence against women|trafficking|cancer|hiv|aids|tuberculosis|malaria|hepatitis|diabetes|health day|mental health|autism|disabilit|accessibility|racial discrimination|social justice|human rights|anti-corruption|press freedom|refugee|girl child|children.s day|no tobacco|zero waste|clean energy|water day|water safety|drowning prevention|environment|wildlife|forest|ozone|climate|safety and health|food security|nutrition|indigenous peoples|sign languages|tolerance|habitat|school feeding|population day|seas and oceans|migrants day|braille|peace|international day of democracy|african child|maritime|cities day|urban/i.test(name)){
       return {tone:'awareness',label:'AWARENESS & ADVOCACY',upcoming:'AWARENESS DAY',todayKicker:'AWARENESS IN ACTION · DIGNITY · SOLIDARITY',todayStatus:'AWARENESS DAY',footer:'Standing with'};
     }
     if(/ramadan|laylat al-qadr|arafah|ashura|mawlid|maulud|al-hijra|islamic new year|ash wednesday|palm sunday|maundy thursday|holy saturday|good friday|mothering sunday|isese day/i.test(name)){
@@ -257,10 +257,10 @@
     if(/eid al-fitr|eid-el-fitr|eid al-adha|eid-el-kabir|christmas|easter sunday|easter monday/i.test(name)){
       return {tone:'religious-celebration',label:'RELIGIOUS CELEBRATION',upcoming:'RELIGIOUS CELEBRATION',todayKicker:'FAITH · HOPE · COMMUNITY',todayStatus:'RELIGIOUS CELEBRATION',footer:'Celebrating'};
     }
-    if(/new year|valentine|boxing day|father.s day|international day of families/i.test(name)){
+    if(/new year|valentine|boxing day|father.s day|international day of families|happiness/i.test(name)){
       return {tone:'celebration',label:'CELEBRATION & TOGETHERNESS',upcoming:'SPECIAL DAY',todayKicker:'TOGETHERNESS · JOY · KINDNESS',todayStatus:'TODAY IS THE DAY',footer:'Celebrating'};
     }
-    if(/nigerian independence|independence day|democracy day|national police day|national youth day|nigerian army day|nigerian navy day|nigerian air force day|armed forces celebration/i.test(name)||c==='nigerian national observance'||c==='nigerian public holiday'){
+    if(/nigerian independence|independence day|democracy day\\s*\\(nigeria\\)|national police day|national youth day|nigerian army day|nigerian navy day|nigerian air force day|armed forces celebration/i.test(name)||c==='nigerian national observance'||c==='nigerian public holiday'){
       return {tone:'national',label:'NATIONAL DAY & COMMEMORATION',upcoming:'NATIONAL OBSERVANCE',todayKicker:'HONOURING OUR NATION · SERVICE · UNITY',todayStatus:'NATIONAL OBSERVANCE',footer:'Honouring'};
     }
     if(event.season||/festival|carnival|durbar|ofala|osun|argungu|new yam|mmanwu|igue|olojo|igbogo|nyalo|regatta|sango|boat show|beach festival|music festival|fashion festival/i.test(name)||/nigerian cultural festival|nigerian cultural event|nigerian tourism event/i.test(category)){
@@ -397,7 +397,7 @@
       [11,16,'International Day for Tolerance','🤝','Promoting respect, understanding and peaceful coexistence.','CHOOSE RESPECT AND TOLERANCE!','#e6c17c','#6a548f','Tolerance'],
       [11,19,'International Men’s Day','👨🏾','Recognising positive contributions of men and boys and promoting wellbeing.','INTERNATIONAL MEN’S DAY!','#8dbce1','#475a92','Men'],
       [11,20,'World Children’s Day','🧒🏾','Promoting children’s rights, safety, education and participation.','WORLD CHILDREN’S DAY!','#e8c56c','#4e94b3','Children'],
-      [11,25,'International Day for the Elimination of Violence against Women','🧡','Supporting safety, dignity and freedom from violence for women and girls.','ORANGE THE WORLD · END VIOLENCE!','#efaa75','#a44d67','Safety'],
+      [11,25,'International Day for the Elimination of Violence against Women','🧡','Supporting safety, dignity and freedom from violence for women and girls.','ORANGE THE WORLD · END VIOLENCE!','#efaa75','#a44d67','Women’s safety'],
       [12,1,'World AIDS Day','❤️','Remembering those affected by HIV and supporting prevention, treatment and solidarity.','WORLD AIDS DAY!','#e57c94','#94435c','Health and solidarity'],
       [12,3,'International Day of Persons with Disabilities','♿','Promoting accessibility, inclusion and equal participation for persons with disabilities.','INCLUSION FOR EVERYONE!','#8bc5dc','#4c5896','Accessibility'],
       [12,5,'International Volunteer Day','🤲','Thanking volunteers who give time and skills to support communities.','THANK YOU, VOLUNTEERS!','#e0bc72','#5c6f8a','Volunteers'],
