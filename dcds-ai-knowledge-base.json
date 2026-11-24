@@ -93,7 +93,47 @@
             "code assistance",
             "spreadsheet and data analysis"
           ],
-          "note": "This is a library of reusable, configurable prompt combinations. It does not include paid third-party AI subscriptions or guarantee that every third-party platform supports every generation feature."
+          "note": "This is a library of reusable, configurable prompt combinations. It does not include paid third-party AI subscriptions or guarantee that every third-party platform supports every generation feature.",
+          "per_platform_prompt_count": 15000,
+          "platform_collections": [
+            {
+              "platform": "ChatGPT",
+              "individual_prompt_cards": 15000,
+              "numbering": "00001–15000"
+            },
+            {
+              "platform": "Claude",
+              "individual_prompt_cards": 15000,
+              "numbering": "00001–15000"
+            },
+            {
+              "platform": "Gemini",
+              "individual_prompt_cards": 15000,
+              "numbering": "00001–15000"
+            },
+            {
+              "platform": "Grok",
+              "individual_prompt_cards": 15000,
+              "numbering": "00001–15000"
+            }
+          ],
+          "variation_dimensions": {
+            "specialist_prompt_families": 60,
+            "practical_contexts": 25,
+            "creative_directions": 10,
+            "per_platform_formula": "60 × 25 × 10 = 15,000 individually numbered prompt cards"
+          },
+          "card_contents": [
+            "one AI platform header and platform-specific brand-colour mark",
+            "individually numbered prompt card within that platform's collection",
+            "what the prompt does",
+            "how the prompt works, with an actionable workflow",
+            "a practical example brief",
+            "a copy-ready platform-specific prompt",
+            "Prompt by De Champions Digital Services attribution beneath the prompt"
+          ],
+          "display_and_navigation": "Four visually separate platform collection selectors. Students can choose a platform, search prompts, filter by category and creative direction, copy individual cards and navigate the collection in pages.",
+          "access_note": "Prompt-card page is linked from the enrolled student's learning portal after the course enrolment check. Before production release, prompt definitions must be served through a protected backend endpoint or storage access policy rather than relying on browser-side enrolment checks alone."
         }
       },
       {
