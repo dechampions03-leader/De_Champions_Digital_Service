@@ -107,6 +107,7 @@ jobs:
               "Age policy database migration is present": "create table if not exists public.dcds_ai_access_settings" in files["age-policy-migration"],
               "Production CAPTCHA activation is enabled after Supabase Auth secret is configured": 'authProtectionEnabled: true' in files["captcha"],
               "Privacy notice identifies the Gemini provider": "Google Gemini API" in files["privacy"],
+              "Deyriva's free provider pool includes Google-hosted Gemma 4 fallbacks": '"gemma-4-26b-a4b-it"' in files["edge"] and '"gemma-4-31b-it"' in files["edge"],
               "Privacy notice warns about free-tier human review": "human reviewers" in files["privacy"].lower(),
               "Privacy notice explains image attachment processing": "image attachments" in files["privacy"].lower() and "not stored as image files" in files["privacy"],
               "Privacy notice explains optional browser voice processing": "speech-recognition" in files["privacy"] and "raw microphone recording" in files["privacy"],
