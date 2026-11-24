@@ -260,7 +260,7 @@
     if(/new year|valentine|boxing day|father.s day|international day of families|happiness/i.test(name)){
       return {tone:'celebration',label:'CELEBRATION & TOGETHERNESS',upcoming:'SPECIAL DAY',todayKicker:'TOGETHERNESS · JOY · KINDNESS',todayStatus:'TODAY IS THE DAY',footer:'Celebrating'};
     }
-    if(/nigerian independence|independence day|democracy day\\s*\\(nigeria\\)|national police day|national youth day|nigerian army day|nigerian navy day|nigerian air force day|armed forces celebration/i.test(name)||c==='nigerian national observance'||c==='nigerian public holiday'){
+    if(/nigerian independence|independence day|democracy day|national police day|national youth day|nigerian army day|nigerian navy day|nigerian air force day|armed forces celebration/i.test(name)||c==='nigerian national observance'||c==='nigerian public holiday'){
       return {tone:'national',label:'NATIONAL DAY & COMMEMORATION',upcoming:'NATIONAL OBSERVANCE',todayKicker:'HONOURING OUR NATION · SERVICE · UNITY',todayStatus:'NATIONAL OBSERVANCE',footer:'Honouring'};
     }
     if(event.season||/festival|carnival|durbar|ofala|osun|argungu|new yam|mmanwu|igue|olojo|igbogo|nyalo|regatta|sango|boat show|beach festival|music festival|fashion festival/i.test(name)||/nigerian cultural festival|nigerian cultural event|nigerian tourism event/i.test(category)){
