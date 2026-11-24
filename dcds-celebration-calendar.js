@@ -46,6 +46,7 @@
     {key:'world-population-specific',test:/population day/i,main:'🌍',props:['👥','🏙️','🤝']},
     {key:'humanitarian-specific',test:/humanitarian day/i,main:'🤲',props:['🕊️','❤️','🌍']},
     {key:'world-tourism-specific',test:/world tourism day/i,main:'🧳',props:['🚌','🏞️','🇳🇬']},
+    {key:'islamic-new-year-specific',test:/al-hijra|islamic new year/i,main:'🌙',props:['🕌','📖','⭐']},
     {key:'new-year-specific',test:/new year/i,main:'🎆',props:['🎊','✨','🥂']},
     {key:'valentines-specific',test:/valentine/i,main:'💌',props:['🌹','💗','🤝']},
     {key:'boxing-day-specific',test:/boxing day/i,main:'🎁',props:['🎀','💝','🤲']},
@@ -247,7 +248,7 @@
     if(/holocaust|slave trade|cuito cuanavale|remembrance|memorial|genocide|armed forces.*remembrance/i.test(name)){
       return {tone:'remembrance',label:'REMEMBRANCE & TRIBUTE',upcoming:'REMEMBRANCE DAY',todayKicker:'REMEMBERING · HONOURING · REFLECTING',todayStatus:'DAY OF REMEMBRANCE',footer:'Remembering'};
     }
-    if(/violence against women|trafficking|cancer|hiv|aids|tuberculosis|malaria|hepatitis|diabetes|health day|mental health|autism|disabilit|accessibility|racial discrimination|social justice|human rights|anti-corruption|press freedom|refugee|girl child|children.s day|no tobacco|zero waste|clean energy|water day|water safety|drowning prevention|environment|wildlife|forest|ozone|climate|safety and health|food security|nutrition|indigenous peoples|sign languages|tolerance|habitat|school feeding|population day|seas and oceans|migrants day/i.test(name)){
+    if(/violence against women|trafficking|cancer|hiv|aids|tuberculosis|malaria|hepatitis|diabetes|health day|mental health|autism|disabilit|accessibility|racial discrimination|social justice|human rights|anti-corruption|press freedom|refugee|girl child|children.s day|no tobacco|zero waste|clean energy|water day|water safety|drowning prevention|environment|wildlife|forest|ozone|climate|safety and health|food security|nutrition|indigenous peoples|sign languages|tolerance|habitat|school feeding|population day|seas and oceans|migrants day|braille|peace|democracy|african child|maritime|cities day|urban/i.test(name)){
       return {tone:'awareness',label:'AWARENESS & ADVOCACY',upcoming:'AWARENESS DAY',todayKicker:'AWARENESS IN ACTION · DIGNITY · SOLIDARITY',todayStatus:'AWARENESS DAY',footer:'Standing with'};
     }
     if(/ramadan|laylat al-qadr|arafah|ashura|mawlid|maulud|al-hijra|islamic new year|ash wednesday|palm sunday|maundy thursday|holy saturday|good friday|mothering sunday|isese day/i.test(name)){
@@ -265,7 +266,7 @@
     if(event.season||/festival|carnival|durbar|ofala|osun|argungu|new yam|mmanwu|igue|olojo|igbogo|nyalo|regatta|sango|boat show|beach festival|music festival|fashion festival/i.test(name)||/nigerian cultural festival|nigerian cultural event|nigerian tourism event/i.test(category)){
       return {tone:'festival',label:'CULTURAL FESTIVAL & HERITAGE',upcoming:'CULTURAL FESTIVAL',todayKicker:'CULTURE · HERITAGE · COMMUNITY',todayStatus:'FESTIVAL IN PROGRESS',footer:'Celebrating the heritage of'};
     }
-    if(/workers|teachers|nurses|education|skills day|youth day|women.s day|men.s day|families|small and medium|small businesses|public service|volunteer|friendship|sport|poetry|art day|theatre|dance|language|literacy|books|science|telecommunication|statistics|industrialisation|africa day|african union|integration|commonwealth|traditional medicine|tourism|maritime|cultural diversity|mandela|human solidarity|school feeding/i.test(name)||/african union observance|state-level observance|international observance/i.test(c)){
+    if(/workers|teachers|nurses|education|skills day|youth day|women.s day|men.s day|families|small and medium|small businesses|public service|volunteer|friendship|sport|poetry|art day|theatre|dance|language|literacy|books|science|telecommunication|statistics|industrialisation|africa day|african union|integration|commonwealth|traditional medicine|tourism|maritime|cultural diversity|mandela|human solidarity|united nations|international cooperation|african union|africa day|african public service|statistics|industrialisation|telecommunication|traditional medicine|sport|science|education|art day|theatre|dance|poetry|literacy|books|language|commonwealth|cultural diversity/i.test(name)||/african union observance|state-level observance|international observance/i.test(c)){
       return {tone:'recognition',label:'RECOGNITION & APPRECIATION',upcoming:'DAY OF RECOGNITION',todayKicker:'RECOGNISING CONTRIBUTION · SERVICE · IMPACT',todayStatus:'DAY OF RECOGNITION',footer:'Recognising'};
     }
     return {tone:'observance',label:'DAY OF OBSERVANCE',upcoming:'UPCOMING OBSERVANCE',todayKicker:'A DAY THAT MATTERS · LEARNING · CONNECTION',todayStatus:'OBSERVANCE TODAY',footer:'Observing'};
