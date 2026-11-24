@@ -159,7 +159,7 @@ jobs:
                   and "retryAfterSeconds" in function,
               "Gemini and Gemma fallback routing has a bounded 42-second generation window":
                   "Date.now() + 42_000" in function
-                  and "Math.min(attemptedModels <= 2 ? 7_000 : 5_500, generationDeadline - Date.now())" in function
+                  and "Math.min(attemptedModels <= 2 ? 7_000 : attemptedModels <= 5 ? 5_000 : 6_500, generationDeadline - Date.now())" in function
                   and "const maxModelAttempts = 7" in function,
               "the free-tier fallback pool includes hosted Gemma 4 after the Gemini models":
                   function.indexOf('"gemini-3.1-flash-lite"') < function.indexOf('"gemma-4-26b-a4b-it"')
