@@ -408,6 +408,22 @@
       [12,24,'Christmas Eve','🕯️','A joyful Christmas Eve of reflection, family and anticipation.','WISHING YOU A PEACEFUL CHRISTMAS EVE!','#e6c16d','#8d4660','Christmas Eve'],
       [12,31,'New Year’s Eve','🎇','Celebrating the year’s journey and welcoming a new beginning.','HAPPY NEW YEAR’S EVE!','#e8bf61','#8f43da','New Year’s Eve']
     ];
+    // Restore core annual dates that were previously removed as apparent duplicates.
+    annualObservances.push(
+      [3,8,'International Women’s Day','👩🏽','Recognising the achievements, leadership, rights and contributions of women and girls.','HAPPY INTERNATIONAL WOMEN’S DAY!','#c18be0','#70428f','Women’s Day'],
+      [3,20,'International Day of Happiness','😊','Promoting wellbeing, kindness and the importance of happiness in our communities.','HAPPY INTERNATIONAL DAY OF HAPPINESS!','#f5d56d','#35a98b','Happiness'],
+      [3,22,'World Water Day','💧','Raising awareness of the importance of freshwater and advocating for sustainable water management.','WORLD WATER DAY · EVERY DROP MATTERS!','#55c6f4','#1764b4','Water'],
+      [4,7,'World Health Day','🩺','Drawing attention to a priority health issue and supporting healthier communities for everyone.','WORLD HEALTH DAY!','#55c78b','#2675a5','Health'],
+      [4,22,'Earth Day','🌎','Mobilising care and action to protect the planet and its natural systems.','EARTH DAY · ACT FOR OUR PLANET!','#5ecb83','#2875ad','Planet'],
+      [5,27,'Children’s Day (Nigeria)','🧒🏾','Recognising Nigerian children, their rights, safety, education and opportunities to thrive.','HAPPY CHILDREN’S DAY!','#ffd56b','#4d9bd4','Children'],
+      [6,5,'World Environment Day','🌱','Encouraging action to protect the environment and build a cleaner, healthier future.','WORLD ENVIRONMENT DAY · ACT FOR NATURE!','#68d18a','#218b68','Environment'],
+      [6,12,'Democracy Day (Nigeria)','🇳🇬','Recognising democracy, civic participation and the people who shape Nigeria’s future.','HAPPY DEMOCRACY DAY!','#61c986','#238d57','Democracy'],
+      [7,15,'World Youth Skills Day','🚀','Highlighting the importance of equipping young people with skills for work, enterprise and life.','WORLD YOUTH SKILLS DAY!','#e8bb64','#7b43c7','Youth skills'],
+      [8,12,'International Youth Day','🌟','Recognising young people’s contributions and the importance of their participation in society.','HAPPY INTERNATIONAL YOUTH DAY!','#e8c35e','#7950dc','Youth'],
+      [9,21,'International Day of Peace','🕊️','Promoting peace, non-violence, understanding and cooperation across communities.','INTERNATIONAL DAY OF PEACE!','#9bd9ef','#4b88c9','Peace'],
+      [10,1,'Nigeria Independence Day','🇳🇬','Commemorating Nigeria’s independence and recognising the country’s people, history and aspirations.','HAPPY INDEPENDENCE DAY, NIGERIA!','#67d28c','#16834e','Independence'],
+      [10,5,'World Teachers’ Day','📚','Recognising teachers and the essential role of educators in shaping futures.','WORLD TEACHERS’ DAY · THANK YOU, EDUCATORS!','#e9c66a','#6d48b6','Teachers']
+    );
     annualObservances.forEach(([m,d,name,emoji,description,greeting,accent,secondary,label])=>
       add(m,d,{name,emoji,description,greeting,accent,secondary,label,category:categoryForEvent(name)})
     );
