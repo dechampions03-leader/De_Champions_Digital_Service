@@ -63,7 +63,38 @@
         "name": "Access to ChatGPT Prompts, Claude, Gemini, and Grok",
         "price": 30000,
         "category": "AI & Digital Creativity",
-        "description": "Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity."
+        "description": "Explore four separate AI platforms through practical prompt-engineering methods, plus the DCDS Prompt Studio with 60,000 configurable prompt combinations across writing, music, business, AI image and video creation.",
+        "prompt_library": {
+          "name": "DCDS Prompt Studio",
+          "access": "Available to students enrolled in Access to ChatGPT Prompts, Claude, Gemini, and Grok through the protected course learning portal.",
+          "prompt_combination_count": 60000,
+          "composition": "60 specialist prompt types multiplied by 25 practical contexts, 10 creative directions and 4 platform-specific variants.",
+          "platforms": [
+            "ChatGPT",
+            "Claude",
+            "Gemini",
+            "Grok"
+          ],
+          "content_areas": [
+            "music and audio",
+            "professional letters and communication",
+            "introductions and biographies",
+            "business ideas and planning",
+            "marketing and sales",
+            "text-to-image creation",
+            "reference-image recreation",
+            "image editing",
+            "text-to-video creation",
+            "image-to-video animation",
+            "storyboards and video production",
+            "presentations",
+            "websites",
+            "app planning",
+            "code assistance",
+            "spreadsheet and data analysis"
+          ],
+          "note": "This is a library of reusable, configurable prompt combinations. It does not include paid third-party AI subscriptions or guarantee that every third-party platform supports every generation feature."
+        }
       },
       {
         "name": "AI Image Creativity",
