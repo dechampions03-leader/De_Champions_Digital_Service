@@ -1,6 +1,20 @@
 -- DCDS administrator-only exact student lookup and support case workspace.
 -- This migration intentionally excludes student payment/order details from the support workspace.
 
+
+-- Support-only notes are separated from the general administrator student notes table.
+CREATE TABLE IF NOT EXISTS public.student_support_case_notes (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  student_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+  note text NOT NULL CHECK (char_length(btrim(note)) BETWEEN 2 AND 3000),
+  created_by uuid NOT NULL REFERENCES auth.users(id),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+ALTER TABLE public.student_support_case_notes ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON TABLE public.student_support_case_notes FROM PUBLIC, anon, authenticated;
+
+
 CREATE OR REPLACE FUNCTION public.admin_lookup_student_support_contact(p_contact text)
 RETURNS jsonb
 LANGUAGE plpgsql
@@ -228,7 +242,7 @@ BEGIN
       ) ORDER BY n.created_at DESC)
       FROM (
         SELECT id, note, created_at
-        FROM public.student_admin_notes
+        FROM public.student_support_case_notes
         WHERE student_id = u.id
         ORDER BY created_at DESC
         LIMIT 20
@@ -360,3 +374,47 @@ GRANT EXECUTE ON FUNCTION public.admin_lookup_student_support_contact(text) TO a
 GRANT EXECUTE ON FUNCTION public.admin_get_student_support_workspace(uuid) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_create_student_support_ticket(uuid,text,text,text) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.admin_update_student_support_ticket(uuid,text,text) TO authenticated;
+
+
+CREATE OR REPLACE FUNCTION public.admin_add_student_support_note(
+  p_student_id uuid,
+  p_note text
+)
+RETURNS uuid
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = ''
+AS $function$
+DECLARE
+  v_note_id uuid;
+BEGIN
+  IF NOT coalesce(public.is_dcds_admin(), false) THEN
+    RAISE EXCEPTION 'Administrator access required' USING errcode = '42501';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM auth.users WHERE id = p_student_id) THEN
+    RAISE EXCEPTION 'Student account not found';
+  END IF;
+  IF p_note IS NULL OR char_length(btrim(p_note)) < 2 OR char_length(btrim(p_note)) > 3000 THEN
+    RAISE EXCEPTION 'Internal support note must be between 2 and 3000 characters';
+  END IF;
+
+  INSERT INTO public.student_support_case_notes(student_id, note, created_by)
+  VALUES (p_student_id, btrim(p_note), auth.uid())
+  RETURNING id INTO v_note_id;
+
+  INSERT INTO public.student_admin_audit(student_id, admin_id, action, details)
+  VALUES (
+    p_student_id,
+    auth.uid(),
+    'admin_support_internal_note_added',
+    jsonb_build_object('support_note_id', v_note_id)
+  );
+
+  RETURN v_note_id;
+END;
+$function$;
+
+COMMENT ON FUNCTION public.admin_add_student_support_note(uuid,text) IS
+'Stores a private note in the restricted DCDS Support Desk notes stream, separately from general administrator student notes.';
+REVOKE ALL ON FUNCTION public.admin_add_student_support_note(uuid,text) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.admin_add_student_support_note(uuid,text) TO authenticated;
