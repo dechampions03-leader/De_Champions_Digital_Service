@@ -388,12 +388,15 @@ let cachedGeminiModels: { names: string[]; expiresAt: number } | null = null;
 // models.list reports API capability, not whether a model is included in this key's tier.
 const FREE_TIER_MODEL_PREFERENCE = [
   // Start with Google's fast, cost-efficient Flash-Lite model for normal tutoring turns.
-  // Retain the stronger stable Flash models as strictly free-tier fallbacks.
+  // Retain the documented free-tier Gemini models as the primary tutoring pool.
   "gemini-3.5-flash-lite",
   "gemini-3.8-flash",
   "gemini-3.7-flash",
   "gemini-3.6-flash",
   "gemini-3.1-flash-lite",
+  // Add Google's free hosted Gemma 4 models as an independent model-family fallback.
+  "gemma-4-26b-a4b-it",
+  "gemma-4-31b-it",
 ] as const;
 const STATIC_DOCUMENTED_MODELS = [...FREE_TIER_MODEL_PREFERENCE];
 const GOOGLE_SEARCH_MODELS = new Set<string>([
@@ -419,7 +422,7 @@ async function listAvailableGeminiModels(apiKey: string): Promise<string[] | nul
         .map((item: Record<string, unknown>) =>
           typeof item.name === "string" ? item.name.replace(/^models\//, "") : "")
         .filter((name: string) =>
-          /^gemini-[a-z0-9.-]+$/i.test(name)
+          /^(?:gemini|gemma)-[a-z0-9.-]+$/i.test(name)
           && !/(embedding|image|audio|tts|live|computer|robotics|deep-research)/i.test(name))
       : [];
     if (!names.length) throw new Error("Gemini models.list returned no supported text-generation models.");
@@ -1068,9 +1071,9 @@ ${savedMemoryInstruction}`;
   // The previous 18s total / 7s per-model guard aborted healthy but slower
   // provider responses before all configured fallbacks could be reached.
   // Keep the total well below Supabase Edge Function wall-clock limits.
-  const generationDeadline = Date.now() + 52_000;
+  const generationDeadline = Date.now() + 42_000;
   let attemptedModels = 0;
-  const maxModelAttempts = 5; // Try the complete documented free-tier fallback pool before failing.
+  const maxModelAttempts = 7; // Try Gemini first, then both documented free hosted Gemma 4 fallbacks.
   const orderedCandidates = shouldUseGoogleSearch
     ? [
       ...modelCandidates.filter((candidate) => GOOGLE_SEARCH_MODELS.has(candidate)),
@@ -1099,7 +1102,7 @@ ${savedMemoryInstruction}`;
                 ? { tools: [{ google_search: {} }] }
                 : {}),
             }),
-            signal: AbortSignal.timeout(Math.max(1000, Math.min(14_000, generationDeadline - Date.now()))),
+            signal: AbortSignal.timeout(Math.max(1000, Math.min(attemptedModels <= 2 ? 7_000 : 5_500, generationDeadline - Date.now()))),
           },
         );
       } catch (error) {
