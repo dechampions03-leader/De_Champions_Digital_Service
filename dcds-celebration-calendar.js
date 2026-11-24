@@ -20,6 +20,8 @@
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const sceneProfiles = [
+    {key:'isese-day-specific',test:/isese day/i,main:'🪘',props:['🌿','📿','🎭']},
+    {key:'earth-day-specific',test:/earth day/i,main:'🌍',props:['🌱','♻️','🍃']},
     {key:'blood-donor-awareness',test:/blood donor/i,main:'🩸',props:['❤️','🤝','🩺']},
     {key:'peace-observance',test:/international day of peace|peace and reconciliation/i,main:'🕊️',props:['🫒','🤝','🌍']},
     {key:'africa-day-specific',test:/^africa day$/i,main:'🌍',props:['🤝','🌱','⭐']},
@@ -248,7 +250,7 @@
     if(/holocaust|slave trade|cuito cuanavale|remembrance|memorial|genocide|armed forces.*remembrance/i.test(name)){
       return {tone:'remembrance',label:'REMEMBRANCE & TRIBUTE',upcoming:'REMEMBRANCE DAY',todayKicker:'REMEMBERING · HONOURING · REFLECTING',todayStatus:'DAY OF REMEMBRANCE',footer:'Remembering'};
     }
-    if(/violence against women|trafficking|cancer|hiv|aids|tuberculosis|malaria|hepatitis|diabetes|health day|mental health|autism|disabilit|accessibility|racial discrimination|social justice|human rights|anti-corruption|press freedom|refugee|girl child|children.s day|no tobacco|zero waste|clean energy|water day|water safety|drowning prevention|environment|wildlife|forest|ozone|climate|safety and health|food security|nutrition|indigenous peoples|sign languages|tolerance|habitat|school feeding|population day|seas and oceans|migrants day|braille|peace|international day of democracy|african child|maritime|cities day|urban/i.test(name)){
+    if(/violence against women|trafficking|cancer|hiv|aids|tuberculosis|malaria|hepatitis|diabetes|health day|mental health|autism|disabilit|accessibility|racial discrimination|social justice|human rights|anti-corruption|press freedom|refugee|girl child|children.s day|no tobacco|zero waste|clean energy|water day|water safety|drowning prevention|environment|wildlife|forest|ozone|climate|safety and health|food security|nutrition|indigenous peoples|sign languages|tolerance|habitat|school feeding|population day|seas and oceans|migrants day|braille|peace|international day of democracy|african child|maritime|cities day|earth day|urban/i.test(name)){
       return {tone:'awareness',label:'AWARENESS & ADVOCACY',upcoming:'AWARENESS DAY',todayKicker:'AWARENESS IN ACTION · DIGNITY · SOLIDARITY',todayStatus:'AWARENESS DAY',footer:'Standing with'};
     }
     if(/ramadan|laylat al-qadr|arafah|ashura|mawlid|maulud|al-hijra|islamic new year|ash wednesday|palm sunday|maundy thursday|holy saturday|good friday|mothering sunday|isese day/i.test(name)){
