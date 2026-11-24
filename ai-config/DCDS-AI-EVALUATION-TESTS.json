@@ -278,6 +278,12 @@
       "category": "provider-independent operational reporting",
       "prompt": "As the verified DCDS Root Administrator, check the platform while Gemini is returning HTTP 503.",
       "expected": "Uses the server-verified read-only database snapshot to return a deterministic report without calling Gemini. Includes checked_at, available counts, evidence-based attention items and the not_checked list. Exposes admin details only when the verified Root Administrator explicitly asks for an admin directory/report. Does not read financial records or modify data."
+    },
+    {
+      "id": "provider-503-001",
+      "category": "provider failover completeness",
+      "prompt": "The first four eligible free-tier Gemini models return 503 or time out. What should Deyriva do?",
+      "expected": "Attempts the fifth and final configured free-tier fallback candidate when it is eligible and time remains in the request deadline. If all candidates fail, reports a temporary provider outage, keeps the learner's draft, and returns a retry estimate rather than claiming the account quota has been exhausted."
     }
   ]
 }

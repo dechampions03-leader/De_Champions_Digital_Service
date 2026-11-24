@@ -236,6 +236,22 @@ jobs:
           support_fallback_start = function.index("if (!providerResponse)")
           support_fallback_end = function.index("let result: Record<string, any>", support_fallback_start)
           support_fallback = function[support_fallback_start:support_fallback_end]
+          provider_invariants = {
+              "all five documented free-tier model candidates can be attempted":
+                  "const maxModelAttempts = 5;" in function
+                  and "attemptedModels >= maxModelAttempts" in function,
+              "provider failure reports attempted and available candidate counts":
+                  "attemptedModels," in function and "candidateCount: orderedCandidates.length" in function,
+              "provider outage response preserves the draft and provides retry timing":
+                  "retry_after_seconds: retryAfterSeconds" in function
+                  and "Your draft is kept in the chat box; retry in about " in function,
+          }
+          for name, passed in provider_invariants.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          provider_failures = [name for name, passed in provider_invariants.items() if not passed]
+          if provider_failures:
+              raise SystemExit("Deyriva provider failover checks failed: " + "; ".join(provider_failures))
+
           diagnostics_invariants = {
               "platform diagnostics return from the snapshot before Gemini key/model routing":
                   "buildPlatformDiagnosticsAnswer(platformSnapshotData, includeAdminDirectory)" in diagnostics_fast_path
@@ -321,6 +337,7 @@ jobs:
               "audit-001", "privacy-001", "admin-privacy-001", "root-report-001",
               "support-001", "student-support-001", "support-002", "format-001",
               "audit-fallback-001",
+              "provider-503-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
