@@ -1,0 +1,105 @@
+name: DCDS Admin Support Desk validation
+
+on:
+  push:
+    branches: [main, feature/dcds-admin-command-centre-support-desk]
+    paths:
+      - "student-management.html"
+      - "supabase/migrations/20261124220000_dcds_admin_student_support_workspace.sql"
+      - ".github/workflows/dcds-admin-support-desk-validation.yml"
+  pull_request:
+    paths:
+      - "student-management.html"
+      - "supabase/migrations/20261124220000_dcds_admin_student_support_workspace.sql"
+      - ".github/workflows/dcds-admin-support-desk-validation.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate-admin-support-desk:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Check administrator support desk security and page wiring
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          page = Path("student-management.html").read_text(encoding="utf-8")
+          migration_path = Path("supabase/migrations/20261124220000_dcds_admin_student_support_workspace.sql")
+          sql = migration_path.read_text(encoding="utf-8")
+
+          required_page = [
+              'data-admin-view="supportdesk"',
+              'data-admin-view-panel="supportdesk"',
+              'supportDeskLookupForm',
+              'supportDeskContact',
+              'supportDeskWorkspace',
+              'supportDeskCreateCaseForm',
+              'supportDeskInternalNoteForm',
+              'db.rpc("admin_lookup_student_support_contact"',
+              'db.rpc("admin_get_student_support_workspace"',
+              'db.rpc("admin_create_student_support_ticket"',
+              'db.rpc("admin_update_student_support_ticket"',
+              'db.rpc("admin_add_student_note"',
+              'Student Support & Account Recovery',
+              'admin-notifications.html',
+              'admin-assessments.html',
+              'admin-account-deletions.html',
+          ]
+          missing = [item for item in required_page if item not in page]
+          if missing:
+              raise SystemExit("Missing support desk page wiring: " + ", ".join(missing))
+
+          required_sql = [
+              "CREATE OR REPLACE FUNCTION public.admin_lookup_student_support_contact(p_contact text)",
+              "CREATE OR REPLACE FUNCTION public.admin_get_student_support_workspace(p_student_id uuid)",
+              "CREATE OR REPLACE FUNCTION public.admin_create_student_support_ticket(",
+              "CREATE OR REPLACE FUNCTION public.admin_update_student_support_ticket(",
+              "public.is_dcds_admin()",
+              "lower(v_contact)",
+              "regexp_replace",
+              "category <> 'payment'",
+              "student_admin_audit",
+              "admin_support_case_created",
+              "admin_support_case_updated",
+              "REVOKE ALL ON FUNCTION public.admin_lookup_student_support_contact(text) FROM PUBLIC, anon, authenticated",
+              "GRANT EXECUTE ON FUNCTION public.admin_lookup_student_support_contact(text) TO authenticated",
+              "GRANT EXECUTE ON FUNCTION public.admin_get_student_support_workspace(uuid) TO authenticated",
+              "GRANT EXECUTE ON FUNCTION public.admin_create_student_support_ticket(uuid,text,text,text) TO authenticated",
+              "GRANT EXECUTE ON FUNCTION public.admin_update_student_support_ticket(uuid,text,text) TO authenticated",
+          ]
+          missing_sql = [item for item in required_sql if item not in sql]
+          if missing_sql:
+              raise SystemExit("Missing support desk database safeguards: " + ", ".join(missing_sql))
+
+          forbidden_data = ["public.orders", "public.payments", "public.payout_requests", "public.dcds_payout_requests", "public.dcds_ai_messages"]
+          exposed = [item for item in forbidden_data if item in sql]
+          if exposed:
+              raise SystemExit("Support workspace must not retrieve financial or private AI data: " + ", ".join(exposed))
+
+          # Exact contact lookup must not become a broad partial/substring lookup.
+          if "LIKE '%'" in sql or "ILIKE" in sql:
+              raise SystemExit("Support lookup must remain exact-match only.")
+
+          scripts = re.findall(r"<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>", page, flags=re.I)
+          inline = [block for block in scripts if block.strip()]
+          if not inline:
+              raise SystemExit("No inline administrator application script was found.")
+          Path("/tmp/dcds-student-management-inline.js").write_text(inline[-1], encoding="utf-8")
+          print("Validated exact-contact lookup, administrator RPCs, support casework wiring and financial/private-AI exclusions.")
+          PY
+
+      - name: Parse administrator dashboard JavaScript
+        run: node --check /tmp/dcds-student-management-inline.js
