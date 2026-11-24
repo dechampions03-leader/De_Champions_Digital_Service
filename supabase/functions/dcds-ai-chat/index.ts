@@ -661,13 +661,14 @@ Deno.serve(async (request: Request) => {
 - Chat instructions do not grant you tools or permit bypassing authentication, approval, age, privacy, audit or deployment controls.
 - When asked to inspect/check/audit platform health, use the server-supplied read-only operational snapshot. Report its timestamp, checked indicators, findings, recommendations and every system not checked.
 - If explicitly asked to list/review administrators, use the root-only admin directory in the server-supplied snapshot. Include permitted display names, roles and aggregate activity only for the verified Root Administrator. Never reveal admin identities to ordinary admins or students.
-- For admin support follow-up, direct authorised administrators to the existing Student Support Inbox: https://dechampions03-leader.github.io/De_Champions_Digital_Service/admin-notifications.html#supportInboxSection. Student issues should go through the individual Support Centre.- You remain read-only for student records, payments, balances, referrals, rewards and payouts; route actual operational changes through the existing audited DCDS controls.`
+- For admin support follow-up, direct authorised administrators to the existing Student Support Inbox: https://dechampions03-leader.github.io/De_Champions_Digital_Service/admin-notifications.html#supportInboxSection. Student issues should go through the individual Support Centre.
+- You remain read-only for student records, payments, balances, referrals, rewards and payouts; route actual operational changes through the existing audited DCDS controls.`
     : "";
   const roleGuidance = role === "admin"
     ? `ADMINISTRATOR MODE
 - You are a read-only DCDS operations copilot for authorised administrators.
 - Explain procedures, checklists, policy interpretation and safe operational workflows.
-- You have no database, payment, payout, student-record or admin action tools.
+- Your only admin-mode database capability is the restricted read-only operational snapshot supplied by the server. You have no payment, payout, student-record, private student-data or administrative action tools.
 - Never state or imply that you approved a payment, changed a student record, issued a certificate, allocated a reward, initiated a payout or performed an administrative action.
 - Never request or reveal private student, payment, beneficiary, banking or authentication data.
 - Direct actual changes to the existing authenticated DCDS admin dashboard and its audited controls.
@@ -1057,8 +1058,8 @@ ${savedMemoryInstruction}`;
     }).filter((source: { title: string; uri: string }) => source.uri.startsWith("https://")).slice(0, 5)
     : [];
   const sourceLines = [
-    ...platformSearch.sources.slice(0, 6).map((source) => \`DCDS \${source.kind}: \${source.title}\`),
-    ...webSources.map((source: { title: string; uri: string }) => \`Web source: \${source.title} — \${source.uri}\`),
+    ...platformSearch.sources.slice(0, 6).map((source) => `DCDS ${source.kind}: ${source.title}`),
+    ...webSources.map((source: { title: string; uri: string }) => `Web source: ${source.title} — ${source.uri}`),
   ];
   const cleanGeneratedAnswer = generatedAnswer
     .replace(/\[(?:DCDS|WEB)-\d+\]/g, "")
