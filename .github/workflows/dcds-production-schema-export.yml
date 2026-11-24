@@ -154,7 +154,13 @@ jobs:
           mkdir -p "${WORKSPACE}"
           cd "${WORKSPACE}"
           supabase init --force
-          grep -q '\[experimental.pgdelta\]' supabase/config.toml
+          # Supabase CLI 3.4.0 writes config.jsonc by default; convert it back
+          # to TOML because this read-only pg-delta audit checks the TOML section.
+          if [[ -f supabase/config.jsonc || -f supabase/config.json ]]; then
+            supabase config convert --to toml --reason ci-or-deploy
+          fi
+          test -s supabase/config.toml
+          grep -q '\\[experimental.pgdelta\\]' supabase/config.toml
           grep -q 'enabled = true' supabase/config.toml
           supabase db diff --remote="${DCDS_PRODUCTION_DB_URL}" --strict-coverage \
             > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
