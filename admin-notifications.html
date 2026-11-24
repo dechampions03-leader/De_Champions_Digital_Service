@@ -3217,7 +3217,6 @@ async function loadSupportInbox() {
             const now = new Date().toISOString();
             const updatePayload = {
                 status: statusSelect.value,
-                updated_by: currentAdmin.id,
                 updated_at: now
             };
             if (responseText !== (ticket.admin_response || "")) {
