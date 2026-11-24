@@ -570,6 +570,39 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
                     <h2>🎧 Student Support Inbox</h2>
                     <p>Review student requests, respond directly, and track each request through resolution.</p>
                 </div>
+                <section class="support-account-lookup" aria-labelledby="supportLookupHeading">
+                    <h3 id="supportLookupHeading">Find a Student &amp; Open an Issue</h3>
+                    <p>Ask the student for the email address or mobile number registered on their DCDS account. Their matching name and basic account status will appear here. You do not need to recreate their account or request their password, OTP, PIN or banking credentials.</p>
+                    <form id="supportStudentLookupForm" class="support-lookup-form">
+                        <label for="supportLookupInput">Registered email address or mobile number
+                            <input id="supportLookupInput" type="search" autocomplete="off" inputmode="search" maxlength="254" placeholder="student@example.com or +234…" required>
+                        </label>
+                        <button type="submit" id="supportLookupButton">Find Student</button>
+                    </form>
+                    <p id="supportLookupStatus" class="support-lookup-status" role="status" aria-live="polite">Enter the complete registered email address or mobile number. Matching is exact.</p>
+                    <article id="supportStudentMatch" class="support-student-match" hidden></article>
+                    <form id="supportCaseForm" class="support-case-form" hidden>
+                        <label>Issue subject
+                            <input id="supportCaseSubject" type="text" minlength="5" maxlength="150" placeholder="e.g. Student cannot access enrolled course" required>
+                        </label>
+                        <label>Issue category
+                            <select id="supportCaseCategory">
+                                <option value="account">Account access</option>
+                                <option value="course_access">Course access</option>
+                                <option value="learning">Learning / assessment</option>
+                                <option value="technical">Technical issue</option>
+                                <option value="certificate">Certificate</option>
+                                <option value="payment">Payment support referral</option>
+                                <option value="general">General support</option>
+                            </select>
+                        </label>
+                        <label class="wide">What the student reports
+                            <textarea id="supportCaseMessage" minlength="10" maxlength="5000" placeholder="Record the issue, the page or feature affected, the error shown, and what the student has already tried. Do not enter passwords, OTPs, card PINs or bank credentials." required></textarea>
+                        </label>
+                        <button type="submit" id="supportCreateCaseButton">Create Support Case</button>
+                        <span id="supportCaseStatus" class="support-case-status" role="status" aria-live="polite"></span>
+                    </form>
+                </section>
                 <div class="support-inbox-toolbar">
                     <label for="supportStatusFilter">Filter requests</label>
                     <select id="supportStatusFilter">
@@ -1728,6 +1761,24 @@ select:focus-visible {
 }
 
 /* DCDS STUDENT SUPPORT INBOX — additive styles, matching existing admin theme */
+.support-account-lookup{margin:20px 0 24px;padding:22px;border:1px solid rgba(212,175,55,.34);border-radius:18px;background:linear-gradient(145deg,rgba(108,43,217,.16),rgba(255,255,255,.035))}
+.support-account-lookup h3{margin:0 0 7px;color:var(--bright-gold);font-size:19px}
+.support-account-lookup p{margin:0 0 14px;color:var(--muted-text);font-size:13px;line-height:1.65}
+.support-lookup-form{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.support-lookup-form label,.support-case-form label{display:grid;gap:7px;color:var(--soft-white);font-size:12px;font-weight:800}
+.support-lookup-form input,.support-case-form input,.support-case-form select,.support-case-form textarea{width:100%;min-width:0;border:1px solid rgba(212,175,55,.3);border-radius:11px;padding:12px 13px;background:rgba(15,7,27,.86);color:#fff;font:inherit}
+.support-lookup-form button,.support-case-form button{align-self:end;border:1px solid rgba(212,175,55,.55);border-radius:11px;padding:12px 16px;background:var(--bright-gold);color:#2b124c;font:inherit;font-weight:900;cursor:pointer}
+.support-lookup-status{min-height:22px;margin:9px 0 0!important;color:var(--muted-text)}
+.support-student-match{margin-top:14px;padding:17px;border:1px solid rgba(37,196,122,.36);border-radius:14px;background:rgba(37,196,122,.07)}
+.support-student-match h4{margin:0 0 10px;color:#a9f2cd;font-size:19px}
+.support-student-facts{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px 16px;color:var(--soft-white);font-size:13px;overflow-wrap:anywhere}
+.support-student-facts span{color:var(--muted-text)}
+.support-case-form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:13px;margin-top:16px;padding-top:15px;border-top:1px solid rgba(255,255,255,.1)}
+.support-case-form .wide{grid-column:1/-1}
+.support-case-form textarea{min-height:105px;resize:vertical}
+.support-case-form button{justify-self:start}
+.support-case-status{align-self:center;color:#a9f2cd;font-size:12px;overflow-wrap:anywhere}
+@media(max-width:620px){.support-account-lookup{padding:16px}.support-lookup-form{grid-template-columns:1fr}.support-lookup-form button{width:100%}.support-student-facts,.support-case-form{grid-template-columns:1fr}.support-case-form .wide{grid-column:auto}}
 #supportInboxSection {
     padding: 30px;
     margin-bottom: 28px;
@@ -3110,6 +3161,147 @@ function supportLabel(value) {
     return node;
 }
 
+let selectedSupportStudent = null;
+let supportLookupTimer = null;
+let supportLookupSequence = 0;
+const supportIdentityCache = new Map();
+const supportLookupForm = document.getElementById("supportStudentLookupForm");
+const supportLookupInput = document.getElementById("supportLookupInput");
+const supportLookupButton = document.getElementById("supportLookupButton");
+const supportLookupStatus = document.getElementById("supportLookupStatus");
+const supportStudentMatch = document.getElementById("supportStudentMatch");
+const supportCaseForm = document.getElementById("supportCaseForm");
+const supportCaseStatus = document.getElementById("supportCaseStatus");
+const supportCreateCaseButton = document.getElementById("supportCreateCaseButton");
+
+function supportLookupLooksComplete(value) {
+    const clean = String(value || "").trim();
+    if (clean.includes("@")) return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(clean);
+    const digits = clean.replace(/\D/g, "");
+    return /^[+0-9() .-]+$/.test(clean) && digits.length >= 10 && digits.length <= 15;
+}
+
+function renderSupportStudentMatch(student) {
+    supportStudentMatch.replaceChildren();
+    const heading = supportNode("h4", "", student.full_name || "DCDS Student");
+    const facts = supportNode("div", "support-student-facts");
+    const verified = student.email_verified || student.phone_verified ? "Verified contact" : "No verified contact";
+    [
+        ["Email", student.email || "Not recorded"],
+        ["Mobile", student.phone || "Not recorded"],
+        ["Account", student.account_status === "suspended" ? "Suspended" : "Active"],
+        ["Contact status", verified],
+        ["Enrolments", String(student.enrollment_count ?? 0)],
+        ["Open support cases", String(student.open_support_count ?? 0)],
+        ["Created", supportDate(student.account_created_at)],
+        ["Last sign-in", supportDate(student.last_sign_in_at)]
+    ].forEach(([label, value]) => {
+        const item = supportNode("div");
+        item.append(supportNode("span", "", label), document.createElement("br"), supportNode("strong", "", value));
+        facts.appendChild(item);
+    });
+    supportStudentMatch.append(heading, facts);
+    supportStudentMatch.hidden = false;
+    supportCaseForm.hidden = false;
+    supportCaseStatus.textContent = student.open_support_count > 0
+        ? "This student already has an open request. Check the inbox below before creating a duplicate case."
+        : "Student matched. Record the issue below to open an auditable support case.";
+}
+
+async function lookupSupportStudent(rawValue) {
+    const value = String(rawValue || "").trim();
+    const requestId = ++supportLookupSequence;
+    selectedSupportStudent = null;
+    supportStudentMatch.hidden = true;
+    supportCaseForm.hidden = true;
+    supportCaseStatus.textContent = "";
+    if (!supportLookupLooksComplete(value)) {
+        supportLookupStatus.textContent = "Enter a complete registered email or mobile number to search.";
+        return;
+    }
+    supportLookupButton.disabled = true;
+    supportLookupButton.textContent = "Searching…";
+    supportLookupStatus.textContent = "Checking for an exact account match…";
+    try {
+        const {data, error} = await db.rpc("admin_lookup_student_for_support", {p_lookup: value});
+        if (requestId !== supportLookupSequence) return;
+        if (error) throw error;
+        if (!data || data.found !== true || !data.student) {
+            supportLookupStatus.textContent = data?.message || "No exact student account match was found.";
+            return;
+        }
+        selectedSupportStudent = data.student;
+        supportIdentityCache.set(data.student.user_id, data.student);
+        renderSupportStudentMatch(data.student);
+        supportLookupStatus.textContent = "Student account matched successfully.";
+    } catch (error) {
+        if (requestId !== supportLookupSequence) return;
+        console.error("DCDS support identity lookup failed:", error);
+        supportLookupStatus.textContent = error?.message || "The student lookup could not be completed. Please try again.";
+    } finally {
+        if (requestId === supportLookupSequence) {
+            supportLookupButton.disabled = false;
+            supportLookupButton.textContent = "Find Student";
+        }
+    }
+}
+
+supportLookupForm.addEventListener("submit", event => {
+    event.preventDefault();
+    clearTimeout(supportLookupTimer);
+    lookupSupportStudent(supportLookupInput.value);
+});
+supportLookupInput.addEventListener("input", () => {
+    clearTimeout(supportLookupTimer);
+    supportLookupSequence++;
+    selectedSupportStudent = null;
+    supportStudentMatch.hidden = true;
+    supportCaseForm.hidden = true;
+    supportLookupStatus.textContent = "";
+    if (!supportLookupInput.value.trim()) {
+        supportLookupStatus.textContent = "Enter the complete registered email address or mobile number. Matching is exact.";
+        return;
+    }
+    if (supportLookupLooksComplete(supportLookupInput.value)) {
+        supportLookupStatus.textContent = "Searching securely…";
+        supportLookupTimer = setTimeout(() => lookupSupportStudent(supportLookupInput.value), 450);
+    } else {
+        supportLookupStatus.textContent = "Continue entering the full registered email address or mobile number.";
+    }
+});
+
+supportCaseForm.addEventListener("submit", async event => {
+    event.preventDefault();
+    if (!currentAdmin || !selectedSupportStudent?.user_id) {
+        supportCaseStatus.textContent = "Find and confirm a student account before opening a case.";
+        return;
+    }
+    supportCreateCaseButton.disabled = true;
+    supportCreateCaseButton.textContent = "Creating case…";
+    supportCaseStatus.textContent = "";
+    try {
+        const {data, error} = await db.rpc("admin_create_student_support_case", {
+            p_student_id: selectedSupportStudent.user_id,
+            p_subject: document.getElementById("supportCaseSubject").value.trim(),
+            p_category: document.getElementById("supportCaseCategory").value,
+            p_message: document.getElementById("supportCaseMessage").value.trim()
+        });
+        if (error) throw error;
+        if (!data?.success) throw new Error("The support case could not be confirmed.");
+        supportCaseStatus.textContent = "✓ Support case opened. Reference: " + data.ticket_id;
+        document.getElementById("supportCaseSubject").value = "";
+        document.getElementById("supportCaseMessage").value = "";
+        supportStatusFilter.value = "all";
+        await loadSupportInbox();
+    } catch (error) {
+        console.error("DCDS support case creation failed:", error);
+        supportCaseStatus.textContent = error?.message || "Unable to create the support case.";
+    } finally {
+        supportCreateCaseButton.disabled = false;
+        supportCreateCaseButton.textContent = "Create Support Case";
+    }
+});
+
 async function loadSupportInbox() {
     if (!currentAdmin) return;
     supportInboxList.innerHTML = "<p>Loading student support requests…</p>";
@@ -3214,20 +3406,11 @@ async function loadSupportInbox() {
             saveButton.disabled = true;
             saveButton.textContent = "Saving…";
             formStatus.textContent = "";
-            const now = new Date().toISOString();
-            const updatePayload = {
-                status: statusSelect.value,
-                updated_by: currentAdmin.id,
-                updated_at: now
-            };
-            if (responseText !== (ticket.admin_response || "")) {
-                updatePayload.admin_response = responseText;
-                updatePayload.responded_by = currentAdmin.id;
-                updatePayload.responded_at = now;
-            }
-            const {error:updateError} = await db.from("student_support_tickets")
-                .update(updatePayload)
-                .eq("id", ticket.id);
+            const {error:updateError} = await db.rpc("admin_update_student_support_ticket", {
+                p_ticket_id: ticket.id,
+                p_admin_response: responseText,
+                p_status: statusSelect.value
+            });
             saveButton.disabled = false;
             saveButton.textContent = "Save Reply & Status";
             if (updateError) {
@@ -3307,7 +3490,11 @@ document.getElementById("adminCenterCollapse").addEventListener("click",()=>{
     button.setAttribute("aria-label",collapsed?"Expand navigation":"Collapse navigation");
     button.title=collapsed?"Expand navigation":"Collapse navigation";
 });
-setAdminCentreView("overview",{scroll:false});
+const requestedAdminView = new URLSearchParams(window.location.search).get("view");
+setAdminCentreView(
+    Object.prototype.hasOwnProperty.call(ADMIN_CENTRE_VIEWS, requestedAdminView) ? requestedAdminView : "overview",
+    {scroll:false}
+);
 
 document.addEventListener("DOMContentLoaded", async () => {
     try {
