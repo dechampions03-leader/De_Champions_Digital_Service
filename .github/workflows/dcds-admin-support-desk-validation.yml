@@ -93,7 +93,7 @@ jobs:
           if "LIKE '%'" in sql or "ILIKE" in sql:
               raise SystemExit("Support lookup must remain exact-match only.")
 
-          scripts = re.findall(r"<script(?:\\s[^>]*)?>([\\s\\S]*?)</script>", page, flags=re.I)
+          scripts = re.findall(r"<script(?:\s[^>]*)?>([\s\S]*?)</script>", page, flags=re.I)
           inline = [block for block in scripts if block.strip()]
           if not inline:
               raise SystemExit("No inline administrator application script was found.")
