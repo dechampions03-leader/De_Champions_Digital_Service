@@ -2708,7 +2708,7 @@ async function supportDeskAddInternalNote(event) {
   button.disabled=true;button.textContent="Saving…";
   const selectedStudentId=supportDeskSelectedStudentId;
   try {
-    const {error}=await db.rpc("admin_add_student_note",{p_student_id:selectedStudentId,p_note:note});
+    const {error}=await db.rpc("admin_add_student_support_note",{p_student_id:selectedStudentId,p_note:note});
     if(error)throw error;
     $("supportDeskInternalNoteForm").reset();
     supportDeskSetStatus("supportDeskInternalNoteStatus","Internal note saved to the administrator record.");
