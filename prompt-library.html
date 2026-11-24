@@ -57,11 +57,24 @@ main{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 64px}
 .provider-name{display:block;font-size:14px;font-weight:900;letter-spacing:.02em}
 .provider-sub{display:block;margin-top:2px;color:#ffffffdd;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
 .down-arrow{height:25px;display:grid;place-items:center;color:var(--provider-arrow);font-size:23px;line-height:1;font-weight:900;text-shadow:0 2px 0 #d7b45a55}
+.collection-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 28px}
+.collection-choice{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-height:144px;padding:15px;border:1px solid #d7bd78;border-radius:17px;background:linear-gradient(150deg,#fff 0%,#fffaf0 100%);box-shadow:0 8px 20px #3510520b;text-align:left;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s}
+.collection-choice:hover{transform:translateY(-3px);border-color:#aa8439;box-shadow:0 14px 26px #35105216}
+.collection-choice.active{outline:2px solid #8b55ba;outline-offset:2px;background:linear-gradient(150deg,#fff,#f7efff)}
+.collection-top{display:flex;align-items:center;gap:9px}
+.collection-logo{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--collection-bg);color:#fff;font-size:19px;font-weight:900;box-shadow:inset 0 1px #ffffff65}
+.collection-name{color:#351052;font-size:13px;font-weight:900}
+.collection-count{color:#5b267f;font:800 23px 'Playfair Display',serif}
+.collection-note{color:#7c6b89;font-size:9px;line-height:1.5}
+.collection-action{margin-top:auto;color:#71409a;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.prompt-index{display:inline-flex;align-items:center;margin:0 0 7px;padding:5px 8px;border:1px solid #e5d5a1;border-radius:999px;background:#fff9e8;color:#75531a;font-size:8px;font-weight:900;letter-spacing:.1em}
 .card-tags{display:flex;flex-wrap:wrap;gap:6px;margin:3px 0 9px}
 .tag{display:inline-flex;align-items:center;padding:5px 8px;border:1px solid #e8d9ed;border-radius:999px;background:#f7efff;color:#6c3591;font-size:8px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
 .tag.gold{border-color:#ead89e;background:#fff8e4;color:#81601c}
 .prompt-card h3{margin:7px 0 7px;color:#351052;font:800 21px/1.25 'Playfair Display',serif}
-.purpose{margin:0 0 12px;color:#71647d;font-size:12px;line-height:1.7}
+.purpose{margin:0 0 10px;color:#71647d;font-size:12px;line-height:1.7}
+.workflow{margin:0 0 11px;padding:10px 12px;border:1px solid #e8dff0;border-radius:11px;background:#f8f3fc;color:#665477;font-size:10px;line-height:1.7}
+.workflow strong{display:block;margin-bottom:4px;color:#512078;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
 .example{margin:0 0 12px;padding:10px 12px;border-left:3px solid #d5b45c;border-radius:0 10px 10px 0;background:#fff9e9;color:#6a572b;font-size:11px;line-height:1.65}
 .example strong{color:#4e3511}
 .prompt-shell{overflow:hidden;border:1px solid #d8c4e9;border-radius:13px;background:linear-gradient(145deg,#351052,#512080 72%,#32104b);box-shadow:inset 0 0 0 3px #d6b45c24}
@@ -81,8 +94,8 @@ main{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 64px}
 .disclaimer{margin-top:26px;padding:15px 17px;border:1px solid #e8dbb7;border-radius:14px;background:#fffaf0;color:#75603a;font-size:11px;line-height:1.75}
 .site-footer{padding:24px 16px 30px;border-top:1px solid #e6d8ee;background:#fffdf9;color:#705d7e;text-align:center;font-size:11px;line-height:1.8}
 .site-footer strong{color:#4d1b78;letter-spacing:.08em}
-@media(max-width:850px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.results-grid{grid-template-columns:1fr}.intro-row{align-items:start;flex-direction:column}.hint{text-align:left}}
-@media(max-width:520px){.site-header{padding:12px 13px}.brand-mark{width:40px;height:40px}.brand-copy strong{font-size:11px}.brand-copy span{font-size:8px}.back-link{padding:9px 10px;font-size:10px}main{width:calc(100% - 22px);padding-top:15px}.hero{border-radius:21px;padding:24px 19px}.hero h1{font-size:36px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.stat strong{font-size:21px}.controls{grid-template-columns:1fr;padding:12px}.results-bar{align-items:flex-start;flex-direction:column}.card-inner{padding:13px}.prompt-card h3{font-size:19px}.card-bottom{align-items:flex-start;flex-direction:column}.copy-btn{width:100%}.pagination{gap:7px}.page-btn{min-width:78px}}
+@media(max-width:850px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.results-grid{grid-template-columns:1fr}.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.intro-row{align-items:start;flex-direction:column}.hint{text-align:left}}
+@media(max-width:520px){.site-header{padding:12px 13px}.brand-mark{width:40px;height:40px}.brand-copy strong{font-size:11px}.brand-copy span{font-size:8px}.back-link{padding:9px 10px;font-size:10px}main{width:calc(100% - 22px);padding-top:15px}.hero{border-radius:21px;padding:24px 19px}.hero h1{font-size:36px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.stat strong{font-size:21px}.controls{grid-template-columns:1fr;padding:12px}.collection-grid{grid-template-columns:1fr 1fr;gap:9px}.collection-choice{min-height:133px;padding:12px}.results-bar{align-items:flex-start;flex-direction:column}.card-inner{padding:13px}.prompt-card h3{font-size:19px}.card-bottom{align-items:flex-start;flex-direction:column}.copy-btn{width:100%}.pagination{gap:7px}.page-btn{min-width:78px}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
 </style>
 </head>
@@ -111,6 +124,14 @@ main{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 64px}
       <div class="stat"><strong>60</strong><span>Specialist prompt types</span></div>
       <div class="stat"><strong>4</strong><span>Separate AI platforms</span></div>
     </div>
+  </section>
+
+  <section aria-labelledby="platformCollectionsHeading">
+    <div class="intro-row">
+      <div><h2 id="platformCollectionsHeading">Choose your AI prompt collection</h2><p>Each platform has its own dedicated library of 15,000 individually numbered prompt cards. Select one platform to browse its collection without mixing platforms inside a prompt card.</p></div>
+      <div class="hint">4 separate libraries · 15,000 cards each · 60,000 in total</div>
+    </div>
+    <div id="platformCollections" class="collection-grid" aria-label="Separate AI platform prompt libraries"></div>
   </section>
 
   <div class="intro-row">
@@ -268,6 +289,7 @@ const total = tasks.length * contexts.length * directions.length * providers.len
 const gate = document.getElementById('accessGate');
 const app = document.getElementById('promptApp');
 const grid = document.getElementById('promptGrid');
+const platformCollections = document.getElementById('platformCollections');
 const searchInput = document.getElementById('searchPrompts');
 const providerSelect = document.getElementById('providerFilter');
 const categorySelect = document.getElementById('categoryFilter');
@@ -297,7 +319,8 @@ function getItem(index){
   n = Math.floor(n / contexts.length);
   const taskIndex = n;
   const providerIndex = (taskIndex * 13 + contextIndex * 7 + styleIndex * 3 + providerSlot) % providers.length;
-  return {index:index,task:tasks[taskIndex],context:contexts[contextIndex],direction:directions[styleIndex],provider:providers[providerIndex]};
+  const promptNumber = (taskIndex * contexts.length * directions.length) + (contextIndex * directions.length) + styleIndex + 1;
+  return {index:index,promptNumber:promptNumber,task:tasks[taskIndex],context:contexts[contextIndex],direction:directions[styleIndex],provider:providers[providerIndex]};
 }
 
 function specialistGuide(kind){
@@ -309,6 +332,19 @@ function specialistGuide(kind){
   if(kind === 'design') return 'DIGITAL DESIGN GUIDANCE: Prioritise a clear user goal, information hierarchy, accessibility, responsive behaviour, readable content and a coherent visual system. Describe the intended outcome and practical handoff details.';
   if(kind === 'data') return 'TECHNICAL GUIDANCE: State assumptions, explain the reasoning, handle errors, include test cases or validation steps, and identify version or data limitations. Never claim that code or calculations were executed or verified unless they actually were.';
   return 'WRITING GUIDANCE: Use accurate details, a logical structure and language appropriate to the reader. Keep missing names, dates, prices and factual details as editable placeholders. Do not invent credentials, testimonials, evidence or citations.';
+}
+
+function workflowFor(item){
+  const kind = item.task.kind;
+  if(kind === 'image-reference') return '1. Upload the reference image. 2. Identify the details that must stay unchanged. 3. List only the requested edits. 4. Generate or edit, then compare the result against the preservation checklist.';
+  if(kind === 'image-video') return '1. Upload the starting image. 2. Define the motion and duration. 3. Set camera movement and scene continuity. 4. Generate the clip and review it for unwanted changes.';
+  if(kind === 'video') return '1. Define the goal and audience. 2. Break the idea into timed shots. 3. Specify action, camera, lighting and sound. 4. Generate, review continuity and refine the final sequence.';
+  if(kind === 'image') return '1. Describe the subject and purpose. 2. Set composition, lighting, colour and style. 3. Add details and avoid-list instructions. 4. Generate, inspect and refine the image.';
+  if(kind === 'music') return '1. Set the theme and audience. 2. Choose genre, mood, tempo and instruments. 3. Arrange the sections and sound direction. 4. Generate or compose, then review originality and emotional flow.';
+  if(kind === 'business') return '1. Identify the customer and problem. 2. Define the offer and resources. 3. Check costs, competition and risks. 4. Test demand with a small experiment before scaling.';
+  if(kind === 'design') return '1. Define the user and desired outcome. 2. Organise the information or screen flow. 3. Set visual hierarchy and accessibility. 4. Review on mobile and desktop and refine.';
+  if(kind === 'data') return '1. Inspect the supplied data or code. 2. Confirm assumptions and constraints. 3. Build the analysis or solution. 4. Test the result and explain limits or unresolved issues.';
+  return '1. Identify the audience and purpose. 2. Gather the facts and required details. 3. Choose a suitable structure and draft. 4. Review accuracy, tone and completeness before using the final result.';
 }
 
 function buildPrompt(item){
@@ -324,6 +360,7 @@ function buildPrompt(item){
     'DETAILS I WILL SUPPLY: [brand or project name] [audience] [goal] [location if relevant] [key facts or specifications] [reference files or images] [preferred format] [length or duration] [deadline or constraints].',
     'SPECIALIST PRODUCTION NOTES: ' + specialistGuide(t.kind),
     'EXPECTED DELIVERABLE: ' + t.output,
+    'HOW IT WORKS: ' + workflowFor(item),
     'WORKING METHOD: First check whether the brief contains the information needed. If an essential detail is missing, ask up to three focused questions. Otherwise, state any important assumptions briefly and produce the requested result. Use clear sections and make the final deliverable easy to copy.',
     'QUALITY CHECK: Keep the work original, useful, audience-appropriate and consistent with the supplied facts. Do not fabricate names, statistics, credentials, customer testimonials, product capabilities, sources or results. Flag any factual statement that needs verification. Respect privacy, permissions and applicable platform rules.',
     'PLATFORM-SPECIFIC NOTE — ' + p.name + ': ' + p.guidance
@@ -345,9 +382,11 @@ function cardMarkup(item){
   return '<article class="prompt-card"><div class="card-inner">' +
     '<div class="provider-header ' + item.provider.css + '"' + styleVars + '><span class="provider-logo" aria-hidden="true">' + escapeHtml(item.provider.mark) + '</span><span><span class="provider-name">' + escapeHtml(item.provider.name) + '</span><span class="provider-sub">Dedicated prompt · ' + escapeHtml(item.provider.name) + '</span></span></div>' +
     '<div class="down-arrow" aria-hidden="true" style="--provider-arrow:' + (item.provider.css === 'claude' ? '#c96e4a' : item.provider.css === 'gemini' ? '#625ac9' : item.provider.css === 'chatgpt' ? '#13866a' : '#343944') + '">↓</div>' +
+    '<div class="prompt-index">PROMPT ' + String(item.promptNumber).padStart(5,'0') + ' OF 15,000 · ' + escapeHtml(item.provider.name.toUpperCase()) + '</div>' +
     '<div class="card-tags"><span class="tag">' + escapeHtml(item.task.category) + '</span><span class="tag gold">' + escapeHtml(item.direction.name) + '</span></div>' +
     '<h3>' + escapeHtml(item.task.title) + '</h3>' +
     '<p class="purpose"><strong>What it does:</strong> ' + escapeHtml(item.task.purpose) + ' This variation is tailored for ' + escapeHtml(item.context.name.toLowerCase()) + '.</p>' +
+    '<div class="workflow"><strong>How it works</strong>' + escapeHtml(workflowFor(item)) + '</div>' +
     '<div class="example"><strong>Example brief:</strong> ' + escapeHtml(item.context.sample) + '</div>' +
     '<div class="prompt-shell"><div class="prompt-label">Copy-ready prompt · ' + escapeHtml(item.provider.name) + '</div><pre class="prompt-text">' + escapeHtml(prompt) + '</pre></div>' +
     '<div class="card-bottom"><span class="credit">PROMPT BY<br>DE CHAMPIONS DIGITAL SERVICES</span><button class="copy-btn" type="button" data-copy-index="' + item.index + '">▣ Copy this prompt</button></div>' +
@@ -366,8 +405,9 @@ function updatePage(){
   } else {
     grid.innerHTML = pageItems.map(cardMarkup).join('');
   }
-  resultSummary.textContent = totalMatches.toLocaleString() + ' prompt combinations match your selection.';
-  rangeSummary.textContent = totalMatches ? (start + 1).toLocaleString() + '–' + end.toLocaleString() : '0 results';
+  const chosenPlatform = providerSelect.value === 'all' ? 'all four platform libraries' : providerSelect.value + ' library';
+  resultSummary.textContent = totalMatches.toLocaleString() + ' individual prompt cards in ' + chosenPlatform + ' match your selection.';
+  rangeSummary.textContent = totalMatches ? (start + 1).toLocaleString() + '–' + end.toLocaleString() + ' of ' + totalMatches.toLocaleString() : '0 results';
   pageNumber.textContent = 'Page ' + currentPage.toLocaleString() + ' of ' + maxPages.toLocaleString();
   previousButton.disabled = currentPage <= 1;
   nextButton.disabled = currentPage >= maxPages;
@@ -385,6 +425,18 @@ function refreshResults(){
   }
   currentPage = 1;
   updatePage();
+}
+
+function renderPlatformCollections(){
+  const perPlatform = tasks.length * contexts.length * directions.length;
+  const marks = {ChatGPT:'#14866c',Claude:'#bd6446',Gemini:'#625ac9',Grok:'#343944'};
+  platformCollections.innerHTML = providers.map(function(provider){
+    return '<button type="button" class="collection-choice" data-collection-provider="' + escapeHtml(provider.name) + '" style="--collection-bg:' + marks[provider.name] + '">' +
+      '<span class="collection-top"><span class="collection-logo">' + escapeHtml(provider.mark) + '</span><span class="collection-name">' + escapeHtml(provider.name) + '</span></span>' +
+      '<span class="collection-count">' + perPlatform.toLocaleString() + '</span>' +
+      '<span class="collection-note">separate, individually numbered prompt cards</span>' +
+      '<span class="collection-action">Open ' + escapeHtml(provider.name) + ' collection →</span></button>';
+  }).join('');
 }
 
 function populateFilters(){
@@ -434,6 +486,16 @@ grid.addEventListener('click',function(event){
   const button = event.target.closest('[data-copy-index]');
   if(button) copyPrompt(button.getAttribute('data-copy-index'),button);
 });
+platformCollections.addEventListener('click',function(event){
+  const choice = event.target.closest('[data-collection-provider]');
+  if(!choice) return;
+  providerSelect.value = choice.getAttribute('data-collection-provider');
+  refreshResults();
+  platformCollections.querySelectorAll('.collection-choice').forEach(function(button){
+    button.classList.toggle('active',button === choice);
+  });
+  document.querySelector('.controls').scrollIntoView({behavior:'smooth',block:'start'});
+});
 searchInput.addEventListener('input',refreshResults);
 providerSelect.addEventListener('change',refreshResults);
 categorySelect.addEventListener('change',refreshResults);
@@ -471,6 +533,7 @@ async function verifyCourseAccess(){
       return;
     }
     populateFilters();
+    renderPlatformCollections();
     gate.hidden = true;
     app.hidden = false;
     refreshResults();
