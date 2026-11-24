@@ -399,6 +399,51 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 .dcds-admin-showcase-item-link{display:inline-flex;margin-top:6px;color:#70439a;font-size:10px;font-weight:800;text-decoration:underline}
 @media(max-width:560px){.dcds-admin-showcase-editor-form input[type=text],.dcds-admin-showcase-editor-form textarea{font-size:12px}.dcds-admin-showcase-editor-actions{display:grid;grid-template-columns:1fr}.dcds-admin-showcase-manager-toolbar{align-items:flex-start}}
 </style>
+<style id="dcds-student-support-desk-style">
+.support-desk-search{display:flex;gap:10px;align-items:end;flex-wrap:wrap;margin-top:16px;padding:16px;border:1px solid #eadff5;border-radius:14px;background:#fbf8ff}
+.support-desk-search-field{display:grid;gap:6px;flex:1 1 300px;min-width:0}
+.support-desk-search-field label,.support-desk-field label{color:#756783;font-size:12px;font-weight:800}
+.support-desk-search-field input,.support-desk-field input,.support-desk-field textarea,.support-desk-field select{width:100%;min-width:0;padding:12px;border:1px solid #eadff5;border-radius:10px;background:#fff;color:#28183a;font:inherit}
+.support-desk-search-field input:focus,.support-desk-field input:focus,.support-desk-field textarea:focus,.support-desk-field select:focus{outline:2px solid rgba(118,40,216,.16);border-color:#7628d8}
+.support-desk-status{min-height:20px;margin:10px 0;color:#756783;font-size:12px;line-height:1.5}
+.support-desk-status.error{color:#a61b1b}
+.support-desk-matches{display:grid;gap:9px;margin-top:12px}
+.support-desk-match{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:13px;border:1px solid #eadff5;border-radius:12px;background:#fff;text-align:left;cursor:pointer}
+.support-desk-match:hover{border-color:#c9a8e9;background:#fcf9ff}
+.support-desk-match strong{display:block;color:#451078;font-size:14px}
+.support-desk-match small{display:block;margin-top:4px;color:#756783;font-size:11px;overflow-wrap:anywhere}
+.support-desk-workspace{display:grid;gap:14px;margin-top:16px}
+.support-desk-profile{padding:17px;border:1px solid #e2d4ef;border-radius:15px;background:linear-gradient(145deg,#fff,#fbf7ff)}
+.support-desk-profile-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.support-desk-profile h4{margin:0;color:#351052;font:700 22px Georgia,serif;overflow-wrap:anywhere}
+.support-desk-contact{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 14px;margin-top:13px}
+.support-desk-contact span{color:#756783;font-size:12px;line-height:1.5;overflow-wrap:anywhere}
+.support-desk-badges{display:flex;gap:7px;flex-wrap:wrap;margin-top:12px}
+.support-desk-badge{display:inline-flex;align-items:center;padding:6px 9px;border-radius:30px;background:#e7f8ed;color:#17683a;font-size:10px;font-weight:900}
+.support-desk-badge.warn{background:#fff1c9;color:#76551a}
+.support-desk-badge.blocked{background:#fff0f0;color:#a61b1b}
+.support-desk-columns{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(280px,.75fr);gap:14px;align-items:start}
+.support-desk-card{min-width:0;padding:16px;border:1px solid #eadff5;border-radius:14px;background:#fff}
+.support-desk-card h4{margin:0 0 12px;color:#451078;font-size:16px}
+.support-desk-field{display:grid;gap:6px;margin:10px 0}
+.support-desk-field textarea{min-height:94px;resize:vertical}
+.support-desk-form-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:11px}
+.support-desk-small{color:#756783;font-size:11px;line-height:1.55}
+.support-desk-ticket-list,.support-desk-note-list{display:grid;gap:11px}
+.support-desk-ticket{padding:14px;border:1px solid #eadff5;border-radius:12px;background:#fcfaff}
+.support-desk-ticket h5{margin:0;color:#351052;font-size:14px;overflow-wrap:anywhere}
+.support-desk-ticket-meta{display:flex;gap:7px 12px;flex-wrap:wrap;margin:7px 0 10px;color:#756783;font-size:10px}
+.support-desk-ticket-message,.support-desk-ticket-response{margin:9px 0;padding:11px;border-radius:10px;background:#f8f4fc;color:#38234d;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.support-desk-ticket-response{background:#effaf2;border:1px solid #d4ead9}
+.support-desk-ticket textarea{width:100%;min-height:82px;padding:10px;border:1px solid #eadff5;border-radius:9px;background:#fff;color:#28183a;font:inherit;resize:vertical}
+.support-desk-ticket select{padding:9px;border:1px solid #eadff5;border-radius:9px;background:#fff;color:#28183a}
+.support-desk-ticket-actions{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.support-desk-note{padding:11px;border:1px solid #eee5f7;border-radius:10px;background:#fbf8ff}
+.support-desk-note p{margin:0;color:#38234d;font-size:12px;line-height:1.6;white-space:pre-wrap;overflow-wrap:anywhere}
+.support-desk-note small{display:block;margin-top:6px;color:#756783;font-size:10px}
+.support-desk-safety{padding:13px 15px;border:1px solid #e8d7b1;border-radius:12px;background:#fffaf0;color:#654b13;font-size:12px;line-height:1.65;margin-top:14px}
+@media(max-width:760px){.support-desk-columns{grid-template-columns:1fr}.support-desk-contact{grid-template-columns:1fr}.support-desk-search .btn{width:100%}}
+</style>
 <link rel="stylesheet" href="./assets/dcds-mobile-fit.css?v=1">
 </head>
 <body>
@@ -422,6 +467,10 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
         <button class="admin-nav-item" type="button" data-admin-view="students" aria-label="Student management" title="Student management">
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3.2"/><path d="M3.5 20v-1.2A5.5 5.5 0 0 1 9 13.3h.2a5.5 5.5 0 0 1 5.5 5.5V20"/><path d="M16 5.2a3 3 0 0 1 0 5.7M17 14a4.8 4.8 0 0 1 3.5 4.6V20"/></svg></span>
           <span class="admin-nav-copy"><strong>Students</strong><small>Profiles & enrolments</small></span><span class="admin-nav-indicator"></span>
+        </button>
+        <button class="admin-nav-item" type="button" data-admin-view="supportdesk" aria-label="Student Support & Account Recovery" title="Student Support & Account Recovery">
+          <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3h11A2.5 2.5 0 0 1 20 5.5v8a2.5 2.5 0 0 1-2.5 2.5H10l-5.5 4v-4.4A2.5 2.5 0 0 1 4 13.5z"/><path d="M8 8h8M8 11h5"/></svg></span>
+          <span class="admin-nav-copy"><strong>Support Desk</strong><small>Account recovery & cases</small></span><span class="admin-nav-indicator"></span>
         </button>
         <button class="admin-nav-item" type="button" data-admin-view="payments" aria-label="Payment management" title="Payment management">
           <span class="admin-nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2.2"/><path d="M3 10h18M7 15h3"/></svg></span>
@@ -469,6 +518,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       <p>ADMINISTRATION PORTAL</p>
     </div>
     <div class="top-actions">
+      <button class="btn ghost" type="button" data-admin-view="supportdesk">Student Support</button>
       <a class="btn ghost" href="admin-notifications.html">Communications</a>
       <a class="btn ghost" href="admin-assessments.html">Assessments</a>
       <a class="btn ghost" href="admin-account-deletions.html">Account Deletions</a>
@@ -498,6 +548,10 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       <button class="admin-shortcut" type="button" data-admin-view="showcase"><span class="admin-shortcut-icon">✦</span><span><strong>Creative Showcase</strong><small>View 12 empty project spaces</small></span><span class="admin-shortcut-arrow">↗</span></button>
       <a class="admin-shortcut" href="admin-learning-centre.html" aria-label="Open Professional Learning Centre" title="Professional Learning Centre" style="text-decoration:none"><span class="admin-shortcut-icon">▤</span><span><strong>Professional Learning</strong><small>Pathways, discussions, projects, workshops and rubrics</small></span><span class="admin-shortcut-arrow">↗</span></a>
       <a class="admin-shortcut" href="admin-career-centre.html" aria-label="Open Career and Mentorship Centre" title="Career &amp; Mentorship Centre" style="text-decoration:none"><span class="admin-shortcut-icon">✦</span><span><strong>Career &amp; Mentorship</strong><small>Mentors, opportunities, applications and graduate outcomes</small></span><span class="admin-shortcut-arrow">↗</span></a>
+      <button class="admin-shortcut" type="button" data-admin-view="supportdesk"><span class="admin-shortcut-icon">◎</span><span><strong>Student Support & Account Recovery</strong><small>Exact email/phone lookup, support cases and resolutions</small></span><span class="admin-shortcut-arrow">↗</span></button>
+      <a class="admin-shortcut" href="admin-notifications.html" aria-label="Open Communications and Student Affairs" title="Communications" style="text-decoration:none"><span class="admin-shortcut-icon">✉</span><span><strong>Communications & Student Affairs</strong><small>Announcements, notifications, reviews and support inbox</small></span><span class="admin-shortcut-arrow">↗</span></a>
+      <a class="admin-shortcut" href="admin-assessments.html" aria-label="Open Assessment Management" title="Assessment Management" style="text-decoration:none"><span class="admin-shortcut-icon">✓</span><span><strong>Assessment Management</strong><small>Quizzes, assignments and submissions</small></span><span class="admin-shortcut-arrow">↗</span></a>
+      <a class="admin-shortcut" href="admin-account-deletions.html" aria-label="Open Account Deletion Review" title="Account Deletion Review" style="text-decoration:none"><span class="admin-shortcut-icon">⌫</span><span><strong>Account Deletion Review</strong><small>Deletion requests and retention review</small></span><span class="admin-shortcut-arrow">↗</span></a>
       <a class="admin-shortcut" href="admin-community.html" aria-label="Open Community and Safety Centre" title="Community &amp; Safety" style="text-decoration:none"><span class="admin-shortcut-icon">🛡</span><span><strong>Community &amp; Safety</strong><small>Age review, chat moderation, reports and live events</small></span><span class="admin-shortcut-arrow">↗</span></a>
        <a class="admin-shortcut" href="dcds-ai-access-review.html" aria-label="Review DCDS AI age and guardian eligibility" title="AI Access Review" style="text-decoration:none"><span class="admin-shortcut-icon">✦</span><span><strong>AI Access Review</strong><small>Review adult eligibility requests</small></span><span class="admin-shortcut-arrow">↗</span></a>
     </div>
@@ -645,6 +699,55 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
       </div>
       <div id="studentDetailContent"></div>
     </section>
+  </section>
+
+  <section class="panel" id="studentSupportDeskPanel" data-admin-view-panel="supportdesk" style="margin:18px 0">
+    <span class="admin-eyebrow">IDENTITY LOOKUP · ACCOUNT DIAGNOSTICS · CASE RESOLUTION</span>
+    <h3>◎ Student Support &amp; Account Recovery Desk</h3>
+    <p class="intro">Ask the student for the email address or mobile number registered with DCDS. An exact match will identify the account and open a focused support workspace without rebuilding the student account.</p>
+    <div class="support-desk-safety"><strong>Privacy and account safety:</strong> Use this workspace only for a legitimate student-support request. Never ask for a password, OTP, card PIN or banking credential. This desk deliberately excludes payment tickets, orders, balances and payout information; use the separate Payment Operations workspace for approved financial workflows.</div>
+
+    <form class="support-desk-search" id="supportDeskLookupForm" autocomplete="off">
+      <div class="support-desk-search-field">
+        <label for="supportDeskContact">Student registered email or mobile number</label>
+        <input id="supportDeskContact" name="contact" type="text" inputmode="email" maxlength="254" placeholder="e.g. student@example.com or +2348012345678" required>
+      </div>
+      <button class="btn gold" id="supportDeskLookupButton" type="submit">Find Student</button>
+      <button class="btn ghost" id="supportDeskClearButton" type="button">Clear</button>
+    </form>
+    <p class="support-desk-status" id="supportDeskLookupStatus" role="status" aria-live="polite">Search by an exact registered email address or phone number. The student's name appears after a successful match.</p>
+    <div class="support-desk-matches" id="supportDeskMatches"></div>
+
+    <div class="support-desk-workspace" id="supportDeskWorkspace" hidden>
+      <section class="support-desk-profile" id="supportDeskProfile" aria-live="polite"></section>
+      <div class="support-desk-columns">
+        <section class="support-desk-card">
+          <h4>Existing support cases</h4>
+          <p class="support-desk-small">View the student's non-payment support issues, send a reply and update the case status. Replies are saved to the student's Support Centre.</p>
+          <div class="support-desk-ticket-list" id="supportDeskTickets"><div class="empty">Select a student to load support cases.</div></div>
+        </section>
+        <section class="support-desk-card">
+          <h4>Open a support case</h4>
+          <p class="support-desk-small">Use this when a student contacts DCDS directly and has not submitted a support ticket yet.</p>
+          <form id="supportDeskCreateCaseForm">
+            <div class="support-desk-field"><label for="supportDeskSubject">Issue title</label><input id="supportDeskSubject" maxlength="150" minlength="5" required placeholder="e.g. Unable to access my course"></div>
+            <div class="support-desk-field"><label for="supportDeskCategory">Issue category</label><select id="supportDeskCategory" required><option value="account">Account access</option><option value="course_access">Course access</option><option value="learning">Learning support</option><option value="technical">Technical issue</option><option value="certificate">Certificate</option><option value="general">General support</option></select></div>
+            <div class="support-desk-field"><label for="supportDeskMessage">Describe the problem</label><textarea id="supportDeskMessage" minlength="10" maxlength="5000" required placeholder="Record the issue as described by the student. Do not include passwords or OTPs."></textarea></div>
+            <div class="support-desk-form-actions"><button class="btn gold" id="supportDeskCreateCaseButton" type="submit">Create Support Case</button><span class="support-desk-small" id="supportDeskCreateCaseStatus" role="status"></span></div>
+          </form>
+        </section>
+      </div>
+      <section class="support-desk-card">
+        <h4>Internal administrator notes</h4>
+        <p class="support-desk-small">These notes are for authorised DCDS administrators and are not shown to the student.</p>
+        <form id="supportDeskInternalNoteForm">
+          <div class="support-desk-field"><label for="supportDeskInternalNote">Private case note</label><textarea id="supportDeskInternalNote" minlength="2" maxlength="3000" required placeholder="Record checks performed, findings and the next follow-up step."></textarea></div>
+          <div class="support-desk-form-actions"><button class="btn ghost" id="supportDeskAddNoteButton" type="submit">Save Internal Note</button><span class="support-desk-small" id="supportDeskInternalNoteStatus" role="status"></span></div>
+        </form>
+        <div class="support-desk-note-list" id="supportDeskNotes"><div class="empty">No internal notes loaded.</div></div>
+      </section>
+      <div class="support-desk-safety"><strong>Suggested account checks:</strong> confirm the student selected the correct email/mobile, check whether their contact is verified, review their last sign-in and current account-access status, inspect their reported issue, then document the resolution. Do not change the student's login credentials or contact details from this support workspace.</div>
+    </div>
   </section>
 
   <section class="panel" id="creativeShowcaseAdminPanel" data-admin-view-panel="showcase" style="margin:18px 0">
@@ -1027,7 +1130,8 @@ const ADMIN_VIEW_META = {
   payments: {title:"Payment Management", description:"Review orders, receipts and payment activity."},
   pricing: {title:"Course Pricing", description:"Manage approved regional course prices."},
   payouts: {title:"Payout Management", description:"Review ambassador withdrawals and international payout readiness."},
-  showcase: {title:"Creative Showcase", description:"Upload, update and publish projects in all 12 creative categories."}
+  showcase: {title:"Creative Showcase", description:"Upload, update and publish projects in all 12 creative categories."},
+  supportdesk: {title:"Student Support & Account Recovery", description:"Find student accounts by exact registered contact and resolve non-payment support cases."}
 };
 function closeAdminNavigation(){
   const layout=$("adminLayout"),toggle=$("adminNavToggle");
