@@ -6,7 +6,7 @@
 
 <meta name="theme-color" content="#35105f">
 <meta name="description" content="The shared De Champions Digital Services AI learning companion.">
-<title>DCDS AI Learning Assistant</title>
+<title>Deyriva | DCDS AI Learning Assistant</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="ai-config/captcha-public-config.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -107,12 +107,12 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 .memory-actions button{border:1px solid #e2d2f1;border-radius:9px;padding:8px 10px;background:#fff;color:#5c258e;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
 .memory-actions button.primary{border-color:#6b2aa7;background:#6827a4;color:#fff}
 
-/* Dara — DCDS AI profile refinement */
+/* Deyriva — DCDS AI profile refinement */
 .assistant-mark{gap:12px}
 .assistant-icon{width:52px;height:52px;flex:0 0 52px;overflow:hidden;border-radius:16px;border:1px solid #e6d4f7;background:linear-gradient(145deg,#f1e5ff,#e3ceff);box-shadow:0 5px 14px #5a218b18;font-size:0}
-.assistant-icon img{display:block;width:100%;height:100%;object-fit:cover}
+.assistant-icon img{display:block;width:100%;height:100%;object-fit:cover;transform-origin:center bottom}
 @media(max-width:580px){.assistant-icon{width:50px;height:50px;flex-basis:50px}.assistant-mark{gap:10px}.assistant-mark strong{font-size:13px}}
-@media(prefers-reduced-motion:no-preference){.assistant-icon img{animation:daraCalmFloat 6s ease-in-out infinite}@keyframes daraCalmFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-1px)}}}
+@media(prefers-reduced-motion:no-preference){.assistant-icon img{animation:deyrivaIdle 5.2s ease-in-out infinite;will-change:transform}@keyframes deyrivaIdle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.035)}}}@media(prefers-reduced-motion:reduce){.assistant-icon img{animation:none}}
 
 
 
@@ -140,14 +140,14 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 <main>
  <section class="hero">
   <div class="eyebrow">ONE BRAIN · ONE KNOWLEDGE BASE · ONE AI SERVICE</div>
-  <h1>Your DCDS AI Learning Assistant.</h1>
+  <h1>Meet Deyriva, your DCDS AI Learning Companion.</h1>
   <p>Learn and explore with DCDS AI from the public website or your student dashboard. Adults aged 18+ can start a visitor chat without creating a DCDS account. Signed-in adult students can save private conversations and learning memory. While DCDS uses the Gemini API, AI access is limited to adults 18+; this does not restrict access to DCDS courses.</p>
   <div class="shared-pill">✦ SHARED DCDS AI EXPERIENCE</div>
  </section>
  <div class="layout">
-  <section class="chat-card" aria-label="DCDS AI chat">
+  <section class="chat-card" aria-label="Deyriva, DCDS AI chat">
    <div class="chat-head">
-    <div class="assistant-mark"><div class="assistant-icon"><img src="assets/dara-ai-profile.webp" alt="Dara, DCDS AI Companion"></div><div><strong>DCDS AI Companion</strong><small id="accountLabel">Verifying your student account…</small></div></div>
+    <div class="assistant-mark"><div class="assistant-icon"><img src="assets/deyriva-ai-profile.webp" alt="Deyriva, DCDS AI Companion"></div><div><strong>Deyriva by DCDS</strong><small id="accountLabel">Verifying your student account…</small></div></div>
     <button class="new-chat" id="newChat" type="button">＋ New chat</button>
    </div>
       
@@ -193,14 +193,14 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     <div class="memory-actions"><button id="clearLearningMemory" type="button">Clear memory</button><div><button class="primary" id="saveLearningMemory" type="button">Save memory</button></div></div>
    </section>
    <div class="messages" id="messages" role="log" aria-live="polite">
-    <div class="message assistant"><div><div class="bubble">Hello! 👋 Welcome to De Champions Digital Services. I'm your DCDS AI learning companion. I can help you understand courses, learn digital skills, practise concepts, search approved DCDS information, find lessons in your enrolled courses and explore general topics beyond the prepared knowledge files. What would you like to work on today?</div></div></div>
+    <div class="message assistant"><div><div class="bubble">Hello! My name is Deyriva, the DCDS AI Companion. How can I assist you today? I can help you learn digital skills, explore DCDS courses and work through practical questions step by step.</div></div></div>
    </div>
-   <div class="typing" id="typing" hidden>DCDS AI is thinking…</div>
+   <div class="typing" id="typing" hidden>Deyriva is thinking…</div>
    <form class="composer" id="chatForm">
     <div class="voice-status" id="voiceStatus" role="status" aria-live="polite" hidden></div>
     <div class="composer-row">
      <div class="message-entry">
-      <textarea id="messageInput" maxlength="2500" rows="2" placeholder="Type or speak to DCDS AI…" aria-label="Your message"></textarea>
+      <textarea id="messageInput" maxlength="2500" rows="2" placeholder="Type or speak to Deyriva…" aria-label="Message Deyriva"></textarea>
       <button class="composer-tool" id="voiceButton" type="button" aria-label="Use microphone for voice typing" title="Speak your message">🎙</button>
      </div>
      <button class="send" id="sendButton" type="submit">Send ↗</button>
@@ -300,22 +300,21 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   {name:'Paystack',aliases:['paystack'],href:'https://paystack.com/'}
  ];
 
- let welcomeMessage="Hello! 👋 Welcome to De Champions Digital Services. I’m DCDS AI, your learning companion. I can teach digital skills, explain general topics, help you explore DCDS courses and guide you through practical steps. What would you like to learn today?";
+ let welcomeMessage="Hello! My name is Deyriva, the DCDS AI Companion. How can I assist you today? I can teach digital skills, explain general topics and help you explore DCDS courses.";
  function configureWelcomeGreeting(mode){
   const metadata=currentUser?.user_metadata&&typeof currentUser.user_metadata==='object'?currentUser.user_metadata:{};
   const candidate=metadata.full_name||metadata.name||metadata.display_name||'';
   const safeName=typeof candidate==='string'?candidate.replace(/[<>\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().slice(0,80):'';
   const firstName=safeName.split(' ')[0]||'';
+  const personalIntro=firstName
+   ?`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you, ${firstName}?`
+   :`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you today?`;
   if(mode==='admin'){
-   welcomeMessage=firstName
-    ?`Hello ${firstName}! 👋 Welcome back to your DCDS AI Companion. I’m ready to help with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.`
-    :`Hello! 👋 Welcome to your DCDS AI Companion. I can help with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.`;
+   welcomeMessage=`${personalIntro} I can help with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.`;
   }else if(mode==='student'){
-   welcomeMessage=firstName
-    ?`Hello ${firstName}! 👋 Welcome back to your DCDS AI Learning Assistant. I’m here to help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`
-    :`Hello! 👋 Welcome to your DCDS AI Learning Assistant. I’m here to help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`;
+   welcomeMessage=`${personalIntro} I can help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`;
   }else{
-   welcomeMessage="Hello! 👋 Welcome to De Champions Digital Services. I’m DCDS AI, your public learning companion. I can explain general topics, teach digital skills and help you explore public DCDS information. What would you like to learn today?";
+   welcomeMessage=`${personalIntro} I can explain general topics, teach digital skills and help you explore public DCDS information.`;
   }
   conversation.length=0;
   messagesEl.replaceChildren();
