@@ -1102,7 +1102,7 @@ ${savedMemoryInstruction}`;
                 ? { tools: [{ google_search: {} }] }
                 : {}),
             }),
-            signal: AbortSignal.timeout(Math.max(1000, Math.min(attemptedModels <= 2 ? 7_000 : 5_500, generationDeadline - Date.now()))),
+            signal: AbortSignal.timeout(Math.max(1000, Math.min(attemptedModels <= 2 ? 7_000 : attemptedModels <= 5 ? 5_000 : 6_500, generationDeadline - Date.now()))),
           },
         );
       } catch (error) {
