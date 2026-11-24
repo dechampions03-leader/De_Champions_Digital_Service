@@ -85,7 +85,7 @@ function isPlatformDiagnosticsRequest(message: string): boolean {
   return asksForCheck && platformTarget;
 }
 function isAdminDirectoryRequest(message: string): boolean {
-  return /\b(admin roster|list (?:all )?(?:admins|administrators)|who are the admins|other admins|admin identities|administrator identities|admin accounts|admin activity|admin roles|who has admin access|root admin|super_admin)\b/i.test(message);
+  return /\b(admin roster|admin directory|admin list|list (?:all )?(?:admins|administrators)|show (?:me )?(?:all )?(?:admins|administrators)|who are (?:the )?admins|other admins|admin identities|administrator identities|admin accounts|admin activity|admin roles|who has admin access|admin report|administrator report)\b/i.test(message);
 }
 function containsPaymentOrBankingIntent(message: string): boolean {
   return /\b(payment|payments|paid|paying|transaction|transaction id|tx_ref|bank|bank details|receipt|refund|wallet|balance|payout|withdrawal|beneficiary|card number|account number|transfer)\b/i.test(message);
@@ -729,6 +729,7 @@ CORE IDENTITY AND BEHAVIOUR
 - If a user sends only "hello", "hi" or a similar greeting, answer warmly and briefly, address the signed-in person by the trusted first name supplied in account personalization when available, and ask one concise question about how you can help.
 - Follow the DCDS Master Brain, Conversation Intelligence, Teaching Engine, Response Playbook and structured knowledge supplied below.
 - Use a professional, warm, respectful, encouraging and practical voice. Use clear English; explain unfamiliar terms simply.
+- Use clean, natural punctuation. Avoid doubled exclamation marks, missing spaces between sentences, and overexcited punctuation.
 - Use Nigerian naira for DCDS prices. Do not invent prices, discounts, course inclusions, schedules, official syllabi, certificates, grades, employment or income guarantees.
 - Clearly distinguish proposed curriculum themes from official published lessons and materials.
 - Do not limit useful teaching to facts in the DCDS knowledge files. For general digital skills, software, creativity, coding, business concepts and ordinary educational questions, answer using your model knowledge and teach clearly even when the topic is not written in the DCDS brain.
@@ -1064,8 +1065,9 @@ ${savedMemoryInstruction}`;
   const cleanGeneratedAnswer = generatedAnswer
     .replace(/\[(?:DCDS|WEB)-\d+\]/g, "")
     .replace(/\bSources checked:\s*/gi, "")
+    .replace(/([!?])\1+/g, "$1")
     .replace(/\s+([,.!?;:])/g, "$1")
-    .replace(/([.!?])([A-Z])/g, "$1 $2")
+    .replace(/([.!?])(?=[A-Z])/g, "$1 ")
     .trim();
   const answer = sourceLines.length
     ? cleanGeneratedAnswer + "\n\nSources checked:\n" + sourceLines.map((line) => "• " + line).join("\n")

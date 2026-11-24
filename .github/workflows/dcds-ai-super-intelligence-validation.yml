@@ -224,7 +224,17 @@ jobs:
           support_helper_start = function.index("async function loadStudentAccountSupportContext(")
           support_helper_end = function.index("async function searchPlatformKnowledge(", support_helper_start)
           support_helper = function[support_helper_start:support_helper_end]
+          matcher_start = function.index("function isAdminDirectoryRequest(")
+          matcher_end = function.index("\\n}", matcher_start)
+          admin_directory_matcher = function[matcher_start:matcher_end]
+          answer_cleaner_start = function.index("const cleanGeneratedAnswer =")
+          answer_cleaner_end = function.index("const answer =", answer_cleaner_start)
+          answer_cleaner = function[answer_cleaner_start:answer_cleaner_end]
           diagnostics_invariants = {
+              "ordinary root-admin wording does not automatically request a directory":
+                  "root admin" not in admin_directory_matcher.lower() and "super_admin" not in admin_directory_matcher.lower(),
+              "answer cleaner normalises repeated exclamation marks":
+                  '.replace(/([!?])\\\\1+/g, "$1")' in answer_cleaner,
               "platform health uses authenticated read-only snapshot RPC":
                   "dcds_ai_platform_snapshot" in function and "isPlatformDiagnosticsRequest" in function,
               "admin directory is only requested for verified root admins":
@@ -264,13 +274,21 @@ jobs:
 
           knowledge = json.loads(Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"))
           evaluation = json.loads(Path("ai-config/DCDS-AI-EVALUATION-TESTS.json").read_text(encoding="utf-8"))
-          test_ids = {item.get("id") for item in evaluation.get("tests", [])}
+          test_id_values = [item.get("id") for item in evaluation.get("tests", [])]
+          duplicate_test_ids = sorted({
+              test_id for test_id in test_id_values
+              if test_id and test_id_values.count(test_id) > 1
+          })
+          if duplicate_test_ids:
+              raise SystemExit("Duplicate DCDS AI evaluation IDs: " + ", ".join(duplicate_test_ids))
+          test_ids = set(test_id_values)
           required_tests = {
               "retrieval-001", "retrieval-002", "retrieval-003",
               "learning-003", "web-001", "memory-001", "memory-002", "security-002",
               "image-001", "image-002", "voice-001", "voice-002", "voice-003",
               "guest-001", "guest-002", "chat-001", "identity-001",
-              "audit-001", "privacy-001", "root-report-001", "support-001", "support-002",
+              "audit-001", "privacy-001", "admin-privacy-001", "root-report-001",
+              "support-001", "student-support-001", "support-002", "format-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
