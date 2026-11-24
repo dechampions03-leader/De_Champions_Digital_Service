@@ -1077,3 +1077,75 @@
  animation:none;
  opacity:.2;
 }
+
+
+/* Refined companion palettes for the newly de-duplicated event illustrations. */
+.dcds-celebration-art[data-scene="braille-refined"],
+.dcds-celebration-art[data-scene="public-service-refined"],
+.dcds-celebration-art[data-scene="small-business-refined"],
+.dcds-celebration-art[data-scene="mandela-refined"],
+.dcds-celebration-art[data-scene="commonwealth-refined"],
+.dcds-celebration-art[data-scene="africa-local-development"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(145,185,218,.22),transparent 63%),linear-gradient(135deg,#273752,#34435f 60%,#1d263c);
+}
+.dcds-celebration-art[data-scene="cultural-diversity-refined"],
+.dcds-celebration-art[data-scene="flavours-refined"],
+.dcds-celebration-art[data-scene="music-festival-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(217,160,208,.22),transparent 62%),linear-gradient(135deg,#4a2855,#38234f 60%,#201a36);
+}
+.dcds-celebration-art[data-scene="international-democracy-refined"],
+.dcds-celebration-art[data-scene="independence-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(102,194,139,.22),transparent 62%),linear-gradient(135deg,#17483c,#2c4e4c 58%,#1b2c36);
+}
+.dcds-celebration-art[data-scene="africa-science-refined"],
+.dcds-celebration-art[data-scene="youth-skills-refined"],
+.dcds-celebration-art[data-scene="statistics-specific"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(138,177,224,.22),transparent 63%),linear-gradient(135deg,#293655,#3c4268 60%,#1d263f);
+}
+.dcds-celebration-art[data-scene="volunteer-refined"],
+.dcds-celebration-art[data-scene="migrant-solidarity"],
+.dcds-celebration-art[data-scene="humanitarian-specific"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(151,192,205,.2),transparent 63%),linear-gradient(135deg,#273b50,#34485d 60%,#1c2b3c);
+}
+.dcds-celebration-art[data-scene="africa-environment-refined"],
+.dcds-celebration-art[data-scene="new-yam-refined"],
+.dcds-celebration-art[data-scene="ige-agba-refined"],
+.dcds-celebration-art[data-scene="osun-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(110,202,143,.23),transparent 63%),linear-gradient(135deg,#1c4a40,#31564d 60%,#1d3036);
+}
+.dcds-celebration-art[data-scene="argungu-refined"],
+.dcds-celebration-art[data-scene="tour-nigeria-refined"],
+.dcds-celebration-art[data-scene="beach-refined"]{
+ background:radial-gradient(ellipse at 50% 55%,rgba(85,188,219,.25),transparent 63%),linear-gradient(135deg,#16465e,#2d526e 60%,#1d2d48);
+}
+.dcds-celebration-art[data-scene="sango-refined"],
+.dcds-celebration-art[data-scene="olojo-refined"],
+.dcds-celebration-art[data-scene="ofala-refined"],
+.dcds-celebration-art[data-scene="igue-refined"],
+.dcds-celebration-art[data-scene="mmanwu-refined"],
+.dcds-celebration-art[data-scene="igbogo-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(224,169,100,.23),transparent 62%),linear-gradient(135deg,#4b3039,#3c2b4a 60%,#211b35);
+}
+.dcds-celebration-art[data-scene="countdown-festival-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(222,185,105,.24),transparent 62%),linear-gradient(135deg,#35234c,#4b2c5c 58%,#1d203d);
+}
+.dcds-celebration-art[data-scene="eid-durbar-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(221,187,117,.25),transparent 62%),linear-gradient(135deg,#48362d,#374459 60%,#20253d);
+}
+.dcds-celebration-art[data-scene="tour-nigeria-refined"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="argungu-refined"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="beach-refined"] .dcds-scene-prop{
+ animation-name:dcdsSceneDrift;
+}
+.dcds-celebration-art[data-scene="sango-refined"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="countdown-festival-refined"] .dcds-scene-prop{
+ animation-name:dcdsSceneBurst;
+}
+.dcds-celebration-art[data-scene="olojo-refined"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="ofala-refined"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="igue-refined"] .dcds-scene-main{
+ animation-name:dcdsSceneFloat;
+}
+.dcds-celebration-art[data-scene="music-festival-refined"] .dcds-scene-main{
+ animation-name:dcdsSceneLift;
+}
