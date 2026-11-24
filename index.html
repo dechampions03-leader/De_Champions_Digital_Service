@@ -2559,7 +2559,7 @@ if(generalBuyButton)generalBuyButton.addEventListener('click',async()=>{
   $('paymentReturnClose').onclick=closeModal;
  }
 }
-async async function showAccount(){
+async function showAccount(){
  if(!supabaseClient){authMode='login';authScreen('Account service could not load.');return;}
  try{const {data:{user},error}=await supabaseClient.auth.getUser();if(error)throw error;if(!user){authMode='login';authScreen();return;}if(!hasDcdsVerifiedContact(user)){showPendingAccountVerification(user,'Verify your selected contact method to activate your student account.');return;}
  await refreshDcdsAccountButton(user);
