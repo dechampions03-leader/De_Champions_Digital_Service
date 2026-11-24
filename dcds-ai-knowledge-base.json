@@ -428,7 +428,7 @@
       },
       {
         "name": "Student Reviews",
-        "route": "index.html#reviews",
+        "route": "index.html",
         "audience": "public and students",
         "description": "The public website displays approved student reviews and ratings."
       }
