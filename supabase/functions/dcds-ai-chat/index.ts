@@ -909,8 +909,15 @@ Deno.serve(async (request: Request) => {
   }
 
   const promptMessage = message || "Please analyse the attached image and explain what you can help me with.";
+  const skipPlatformSearch = (isRootAdmin && /\\b(biography|bio|who am i|what is my name|tell me about myself)\\b/i.test(promptMessage))
+    || /^\\s*(hi|hello|hey|good morning|good afternoon|good evening)\\s*[!.?]*\\s*$/i.test(promptMessage);
   const [platformSearch, discoveredModels] = await Promise.all([
-    searchPlatformKnowledge(userClient, user.id, role, promptMessage).catch((error) => {
+    (skipPlatformSearch
+      ? Promise.resolve({
+        context: "No live DCDS lookup was needed for this personal or greeting request.",
+        sources: [] as DcdsKnowledgeSource[],
+      })
+      : searchPlatformKnowledge(userClient, user.id, role, promptMessage)).catch((error) => {
       console.warn("DCDS AI live platform search unavailable; continuing with approved knowledge.", {
         requestId,
         error: String(error).slice(0, 240),
@@ -1014,6 +1021,7 @@ Deno.serve(async (request: Request) => {
     ? `\n\nSIGNED-IN STUDENT SELF-IDENTITY AND PRIVACY\nThe server verified this request as the current account's student session. Name shown on this account profile: ${JSON.stringify(normalizedDisplayName || "not provided")}. This is a user-editable profile name, not a legal-identity verification. When this student asks "Who am I?" or "What do you know about me?", answer only from this account name and the own-enrolment data supplied for this same request. Say "According to your DCDS profile" where appropriate. Never guess their age, location, personal history, grades or payment details. Never reveal another student's name, profile, saved chat, learning memory or private data.`
     : "";
 
+  const compactKnowledge = compactKnowledgeForRequest(knowledge, promptMessage, role, isRootAdmin);
   const systemInstruction = `You are Deyriva, the official DCDS AI Companion and learning assistant for De Champions Digital Service (DCDS).
 
 SERVER-VERIFIED ACCESS MODE: ${role.toUpperCase()}
@@ -1047,7 +1055,7 @@ CORE IDENTITY AND BEHAVIOUR
 - Keep answers focused, useful and readable.
 
 APPROVED DCDS KNOWLEDGE AND BEHAVIOUR DOCUMENTS
-${knowledge}
+${compactKnowledge}
 
 LIVE DCDS APPLICATION SEARCH RESULTS
 - Retrieved through the authenticated DCDS client using the caller's own database permissions.
@@ -1066,6 +1074,28 @@ ${platformSnapshotContext || "No platform-health or administrator-directory snap
 ${savedMemoryInstruction}`;
 
 
+  const knowledgeMarker = systemInstruction.indexOf("APPROVED DCDS KNOWLEDGE AND BEHAVIOUR DOCUMENTS");
+  const fallbackSystemInstruction = [
+    knowledgeMarker >= 0 ? systemInstruction.slice(0, knowledgeMarker) : systemInstruction,
+    "COMPACT DCDS REFERENCE CONTEXT",
+    compactKnowledge.slice(0, 1400),
+    "LIVE DCDS DATA (limited request-specific evidence; never infer missing facts)",
+    platformSearch.context.slice(0, 1100),
+    "STUDENT'S OWN NON-PAYMENT CONTEXT",
+    studentAccountContext.slice(0, 850),
+    "STUDENT-SAVED LEARNING CONTEXT",
+    savedMemoryInstruction.slice(0, 450),
+  ].filter(Boolean).join("\\n\\n");
+
+  console.info("DCDS AI prompt budget prepared.", {
+    requestId,
+    role,
+    compactKnowledgeChars: compactKnowledge.length,
+    platformEvidenceChars: platformSearch.context.length,
+    primarySystemChars: systemInstruction.length,
+    fallbackSystemChars: fallbackSystemInstruction.length,
+    userPromptChars: userPrompt.length,
+  });
 
   // Use models.list only to confirm that a documented free-tier model is available.
   // Never append the entire discovered catalogue: it includes paid-only models.
@@ -1183,9 +1213,16 @@ ${savedMemoryInstruction}`;
             method: "POST",
             headers: { "Content-Type": "application/json", "x-goog-api-key": geminiApiKey },
             body: JSON.stringify({
-              systemInstruction: { parts: [{ text: systemInstruction }] },
+              systemInstruction: {
+                parts: [{
+                  text: candidate.startsWith("gemma-") ? fallbackSystemInstruction : systemInstruction,
+                }],
+              },
               contents: [{ role: "user", parts: geminiUserParts }],
-              generationConfig: { temperature: 0.65, maxOutputTokens: 1400 },
+              generationConfig: {
+                temperature: 0.65,
+                maxOutputTokens: candidate.startsWith("gemma-") ? 850 : 1100,
+              },
               ...(shouldUseGoogleSearch && GOOGLE_SEARCH_MODELS.has(candidate)
                 ? { tools: [{ google_search: {} }] }
                 : {}),
