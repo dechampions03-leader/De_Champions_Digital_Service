@@ -415,6 +415,12 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
             </p>
         </div>
 
+        <div id="adminPreviewNotice" class="notice hidden" role="status">
+            DCDS ADMIN PREVIEW — You are viewing this course with administrator privileges.
+            Student enrolment is not required for this preview. Lesson completion tracking
+            and student certificates are disabled in administrator preview mode.
+        </div>
+
         <section id="dcdsPromptLibraryEntry" class="dcds-prompt-entry hidden" aria-labelledby="dcdsPromptLibraryHeading">
             <span class="prompt-kicker">DCDS PREMIUM PROMPT COLLECTION</span>
             <h2 id="dcdsPromptLibraryHeading">Explore 60,000 AI Prompt Combinations</h2>
@@ -422,7 +428,7 @@ html.dcds-text-motion-ready [data-dcds-text-reveal].dcds-text-visible{
             <a class="prompt-entry-link" href="prompt-library.html">OPEN THE DCDS PROMPT STUDIO →</a>
         </section>
 
-        <section class="progress-panel" aria-labelledby="progressHeading">
+        <section id="progressPanel" class="progress-panel" aria-labelledby="progressHeading">
             <div class="progress-top">
                 <h2 id="progressHeading">🏆 Your Learning Progress</h2>
                 <span class="progress-percent" id="progressPercent">0%</span>
@@ -570,6 +576,7 @@ let currentCourse = null;
 let currentLessons = [];
 let completedLessonIds = new Set();
 let currentCertificate = null;
+let isAdminPreview = false;
         const progressPercent = document.getElementById("progressPercent");
 const progressFill = document.getElementById("progressFill");
 const progressBar = document.getElementById("progressBar");
@@ -590,6 +597,10 @@ function updateProgress(total, completed) {
 
 async function loadLessonProgress() {
     const lessonIds = currentLessons.map(lesson => lesson.id);
+    if (isAdminPreview || !lessonIds.length) {
+        completedLessonIds = new Set();
+        return;
+    }
         if (!lessonIds.length) {
         completedLessonIds = new Set();
         return;
@@ -638,7 +649,7 @@ function displayCertificate(certificate) {
 }
 
 async function markLessonComplete(lesson, button, status) {
-    if (!currentUser || !currentCourse) return;
+    if (!currentUser || !currentCourse || isAdminPreview) return;
     button.disabled = true;
         button.textContent = "Saving...";
     status.textContent = "";
@@ -671,7 +682,7 @@ async function markLessonComplete(lesson, button, status) {
     }
 }
      async function issueAndShowCertificate() {
-    if (!currentCourse || !currentUser || !allCurrentLessonsComplete()) return;
+    if (isAdminPreview || !currentCourse || !currentUser || !allCurrentLessonsComplete()) return;
 
     certificateMessage.textContent =
         "All lessons are complete. Preparing your course certificate...";
@@ -1084,26 +1095,33 @@ function displayLessons(lessons) {
         const actions = document.createElement("div");
         actions.className = "lesson-actions";
 
-        const completeButton = document.createElement("button");
-        completeButton.type = "button";
-        completeButton.className = "button complete-button";
-        completeButton.dataset.lessonId = lesson.id;
-
-        const status = document.createElement("span");
-        status.className = "lesson-status";
-        status.id = "lesson-status-" + lesson.id;
-
-        if (completedLessonIds.has(lesson.id)) {
-            completeButton.textContent = "✓ Lesson Completed";
-            completeButton.disabled = true;
-            status.textContent = "Saved to your learning progress";
+        if (isAdminPreview) {
+            const previewStatus = document.createElement("span");
+            previewStatus.className = "lesson-status";
+            previewStatus.textContent = "Administrator preview — student completion tracking is disabled.";
+            actions.appendChild(previewStatus);
         } else {
-            completeButton.textContent = "Mark Lesson as Complete";
-            completeButton.addEventListener("click", () => markLessonComplete(lesson, completeButton, status));
-        }
+            const completeButton = document.createElement("button");
+            completeButton.type = "button";
+            completeButton.className = "button complete-button";
+            completeButton.dataset.lessonId = lesson.id;
 
-        actions.appendChild(completeButton);
-        actions.appendChild(status);
+            const status = document.createElement("span");
+            status.className = "lesson-status";
+            status.id = "lesson-status-" + lesson.id;
+
+            if (completedLessonIds.has(lesson.id)) {
+                completeButton.textContent = "✓ Lesson Completed";
+                completeButton.disabled = true;
+                status.textContent = "Saved to your learning progress";
+            } else {
+                completeButton.textContent = "Mark Lesson as Complete";
+                completeButton.addEventListener("click", () => markLessonComplete(lesson, completeButton, status));
+            }
+
+            actions.appendChild(completeButton);
+            actions.appendChild(status);
+        }
         item.appendChild(actions);
         lessonContainer.appendChild(item);
     });
@@ -1254,6 +1272,17 @@ async function loadCourse() {
         }
         currentCourse = course;
 
+        /* CHECK ADMIN PRIVILEGES */
+
+        showMessage("Checking DCDS administrator access...");
+        const {
+            data: adminCheck,
+            error: adminCheckError
+        } = await withTimeout(db.rpc("is_dcds_admin"));
+
+        if (adminCheckError) throw adminCheckError;
+        const isDcdsAdmin = adminCheck === true;
+
         /* CHECK ENROLLMENT */
 
         showMessage("Verifying your course enrollment...");
@@ -1272,13 +1301,20 @@ async function loadCourse() {
          
         if (enrollmentError) throw enrollmentError;
 
-        if (!enrollment) {
+        if (!enrollment && !isDcdsAdmin) {
 
             showMessage(
                 "You are not enrolled in this course. Please purchase it to access the lessons."
             );
 
             return;
+        }
+
+        isAdminPreview = !enrollment && isDcdsAdmin;
+        if (isAdminPreview) {
+            document.getElementById("adminPreviewNotice").classList.remove("hidden");
+            document.getElementById("progressPanel").classList.add("hidden");
+            certificatePanel.classList.add("hidden");
         }
 
         /* SHOW COURSE TITLE */
@@ -1316,14 +1352,19 @@ async function loadCourse() {
         let resumeLesson = null;
         if (currentLessons.length) {
             const requestedLessonId = new URLSearchParams(window.location.search).get("lesson");
-            const { data: savedActivity, error: activityReadError } = await withTimeout(
-                db.from("student_course_activity")
-                  .select("lesson_id")
-                  .eq("user_id", currentUser.id)
-                  .eq("course_id", currentCourse.id)
-                  .maybeSingle()
-            );
-            if (activityReadError) throw activityReadError;
+            let savedActivity = null;
+
+            if (!isAdminPreview) {
+                const { data, error: activityReadError } = await withTimeout(
+                    db.from("student_course_activity")
+                      .select("lesson_id")
+                      .eq("user_id", currentUser.id)
+                      .eq("course_id", currentCourse.id)
+                      .maybeSingle()
+                );
+                if (activityReadError) throw activityReadError;
+                savedActivity = data;
+            }
 
             const requestedLesson = currentLessons.find(lesson => lesson.id === requestedLessonId);
             const savedLesson = currentLessons.find(lesson =>
@@ -1333,17 +1374,19 @@ async function loadCourse() {
                 currentLessons.find(lesson => !completedLessonIds.has(lesson.id)) ||
                 currentLessons[currentLessons.length - 1];
 
-            const activityTimestamp = new Date().toISOString();
-            const { error: activitySaveError } = await withTimeout(
-                db.from("student_course_activity").upsert({
-                    user_id: currentUser.id,
-                    course_id: currentCourse.id,
-                    lesson_id: resumeLesson.id,
-                    last_opened_at: activityTimestamp,
-                    updated_at: activityTimestamp
-                }, { onConflict: "user_id,course_id" })
-            );
-            if (activitySaveError) throw activitySaveError;
+            if (!isAdminPreview) {
+                const activityTimestamp = new Date().toISOString();
+                const { error: activitySaveError } = await withTimeout(
+                    db.from("student_course_activity").upsert({
+                        user_id: currentUser.id,
+                        course_id: currentCourse.id,
+                        lesson_id: resumeLesson.id,
+                        last_opened_at: activityTimestamp,
+                        updated_at: activityTimestamp
+                    }, { onConflict: "user_id,course_id" })
+                );
+                if (activitySaveError) throw activitySaveError;
+            }
         }
 
         displayLessons(lessons);
@@ -1354,20 +1397,22 @@ async function loadCourse() {
             }
         }
 
-        // Existing certificates remain visible even if lessons were added later.
-        const { data: existingCertificate, error: existingCertificateError } = await withTimeout(
-            db.from("certificates")
-              .select("certificate_number, status, issued_at, verified_at, completion_snapshot, completion_policy_version, completed_lesson_count")
-              .eq("user_id", currentUser.id)
-              .eq("course_id", currentCourse.id)
-              .maybeSingle()
-        );
-        if (existingCertificateError) throw existingCertificateError;
+        // Student certificates are loaded only for enrolled-student sessions.
+        if (!isAdminPreview) {
+            const { data: existingCertificate, error: existingCertificateError } = await withTimeout(
+                db.from("certificates")
+                  .select("certificate_number, status, issued_at, verified_at, completion_snapshot, completion_policy_version, completed_lesson_count")
+                  .eq("user_id", currentUser.id)
+                  .eq("course_id", currentCourse.id)
+                  .maybeSingle()
+            );
+            if (existingCertificateError) throw existingCertificateError;
 
-        if (existingCertificate) {
-            displayCertificate(existingCertificate);
-        } else if (allCurrentLessonsComplete()) {
-            await issueAndShowCertificate();
+            if (existingCertificate) {
+                displayCertificate(existingCertificate);
+            } else if (allCurrentLessonsComplete()) {
+                await issueAndShowCertificate();
+            }
         }
 
         /* LOAD MATERIALS */
