@@ -268,6 +268,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let isPersistentStudent=false;
  let isGuestSession=false;
  let isAdminSession=false;
+ let isRootAdminSession=false;
  let guestCaptchaToken="";
  let guestTurnstileWidgetId=null;
  let guestTurnstileLoader=null;
@@ -311,7 +312,12 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    ?`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you, ${firstName}?`
    :`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you today?`;
   if(mode==='admin'){
-   welcomeMessage=`${personalIntro} I can help with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.`;
+   const rootAdminNote=isRootAdminSession
+    ? " I recognise your verified DCDS Root Administrator role. You direct my system, knowledge and playbook upgrades; I will flag gaps and prepare specific improvements for your review."
+    : "";
+   welcomeMessage=isRootAdminSession
+    ? `${personalIntro}${rootAdminNote} How can I help you improve DCDS today?`
+    : `${personalIntro} I can help with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.`;
   }else if(mode==='student'){
    welcomeMessage=`${personalIntro} I can help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`;
   }else{
@@ -866,7 +872,7 @@ async function submitAiEligibilityRequest(){
     if(error)throw error;currentUser=data?.user??null;
     if(!currentUser)throw new Error('A temporary visitor session could not be created. Please try again.');
    }
-   isGuestSession=true;isAdminSession=false;isPersistentStudent=false;activeConversationId=null;
+   isGuestSession=true;isAdminSession=false;isRootAdminSession=false;isPersistentStudent=false;activeConversationId=null;
    guestAccessPanel.hidden=true;adminAgeGate.hidden=true;eligibilityPanel.hidden=true;studentTools.hidden=true;historyPanel.hidden=true;memoryPanel.hidden=true;
    document.getElementById('accountLabel').textContent='Visitor · Public learning access';
    setChatEnabled(true);await loadResourceIndex();configureWelcomeGreeting('visitor');
@@ -889,8 +895,10 @@ async function submitAiEligibilityRequest(){
   if(!adminAdultConfirm.checked){setStatus('Please confirm that you are 18 or older before continuing.',true);return;}
   adminAgeGate.hidden=true;isAdminSession=true;setChatEnabled(true);
   await loadResourceIndex();configureWelcomeGreeting('admin');
-  document.getElementById('accountLabel').textContent='Administrator · Read-only Copilot';
-  setStatus('Administrator access confirmed for an adult account. This assistant is read-only and cannot change student records, payments or payouts.');
+  document.getElementById('accountLabel').textContent=isRootAdminSession?'Root Administrator · Deyriva owner':'Administrator · Read-only Copilot';
+  setStatus(isRootAdminSession
+   ? 'Verified DCDS Root Administrator access. I can help identify gaps and prepare system, knowledge and playbook improvements for your review.'
+   : 'Administrator access confirmed for an adult account. This assistant is read-only and cannot change student records, payments or payouts.');
   input.focus();
  }
  adminAdultConfirm.addEventListener('change',updateAdminAdultContinueState);
@@ -907,9 +915,13 @@ async function submitAiEligibilityRequest(){
    const {data:adminData,error:adminError}=await client.rpc('is_dcds_admin');
    if(adminError){document.getElementById('accountLabel').textContent='Access check unavailable';setStatus('We could not verify your DCDS access. Please refresh and try again.',true);return;}
    const isAdmin=adminData===true;isPersistentStudent=!isAdmin;
+   isRootAdminSession=false;
    if(isAdmin){
+    const {data:rootAdminData,error:rootAdminError}=await client.rpc('is_dcds_super_admin');
+    if(rootAdminError){document.getElementById('accountLabel').textContent='Root-admin verification unavailable';setStatus('We could not verify your DCDS Root Administrator status. Please refresh and try again.',true);return;}
+    isRootAdminSession=rootAdminData===true;
     isAdminSession=true;setChatEnabled(false);adminAgeGate.hidden=false;
-    document.getElementById('accountLabel').textContent='Administrator · 18+ confirmation required';
+    document.getElementById('accountLabel').textContent=isRootAdminSession?'Root Administrator · 18+ confirmation required':'Administrator · 18+ confirmation required';
     setStatus('DCDS AI is for adults aged 18+ while Gemini is the active provider. Confirm your age to continue.');
    }else{
     const accessApproved=await loadAiEligibility();
@@ -970,11 +982,12 @@ async function submitAiEligibilityRequest(){
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
    const roleLabels={student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot',guest:'Visitor · Public learning access'};
    if(!roleLabels[data.role])throw new Error('The DCDS AI returned an unrecognised access mode. Your draft has been kept.');
+   const resolvedRoleLabel=data.role==='admin'&&data.is_root_admin===true?'Root Administrator · Deyriva owner':roleLabels[data.role];
    if(userRow)userRow.dataset.delivery='sent';
    conversation.push({role:'model',text:data.answer});
    addMessage('assistant',data.answer,Array.isArray(data.resources)?data.resources:inferResourceActions(data.answer));
    input.value='';updateCharacterCount();
-   document.getElementById('accountLabel').textContent=roleLabels[data.role];
+   document.getElementById('accountLabel').textContent=resolvedRoleLabel;
    if(data.role==='student'&&data.history_saved&&data.conversation_id){
     activeConversationId=data.conversation_id;await loadConversationList();
     setStatus('Connected. This conversation has been saved to your private DCDS chat history.');
@@ -982,6 +995,8 @@ async function submitAiEligibilityRequest(){
     setStatus('Your answer is ready. This turn could not be added to saved history, but the answer is available on this page.',true);
    }else if(data.role==='guest'){
     setStatus('Your answer is ready. Visitor chats are temporary and are not saved to a student account.');
+   }else if(data.is_root_admin===true){
+    setStatus('Connected to your verified DCDS Root Administrator account. I will point out gaps and prepare proposed upgrades to my knowledge, instructions and playbook. Actual production changes still require the approved release process; I cannot change student records, payments or payouts in this chat.');
    }else{
     setStatus('Connected to the read-only DCDS administrator assistant. No administrative actions can be performed here.');
    }
