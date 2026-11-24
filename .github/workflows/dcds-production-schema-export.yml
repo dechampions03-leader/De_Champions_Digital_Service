@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - feature/phase1-security-reliability
+      - feature/dcds-admin-command-centre-support-desk
     paths:
       - "supabase/migrations/**"
       - ".github/workflows/dcds-production-schema-export.yml"
