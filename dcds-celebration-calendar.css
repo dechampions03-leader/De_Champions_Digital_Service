@@ -22,6 +22,18 @@
 .dcds-celebration-title{margin:0;color:#fff;font:800 clamp(27px,4.2vw,48px)/1.08 'Playfair Display',Georgia,serif;letter-spacing:-.025em;text-wrap:balance;text-shadow:0 4px 20px #0009}
 .dcds-celebration-date{margin:10px 0 0;color:#e3d9ed;font:600 12px/1.5 'DM Sans',Arial,sans-serif;letter-spacing:.04em}
 .dcds-countdown{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:20px;max-width:580px}
+/* Keep decorative background particles away from the countdown readout. */
+.dcds-countdown-unit{
+ position:relative;
+ z-index:2;
+ isolation:isolate;
+ overflow:hidden;
+ background:linear-gradient(145deg,rgba(255,255,255,.13),rgba(255,255,255,.07));
+}
+.dcds-countdown-value,.dcds-countdown-label{
+ position:relative;
+ z-index:1;
+}
 .dcds-countdown-unit{min-width:0;padding:9px 5px 8px;text-align:center;border:1px solid color-mix(in srgb,var(--event-accent) 40%,#fff2);border-radius:12px;background:linear-gradient(145deg,#ffffff16,#ffffff08);box-shadow:inset 0 1px 0 #fff2,0 5px 14px #0003}
 .dcds-countdown-value{display:block;color:#fff;font:800 clamp(23px,4vw,38px)/1 'DM Sans',Arial,sans-serif;font-variant-numeric:tabular-nums;letter-spacing:-.045em}
 .dcds-countdown-label{display:block;margin-top:6px;color:#e7d9f2;font:800 8px/1.2 'DM Sans',Arial,sans-serif;letter-spacing:.13em;text-transform:uppercase}
