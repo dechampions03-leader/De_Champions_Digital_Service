@@ -1018,7 +1018,7 @@ ${savedMemoryInstruction}`;
   // Keep the total well below Supabase Edge Function wall-clock limits.
   const generationDeadline = Date.now() + 52_000;
   let attemptedModels = 0;
-  const maxModelAttempts = 4;
+  const maxModelAttempts = 5; // Try the complete documented free-tier fallback pool before failing.
   const orderedCandidates = shouldUseGoogleSearch
     ? [
       ...modelCandidates.filter((candidate) => GOOGLE_SEARCH_MODELS.has(candidate)),
@@ -1191,13 +1191,28 @@ ${savedMemoryInstruction}`;
     }
     console.error("DCDS AI model pool unavailable.", {
       lastProviderStatus,
+      attemptedModels,
+      candidateCount: orderedCandidates.length,
       dailyQuotaModels,
       unavailableModels,
     });
+    const coolingModels = uniqueConfiguredCandidates
+      .map((candidate) => providerModelCooldowns.get(candidate) ?? 0)
+      .filter((expiresAt) => expiresAt > Date.now());
+    const retryAfterSeconds = coolingModels.length
+      ? Math.max(1, Math.ceil((Math.min(...coolingModels) - Date.now()) / 1000))
+      : 10;
     const error = dailyQuotaModels.length > 0
-      ? "DCDS AI has reached a provider quota or capacity limit. We checked the available fallback models, but they are not currently responding. Please try again later."
-      : "DCDS AI is temporarily at capacity. Please try again shortly.";
-    return respond({ success: false, error_code: dailyQuotaModels.length > 0 ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE", error }, dailyQuotaModels.length > 0 ? 429 : 503);
+      ? "DCDS AI has reached a provider quota or capacity limit. We checked all available free-tier fallback models, but they are not currently responding. Your draft is kept in the chat box; retry in about " + retryAfterSeconds + " seconds."
+      : "DCDS AI models are temporarily unavailable. All configured free-tier fallback models were checked. Your draft is kept in the chat box; retry in about " + retryAfterSeconds + " seconds.";
+    return respond({
+      success: false,
+      error_code: dailyQuotaModels.length > 0 ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE",
+      retry_after_seconds: retryAfterSeconds,
+      attempted_models: attemptedModels,
+      candidate_models: orderedCandidates.length,
+      error,
+    }, dailyQuotaModels.length > 0 ? 429 : 503);
   }
 
   let result: Record<string, any>;
