@@ -142,6 +142,9 @@ jobs:
                   and '"gemini-3.6-flash"' in function
                   and '"gemini-3.5-flash-lite"' in function
                   and '"gemini-3.1-flash-lite"' in function
+                  and '"gemma-4-26b-a4b-it"' in function
+                  and '"gemma-4-31b-it"' in function
+                  and '/^(?:gemini|gemma)-[a-z0-9.-]+$/i.test(name)' in function
                   and "gemini-4-carbon" not in function
                   and "gemini-4-argon" not in function,
               "Discovered Gemini models cannot bypass the free-tier allowlist":
@@ -154,10 +157,13 @@ jobs:
                   '"PROVIDER_COOLDOWN"' in function
                   and "retry_after_seconds" in function
                   and "retryAfterSeconds" in function,
-              "Gemini generation has a bounded 52-second retry window instead of a 7-second per-model abort":
-                  "Date.now() + 52_000" in function
-                  and "Math.min(14_000, generationDeadline - Date.now())" in function
-                  and "const maxModelAttempts = 5" in function,
+              "Gemini and Gemma fallback routing has a bounded 42-second generation window":
+                  "Date.now() + 42_000" in function
+                  and "Math.min(attemptedModels <= 2 ? 7_000 : attemptedModels <= 5 ? 5_000 : 6_500, generationDeadline - Date.now())" in function
+                  and "const maxModelAttempts = 7" in function,
+              "the free-tier fallback pool includes hosted Gemma 4 after the Gemini models":
+                  function.index('"gemini-3.1-flash-lite"') < function.index('"gemma-4-26b-a4b-it"')
+                  and function.index('"gemma-4-26b-a4b-it"') < function.index('"gemma-4-31b-it"'),
               "normal DCDS tutoring turns prefer the documented fast Flash-Lite model":
                   'Deno.env.get("DCDS_AI_MODEL") || "gemini-3.5-flash-lite"' in function
                   and function.find('"gemini-3.5-flash-lite"') < function.find('"gemini-3.8-flash"'),
@@ -237,9 +243,11 @@ jobs:
           support_fallback_end = function.index("let result: Record<string, any>", support_fallback_start)
           support_fallback = function[support_fallback_start:support_fallback_end]
           provider_invariants = {
-              "all five documented free-tier model candidates can be attempted":
-                  "const maxModelAttempts = 5;" in function
-                  and "attemptedModels >= maxModelAttempts" in function,
+              "all seven documented free-tier Gemini and Gemma candidates can be attempted":
+                  "const maxModelAttempts = 7;" in function
+                  and "attemptedModels >= maxModelAttempts" in function
+                  and '"gemma-4-26b-a4b-it"' in function
+                  and '"gemma-4-31b-it"' in function,
               "provider failure reports attempted and available candidate counts":
                   "attemptedModels," in function and "candidateCount: orderedCandidates.length" in function,
               "provider outage response preserves the draft and provides retry timing":
@@ -337,7 +345,7 @@ jobs:
               "audit-001", "privacy-001", "admin-privacy-001", "root-report-001",
               "support-001", "student-support-001", "support-002", "format-001",
               "audit-fallback-001",
-              "provider-503-001",
+              "provider-503-001", "gemma-fallback-001", "founder-biography-privacy-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:

@@ -388,12 +388,15 @@ let cachedGeminiModels: { names: string[]; expiresAt: number } | null = null;
 // models.list reports API capability, not whether a model is included in this key's tier.
 const FREE_TIER_MODEL_PREFERENCE = [
   // Start with Google's fast, cost-efficient Flash-Lite model for normal tutoring turns.
-  // Retain the stronger stable Flash models as strictly free-tier fallbacks.
+  // Retain the documented free-tier Gemini models as the primary tutoring pool.
   "gemini-3.5-flash-lite",
   "gemini-3.8-flash",
   "gemini-3.7-flash",
   "gemini-3.6-flash",
   "gemini-3.1-flash-lite",
+  // Add Google's free hosted Gemma 4 models as an independent model-family fallback.
+  "gemma-4-26b-a4b-it",
+  "gemma-4-31b-it",
 ] as const;
 const STATIC_DOCUMENTED_MODELS = [...FREE_TIER_MODEL_PREFERENCE];
 const GOOGLE_SEARCH_MODELS = new Set<string>([
@@ -419,7 +422,7 @@ async function listAvailableGeminiModels(apiKey: string): Promise<string[] | nul
         .map((item: Record<string, unknown>) =>
           typeof item.name === "string" ? item.name.replace(/^models\//, "") : "")
         .filter((name: string) =>
-          /^gemini-[a-z0-9.-]+$/i.test(name)
+          /^(?:gemini|gemma)-[a-z0-9.-]+$/i.test(name)
           && !/(embedding|image|audio|tts|live|computer|robotics|deep-research)/i.test(name))
       : [];
     if (!names.length) throw new Error("Gemini models.list returned no supported text-generation models.");
@@ -857,6 +860,7 @@ Deno.serve(async (request: Request) => {
 - You are speaking with the verified DCDS Root Administrator / platform owner. This status was established by the server using the authenticated account's DCDS admin membership and the super_admin role in the protected admin registry; it was not inferred from the user's message, display name or email.
 - Address this person respectfully as "Administrator" or "Director" in greetings and ordinary replies. Do not volunteer or casually mention their Founder/CEO identity, biography or personal name. Only explain the Founder/CEO identity when they directly ask "Who am I?" or explicitly ask who the DCDS founder/CEO is.
 - If asked "Who am I?", state the server-verified DCDS Root Administrator role and use the current account profile name when available. Then identify the official DCDS Founder & CEO record as Jeremiah Chuks Godspower (De Champions), while making clear that the public founder record is not, by itself, an authentication signal.
+- If the verified Root Administrator directly asks "Tell me my biography", "Write my biography" or an equivalent explicit biography request, provide a professional Founder & CEO biography using only these supported details: Jeremiah Chuks Godspower (De Champions) founded De Champions Digital Service; he is a digital creator and technology enthusiast whose creative journey includes Canva, PixelLab, CapCut and Filmora; his DCDS vision is to equip people with practical digital skills and help them develop their creativity and capabilities. Do not invent dates, qualifications, awards, revenue, locations, family details or public achievements. Do not volunteer private or sensitive personal-life details in an ordinary professional biography.
 - Recognise that the Root Administrator has final authority to direct DCDS platform improvements and approve updates to your system instructions, DCDS knowledge base, response playbook, policies and supported capabilities.
 - Proactively point out missing, unclear, outdated or conflicting knowledge, policies, workflows and capabilities when relevant. Be specific about what is missing and why it matters.
 - When a playbook or knowledge update would help, suggest the exact section and draft a proposed addition or correction for the Root Administrator to review.
@@ -1068,9 +1072,9 @@ ${savedMemoryInstruction}`;
   // The previous 18s total / 7s per-model guard aborted healthy but slower
   // provider responses before all configured fallbacks could be reached.
   // Keep the total well below Supabase Edge Function wall-clock limits.
-  const generationDeadline = Date.now() + 52_000;
+  const generationDeadline = Date.now() + 42_000;
   let attemptedModels = 0;
-  const maxModelAttempts = 5; // Try the complete documented free-tier fallback pool before failing.
+  const maxModelAttempts = 7; // Try Gemini first, then both documented free hosted Gemma 4 fallbacks.
   const orderedCandidates = shouldUseGoogleSearch
     ? [
       ...modelCandidates.filter((candidate) => GOOGLE_SEARCH_MODELS.has(candidate)),
@@ -1099,7 +1103,7 @@ ${savedMemoryInstruction}`;
                 ? { tools: [{ google_search: {} }] }
                 : {}),
             }),
-            signal: AbortSignal.timeout(Math.max(1000, Math.min(14_000, generationDeadline - Date.now()))),
+            signal: AbortSignal.timeout(Math.max(1000, Math.min(attemptedModels <= 2 ? 7_000 : attemptedModels <= 5 ? 5_000 : 6_500, generationDeadline - Date.now()))),
           },
         );
       } catch (error) {
