@@ -20,6 +20,12 @@
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const sceneProfiles = [
+    {key:'calabar-junior-refined',test:/calabar junior/i,main:'🎈',props:['🎭','🎊','💃']},
+    {key:'calabar-bikers-refined',test:/calabar bikers/i,main:'🏍️',props:['🏁','🛣️','🇳🇬']},
+    {key:'nyoro-ekpe-refined',test:/nyoro ekpe/i,main:'🎭',props:['🥁','🪘','✨']},
+    {key:'calabar-parade-refined',test:/parade of the bands|carnival calabar/i,main:'🎊',props:['💃','🎭','🥁']},
+    {key:'calabar-festival-refined',test:/calabar festival|calabar cultural carnival/i,main:'🎭',props:['🎊','💃','🥁']},
+    {key:'nigerian-beer-festival-refined',test:/nigerian beer festival/i,main:'🍺',props:['🎶','🎪','⭐']},
     {key:'braille-refined',test:/world braille day/i,main:'⠿',props:['🤝','💜','📖']},
     {key:'cultural-diversity-refined',test:/world day for cultural diversity|nigerian fashion festival/i,main:'🌍',props:['🎨','🧵','🪡']},
     {key:'public-service-refined',test:/united nations public service day|united nations day/i,main:'🏛️',props:['🤝','📜','🌐']},
