@@ -63,7 +63,70 @@
         "name": "Access to ChatGPT Prompts, Claude, Gemini, and Grok",
         "price": 30000,
         "category": "AI & Digital Creativity",
-        "description": "Explore AI tools and prompt-engineering techniques to improve writing, research, brainstorming, content creation and productivity."
+        "description": "Learn to use four separate AI platforms with the DCDS Prompt Studio: 60,000 configurable, individually numbered prompt cards for music, writing, business, reference-image creation, text-to-image, AI video, image-to-video, marketing and digital productivity.",
+        "prompt_library": {
+          "name": "DCDS Prompt Studio",
+          "access": "Available to students enrolled in Access to ChatGPT Prompts, Claude, Gemini, and Grok through the protected learning portal and server-side enrolment verification.",
+          "prompt_combination_count": 60000,
+          "per_platform_prompt_count": 15000,
+          "platform_collections": [
+            {
+              "platform": "ChatGPT",
+              "individual_prompt_cards": 15000,
+              "numbering": "00001–15000"
+            },
+            {
+              "platform": "Claude",
+              "individual_prompt_cards": 15000,
+              "numbering": "00001–15000"
+            },
+            {
+              "platform": "Gemini",
+              "individual_prompt_cards": 15000,
+              "numbering": "00001–15000"
+            },
+            {
+              "platform": "Grok",
+              "individual_prompt_cards": 15000,
+              "numbering": "00001–15000"
+            }
+          ],
+          "variation_dimensions": {
+            "specialist_prompt_families": 60,
+            "practical_contexts": 25,
+            "creative_directions": 10,
+            "per_platform_formula": "60 × 25 × 10 = 15,000 prompt cards"
+          },
+          "card_contents": [
+            "individual AI platform header and coloured identity mark",
+            "unique prompt number within the chosen platform collection",
+            "what the prompt does",
+            "how the prompt works as a practical workflow",
+            "a practical example brief",
+            "a copy-ready prompt tailored to that platform",
+            "PROMPT BY DE CHAMPIONS DIGITAL SERVICES attribution"
+          ],
+          "content_areas": [
+            "music and audio",
+            "letters and professional writing",
+            "introductions and biographies",
+            "business ideas and planning",
+            "marketing and sales",
+            "text-to-image creation",
+            "reference-image recreation",
+            "image editing",
+            "text-to-video creation",
+            "image-to-video animation",
+            "storyboarding and video production",
+            "presentations",
+            "websites",
+            "app planning",
+            "code assistance",
+            "spreadsheet and data analysis"
+          ],
+          "delivery": "The public Prompt Studio page contains no prompt bank. Prompt content is returned in small pages by the authenticated dcds-prompt-library Edge Function only after Supabase confirms a verified user and their own course enrolment.",
+          "subscription_note": "This prompt library does not include paid third-party subscriptions to ChatGPT, Claude, Gemini or Grok."
+        }
       },
       {
         "name": "AI Image Creativity",

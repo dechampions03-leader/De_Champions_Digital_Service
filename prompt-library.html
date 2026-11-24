@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#2c104b">
+<meta name="description" content="The DCDS Prompt Studio: 60,000 tailored prompt combinations for writing, music, business, AI image and video creation.">
+<title>DCDS Prompt Studio | 60,000 AI Prompt Combinations</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800;900&family=Playfair+Display:wght@600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--purple:#351052;--purple2:#6128b8;--purple3:#8738d1;--gold:#d7b45a;--gold2:#f4df9b;--ink:#271638;--muted:#766984;--paper:#fffdf9;--line:#e9ddf1}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;min-height:100vh;color:var(--ink);font-family:'DM Sans',sans-serif;background:radial-gradient(ellipse at 4% 0%,#eee1ff 0,transparent 32%),radial-gradient(ellipse at 100% 34%,#fff0c9 0,transparent 25%),linear-gradient(145deg,#fbf8ff,#f7f2fb 54%,#fffaf0)}
+a{color:inherit}
+.site-header{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:15px max(18px,calc((100vw - 1180px)/2));background:#fffdf9ed;border-bottom:1px solid #e8d9f1;box-shadow:0 6px 24px #3510520b}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none}
+.brand-mark{width:46px;height:46px;display:grid;place-items:center;border-radius:14px;color:#fff;font:800 17px 'Playfair Display',serif;background:linear-gradient(145deg,#a05be5,#4b167b);border:1px solid #e0c47c;box-shadow:inset 0 0 0 2px #ffffff35,0 6px 16px #35105222}
+.brand-copy strong{display:block;color:#351052;font-size:13px;letter-spacing:.06em}
+.brand-copy span{display:block;margin-top:3px;color:#8b6a9e;font-size:9px;letter-spacing:.19em;font-weight:800}
+.back-link{display:inline-flex;align-items:center;gap:7px;text-decoration:none;padding:10px 14px;border:1px solid #ddcce9;border-radius:999px;background:#fff;color:#572282;font-size:12px;font-weight:800}
+main{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 64px}
+.gate{max-width:720px;margin:45px auto;padding:28px;border:1px solid #e5d4b0;border-radius:22px;background:#fffdf8;box-shadow:0 16px 40px #35105212;text-align:center;color:#5a426b;line-height:1.75}
+.gate strong{display:block;color:#351052;font:700 23px 'Playfair Display',serif;margin-bottom:8px}
+.gate button{margin-top:12px;border:0;border-radius:12px;padding:12px 18px;background:#6128b8;color:white;font-weight:800;cursor:pointer}
+[hidden]{display:none!important}
+.hero{position:relative;overflow:hidden;padding:clamp(27px,5vw,54px);border:1px solid #d8bd72;border-radius:28px;color:white;background:radial-gradient(circle at 88% 12%,#9855d1 0,transparent 33%),radial-gradient(circle at 10% 105%,#6b32a2 0,transparent 38%),linear-gradient(125deg,#210b3b,#4a1b78 59%,#6427a0);box-shadow:0 22px 55px #35105225}
+.hero:after{content:"";position:absolute;width:330px;height:330px;right:-125px;bottom:-230px;border:1px solid #ffffff40;border-radius:50%;box-shadow:0 0 0 36px #ffffff0d,0 0 0 76px #ffffff09}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;color:#ffe9a9;font-size:10px;font-weight:900;letter-spacing:.19em;text-transform:uppercase}
+.hero h1{position:relative;z-index:1;margin:15px 0 12px;font:800 clamp(34px,5.6vw,59px)/1.08 'Playfair Display',serif;letter-spacing:-.03em}
+.hero h1 span{color:#f3d991}
+.hero p{position:relative;z-index:1;max-width:780px;margin:0;color:#eee1f8;font-size:14px;line-height:1.85}
+.stats{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;max-width:750px;margin-top:27px}
+.stat{padding:14px 16px;border:1px solid #f1d98d66;border-radius:15px;background:#ffffff12}
+.stat strong{display:block;color:#ffe8a7;font:800 24px 'Playfair Display',serif}
+.stat span{display:block;margin-top:4px;color:#f0e4f7;font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase}
+.intro-row{display:flex;justify-content:space-between;align-items:end;gap:20px;margin:32px 0 14px}
+.intro-row h2{margin:0;color:#351052;font:800 28px 'Playfair Display',serif}
+.intro-row p{max-width:620px;margin:7px 0 0;color:var(--muted);font-size:13px;line-height:1.7}
+.hint{color:#796c85;font-size:11px;line-height:1.6;text-align:right}
+.controls{display:grid;grid-template-columns:minmax(220px,1.7fr) repeat(3,minmax(145px,1fr));gap:11px;margin:18px 0 14px;padding:15px;border:1px solid #e5d8eb;border-radius:19px;background:#fffdf9;box-shadow:0 8px 22px #35105209}
+.field{min-width:0}
+.field label{display:block;margin:0 0 6px 3px;color:#6d587e;font-size:9px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}
+.field input,.field select{width:100%;height:44px;padding:0 12px;border:1px solid #dfd2e9;border-radius:11px;background:#fff;color:#38204f;font:600 12px 'DM Sans',sans-serif;outline:none}
+.field input:focus,.field select:focus{border-color:#9a66c9;box-shadow:0 0 0 3px #8a4bc51a}
+.results-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:18px 2px 13px;color:#6e5d7b;font-size:12px}
+.results-bar strong{color:#4d1b78}
+.results-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;align-items:stretch}
+.prompt-card{position:relative;min-width:0;overflow:hidden;padding:2px;border:1px solid #d5b65d;border-radius:21px;background:linear-gradient(140deg,#f9eab7 0%,#b88a32 19%,#f9e8b0 38%,#8f6a2a 68%,#f2dc91 100%);box-shadow:0 11px 28px #35105212;transition:transform .2s,box-shadow .2s}
+.prompt-card:hover{transform:translateY(-3px);box-shadow:0 17px 32px #3510521b}
+.card-inner{height:100%;padding:17px 17px 14px;border-radius:18px;background:linear-gradient(160deg,#fff 0%,#fffdf8 58%,#f9f3ff 100%)}
+.provider-header{display:flex;align-items:center;gap:11px;padding:11px 12px;border-radius:13px;color:white;background:var(--provider-bg);box-shadow:inset 0 1px #ffffff55}
+.provider-logo{flex:0 0 35px;width:35px;height:35px;display:grid;place-items:center;border:1px solid #ffffff75;border-radius:11px;background:#ffffff20;color:white;font-size:21px;font-weight:900}
+.provider-name{display:block;font-size:14px;font-weight:900;letter-spacing:.02em}
+.provider-sub{display:block;margin-top:2px;color:#ffffffdd;font-size:9px;font-weight:700;letter-spacing:.12em;text-transform:uppercase}
+.down-arrow{height:25px;display:grid;place-items:center;color:var(--provider-arrow);font-size:23px;line-height:1;font-weight:900;text-shadow:0 2px 0 #d7b45a55}
+.collection-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0 28px}
+.collection-choice{display:flex;flex-direction:column;align-items:flex-start;gap:9px;min-height:144px;padding:15px;border:1px solid #d7bd78;border-radius:17px;background:linear-gradient(150deg,#fff 0%,#fffaf0 100%);box-shadow:0 8px 20px #3510520b;text-align:left;cursor:pointer;transition:transform .2s,box-shadow .2s,border-color .2s}
+.collection-choice:hover{transform:translateY(-3px);border-color:#aa8439;box-shadow:0 14px 26px #35105216}
+.collection-choice.active{outline:2px solid #8b55ba;outline-offset:2px;background:linear-gradient(150deg,#fff,#f7efff)}
+.collection-top{display:flex;align-items:center;gap:9px}
+.collection-logo{width:34px;height:34px;display:grid;place-items:center;border-radius:11px;background:var(--collection-bg);color:#fff;font-size:19px;font-weight:900;box-shadow:inset 0 1px #ffffff65}
+.collection-name{color:#351052;font-size:13px;font-weight:900}
+.collection-count{color:#5b267f;font:800 23px 'Playfair Display',serif}
+.collection-note{color:#7c6b89;font-size:9px;line-height:1.5}
+.collection-action{margin-top:auto;color:#71409a;font-size:9px;font-weight:900;letter-spacing:.09em;text-transform:uppercase}
+.prompt-index{display:inline-flex;align-items:center;margin:0 0 7px;padding:5px 8px;border:1px solid #e5d5a1;border-radius:999px;background:#fff9e8;color:#75531a;font-size:8px;font-weight:900;letter-spacing:.1em}
+.card-tags{display:flex;flex-wrap:wrap;gap:6px;margin:3px 0 9px}
+.tag{display:inline-flex;align-items:center;padding:5px 8px;border:1px solid #e8d9ed;border-radius:999px;background:#f7efff;color:#6c3591;font-size:8px;font-weight:900;letter-spacing:.1em;text-transform:uppercase}
+.tag.gold{border-color:#ead89e;background:#fff8e4;color:#81601c}
+.prompt-card h3{margin:7px 0 7px;color:#351052;font:800 21px/1.25 'Playfair Display',serif}
+.purpose{margin:0 0 10px;color:#71647d;font-size:12px;line-height:1.7}
+.workflow{margin:0 0 11px;padding:10px 12px;border:1px solid #e8dff0;border-radius:11px;background:#f8f3fc;color:#665477;font-size:10px;line-height:1.7}
+.workflow strong{display:block;margin-bottom:4px;color:#512078;font-size:9px;letter-spacing:.1em;text-transform:uppercase}
+.example{margin:0 0 12px;padding:10px 12px;border-left:3px solid #d5b45c;border-radius:0 10px 10px 0;background:#fff9e9;color:#6a572b;font-size:11px;line-height:1.65}
+.example strong{color:#4e3511}
+.prompt-shell{overflow:hidden;border:1px solid #d8c4e9;border-radius:13px;background:linear-gradient(145deg,#351052,#512080 72%,#32104b);box-shadow:inset 0 0 0 3px #d6b45c24}
+.prompt-label{padding:10px 12px;border-bottom:1px solid #ffffff26;color:#f7df9e;font-size:9px;font-weight:900;letter-spacing:.15em;text-transform:uppercase}
+.prompt-text{max-height:280px;overflow:auto;margin:0;padding:13px;color:#fff9ee;font:500 11px/1.72 'DM Sans',sans-serif;white-space:pre-wrap;overflow-wrap:anywhere;scrollbar-color:#c29c51 #3b1659}
+.card-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px}
+.credit{color:#6b4b80;font-size:9px;font-weight:900;letter-spacing:.06em;line-height:1.5}
+.copy-btn{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:39px;padding:0 14px;border:1px solid #d3b45d;border-radius:11px;background:linear-gradient(115deg,#f8e8b0,#d7b45a);color:#38164f;font-size:10px;font-weight:900;cursor:pointer;box-shadow:0 4px 12px #a27a2520}
+.copy-btn:hover{filter:brightness(1.035);transform:translateY(-1px)}
+.copy-btn:focus-visible,.page-btn:focus-visible{outline:3px solid #9c65c9;outline-offset:2px}
+.copy-btn.copied{border-color:#3f8d66;background:#e8f7ee;color:#24633f}
+.empty{grid-column:1/-1;padding:42px 18px;border:1px dashed #c7afd8;border-radius:18px;background:#fff;color:#766984;text-align:center;line-height:1.7}
+.pagination{display:flex;justify-content:center;align-items:center;gap:12px;margin:25px 0 0}
+.page-btn{min-width:92px;min-height:40px;padding:0 14px;border:1px solid #d8c5e7;border-radius:11px;background:#fff;color:#54217a;font-size:11px;font-weight:900;cursor:pointer}
+.page-btn:disabled{opacity:.4;cursor:not-allowed}
+.page-number{min-width:125px;color:#6f5d7e;font-size:11px;font-weight:800;text-align:center}
+.disclaimer{margin-top:26px;padding:15px 17px;border:1px solid #e8dbb7;border-radius:14px;background:#fffaf0;color:#75603a;font-size:11px;line-height:1.75}
+.site-footer{padding:24px 16px 30px;border-top:1px solid #e6d8ee;background:#fffdf9;color:#705d7e;text-align:center;font-size:11px;line-height:1.8}
+.site-footer strong{color:#4d1b78;letter-spacing:.08em}
+@media(max-width:850px){.controls{grid-template-columns:repeat(2,minmax(0,1fr))}.results-grid{grid-template-columns:1fr}.collection-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.intro-row{align-items:start;flex-direction:column}.hint{text-align:left}}
+@media(max-width:520px){.site-header{padding:12px 13px}.brand-mark{width:40px;height:40px}.brand-copy strong{font-size:11px}.brand-copy span{font-size:8px}.back-link{padding:9px 10px;font-size:10px}main{width:calc(100% - 22px);padding-top:15px}.hero{border-radius:21px;padding:24px 19px}.hero h1{font-size:36px}.stats{grid-template-columns:1fr 1fr}.stat:last-child{grid-column:1/-1}.stat strong{font-size:21px}.controls{grid-template-columns:1fr;padding:12px}.collection-grid{grid-template-columns:1fr 1fr;gap:9px}.collection-choice{min-height:133px;padding:12px}.results-bar{align-items:flex-start;flex-direction:column}.card-inner{padding:13px}.prompt-card h3{font-size:19px}.card-bottom{align-items:flex-start;flex-direction:column}.copy-btn{width:100%}.pagination{gap:7px}.page-btn{min-width:78px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*,*:before,*:after{transition:none!important}}
+</style>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="index.html#courses" aria-label="De Champions Digital Services home">
+    <span class="brand-mark">DCDS</span>
+    <span class="brand-copy"><strong>DE CHAMPIONS DIGITAL SERVICES</strong><span>CREATE · LEARN · INNOVATE · EARN</span></span>
+  </a>
+  <a class="back-link" href="learn.html?course=ai-tools-prompts">← Course portal</a>
+</header>
+
+<div id="accessGate" class="gate" role="status" aria-live="polite">
+  <strong>Verifying your DCDS course access</strong>
+  Your signed-in student account and enrolment are being checked before the prompt collection opens.
+  <div><button id="retryAccess" type="button">Check access again</button></div>
+</div>
+
+<main id="promptApp" hidden>
+  <section class="hero">
+    <span class="eyebrow">✦ DCDS Premium Learning Resource</span>
+    <h1>Prompt <span>Studio</span></h1>
+    <p>Explore specialist prompts for music, writing, business, AI images, reference-image creation, text-to-image, AI video, image-to-video, presentations, websites and more. Each card belongs to one AI platform only. Copy a prompt, replace the bracketed details with your own brief, and paste it into the platform shown at the top of that card.</p>
+    <div class="stats">
+      <div class="stat"><strong>60,000</strong><span>Prompt combinations</span></div>
+      <div class="stat"><strong>60</strong><span>Specialist prompt families</span></div>
+      <div class="stat"><strong>4</strong><span>Separate AI platforms</span></div>
+    </div>
+  </section>
+
+  <section aria-labelledby="platformCollectionsHeading">
+    <div class="intro-row">
+      <div><h2 id="platformCollectionsHeading">Choose your AI prompt collection</h2><p>Each platform has its own dedicated library of 15,000 individually numbered prompt cards. Select one platform to browse its collection without mixing platforms inside a prompt card.</p></div>
+      <div class="hint">4 separate libraries · 15,000 cards each · 60,000 in total</div>
+    </div>
+    <div id="platformCollections" class="collection-grid" aria-label="Separate AI platform prompt libraries"></div>
+  </section>
+
+  <div id="accessRoleNote" class="disclaimer" hidden></div>
+
+  <div class="intro-row">
+    <div><h2>Find your next prompt</h2><p>Every prompt explains what it is designed to do, gives an example brief, and provides a copy-ready instruction. The platform label and coloured arrow identify where that individual prompt is intended to be used.</p></div>
+    <div class="hint">One platform per card · Purple and gold frame · Copy-ready format</div>
+  </div>
+
+  <section class="controls" aria-label="Prompt filters">
+    <div class="field"><label for="searchPrompts">Search prompts</label><input id="searchPrompts" type="search" placeholder="Try music, business ideas, reference image, letter…"></div>
+    <div class="field"><label for="providerFilter">AI platform</label><select id="providerFilter"><option value="all">All platforms</option><option value="ChatGPT">ChatGPT</option><option value="Claude">Claude</option><option value="Gemini">Gemini</option><option value="Grok">Grok</option></select></div>
+    <div class="field"><label for="categoryFilter">Prompt category</label><select id="categoryFilter"><option value="all">All categories</option></select></div>
+    <div class="field"><label for="styleFilter">Creative direction</label><select id="styleFilter"><option value="all">All directions</option></select></div>
+  </section>
+
+  <div class="results-bar"><span id="resultSummary" aria-live="polite">Preparing your prompt collection…</span><span>Showing <strong id="rangeSummary">—</strong></span></div>
+  <section id="promptGrid" class="results-grid" aria-label="Prompt cards"></section>
+  <nav class="pagination" aria-label="Prompt pages">
+    <button id="previousPage" class="page-btn" type="button">← Previous</button>
+    <span id="pageNumber" class="page-number">Page 1</span>
+    <button id="nextPage" class="page-btn" type="button">Next →</button>
+  </nav>
+
+  <div class="disclaimer"><strong>Learning note:</strong> These are reusable prompt templates and combinations, not a connection to paid subscriptions or a guarantee that a chosen AI platform supports every image, audio or video feature. Availability, limits and output quality depend on the platform and account being used. Always review AI output before publishing or relying on it.</div>
+</main>
+
+<footer class="site-footer">DCDS Prompt Studio<br><strong>PROMPT BY DE CHAMPIONS DIGITAL SERVICES</strong><br>CREATE · LEARN · INNOVATE · EARN</footer>
+
+<script>
+(function(){
+'use strict';
+
+const SUPABASE_URL = 'https://qxsenflgaweeadvggnyp.supabase.co';
+const SUPABASE_PUBLISHABLE_KEY = 'sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP';
+const FUNCTION_NAME = 'dcds-prompt-library';
+const PAGE_SIZE = 16;
+
+const db = window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{
+  auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}
+});
+
+const gate = document.getElementById('accessGate');
+const app = document.getElementById('promptApp');
+const grid = document.getElementById('promptGrid');
+const collections = document.getElementById('platformCollections');
+const searchInput = document.getElementById('searchPrompts');
+const providerSelect = document.getElementById('providerFilter');
+const categorySelect = document.getElementById('categoryFilter');
+const styleSelect = document.getElementById('styleFilter');
+const resultSummary = document.getElementById('resultSummary');
+const rangeSummary = document.getElementById('rangeSummary');
+const previousButton = document.getElementById('previousPage');
+const nextButton = document.getElementById('nextPage');
+const pageNumber = document.getElementById('pageNumber');
+
+const platformCards = [
+  {name:'ChatGPT',mark:'✳',colour:'#14866c',bg:'linear-gradient(110deg,#116d58,#159b79)'},
+  {name:'Claude',mark:'✳',colour:'#bd6446',bg:'linear-gradient(110deg,#8b3d28,#cf7651)'},
+  {name:'Gemini',mark:'✦',colour:'#625ac9',bg:'linear-gradient(110deg,#3655a7,#7863d6)'},
+  {name:'Grok',mark:'G',colour:'#343944',bg:'linear-gradient(110deg,#20242d,#4a4d57)'}
+];
+
+let pageItems = [];
+let currentPage = 1;
+let totalMatches = 0;
+let activeRequest = 0;
+let optionsLoaded = false;
+let searchTimer = null;
+let hasCourseAccess = false;
+
+function escapeHtml(value){
+  return String(value ?? '').replace(/[&<>"']/g,function(ch){
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch];
+  });
+}
+
+function setGate(title,message,showRetry){
+  gate.replaceChildren();
+  const heading=document.createElement('strong');
+  heading.textContent=title;
+  const copy=document.createElement('div');
+  copy.textContent=message;
+  gate.append(heading,copy);
+  if(showRetry){
+    const button=document.createElement('button');
+    button.type='button';
+    button.textContent='Try again';
+    button.addEventListener('click',verifyCourseAccess);
+    gate.append(button);
+  }
+  gate.hidden=false;
+  app.hidden=true;
+}
+
+function populateFilters(categories,directions){
+  categorySelect.innerHTML='<option value="all">All categories</option>';
+  styleSelect.innerHTML='<option value="all">All directions</option>';
+  (categories||[]).forEach(function(name){
+    const option=document.createElement('option');
+    option.value=name;
+    option.textContent=name;
+    categorySelect.appendChild(option);
+  });
+  (directions||[]).forEach(function(name){
+    const option=document.createElement('option');
+    option.value=name;
+    option.textContent=name;
+    styleSelect.appendChild(option);
+  });
+  optionsLoaded=true;
+}
+
+function renderPlatformCollections(){
+  const perPlatform=15000;
+  collections.innerHTML=platformCards.map(function(provider){
+    return '<button type="button" class="collection-choice" data-collection-provider="'+escapeHtml(provider.name)+'" style="--collection-bg:'+provider.colour+'">'+
+      '<span class="collection-top"><span class="collection-logo">'+escapeHtml(provider.mark)+'</span><span class="collection-name">'+escapeHtml(provider.name)+'</span></span>'+
+      '<span class="collection-count">'+perPlatform.toLocaleString()+'</span>'+
+      '<span class="collection-note">separate, individually numbered prompt cards</span>'+
+      '<span class="collection-action">Open '+escapeHtml(provider.name)+' collection →</span></button>';
+  }).join('');
+  syncCollectionSelection();
+}
+
+function syncCollectionSelection(){
+  const selected=providerSelect.value;
+  collections.querySelectorAll('.collection-choice').forEach(function(button){
+    button.classList.toggle('active',selected!=='all'&&button.getAttribute('data-collection-provider')===selected);
+  });
+}
+
+function cardMarkup(item){
+  const provider=item.provider||{};
+  const arrow=platformCards.find(function(p){return p.name===provider.name;})?.colour||'#6b4b80';
+  const styleVars=' style="--provider-bg:'+escapeHtml(provider.bg||'#351052')+';--provider-arrow:'+arrow+'"';
+  return '<article class="prompt-card"><div class="card-inner">'+
+    '<div class="provider-header '+escapeHtml(provider.css||'')+'"'+styleVars+'><span class="provider-logo" aria-hidden="true">'+escapeHtml(provider.mark||'✦')+'</span><span><span class="provider-name">'+escapeHtml(provider.name)+'</span><span class="provider-sub">Dedicated prompt · '+escapeHtml(provider.name)+'</span></span></div>'+
+    '<div class="down-arrow" aria-hidden="true" style="--provider-arrow:'+arrow+'">↓</div>'+
+    '<div class="prompt-index">PROMPT '+String(item.promptNumber).padStart(5,'0')+' OF 15,000 · '+escapeHtml(String(provider.name||'').toUpperCase())+'</div>'+
+    '<div class="card-tags"><span class="tag">'+escapeHtml(item.task.category)+'</span><span class="tag gold">'+escapeHtml(item.direction.name)+'</span></div>'+
+    '<h3>'+escapeHtml(item.task.title)+'</h3>'+
+    '<p class="purpose"><strong>What it does:</strong> '+escapeHtml(item.task.purpose)+' This variation is tailored for '+escapeHtml(item.context.name.toLowerCase())+'.</p>'+
+    '<div class="workflow"><strong>How it works</strong>'+escapeHtml(item.workflow)+'</div>'+
+    '<div class="example"><strong>Example brief:</strong> '+escapeHtml(item.context.sample)+'</div>'+
+    '<div class="prompt-shell"><div class="prompt-label">Copy-ready prompt · '+escapeHtml(provider.name)+'</div><pre class="prompt-text">'+escapeHtml(item.prompt)+'</pre></div>'+
+    '<div class="card-bottom"><span class="credit">PROMPT BY<br>DE CHAMPIONS DIGITAL SERVICES</span><button class="copy-btn" type="button" data-copy-index="'+Number(item.index)+'">▣ Copy this prompt</button></div>'+
+    '</div></article>';
+}
+
+async function unpackFunctionError(error){
+  let message=error?.message||'The prompt service could not be reached.';
+  let status=error?.context?.status||0;
+  try{
+    if(error?.context&&typeof error.context.clone==='function'){
+      const payload=await error.context.clone().json();
+      if(payload?.error)message=payload.error;
+    }
+  }catch(_ignored){}
+  return {message,status};
+}
+
+async function loadPage(){
+  const requestId=++activeRequest;
+  const body={
+    page:currentPage,
+    search:searchInput.value.trim(),
+    provider:providerSelect.value,
+    category:categorySelect.value,
+    style:styleSelect.value
+  };
+  resultSummary.textContent='Loading your protected prompt collection…';
+  rangeSummary.textContent='Loading';
+  try{
+    const {data,error}=await db.functions.invoke(FUNCTION_NAME,{body});
+    if(requestId!==activeRequest)return;
+    if(error){
+      const details=await unpackFunctionError(error);
+      if(details.status===403){
+        setGate('Course enrolment required',details.message,false);
+        return;
+      }
+      if(details.status===401){
+        setGate('Verified student sign-in required',details.message,true);
+        return;
+      }
+      throw new Error(details.message);
+    }
+    if(!data?.success)throw new Error(data?.error||'The prompt collection could not be loaded.');
+    if(!optionsLoaded)populateFilters(data.categories,data.directions);
+    const accessRoleNote=document.getElementById('accessRoleNote');
+    if(data.accessRole==='admin_preview'){
+      accessRoleNote.textContent='Administrator preview access is active. Enrolled students will see this library after their own course enrolment is verified.';
+      accessRoleNote.hidden=false;
+    }else{
+      accessRoleNote.hidden=true;
+    }
+    pageItems=Array.isArray(data.items)?data.items:[];
+    totalMatches=Number(data.total)||0;
+    const start=totalMatches?(currentPage-1)*PAGE_SIZE+1:0;
+    const end=Math.min(currentPage*PAGE_SIZE,totalMatches);
+    if(!pageItems.length){
+      grid.innerHTML='<div class="empty"><strong>No prompts match those filters.</strong><br>Try a broader search or choose All Platforms and All Categories.</div>';
+    }else{
+      grid.innerHTML=pageItems.map(cardMarkup).join('');
+    }
+    const platform=providerSelect.value==='all'?'all four platform libraries':providerSelect.value+' library';
+    resultSummary.textContent=totalMatches.toLocaleString()+' individual prompt cards in '+platform+' match your selection.';
+    rangeSummary.textContent=totalMatches?start.toLocaleString()+'–'+end.toLocaleString()+' of '+totalMatches.toLocaleString():'0 results';
+    pageNumber.textContent='Page '+currentPage.toLocaleString()+' of '+Math.max(1,Number(data.totalPages)||1).toLocaleString();
+    previousButton.disabled=currentPage<=1;
+    nextButton.disabled=currentPage>=Math.max(1,Number(data.totalPages)||1);
+    if(!hasCourseAccess){
+      hasCourseAccess=true;
+      renderPlatformCollections();
+      gate.hidden=true;
+      app.hidden=false;
+    }
+    syncCollectionSelection();
+  }catch(error){
+    if(requestId!==activeRequest)return;
+    resultSummary.textContent='The prompt collection is temporarily unavailable.';
+    rangeSummary.textContent='Please retry';
+    grid.innerHTML='<div class="empty"><strong>We could not load your prompts.</strong><br>'+escapeHtml(error.message)+'<br><button class="copy-btn" id="retryPromptPage" type="button">Try again</button></div>';
+    const retry=document.getElementById('retryPromptPage');
+    if(retry)retry.addEventListener('click',loadPage);
+    if(!hasCourseAccess)setGate('Prompt service temporarily unavailable',error.message,true);
+  }
+}
+
+function refreshResults(){
+  currentPage=1;
+  syncCollectionSelection();
+  loadPage();
+}
+
+async function copyPrompt(index,button){
+  const item=pageItems.find(function(entry){return Number(entry.index)===Number(index);});
+  if(!item)return;
+  try{
+    if(navigator.clipboard&&navigator.clipboard.writeText){
+      await navigator.clipboard.writeText(item.prompt);
+    }else{
+      const area=document.createElement('textarea');
+      area.value=item.prompt;
+      area.setAttribute('readonly','');
+      area.style.position='fixed';
+      area.style.opacity='0';
+      document.body.appendChild(area);
+      area.select();
+      const copied=document.execCommand('copy');
+      area.remove();
+      if(!copied)throw new Error('Clipboard access is unavailable.');
+    }
+    button.textContent='✓ Copied';
+    button.classList.add('copied');
+    button.setAttribute('aria-label','Prompt copied to clipboard');
+  }catch(error){
+    button.textContent='Copy unavailable';
+    button.title='Select and copy the prompt text manually.';
+  }
+}
+
+grid.addEventListener('click',function(event){
+  const button=event.target.closest('[data-copy-index]');
+  if(button)copyPrompt(button.getAttribute('data-copy-index'),button);
+});
+collections.addEventListener('click',function(event){
+  const choice=event.target.closest('[data-collection-provider]');
+  if(!choice)return;
+  providerSelect.value=choice.getAttribute('data-collection-provider');
+  refreshResults();
+  document.querySelector('.controls').scrollIntoView({behavior:'smooth',block:'start'});
+});
+searchInput.addEventListener('input',function(){
+  window.clearTimeout(searchTimer);
+  searchTimer=window.setTimeout(refreshResults,250);
+});
+providerSelect.addEventListener('change',refreshResults);
+categorySelect.addEventListener('change',refreshResults);
+styleSelect.addEventListener('change',refreshResults);
+previousButton.addEventListener('click',function(){
+  if(currentPage>1){
+    currentPage--;
+    loadPage();
+    window.scrollTo({top:document.querySelector('.results-bar').offsetTop-90,behavior:'smooth'});
+  }
+});
+nextButton.addEventListener('click',function(){
+  const maxPages=Math.max(1,Math.ceil(totalMatches/PAGE_SIZE));
+  if(currentPage<maxPages){
+    currentPage++;
+    loadPage();
+    window.scrollTo({top:document.querySelector('.results-bar').offsetTop-90,behavior:'smooth'});
+  }
+});
+
+async function verifyCourseAccess(){
+  const retry=document.getElementById('retryAccess');
+  if(retry){retry.disabled=true;retry.textContent='Checking…';}
+  setGate('Verifying your DCDS course access','Your signed-in student account and course enrolment are being checked securely.',false);
+  try{
+    const {data,error}=await db.auth.getSession();
+    if(error)throw error;
+    const session=data?.session;
+    if(!session){
+      const next='prompt-library.html';
+      window.location.replace('index.html?login=required&next='+encodeURIComponent(next));
+      return;
+    }
+    const user=session.user;
+    if(!user.email_confirmed_at&&!user.phone_confirmed_at){
+      window.location.replace('index.html?verify=required&next='+encodeURIComponent('prompt-library.html'));
+      return;
+    }
+    await loadPage();
+  }catch(error){
+    setGate('We could not verify access',error.message||'Please refresh and try again.',true);
+  }finally{
+    const active=document.getElementById('retryAccess');
+    if(active){active.disabled=false;active.textContent='Check access again';}
+  }
+}
+
+document.getElementById('retryAccess').addEventListener('click',verifyCourseAccess);
+verifyCourseAccess();
+})();
+</script>
+</body>
+</html>
