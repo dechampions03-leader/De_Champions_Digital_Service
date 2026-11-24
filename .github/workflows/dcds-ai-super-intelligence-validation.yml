@@ -253,6 +253,12 @@ jobs:
               "provider outage response preserves the draft and provides retry timing":
                   "retry_after_seconds: retryAfterSeconds" in function
                   and "Your draft is kept in the chat box; retry in about " in function,
+              "input-token TPM errors are identified distinctly": "isInputTokenRateLimit" in function and "PROVIDER_INPUT_TOKEN_RATE_LIMIT" in function,
+              "input-token TPM errors stop further model retries": "if (providerResponse || inputTokenRateLimited) break;" in function and "providerInputTokenCooldownUntil" in function,
+              "Gemma uses a smaller compact fallback system prompt": 'candidate.startsWith("gemma-") ? fallbackSystemInstruction : systemInstruction' in function and "fallbackSystemInstruction.length" in function,
+              "request-specific knowledge selection is bounded": "compactKnowledgeForRequest" in function and "let remaining = 6200" in function and 'compactKnowledge.slice(0, 1400)' in function,
+              "conversation history and live platform evidence are bounded": "value.slice(-6)" in function and "row.text.trim().slice(0, 450)" in function and "sources.slice(0, 6)" in function and 'slice(0, 3600)' in function,
+              "founder biography requests avoid unnecessary live platform lookup": "skipPlatformSearch" in function and "isRootAdmin &&" in function and "biography" in function,
           }
           for name, passed in provider_invariants.items():
               print(("PASS " if passed else "FAIL ") + name)
@@ -346,6 +352,7 @@ jobs:
               "support-001", "student-support-001", "support-002", "format-001",
               "audit-fallback-001",
               "provider-503-001", "gemma-fallback-001", "founder-biography-privacy-001",
+              "prompt-budget-001", "token-rate-limit-001", "biography-lookup-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:

@@ -326,6 +326,24 @@
       "category": "root administrator biography privacy",
       "prompt": "As the verified Root Administrator, tell me my biography.",
       "expected": "Provides a concise professional biography identifying the authenticated role and the supported public Founder & CEO record for Jeremiah Chuks Godspower (De Champions), mentions only the supported creative journey and DCDS digital-skills empowerment vision, does not invent credentials or achievements, and does not volunteer private or sensitive personal-life details."
+    },
+    {
+      "id": "prompt-budget-001",
+      "category": "context efficiency and role-specific retrieval",
+      "prompt": "As the DCDS Root Administrator, tell me my biography.",
+      "expected": "Uses the server-verified Founder & CEO biography facts and the compact root-admin persona. Does not load the full DCDS document collection or run unnecessary public platform searches for this personal request. Retains Administrator/Director recognition, owner verification, privacy rules and factual biography limits."
+    },
+    {
+      "id": "token-rate-limit-001",
+      "category": "provider quota protection",
+      "prompt": "The Gemini API returns 429 with quota metric generate_content_free_tier_input_token_count. What should Deyriva do?",
+      "expected": "Classifies this as a temporary input-token-per-minute limit, stops sibling model retries for the current request, activates a short per-isolate cooldown, preserves the user's draft and returns PROVIDER_INPUT_TOKEN_RATE_LIMIT with a clear retry estimate. Does not report a daily quota failure."
+    },
+    {
+      "id": "biography-lookup-001",
+      "category": "avoid irrelevant platform retrieval",
+      "prompt": "As the verified Root Administrator, write my professional biography.",
+      "expected": "Uses only the approved verified owner biography facts and does not search course catalogues, student reviews, announcements or other live platform records unless the user separately asks for platform information."
     }
   ]
 }
