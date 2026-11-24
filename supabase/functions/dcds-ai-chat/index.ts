@@ -23,6 +23,8 @@ let cachedKnowledge: { value: string; expiresAt: number } | null = null;
 // that have returned a daily quota error or temporary overload.
 const providerModelCooldowns = new Map<string, number>();
 const providerDailyQuotaCooldowns = new Map<string, number>();
+// A project-level input-token TPM cooldown prevents repeated fallback calls after Google rejects a large prompt.
+let providerInputTokenCooldownUntil = 0;
 
 function json(body: unknown, status = 200) {
   return new Response(JSON.stringify(body), { status, headers: corsHeaders });
@@ -1134,6 +1136,16 @@ ${savedMemoryInstruction}`;
     candidates: modelCandidates,
     discoveredModelCount: discoveredModels?.length ?? 0,
   });
+  if (providerInputTokenCooldownUntil > Date.now()) {
+    const retryAfterSeconds = Math.max(1, Math.ceil((providerInputTokenCooldownUntil - Date.now()) / 1000));
+    return respond({
+      success: false,
+      error_code: "PROVIDER_INPUT_TOKEN_RATE_LIMIT",
+      retry_after_seconds: retryAfterSeconds,
+      error: "Deyriva has reached Google's temporary free-tier input-token rate limit. Your draft is kept in the message box; please retry in about " + retryAfterSeconds + " seconds.",
+    }, 429);
+  }
+
   if (!modelCandidates.length) {
     const now = Date.now();
     const dailyQuotaCooling = uniqueConfiguredCandidates.some(
@@ -1185,6 +1197,8 @@ ${savedMemoryInstruction}`;
   let lastProviderStatus = 503;
   const dailyQuotaModels: string[] = [];
   const unavailableModels: string[] = [];
+  let inputTokenRateLimited = false;
+  let inputTokenRetryAfterSeconds = 60;
 
   // The previous 18s total / 7s per-model guard aborted healthy but slower
   // provider responses before all configured fallbacks could be reached.
@@ -1285,9 +1299,26 @@ ${savedMemoryInstruction}`;
       }).join(" ");
       const quotaText = providerMessage + " " + quotaDescription;
       const isDailyQuota = /requests per day|daily.{0,30}quota|GenerateRequestsPerDayPerProject/i.test(quotaText);
+      const isInputTokenRateLimit = /generate_content_free_tier_input_token_count|input.{0,50}tokens?.{0,30}(?:per minute|minute limit)|tokens per minute/i.test(quotaText);
 
       lastProviderStatus = response.status;
       console.error("DCDS AI provider returned an error.", { requestId, model: candidate, status: response.status, details: providerError.slice(0, 500) });
+
+      if (response.status === 429 && isInputTokenRateLimit) {
+        // The input-token TPM quota is already exhausted for this project/model request window.
+        // Replaying the same large context against sibling fallback models only creates more 429s.
+        const retryMs = getRetryDelayMs(providerMessage, providerDetails) ?? 60_000;
+        const cooldownMs = Math.min(Math.max(retryMs, 30_000), 120_000);
+        inputTokenRetryAfterSeconds = Math.ceil(cooldownMs / 1000);
+        inputTokenRateLimited = true;
+        providerInputTokenCooldownUntil = Math.max(providerInputTokenCooldownUntil, Date.now() + cooldownMs);
+        providerModelCooldowns.set(candidate, Date.now() + cooldownMs);
+        console.warn("DCDS AI input-token rate limit reached; stopping model failover for this request.", {
+          model: candidate,
+          retryAfterSeconds: inputTokenRetryAfterSeconds,
+        });
+        break;
+      }
 
       if (response.status === 429 && isDailyQuota) {
         // Honour Google's RetryInfo / human-readable retry hint. If neither is
@@ -1348,7 +1379,7 @@ ${savedMemoryInstruction}`;
       }, 502);
     }
 
-    if (providerResponse) break;
+    if (providerResponse || inputTokenRateLimited) break;
   }
 
   if (!providerResponse) {
@@ -1379,20 +1410,26 @@ ${savedMemoryInstruction}`;
     const coolingModels = uniqueConfiguredCandidates
       .map((candidate) => providerModelCooldowns.get(candidate) ?? 0)
       .filter((expiresAt) => expiresAt > Date.now());
-    const retryAfterSeconds = coolingModels.length
-      ? Math.max(1, Math.ceil((Math.min(...coolingModels) - Date.now()) / 1000))
-      : 10;
-    const error = dailyQuotaModels.length > 0
-      ? "DCDS AI has reached a provider quota or capacity limit. We checked all available free-tier fallback models, but they are not currently responding. Your draft is kept in the chat box; retry in about " + retryAfterSeconds + " seconds."
-      : "DCDS AI models are temporarily unavailable. All configured free-tier fallback models were checked. Your draft is kept in the chat box; retry in about " + retryAfterSeconds + " seconds.";
+    const retryAfterSeconds = inputTokenRateLimited
+      ? inputTokenRetryAfterSeconds
+      : coolingModels.length
+        ? Math.max(1, Math.ceil((Math.min(...coolingModels) - Date.now()) / 1000))
+        : 10;
+    const error = inputTokenRateLimited
+      ? "Deyriva has reached Google's temporary free-tier input-token rate limit. Your message is safe in the box; please retry in about " + retryAfterSeconds + " seconds."
+      : dailyQuotaModels.length > 0
+        ? "DCDS AI has reached a provider quota or capacity limit. Your draft is kept in the chat box; retry in about " + retryAfterSeconds + " seconds."
+        : "DCDS AI models are temporarily unavailable. Your draft is kept in the chat box; retry in about " + retryAfterSeconds + " seconds.";
     return respond({
       success: false,
-      error_code: dailyQuotaModels.length > 0 ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE",
+      error_code: inputTokenRateLimited
+        ? "PROVIDER_INPUT_TOKEN_RATE_LIMIT"
+        : dailyQuotaModels.length > 0 ? "PROVIDER_DAILY_QUOTA" : "PROVIDER_UNAVAILABLE",
       retry_after_seconds: retryAfterSeconds,
       attempted_models: attemptedModels,
       candidate_models: orderedCandidates.length,
       error,
-    }, dailyQuotaModels.length > 0 ? 429 : 503);
+    }, inputTokenRateLimited || dailyQuotaModels.length > 0 ? 429 : 503);
   }
 
   let result: Record<string, any>;
