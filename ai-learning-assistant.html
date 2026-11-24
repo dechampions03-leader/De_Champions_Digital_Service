@@ -305,7 +305,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  function configureWelcomeGreeting(mode){
   const metadata=currentUser?.user_metadata&&typeof currentUser.user_metadata==='object'?currentUser.user_metadata:{};
   const candidate=metadata.full_name||metadata.name||metadata.display_name||metadata.first_name||metadata.given_name||metadata.username||'';
-  const safeName=typeof candidate==='string'?candidate.replace(/[<>\\u0000-\\u001f]/g,' ').replace(/\\s+/g,' ').trim().slice(0,80):'';
+  const safeName=typeof candidate==='string'?candidate.replace(/[<>\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().slice(0,80):'';
   const firstName=safeName.split(' ')[0]||'';
   const personalIntro=firstName
    ?`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you, ${firstName}?`
