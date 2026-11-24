@@ -62,7 +62,7 @@ BEGIN
         FROM auth.users u
         WHERE lower(btrim(coalesce(u.email, ''))) = lower(v_contact)
         ORDER BY u.created_at DESC
-        LIMIT 5
+        LIMIT 10
       ) AS matched;
   ELSE
     v_digits := regexp_replace(v_contact, '[^0-9]', '', 'g');
@@ -153,7 +153,7 @@ BEGIN
              END = v_phone_key
         )
         ORDER BY u.created_at DESC
-        LIMIT 5
+        LIMIT 10
       ) AS matched;
   END IF;
 
@@ -273,7 +273,7 @@ BEGIN
   IF p_message IS NULL OR char_length(btrim(p_message)) < 10 OR char_length(btrim(p_message)) > 5000 THEN
     RAISE EXCEPTION 'Issue description must be between 10 and 5000 characters';
   END IF;
-  IF p_category NOT IN ('account', 'course_access', 'learning', 'technical', 'certificate', 'general') THEN
+  IF p_category IS NULL OR p_category NOT IN ('account', 'course_access', 'learning', 'technical', 'certificate', 'general') THEN
     RAISE EXCEPTION 'Choose a supported non-payment support category';
   END IF;
 
@@ -312,7 +312,7 @@ BEGIN
   IF p_admin_response IS NULL OR char_length(btrim(p_admin_response)) < 2 OR char_length(btrim(p_admin_response)) > 5000 THEN
     RAISE EXCEPTION 'Enter a response between 2 and 5000 characters';
   END IF;
-  IF p_status NOT IN ('open', 'in_progress', 'resolved', 'closed') THEN
+  IF p_status IS NULL OR p_status NOT IN ('open', 'in_progress', 'resolved', 'closed') THEN
     RAISE EXCEPTION 'Choose a valid support status';
   END IF;
 
