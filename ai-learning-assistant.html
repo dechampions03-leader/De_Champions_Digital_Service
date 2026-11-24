@@ -316,7 +316,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
     ? " I recognise your verified DCDS Root Administrator role. You direct my system, knowledge and playbook upgrades; I will flag gaps and prepare specific improvements for your review."
     : "";
    welcomeMessage=isRootAdminSession
-    ? `${personalIntro}${rootAdminNote} How can I help you improve DCDS today?`
+    ? `${personalIntro}${rootAdminNote}`
     : `${personalIntro} I can help with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.`;
   }else if(mode==='student'){
    welcomeMessage=`${personalIntro} I can help you learn step by step, practise digital skills and continue your learning journey. What shall we work on today?`;
