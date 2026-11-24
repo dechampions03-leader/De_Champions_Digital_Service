@@ -110,7 +110,7 @@ main{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 64px}
 
 <div id="accessGate" class="gate" role="status" aria-live="polite">
   <strong>Verifying your DCDS course access</strong>
-  Your signed-in student account and enrolment are being checked before the prompt collection opens.
+  Your signed-in DCDS account is being verified. Enrolled students and authorised DCDS administrators can open the prompt collection.
   <div><button id="retryAccess" type="button">Check access again</button></div>
 </div>
 
@@ -189,10 +189,10 @@ const nextButton = document.getElementById('nextPage');
 const pageNumber = document.getElementById('pageNumber');
 
 const platformCards = [
-  {name:'ChatGPT',mark:'✳',colour:'#14866c',bg:'linear-gradient(110deg,#116d58,#159b79)'},
-  {name:'Claude',mark:'✳',colour:'#bd6446',bg:'linear-gradient(110deg,#8b3d28,#cf7651)'},
-  {name:'Gemini',mark:'✦',colour:'#625ac9',bg:'linear-gradient(110deg,#3655a7,#7863d6)'},
-  {name:'Grok',mark:'G',colour:'#343944',bg:'linear-gradient(110deg,#20242d,#4a4d57)'}
+  {name:'ChatGPT',logo:'./assets/provider-logos/chatgpt.svg',colour:'#14866c',bg:'linear-gradient(110deg,#116d58,#159b79)'},
+  {name:'Claude',logo:'./assets/provider-logos/claude.svg',colour:'#bd6446',bg:'linear-gradient(110deg,#8b3d28,#cf7651)'},
+  {name:'Gemini',logo:'./assets/provider-logos/gemini.svg',colour:'#625ac9',bg:'linear-gradient(110deg,#3655a7,#7863d6)'},
+  {name:'Grok',logo:'./assets/provider-logos/grok.svg',colour:'#343944',bg:'linear-gradient(110deg,#20242d,#4a4d57)'}
 ];
 
 let pageItems = [];
@@ -249,7 +249,7 @@ function renderPlatformCollections(){
   const perPlatform=15000;
   collections.innerHTML=platformCards.map(function(provider){
     return '<button type="button" class="collection-choice" data-collection-provider="'+escapeHtml(provider.name)+'" style="--collection-bg:'+provider.colour+'">'+
-      '<span class="collection-top"><span class="collection-logo">'+escapeHtml(provider.mark)+'</span><span class="collection-name">'+escapeHtml(provider.name)+'</span></span>'+
+      '<span class="collection-top"><span class="collection-logo"><img src="'+escapeHtml(provider.logo)+'" alt="'+escapeHtml(provider.name)+' logo"></span><span class="collection-name">'+escapeHtml(provider.name)+'</span></span>'+
       '<span class="collection-count">'+perPlatform.toLocaleString()+'</span>'+
       '<span class="collection-note">separate, individually numbered prompt cards</span>'+
       '<span class="collection-action">Open '+escapeHtml(provider.name)+' collection →</span></button>';
@@ -266,10 +266,12 @@ function syncCollectionSelection(){
 
 function cardMarkup(item){
   const provider=item.provider||{};
-  const arrow=platformCards.find(function(p){return p.name===provider.name;})?.colour||'#6b4b80';
+  const brand=platformCards.find(function(p){return p.name===provider.name;});
+  const arrow=brand?.colour||'#6b4b80';
   const styleVars=' style="--provider-bg:'+escapeHtml(provider.bg||'#351052')+';--provider-arrow:'+arrow+'"';
+  const logo=brand?.logo||'';
   return '<article class="prompt-card"><div class="card-inner">'+
-    '<div class="provider-header '+escapeHtml(provider.css||'')+'"'+styleVars+'><span class="provider-logo" aria-hidden="true">'+escapeHtml(provider.mark||'✦')+'</span><span><span class="provider-name">'+escapeHtml(provider.name)+'</span><span class="provider-sub">Dedicated prompt · '+escapeHtml(provider.name)+'</span></span></div>'+
+    '<div class="provider-header '+escapeHtml(provider.css||'')+'"'+styleVars+'><span class="provider-logo"><img src="'+escapeHtml(logo)+'" alt="'+escapeHtml(provider.name)+' logo"></span><span><span class="provider-name">'+escapeHtml(provider.name)+'</span><span class="provider-sub">Dedicated prompt · '+escapeHtml(provider.name)+'</span></span></div>'+
     '<div class="down-arrow" aria-hidden="true" style="--provider-arrow:'+arrow+'">↓</div>'+
     '<div class="prompt-index">PROMPT '+String(item.promptNumber).padStart(5,'0')+' OF 15,000 · '+escapeHtml(String(provider.name||'').toUpperCase())+'</div>'+
     '<div class="card-tags"><span class="tag">'+escapeHtml(item.task.category)+'</span><span class="tag gold">'+escapeHtml(item.direction.name)+'</span></div>'+
