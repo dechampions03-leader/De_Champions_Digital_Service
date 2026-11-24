@@ -121,7 +121,7 @@ main{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 64px}
     <p>Explore specialist prompts for music, writing, business, AI images, reference-image creation, text-to-image, AI video, image-to-video, presentations, websites and more. Each card belongs to one AI platform only. Copy a prompt, replace the bracketed details with your own brief, and paste it into the platform shown at the top of that card.</p>
     <div class="stats">
       <div class="stat"><strong>60,000</strong><span>Prompt combinations</span></div>
-      <div class="stat"><strong>60</strong><span>Specialist prompt types</span></div>
+      <div class="stat"><strong>60</strong><span>Specialist prompt families</span></div>
       <div class="stat"><strong>4</strong><span>Separate AI platforms</span></div>
     </div>
   </section>
@@ -418,6 +418,9 @@ function refreshResults(){
   const provider = providerSelect.value;
   const category = categorySelect.value;
   const style = styleSelect.value;
+  platformCollections.querySelectorAll('.collection-choice').forEach(function(button){
+    button.classList.toggle('active',provider !== 'all' && button.getAttribute('data-collection-provider') === provider);
+  });
   matchingIndices = [];
   for(let i=0;i<total;i++){
     const item = getItem(i);
