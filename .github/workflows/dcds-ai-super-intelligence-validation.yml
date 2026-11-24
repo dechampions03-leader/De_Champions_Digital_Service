@@ -221,6 +221,41 @@ jobs:
                   and "imageInput" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8")
                   and "requestBody.image" not in Path("ai-learning-assistant.html").read_text(encoding="utf-8"),
           }
+          support_helper_start = function.index("async function loadStudentAccountSupportContext(")
+          support_helper_end = function.index("async function searchPlatformKnowledge(", support_helper_start)
+          support_helper = function[support_helper_start:support_helper_end]
+          diagnostics_invariants = {
+              "platform health uses authenticated read-only snapshot RPC":
+                  "dcds_ai_platform_snapshot" in function and "isPlatformDiagnosticsRequest" in function,
+              "admin directory is only requested for verified root admins":
+                  "isRootAdmin && adminDirectoryRequested" in function,
+              "ordinary admin identity requests are denied":
+                  "ADMINISTRATOR IDENTITY PRIVACY" in function,
+              "student ticket lookups are scoped to the signed-in student":
+                  '.eq("user_id", userId)' in support_helper,
+              "student support tickets exclude financial category":
+                  '.neq("category", "payment")' in support_helper,
+              "ticket subject and reply bodies are not passed to Deyriva":
+                  'select("category,status,responded_at,created_at,updated_at,admin_response")' in support_helper
+                  and "subject: ticket.subject" not in support_helper
+                  and "admin_response: ticket.admin_response" not in support_helper,
+              "support helper does not read payments or payouts":
+                  all(term not in support_helper for term in ['from("payments")','from("orders")','from("dcds_payout_requests")','from("dcds_referrals")']),
+              "student Support Centre, community and admin inbox routes exist":
+                  "student-dashboard.html#studentSupportPanel" in function
+                  and "student-community.html" in function
+                  and "admin-notifications.html#supportInboxSection" in function,
+              "health scope states services not checked":
+                  "'not_checked'" in function or '"not_checked"' in function,
+              "raw internal source IDs are stripped from generated answers":
+                  'replace(/\\[(?:DCDS|WEB)-\\d+\\]/g, "")' in function
+          }
+          for name, passed in diagnostics_invariants.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          diagnostic_failures = [name for name, passed in diagnostics_invariants.items() if not passed]
+          if diagnostic_failures:
+              raise SystemExit("Deyriva health/support/privacy validation failed: " + "; ".join(diagnostic_failures))
+
           failures = [name for name, passed in invariants.items() if not passed]
           for name, passed in invariants.items():
               print(("PASS " if passed else "FAIL ") + name)
@@ -235,6 +270,7 @@ jobs:
               "learning-003", "web-001", "memory-001", "memory-002", "security-002",
               "image-001", "image-002", "voice-001", "voice-002", "voice-003",
               "guest-001", "guest-002", "chat-001", "identity-001",
+              "audit-001", "privacy-001", "root-report-001", "support-001", "support-002",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
