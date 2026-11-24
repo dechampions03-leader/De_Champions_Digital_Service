@@ -2447,6 +2447,293 @@ async function loadDcdsCreativeShowcaseAdmin() {
   });
 }
 
+
+let supportDeskSelectedStudentId = null;
+
+function supportDeskNode(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined && text !== null) node.textContent = String(text);
+  return node;
+}
+function supportDeskDate(value) {
+  if (!value) return "Not recorded";
+  const date = new Date(value);
+  return Number.isNaN(date.getTime()) ? "Not recorded" : date.toLocaleString("en-NG",{dateStyle:"medium",timeStyle:"short"});
+}
+function supportDeskSetStatus(id, message, isError=false) {
+  const node = $(id);
+  if (!node) return;
+  node.textContent = message || "";
+  node.classList.toggle("error", !!isError);
+}
+function supportDeskBadge(label, kind="") {
+  return supportDeskNode("span","support-desk-badge"+(kind?" "+kind:""),label);
+}
+function supportDeskClearWorkspace() {
+  supportDeskSelectedStudentId = null;
+  $("supportDeskWorkspace").hidden = true;
+  $("supportDeskProfile").replaceChildren();
+  $("supportDeskTickets").replaceChildren();
+  $("supportDeskNotes").replaceChildren();
+}
+
+async function supportDeskLoadWorkspace(studentId) {
+  supportDeskSetStatus("supportDeskLookupStatus","Loading the selected student's support workspace…");
+  const {data,error} = await db.rpc("admin_get_student_support_workspace",{p_student_id:studentId});
+  if(error) {
+    console.error("DCDS support workspace loading failed:",error);
+    supportDeskSetStatus("supportDeskLookupStatus",error.message || "The student support workspace could not be loaded.",true);
+    return;
+  }
+  if(!data || !data.student) {
+    supportDeskSetStatus("supportDeskLookupStatus","The selected student record was not returned.",true);
+    return;
+  }
+  supportDeskSelectedStudentId = studentId;
+  $("supportDeskWorkspace").hidden = false;
+  supportDeskSetStatus("supportDeskLookupStatus","Exact account match confirmed. The support workspace is ready.");
+  supportDeskRenderWorkspace(data);
+  $("supportDeskWorkspace").scrollIntoView({behavior:"smooth",block:"start"});
+}
+
+function supportDeskRenderWorkspace(data) {
+  const student = data.student || {};
+  const profile = $("supportDeskProfile");
+  profile.replaceChildren();
+  const head = supportDeskNode("div","support-desk-profile-head");
+  const nameWrap = supportDeskNode("div","");
+  nameWrap.append(
+    supportDeskNode("h4","",student.full_name || "DCDS Student"),
+    supportDeskNode("p","support-desk-small","Verified account record · Student support workspace")
+  );
+  const accountState = student.account_active === false
+    ? supportDeskBadge("ACCOUNT RESTRICTED","blocked")
+    : supportDeskBadge("ACCOUNT ACTIVE");
+  head.append(nameWrap,accountState);
+  profile.appendChild(head);
+
+  const contacts = supportDeskNode("div","support-desk-contact");
+  contacts.append(
+    supportDeskNode("span","","Email: "+(student.email || "Not recorded")),
+    supportDeskNode("span","","Mobile: "+(student.phone || "Not recorded")),
+    supportDeskNode("span","","Account created: "+supportDeskDate(student.created_at)),
+    supportDeskNode("span","","Last sign-in: "+supportDeskDate(student.last_sign_in_at))
+  );
+  profile.appendChild(contacts);
+  const badges = supportDeskNode("div","support-desk-badges");
+  badges.append(
+    supportDeskBadge(student.email_confirmed_at ? "EMAIL VERIFIED" : "EMAIL NOT VERIFIED",student.email_confirmed_at ? "" : "warn"),
+    supportDeskBadge(student.phone_confirmed_at ? "PHONE VERIFIED" : "PHONE NOT VERIFIED",student.phone_confirmed_at ? "" : "warn")
+  );
+  if(student.banned_until && new Date(student.banned_until)>new Date()) {
+    badges.appendChild(supportDeskBadge("RESTRICTED UNTIL "+supportDeskDate(student.banned_until),"blocked"));
+  }
+  profile.appendChild(badges);
+
+  supportDeskRenderTickets(Array.isArray(data.support_tickets) ? data.support_tickets : []);
+  supportDeskRenderNotes(Array.isArray(data.internal_notes) ? data.internal_notes : []);
+}
+
+function supportDeskRenderTickets(tickets) {
+  const root = $("supportDeskTickets");
+  root.replaceChildren();
+  if(!tickets.length) {
+    root.appendChild(supportDeskNode("div","empty","No non-payment support cases are recorded for this student."));
+    return;
+  }
+  tickets.forEach(ticket => {
+    const card = supportDeskNode("article","support-desk-ticket");
+    const heading = supportDeskNode("h5","",ticket.subject || "Support case");
+    const meta = supportDeskNode("div","support-desk-ticket-meta");
+    meta.append(
+      supportDeskNode("span","",String(ticket.category || "general").replace(/_/g," ")),
+      supportDeskBadge(String(ticket.status || "open").replace(/_/g," ").toUpperCase(),ticket.status==="resolved"||ticket.status==="closed"?"":"warn"),
+      supportDeskNode("span","","Opened: "+supportDeskDate(ticket.created_at))
+    );
+    card.append(heading,meta,supportDeskNode("div","support-desk-ticket-message",ticket.message || "No issue description was recorded."));
+    if(ticket.admin_response) {
+      const response = supportDeskNode("div","support-desk-ticket-response");
+      response.append(
+        supportDeskNode("strong","","Previous DCDS response"),
+        supportDeskNode("p","",ticket.admin_response),
+        supportDeskNode("small","","Last response: "+supportDeskDate(ticket.responded_at))
+      );
+      card.appendChild(response);
+    }
+    const form = supportDeskNode("form","");
+    const replyLabel = supportDeskNode("label","support-desk-field");
+    replyLabel.appendChild(supportDeskNode("span","","Reply to student"));
+    const reply = document.createElement("textarea");
+    reply.required = true;
+    reply.minLength = 2;
+    reply.maxLength = 5000;
+    reply.value = ticket.admin_response || "";
+    reply.placeholder = "Explain the checks completed and the next step for the student.";
+    replyLabel.appendChild(reply);
+
+    const statusLabel = supportDeskNode("label","support-desk-field");
+    statusLabel.appendChild(supportDeskNode("span","","Case status"));
+    const select = document.createElement("select");
+    [["open","Open"],["in_progress","In progress"],["resolved","Resolved"],["closed","Closed"]].forEach(([value,label])=>{
+      const option=document.createElement("option");
+      option.value=value;option.textContent=label;select.appendChild(option);
+    });
+    select.value=ticket.status || "open";
+    statusLabel.appendChild(select);
+
+    const actions = supportDeskNode("div","support-desk-ticket-actions");
+    const save = supportDeskNode("button","btn gold","Save reply & status");
+    save.type = "submit";
+    const status = supportDeskNode("span","support-desk-small","");
+    actions.append(save,status);
+    form.append(replyLabel,statusLabel,actions);
+    form.addEventListener("submit",async event=>{
+      event.preventDefault();
+      if(!supportDeskSelectedStudentId)return;
+      if(reply.value.trim().length<2){status.textContent="Enter a reply before saving.";return;}
+      save.disabled=true;save.textContent="Saving…";status.textContent="";
+      const selectedStudentId=supportDeskSelectedStudentId;
+      try {
+        const {error}=await db.rpc("admin_update_student_support_ticket",{
+          p_ticket_id:ticket.id,
+          p_admin_response:reply.value.trim(),
+          p_status:select.value
+        });
+        if(error)throw error;
+        status.textContent="Saved. Refreshing the case…";
+        await supportDeskLoadWorkspace(selectedStudentId);
+      } catch(error) {
+        console.error("DCDS support case update failed:",error);
+        status.textContent=error.message||"The support reply could not be saved.";
+        save.disabled=false;save.textContent="Save reply & status";
+      }
+    });
+    card.appendChild(form);
+    root.appendChild(card);
+  });
+}
+
+function supportDeskRenderNotes(notes) {
+  const root=$("supportDeskNotes");
+  root.replaceChildren();
+  if(!notes.length){root.appendChild(supportDeskNode("div","empty","No internal administrator notes have been added."));return;}
+  notes.forEach(note=>{
+    const card=supportDeskNode("article","support-desk-note");
+    card.append(supportDeskNode("p","",note.note),supportDeskNode("small","","Internal note · "+supportDeskDate(note.created_at)));
+    root.appendChild(card);
+  });
+}
+
+function supportDeskMatchButton(match) {
+  const button=supportDeskNode("button","support-desk-match");
+  button.type="button";
+  const identity=supportDeskNode("span","");
+  identity.append(
+    supportDeskNode("strong","",match.full_name||"DCDS Student"),
+    supportDeskNode("small","",(match.email||"No email")+" · "+(match.phone||"No mobile"))
+  );
+  const action=supportDeskNode("span","support-desk-small","Open support workspace →");
+  button.append(identity,action);
+  button.addEventListener("click",()=>supportDeskLoadWorkspace(match.student_id));
+  return button;
+}
+
+async function supportDeskHandleLookup(event) {
+  event.preventDefault();
+  supportDeskClearWorkspace();
+  $("supportDeskMatches").replaceChildren();
+  const contact=$("supportDeskContact").value.trim();
+  if(contact.length<5){supportDeskSetStatus("supportDeskLookupStatus","Enter the student's registered email address or complete phone number.",true);return;}
+  const button=$("supportDeskLookupButton");
+  button.disabled=true;button.textContent="Searching…";
+  supportDeskSetStatus("supportDeskLookupStatus","Checking for an exact registered contact match…");
+  try {
+    const {data,error}=await db.rpc("admin_lookup_student_support_contact",{p_contact:contact});
+    if(error)throw error;
+    const matches=Array.isArray(data?.matches)?data.matches:[];
+    if(!matches.length){
+      supportDeskSetStatus("supportDeskLookupStatus","No exact student account matched that email address or phone number. Check the contact with the student and try again.");
+      return;
+    }
+    if(matches.length===1){
+      $("supportDeskMatches").appendChild(supportDeskMatchButton(matches[0]));
+      await supportDeskLoadWorkspace(matches[0].student_id);
+      return;
+    }
+    supportDeskSetStatus("supportDeskLookupStatus",String(data.match_count||matches.length)+" exact accounts share that contact. Select the correct student by the displayed name and account details.");
+    matches.forEach(match=>$("supportDeskMatches").appendChild(supportDeskMatchButton(match)));
+  } catch(error) {
+    console.error("DCDS exact support lookup failed:",error);
+    supportDeskSetStatus("supportDeskLookupStatus",error.message||"The account lookup could not be completed.",true);
+  } finally {
+    button.disabled=false;button.textContent="Find Student";
+  }
+}
+
+async function supportDeskCreateCase(event) {
+  event.preventDefault();
+  if(!supportDeskSelectedStudentId){supportDeskSetStatus("supportDeskCreateCaseStatus","Find and select a student first.",true);return;}
+  const subject=$("supportDeskSubject").value.trim();
+  const category=$("supportDeskCategory").value;
+  const message=$("supportDeskMessage").value.trim();
+  const button=$("supportDeskCreateCaseButton");
+  button.disabled=true;button.textContent="Creating…";
+  supportDeskSetStatus("supportDeskCreateCaseStatus","");
+  const selectedStudentId=supportDeskSelectedStudentId;
+  try {
+    const {data,error}=await db.rpc("admin_create_student_support_ticket",{
+      p_student_id:selectedStudentId,
+      p_subject:subject,
+      p_category:category,
+      p_message:message
+    });
+    if(error)throw error;
+    $("supportDeskCreateCaseForm").reset();
+    supportDeskSetStatus("supportDeskCreateCaseStatus","Support case created and saved to the student's Support Centre.");
+    await supportDeskLoadWorkspace(selectedStudentId);
+  } catch(error) {
+    console.error("DCDS support case creation failed:",error);
+    supportDeskSetStatus("supportDeskCreateCaseStatus",error.message||"The support case could not be created.",true);
+  } finally {
+    button.disabled=false;button.textContent="Create Support Case";
+  }
+}
+
+async function supportDeskAddInternalNote(event) {
+  event.preventDefault();
+  if(!supportDeskSelectedStudentId){supportDeskSetStatus("supportDeskInternalNoteStatus","Find and select a student first.",true);return;}
+  const note=$("supportDeskInternalNote").value.trim();
+  const button=$("supportDeskAddNoteButton");
+  button.disabled=true;button.textContent="Saving…";
+  const selectedStudentId=supportDeskSelectedStudentId;
+  try {
+    const {error}=await db.rpc("admin_add_student_note",{p_student_id:selectedStudentId,p_note:note});
+    if(error)throw error;
+    $("supportDeskInternalNoteForm").reset();
+    supportDeskSetStatus("supportDeskInternalNoteStatus","Internal note saved to the administrator record.");
+    await supportDeskLoadWorkspace(selectedStudentId);
+  } catch(error) {
+    console.error("DCDS internal support note failed:",error);
+    supportDeskSetStatus("supportDeskInternalNoteStatus",error.message||"The internal note could not be saved.",true);
+  } finally {
+    button.disabled=false;button.textContent="Save Internal Note";
+  }
+}
+
+function initializeSupportDesk() {
+  $("supportDeskLookupForm").addEventListener("submit",supportDeskHandleLookup);
+  $("supportDeskClearButton").addEventListener("click",()=>{
+    $("supportDeskLookupForm").reset();
+    $("supportDeskMatches").replaceChildren();
+    supportDeskClearWorkspace();
+    supportDeskSetStatus("supportDeskLookupStatus","Search by an exact registered email address or phone number. The student's name appears after a successful match.");
+    $("supportDeskContact").focus();
+  });
+  $("supportDeskCreateCaseForm").addEventListener("submit",supportDeskCreateCase);
+  $("supportDeskInternalNoteForm").addEventListener("submit",supportDeskAddInternalNote);
+}
+
 async function initialize() {
   $("adminApp").hidden = true;
   const {data:{session},error:sessionError} = await db.auth.getSession();
@@ -2462,6 +2749,7 @@ async function initialize() {
   }
   $("adminApp").hidden = false;
   $("status").textContent = "Administrator access verified.";
+  initializeSupportDesk();
   try { await loadDcdsCreativeShowcaseAdmin(); } catch (e) { console.error("Creative Showcase media manager failed:",e); const count=$("dcdsShowcaseAdminCount"); if(count)count.textContent="Creative Showcase could not load. Please refresh the page."; }
   try { await loadAiAccessPolicy(); } catch(e) { console.error("AI age-access policy load failed:",e); }
   try { await loadCourseCatalog(); populateManualCourseOptions(); } catch(e) { console.error("Course catalog load failed:",e); }
