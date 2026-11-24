@@ -3178,7 +3178,7 @@ function supportLookupLooksComplete(value) {
     const clean = String(value || "").trim();
     if (clean.includes("@")) return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(clean);
     const digits = clean.replace(/\D/g, "");
-    return /^[+0-9() .-]+$/.test(clean) && digits.length >= 10 && digits.length <= 15;
+    return /^[+0-9() .-]+$/.test(clean) && digits.length >= 8 && digits.length <= 15;
 }
 
 function renderSupportStudentMatch(student) {
