@@ -67,6 +67,8 @@ jobs:
               "CREATE OR REPLACE FUNCTION public.admin_get_student_support_workspace(p_student_id uuid)",
               "CREATE OR REPLACE FUNCTION public.admin_create_student_support_ticket(",
               "CREATE OR REPLACE FUNCTION public.admin_update_student_support_ticket(",
+              "CREATE OR REPLACE FUNCTION public.admin_add_student_support_note(",
+              "GRANT EXECUTE ON FUNCTION public.admin_add_student_support_note(uuid,text) TO authenticated",
               "public.is_dcds_admin()",
               "lower(v_contact)",
               "regexp_replace",
