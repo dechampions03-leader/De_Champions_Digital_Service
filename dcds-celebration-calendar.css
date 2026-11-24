@@ -901,3 +901,272 @@
 .dcds-celebration-art[data-scene="beer-festival"]{
  background:radial-gradient(ellipse at 50% 45%,rgba(232,189,93,.25),transparent 60%),linear-gradient(135deg,#493528,#473348 60%,#231b31);
 }
+
+
+/* DCDS semantic event design system */
+.dcds-celebration-frame[data-tone="awareness"] .dcds-celebration-art{
+ border-color:#d99b65;
+ box-shadow:inset 0 0 0 1px rgba(255,236,216,.12),0 0 18px rgba(217,155,101,.11);
+}
+.dcds-celebration-art[data-tone="awareness"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(92,134,147,.19),transparent 63%),linear-gradient(135deg,#263746,#29354a 58%,#1b2234);
+}
+.dcds-celebration-art[data-scene="violence-against-women"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(221,143,76,.24),transparent 63%),linear-gradient(135deg,#493326,#352c3b 60%,#242033);
+ border-color:#e5a05b;
+}
+.dcds-celebration-art[data-scene="human-trafficking-awareness"],
+.dcds-celebration-art[data-scene="refugee-solidarity"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(124,162,180,.2),transparent 63%),linear-gradient(135deg,#243847,#344454 60%,#202b3b);
+}
+.dcds-celebration-art[data-scene="holocaust-remembrance"],
+.dcds-celebration-art[data-scene="slave-trade-remembrance"],
+.dcds-celebration-art[data-scene="cuito-remembrance"],
+.dcds-celebration-art[data-scene="armed-forces-remembrance"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(183,174,156,.13),transparent 65%),linear-gradient(135deg,#34323a,#292b39 62%,#1c1d2b);
+ border-color:#bcb4a4;
+}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-glint{opacity:.22;animation-duration:5s}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-main{
+ animation:dcdsSceneRemembrance 6s ease-in-out infinite;
+ filter:drop-shadow(0 3px 6px rgba(0,0,0,.3));
+}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-prop{
+ animation:dcdsSceneRemembrance 7s ease-in-out infinite;
+ opacity:.82;
+}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-prop-two{animation-delay:-2.3s}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-prop-three{animation-delay:-4.4s}
+@keyframes dcdsSceneRemembrance{
+ 0%,100%{transform:translateY(1px);opacity:.76}
+ 50%{transform:translateY(-3px);opacity:1}
+}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-main{
+ animation:dcdsSceneAwareness 5s ease-in-out infinite;
+}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-prop{
+ animation:dcdsSceneAwareness 5.8s ease-in-out infinite;
+}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-prop-two{animation-delay:-1.9s}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-prop-three{animation-delay:-3.7s}
+@keyframes dcdsSceneAwareness{
+ 0%,100%{transform:translateY(1px) scale(.98);opacity:.82}
+ 50%{transform:translateY(-3px) scale(1.02);opacity:1}
+}
+.dcds-celebration-frame[data-tone="awareness"] .dcds-celebration-sparkles i{
+ opacity:.18;
+ animation-duration:5s;
+}
+.dcds-celebration-art[data-scene="violence-against-women"] .dcds-scene-prop{
+ filter:drop-shadow(0 3px 8px rgba(0,0,0,.26));
+}
+.dcds-celebration-art[data-scene="racial-equality"],
+.dcds-celebration-art[data-scene="justice-advocacy"],
+.dcds-celebration-art[data-scene="human-rights-specific"],
+.dcds-celebration-art[data-scene="anti-corruption-specific"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(133,174,191,.22),transparent 63%),linear-gradient(135deg,#273847,#334051 62%,#1d2534);
+}
+.dcds-celebration-art[data-scene="cancer-awareness"],
+.dcds-celebration-art[data-scene="hiv-awareness"],
+.dcds-celebration-art[data-scene="tropical-disease-awareness"],
+.dcds-celebration-art[data-scene="diabetes-awareness"],
+.dcds-celebration-art[data-scene="mental-health-awareness"],
+.dcds-celebration-art[data-scene="no-tobacco-awareness"],
+.dcds-celebration-art[data-scene="health-awareness"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(109,190,164,.2),transparent 63%),linear-gradient(135deg,#1e4148,#2e4552 60%,#1a2935);
+}
+.dcds-celebration-art[data-scene="autism-acceptance"],
+.dcds-celebration-art[data-scene="disability-inclusion"],
+.dcds-celebration-art[data-scene="sign-language-inclusion"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(117,165,217,.22),transparent 63%),linear-gradient(135deg,#273657,#35436a 60%,#202842);
+}
+.dcds-celebration-art[data-scene="girl-child-rights"],
+.dcds-celebration-art[data-scene="children-rights-specific"],
+.dcds-celebration-art[data-scene="african-child-rights"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(210,181,126,.19),transparent 63%),linear-gradient(135deg,#3a3447,#34445a 60%,#20283a);
+}
+.dcds-celebration-art[data-scene="indigenous-peoples-rights"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(177,155,119,.18),transparent 63%),linear-gradient(135deg,#403a37,#37464a 60%,#212d32);
+}
+.dcds-celebration-art[data-scene="environment-action"],
+.dcds-celebration-art[data-scene="water-protection"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(102,185,144,.2),transparent 63%),linear-gradient(135deg,#1c4541,#2c4e53 60%,#1c3039);
+}
+.dcds-celebration-art[data-tone="religious"] .dcds-scene-main{
+ animation:dcdsSceneReverent 5.5s ease-in-out infinite;
+}
+.dcds-celebration-art[data-tone="religious"] .dcds-scene-prop{
+ animation:dcdsSceneReverent 6.2s ease-in-out infinite;
+}
+@keyframes dcdsSceneReverent{
+ 0%,100%{transform:translateY(1px) scale(.99);opacity:.82}
+ 50%{transform:translateY(-3px) scale(1.025);opacity:1}
+}
+.dcds-celebration-art[data-tone="religious"] .dcds-scene-glint{opacity:.42;animation-duration:4.5s}
+.dcds-celebration-art[data-tone="national"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(112,181,139,.2),transparent 62%),linear-gradient(135deg,#183e38,#263e49 60%,#1b2b35);
+}
+.dcds-celebration-art[data-tone="national"] .dcds-scene-main{animation:dcdsSceneProud 4.8s ease-in-out infinite}
+@keyframes dcdsSceneProud{
+ 0%,100%{transform:translateY(1px) scale(.98)}
+ 50%{transform:translateY(-4px) scale(1.04)}
+}
+.dcds-celebration-art[data-tone="recognition"] .dcds-scene-main{
+ animation:dcdsSceneRecognition 4.6s ease-in-out infinite;
+}
+@keyframes dcdsSceneRecognition{
+ 0%,100%{transform:translateY(2px) rotate(-1deg)}
+ 50%{transform:translateY(-4px) rotate(1deg)}
+}
+.dcds-celebration-frame[data-tone="remembrance"] .dcds-celebration-sparkles i{
+ animation:none;
+ opacity:.12;
+}
+.dcds-celebration-frame[data-tone="awareness"] .dcds-celebration-art,
+.dcds-celebration-frame[data-tone="remembrance"] .dcds-celebration-art{
+ border-radius:18px;
+}
+@media(prefers-reduced-motion:reduce){
+ .dcds-celebration-art[data-tone] .dcds-scene-main,
+ .dcds-celebration-art[data-tone] .dcds-scene-prop,
+ .dcds-celebration-art[data-tone] .dcds-scene-glint{
+   animation:none!important;
+ }
+}
+
+
+/* Calm, purpose-led visual balance for all event types. */
+.dcds-celebration-art[data-tone="recognition"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(145,177,202,.18),transparent 64%),linear-gradient(135deg,#2b3548,#354258 60%,#20293b);
+}
+.dcds-celebration-art[data-tone="recognition"] .dcds-scene-main{
+ animation:dcdsSceneRecognition 4.8s ease-in-out infinite;
+}
+.dcds-celebration-art[data-tone="observance"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(160,166,188,.17),transparent 64%),linear-gradient(135deg,#2c3043,#35364c 60%,#202437);
+}
+.dcds-celebration-art[data-tone="observance"] .dcds-scene-main,
+.dcds-celebration-art[data-tone="observance"] .dcds-scene-prop{
+ animation-duration:5.2s;
+}
+.dcds-celebration-art[data-tone="religious-celebration"]{
+ background:radial-gradient(ellipse at 50% 44%,rgba(210,185,117,.2),transparent 63%),linear-gradient(135deg,#253c3b,#344653 60%,#211f3a);
+}
+.dcds-celebration-art[data-tone="religious-celebration"] .dcds-scene-main,
+.dcds-celebration-art[data-tone="religious-celebration"] .dcds-scene-prop{
+ animation-duration:4.2s;
+}
+.dcds-celebration-art[data-tone="festival"] .dcds-scene-main{
+ animation-duration:2.9s;
+}
+.dcds-celebration-art[data-scene="islamic-new-year-specific"]{
+ background:radial-gradient(ellipse at 50% 43%,rgba(122,197,180,.21),transparent 62%),linear-gradient(135deg,#193a4d,#26395a 60%,#1d1b3b);
+}
+.dcds-celebration-art[data-scene="blood-donor-awareness"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(203,112,130,.22),transparent 62%),linear-gradient(135deg,#4a293a,#343049 60%,#211d31);
+}
+.dcds-celebration-art[data-scene="peace-observance"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(158,201,218,.21),transparent 62%),linear-gradient(135deg,#2a4057,#36445d 60%,#202a42);
+}
+.dcds-celebration-art[data-scene="africa-school-feeding"],
+.dcds-celebration-art[data-scene="food-security-specific"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(218,184,107,.22),transparent 62%),linear-gradient(135deg,#493a33,#49513f 60%,#252b3b);
+}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-glint,
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-glint{
+ animation:none;
+ opacity:.2;
+}
+
+
+/* Refined companion palettes for the newly de-duplicated event illustrations. */
+.dcds-celebration-art[data-scene="braille-refined"],
+.dcds-celebration-art[data-scene="public-service-refined"],
+.dcds-celebration-art[data-scene="small-business-refined"],
+.dcds-celebration-art[data-scene="mandela-refined"],
+.dcds-celebration-art[data-scene="commonwealth-refined"],
+.dcds-celebration-art[data-scene="africa-local-development"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(145,185,218,.22),transparent 63%),linear-gradient(135deg,#273752,#34435f 60%,#1d263c);
+}
+.dcds-celebration-art[data-scene="cultural-diversity-refined"],
+.dcds-celebration-art[data-scene="flavours-refined"],
+.dcds-celebration-art[data-scene="music-festival-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(217,160,208,.22),transparent 62%),linear-gradient(135deg,#4a2855,#38234f 60%,#201a36);
+}
+.dcds-celebration-art[data-scene="international-democracy-refined"],
+.dcds-celebration-art[data-scene="independence-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(102,194,139,.22),transparent 62%),linear-gradient(135deg,#17483c,#2c4e4c 58%,#1b2c36);
+}
+.dcds-celebration-art[data-scene="africa-science-refined"],
+.dcds-celebration-art[data-scene="youth-skills-refined"],
+.dcds-celebration-art[data-scene="statistics-specific"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(138,177,224,.22),transparent 63%),linear-gradient(135deg,#293655,#3c4268 60%,#1d263f);
+}
+.dcds-celebration-art[data-scene="volunteer-refined"],
+.dcds-celebration-art[data-scene="migrant-solidarity"],
+.dcds-celebration-art[data-scene="humanitarian-specific"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(151,192,205,.2),transparent 63%),linear-gradient(135deg,#273b50,#34485d 60%,#1c2b3c);
+}
+.dcds-celebration-art[data-scene="africa-environment-refined"],
+.dcds-celebration-art[data-scene="new-yam-refined"],
+.dcds-celebration-art[data-scene="ige-agba-refined"],
+.dcds-celebration-art[data-scene="osun-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(110,202,143,.23),transparent 63%),linear-gradient(135deg,#1c4a40,#31564d 60%,#1d3036);
+}
+.dcds-celebration-art[data-scene="argungu-refined"],
+.dcds-celebration-art[data-scene="tour-nigeria-refined"],
+.dcds-celebration-art[data-scene="beach-refined"]{
+ background:radial-gradient(ellipse at 50% 55%,rgba(85,188,219,.25),transparent 63%),linear-gradient(135deg,#16465e,#2d526e 60%,#1d2d48);
+}
+.dcds-celebration-art[data-scene="sango-refined"],
+.dcds-celebration-art[data-scene="olojo-refined"],
+.dcds-celebration-art[data-scene="ofala-refined"],
+.dcds-celebration-art[data-scene="igue-refined"],
+.dcds-celebration-art[data-scene="mmanwu-refined"],
+.dcds-celebration-art[data-scene="igbogo-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(224,169,100,.23),transparent 62%),linear-gradient(135deg,#4b3039,#3c2b4a 60%,#211b35);
+}
+.dcds-celebration-art[data-scene="countdown-festival-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(222,185,105,.24),transparent 62%),linear-gradient(135deg,#35234c,#4b2c5c 58%,#1d203d);
+}
+.dcds-celebration-art[data-scene="eid-durbar-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(221,187,117,.25),transparent 62%),linear-gradient(135deg,#48362d,#374459 60%,#20253d);
+}
+.dcds-celebration-art[data-scene="tour-nigeria-refined"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="argungu-refined"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="beach-refined"] .dcds-scene-prop{
+ animation-name:dcdsSceneDrift;
+}
+.dcds-celebration-art[data-scene="sango-refined"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="countdown-festival-refined"] .dcds-scene-prop{
+ animation-name:dcdsSceneBurst;
+}
+.dcds-celebration-art[data-scene="olojo-refined"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="ofala-refined"] .dcds-scene-main,
+.dcds-celebration-art[data-scene="igue-refined"] .dcds-scene-main{
+ animation-name:dcdsSceneFloat;
+}
+.dcds-celebration-art[data-scene="music-festival-refined"] .dcds-scene-main{
+ animation-name:dcdsSceneLift;
+}
+
+
+/* Dedicated festival scenes for the distinct Calabar programme events. */
+.dcds-celebration-art[data-scene="calabar-junior-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(244,198,114,.24),transparent 62%),linear-gradient(135deg,#493054,#3d3a63 60%,#202844);
+}
+.dcds-celebration-art[data-scene="calabar-bikers-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(226,163,105,.24),transparent 62%),linear-gradient(135deg,#3d2a43,#37455b 60%,#1d273d);
+}
+.dcds-celebration-art[data-scene="nyoro-ekpe-refined"],
+.dcds-celebration-art[data-scene="calabar-parade-refined"],
+.dcds-celebration-art[data-scene="calabar-festival-refined"]{
+ background:radial-gradient(ellipse at 50% 44%,rgba(231,171,111,.25),transparent 62%),linear-gradient(135deg,#4b284b,#3c2d5a 60%,#1f203c);
+}
+.dcds-celebration-art[data-scene="nigerian-beer-festival-refined"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(228,188,105,.22),transparent 62%),linear-gradient(135deg,#433528,#4a3b46 60%,#252239);
+}
+.dcds-celebration-art[data-scene="calabar-junior-refined"] .dcds-scene-main{animation-name:dcdsSceneBounce}
+.dcds-celebration-art[data-scene="calabar-bikers-refined"] .dcds-scene-main{animation-name:dcdsSceneLift}
+.dcds-celebration-art[data-scene="calabar-parade-refined"] .dcds-scene-prop,
+.dcds-celebration-art[data-scene="calabar-festival-refined"] .dcds-scene-prop{animation-name:dcdsSceneBurst}

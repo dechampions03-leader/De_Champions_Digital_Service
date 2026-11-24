@@ -20,6 +20,134 @@
   const $ = id => root.querySelector('#' + id);
   const pad = n => String(n).padStart(2, '0');
   const sceneProfiles = [
+    {key:'calabar-junior-refined',test:/calabar junior/i,main:'🎈',props:['🎭','🎊','💃']},
+    {key:'calabar-bikers-refined',test:/calabar bikers/i,main:'🏍️',props:['🏁','🛣️','🇳🇬']},
+    {key:'nyoro-ekpe-refined',test:/nyoro ekpe/i,main:'🎭',props:['🥁','🪘','✨']},
+    {key:'calabar-parade-refined',test:/parade of the bands|carnival calabar/i,main:'🎊',props:['💃','🎭','🥁']},
+    {key:'calabar-festival-refined',test:/calabar festival|calabar cultural carnival/i,main:'🎭',props:['🎊','💃','🥁']},
+    {key:'nigerian-beer-festival-refined',test:/nigerian beer festival/i,main:'🍺',props:['🎶','🎪','⭐']},
+    {key:'braille-refined',test:/world braille day/i,main:'⠿',props:['🤝','💜','📖']},
+    {key:'cultural-diversity-refined',test:/world day for cultural diversity|nigerian fashion festival/i,main:'🌍',props:['🎨','🧵','🪡']},
+    {key:'public-service-refined',test:/united nations public service day|united nations day/i,main:'🏛️',props:['🤝','📜','🌐']},
+    {key:'small-business-refined',test:/micro, small and medium|small businesses/i,main:'🏪',props:['📈','💡','🤝']},
+    {key:'mandela-refined',test:/nelson mandela/i,main:'🤝',props:['🕊️','✊🏿','⭐']},
+    {key:'international-democracy-refined',test:/international day of democracy/i,main:'🗳️',props:['⚖️','📜','🤝']},
+    {key:'africa-science-refined',test:/world science day|scientific renaissance/i,main:'🔬',props:['👩🏽‍🔬','🌍','💡']},
+    {key:'volunteer-refined',test:/international volunteer day/i,main:'🤲',props:['❤️','🕊️','🌍']},
+    {key:'migrant-solidarity',test:/international migrants day/i,main:'🌍',props:['🧳','🤝','🏠']},
+    {key:'youth-skills-refined',test:/world youth skills day/i,main:'🚀',props:['💡','🎓','🛠️']},
+    {key:'independence-refined',test:/nigeria independence day/i,main:'🇳🇬',props:['⭐','🎆','🌱']},
+    {key:'africa-environment-refined',test:/africa environment|wangari maathai/i,main:'🌳',props:['🌍','🍃','🌱']},
+    {key:'africa-local-development',test:/africa day of decentralisation/i,main:'🏘️',props:['🏛️','🤝','🌍']},
+    {key:'commonwealth-refined',test:/commonwealth day/i,main:'🌐',props:['🤝','⭐','🌍']},
+    {key:'argungu-refined',test:/argungu/i,main:'🐟',props:['🛶','🎣','🌊']},
+    {key:'tour-nigeria-refined',test:/tour nigeria|bus tour nigeria/i,main:'🚌',props:['🧳','🗺️','🇳🇬']},
+    {key:'new-yam-refined',test:/new yam|iwa ji|iri ji/i,main:'🍠',props:['🌾','🥁','🌱']},
+    {key:'osun-refined',test:/osun-osogbo/i,main:'🌊',props:['🌿','🪘','✨']},
+    {key:'sango-refined',test:/sango festival/i,main:'⚡',props:['🥁','🔥','🌩️']},
+    {key:'ige-agba-refined',test:/ige-agba/i,main:'🌾',props:['🥁','🌱','🎭']},
+    {key:'igbogo-refined',test:/igbogo/i,main:'🎭',props:['🌾','✨','🥁']},
+    {key:'olojo-refined',test:/olojo/i,main:'👑',props:['⚔️','🌅','✨']},
+    {key:'ofala-refined',test:/ofala/i,main:'👑',props:['🦚','🥁','🌿']},
+    {key:'flavours-refined',test:/flavours of nigeria/i,main:'🍲',props:['🌾','🥘','👩🏽‍🍳']},
+    {key:'mmanwu-refined',test:/mmanwu|masquerade/i,main:'🎭',props:['🥁','🪘','🪶']},
+    {key:'beach-refined',test:/beach festival/i,main:'🏖️',props:['🌴','🌊','☀️']},
+    {key:'igue-refined',test:/igue festival/i,main:'👑',props:['🐆','🥁','✨']},
+    {key:'music-festival-refined',test:/music festival/i,main:'🎤',props:['🎸','🥁','🎵']},
+    {key:'countdown-festival-refined',test:/countdown nigeria/i,main:'🎆',props:['🎊','✨','⏳']},
+    {key:'eid-durbar-refined',test:/eid durbar|durbar festival/i,main:'🐎',props:['👑','🥁','🏇']},
+    {key:'isese-day-specific',test:/isese day/i,main:'🪘',props:['🌿','📿','🎭']},
+    {key:'earth-day-specific',test:/earth day/i,main:'🌍',props:['🌱','♻️','🍃']},
+    {key:'blood-donor-awareness',test:/blood donor/i,main:'🩸',props:['❤️','🤝','🩺']},
+    {key:'peace-observance',test:/international day of peace|peace and reconciliation/i,main:'🕊️',props:['🫒','🤝','🌍']},
+    {key:'africa-day-specific',test:/^africa day$/i,main:'🌍',props:['🤝','🌱','⭐']},
+    {key:'africa-school-feeding',test:/school feeding/i,main:'🍲',props:['🥗','📚','🌍']},
+    {key:'africa-traditional-medicine',test:/traditional medicine/i,main:'🌿',props:['🩺','📖','🌍']},
+    {key:'africa-human-rights',test:/africa human rights/i,main:'⚖️',props:['🤝','🕊️','🌍']},
+    {key:'africa-youth-specific',test:/africa youth day/i,main:'🌍',props:['🚀','🎓','⭐']},
+    {key:'national-youth-specific',test:/national youth day/i,main:'🇳🇬',props:['🚀','🎓','💡']},
+    {key:'african-union-specific',test:/african union day|africa border day|african integration day/i,main:'🌍',props:['🤝','🕊️','⭐']},
+    {key:'african-sport-specific',test:/day of african sport/i,main:'🏅',props:['⚽','🏃🏽','🌍']},
+    {key:'statistics-specific',test:/statistics day/i,main:'📊',props:['📈','🧮','🌍']},
+    {key:'industrialisation-specific',test:/industrialisation day/i,main:'🏭',props:['⚙️','📈','💡']},
+    {key:'telecommunications-specific',test:/telecommunications and ict/i,main:'📡',props:['🌐','📱','💡']},
+    {key:'food-security-specific',test:/food security|food day/i,main:'🌾',props:['🍲','🥗','🌱']},
+    {key:'habitat-specific',test:/habitat|cities day/i,main:'🏘️',props:['🌳','🏙️','🌱']},
+    {key:'maritime-specific',test:/maritime day|seas and oceans/i,main:'⚓',props:['🌊','🚢','🐢']},
+    {key:'clean-energy-specific',test:/clean energy/i,main:'⚡',props:['☀️','🌬️','🔋']},
+    {key:'tolerance-specific',test:/day for tolerance/i,main:'🤝',props:['🌍','🕊️','💜']},
+    {key:'friendship-specific',test:/day of friendship/i,main:'🫶',props:['🤝','💗','🌍']},
+    {key:'solidarity-specific',test:/solidarity/i,main:'🤝',props:['🫶','🌍','🕊️']},
+    {key:'world-art-specific',test:/world art day|international dance day|world theatre day/i,main:'🎨',props:['🎭','💃','🖌️']},
+    {key:'poetry-specific',test:/poetry day/i,main:'✍️',props:['📖','🖋️','🌹']},
+    {key:'family-day-specific',test:/day of families/i,main:'👨‍👩‍👧‍👦',props:['🏡','🤝','💗']},
+    {key:'world-population-specific',test:/population day/i,main:'🌍',props:['👥','🏙️','🤝']},
+    {key:'humanitarian-specific',test:/humanitarian day/i,main:'🤲',props:['🕊️','❤️','🌍']},
+    {key:'world-tourism-specific',test:/world tourism day/i,main:'🧳',props:['🚌','🏞️','🇳🇬']},
+    {key:'islamic-new-year-specific',test:/al-hijra|islamic new year/i,main:'🌙',props:['🕌','📖','⭐']},
+    {key:'new-year-specific',test:/new year/i,main:'🎆',props:['🎊','✨','🥂']},
+    {key:'valentines-specific',test:/valentine/i,main:'💌',props:['🌹','💗','🤝']},
+    {key:'boxing-day-specific',test:/boxing day/i,main:'🎁',props:['🎀','💝','🤲']},
+    {key:'family-father-specific',test:/father.s day/i,main:'👨🏽‍👧',props:['🤝','💙','⭐']},
+    {key:'women-day-specific',test:/international women.s day|women.s day/i,main:'👩🏽',props:['💜','🌸','⭐']},
+    {key:'violence-against-women',test:/elimination of violence against women|violence against women/i,main:'🧡',props:['🎗️','🛡️','🤝']},
+    {key:'human-trafficking-awareness',test:/trafficking in persons|human trafficking/i,main:'🛡️',props:['🕊️','🤝','🧡']},
+    {key:'holocaust-remembrance',test:/holocaust/i,main:'🕯️',props:['🕊️','🌼','📖']},
+    {key:'slave-trade-remembrance',test:/slave trade|abolition/i,main:'🕯️',props:['🕊️','📜','🌿']},
+    {key:'armed-forces-remembrance',test:/armed forces.*remembrance|remembrance.*armed forces/i,main:'🎖️',props:['🌺','🕯️','🕊️']},
+    {key:'cuito-remembrance',test:/cuito cuanavale|battle of/i,main:'🕯️',props:['🕊️','📜','🌿']},
+    {key:'racial-equality',test:/elimination of racial discrimination|racial discrimination/i,main:'🤝',props:['⚖️','🌍','🕊️']},
+    {key:'women-science-specific',test:/women and girls in science/i,main:'🔬',props:['👩🏽‍🔬','💡','📚']},
+    {key:'girl-child-rights',test:/girl child/i,main:'👧🏽',props:['📚','🛡️','🌟']},
+    {key:'children-rights-specific',test:/world children.s day|children.s rights/i,main:'🧒🏽',props:['📚','🛡️','🤝']},
+    {key:'african-child-rights',test:/day of the african child|african day of the child/i,main:'🧒🏾',props:['📚','🛡️','🌍']},
+    {key:'autism-acceptance',test:/autism/i,main:'♾️',props:['🫶','🌈','💙']},
+    {key:'disability-inclusion',test:/persons with disabilities|disabilit|accessibility/i,main:'♿',props:['🤝','🌐','💜']},
+    {key:'cancer-awareness',test:/cancer/i,main:'🎗️',props:['🩺','🫶','💗']},
+    {key:'hiv-awareness',test:/aids day|hiv/i,main:'❤️',props:['🎗️','🤝','🕯️']},
+    {key:'tropical-disease-awareness',test:/neglected tropical|tropical diseases|tuberculosis|malaria|hepatitis/i,main:'🩺',props:['🔬','🛡️','💚']},
+    {key:'diabetes-awareness',test:/diabetes/i,main:'🩺',props:['🩸','💙','🤝']},
+    {key:'mental-health-awareness',test:/mental health/i,main:'💚',props:['🫶','🧠','🌿']},
+    {key:'no-tobacco-awareness',test:/no tobacco/i,main:'🚭',props:['🫁','💚','⚕️']},
+    {key:'health-awareness',test:/world health day|blood donor|health day/i,main:'🩺',props:['🫀','🤝','💚']},
+    {key:'refugee-solidarity',test:/refugee/i,main:'🕊️',props:['🏠','🤝','🌍']},
+    {key:'press-freedom-specific',test:/press freedom/i,main:'📰',props:['🎙️','🖋️','🕊️']},
+    {key:'human-rights-specific',test:/human rights/i,main:'⚖️',props:['🤝','🕊️','📜']},
+    {key:'anti-corruption-specific',test:/anti-corruption|corruption/i,main:'⚖️',props:['🔎','🤝','🛡️']},
+    {key:'justice-advocacy',test:/social justice|justice|tolerance|discrimination/i,main:'⚖️',props:['🤝','🕊️','🌍']},
+    {key:'violence-prevention',test:/violence|safety and health at work|drowning prevention/i,main:'🛡️',props:['🤝','⚠️','🕊️']},
+    {key:'indigenous-peoples-rights',test:/indigenous peoples/i,main:'🌿',props:['🪶','📜','🌍']},
+    {key:'sign-language-inclusion',test:/sign languages|mother language/i,main:'🤟',props:['🗣️','🤝','🌍']},
+    {key:'environment-action',test:/environment day|earth day|ozone|zero waste|forests|wildlife|habitat|climate/i,main:'🌍',props:['🌱','♻️','🍃']},
+    {key:'water-protection',test:/water day|water safety|drowning/i,main:'💧',props:['🚰','🌊','🌱']},
+    {key:'peace-remembrance',test:/day of peace|peace and reconciliation/i,main:'🕊️',props:['🫒','🤝','🌍']},
+    {key:'holocaust-remembrance-reserved',test:/never-match-this/i,main:'🕯️',props:['🕊️','🌼','📖']},
+    {key:'ramadan-specific',test:/ramadan|laylat al-qadr/i,main:'🌙',props:['🕌','🤲','📿']},
+    {key:'arafah-specific',test:/arafah/i,main:'🕋',props:['🤲','🌅','📿']},
+    {key:'ashura-specific',test:/ashura/i,main:'🌙',props:['📖','🤲','🕊️']},
+    {key:'eid-specific',test:/eid al-fitr|eid-el-fitr|eid al-adha|eid-el-kabir|eid holiday/i,main:'🌙',props:['🕌','🏮','🎁']},
+    {key:'mawlid-specific',test:/mawlid|maulud/i,main:'🕌',props:['🌙','📿','✨']},
+    {key:'hijri-specific',test:/al-hijra|islamic new year/i,main:'🌙',props:['🕌','📖','⭐']},
+    {key:'good-friday-specific',test:/good friday/i,main:'✝️',props:['🕯️','🌿','🕊️']},
+    {key:'ash-wednesday-specific',test:/ash wednesday/i,main:'✝️',props:['🕯️','🙏','🌿']},
+    {key:'palm-sunday-specific',test:/palm sunday/i,main:'🌿',props:['✝️','🕊️','🌱']},
+    {key:'maundy-thursday-specific',test:/maundy thursday/i,main:'🕯️',props:['🍞','🍷','✝️']},
+    {key:'holy-saturday-specific',test:/holy saturday/i,main:'🕯️',props:['🕊️','🌿','✨']},
+    {key:'easter-sunday-specific',test:/easter sunday/i,main:'✝️',props:['🌅','🌷','🕊️']},
+    {key:'christmas-specific',test:/christmas/i,main:'🎄',props:['🎁','❄️','🛷']},
+    {key:'independence-specific',test:/independence day|nigeria independence/i,main:'🇳🇬',props:['🇳🇬','⭐','🎆']},
+    {key:'democracy-specific',test:/democracy day/i,main:'🗳️',props:['🇳🇬','⚖️','🤝']},
+    {key:'police-service',test:/national police day/i,main:'👮🏾',props:['🛡️','⭐','🤝']},
+    {key:'national-youth-specific',test:/national youth day/i,main:'🇳🇬',props:['🚀','🎓','💡']},
+    {key:'workers-recognition',test:/workers.day|labour day/i,main:'🦺',props:['⚙️','🛠️','🤝']},
+    {key:'teachers-recognition',test:/teachers.? day/i,main:'📚',props:['✏️','🎓','🍎']},
+    {key:'nurses-recognition',test:/nurses day/i,main:'🩺',props:['❤️','🤝','🌿']},
+    {key:'education-recognition',test:/day of education|literacy day|book and copyright/i,main:'📚',props:['🎓','✏️','💡']},
+    {key:'women-recognition',test:/women.s day|africa.s women day/i,main:'👩🏽',props:['🌸','💜','⭐']},
+    {key:'family-appreciation',test:/mothering sunday|father.s day|day of families/i,main:'💗',props:['🌷','🏡','🤝']},
+    {key:'national-army-service',test:/nigerian army day/i,main:'🎖️',props:['🛡️','🇳🇬','⭐']},
+    {key:'national-air-force-service',test:/air force day/i,main:'✈️',props:['🇳🇬','🛡️','⭐']},
+    {key:'national-navy-service',test:/navy day/i,main:'⚓',props:['🇳🇬','🌊','⭐']},
     {key:'autism', test:/autism/i, props:['🧩','🫶','💙']},
     {key:'water-safety', test:/drowning prevention|water safety/i, props:['🛟','🌊','🫧']},
     {key:'indigenous-peoples', test:/indigenous peoples/i, props:['🌿','🪶','🌍']},
@@ -151,6 +279,36 @@
     if(/world |international |international day|african child|migrant/i.test(name)) return 'International observance';
     return 'Community and cultural observance';
   };
+  const presentationForEvent = event => {
+    const name=String(event.name||'');
+    const category=String(event.category||categoryForEvent(name));
+    const c=category.toLowerCase();
+    if(/holocaust|slave trade|cuito cuanavale|remembrance|memorial|genocide|armed forces.*remembrance/i.test(name)){
+      return {tone:'remembrance',label:'REMEMBRANCE & TRIBUTE',upcoming:'REMEMBRANCE DAY',todayKicker:'REMEMBERING · HONOURING · REFLECTING',todayStatus:'DAY OF REMEMBRANCE',footer:'Remembering'};
+    }
+    if(/violence against women|trafficking|cancer|hiv|aids|tuberculosis|malaria|hepatitis|diabetes|health day|mental health|autism|disabilit|accessibility|racial discrimination|social justice|human rights|anti-corruption|press freedom|refugee|girl child|children.s day|no tobacco|zero waste|clean energy|water day|water safety|drowning prevention|environment|wildlife|forest|ozone|climate|safety and health|food security|nutrition|indigenous peoples|sign languages|tolerance|habitat|school feeding|population day|seas and oceans|migrants day|braille|peace|international day of democracy|african child|maritime|cities day|earth day|urban/i.test(name)){
+      return {tone:'awareness',label:'AWARENESS & ADVOCACY',upcoming:'AWARENESS DAY',todayKicker:'AWARENESS IN ACTION · DIGNITY · SOLIDARITY',todayStatus:'AWARENESS DAY',footer:'Standing with'};
+    }
+    if(/ramadan|laylat al-qadr|arafah|ashura|mawlid|maulud|al-hijra|islamic new year|ash wednesday|palm sunday|maundy thursday|holy saturday|good friday|mothering sunday|isese day/i.test(name)){
+      return {tone:'religious',label:'RELIGIOUS OBSERVANCE',upcoming:'RELIGIOUS OBSERVANCE',todayKicker:'A DAY OF FAITH · REFLECTION · PRAYER',todayStatus:'RELIGIOUS OBSERVANCE',footer:'Observing'};
+    }
+    if(/eid al-fitr|eid-el-fitr|eid al-adha|eid-el-kabir|christmas|easter sunday|easter monday/i.test(name)){
+      return {tone:'religious-celebration',label:'RELIGIOUS CELEBRATION',upcoming:'RELIGIOUS CELEBRATION',todayKicker:'FAITH · HOPE · COMMUNITY',todayStatus:'RELIGIOUS CELEBRATION',footer:'Celebrating'};
+    }
+    if(/new year|valentine|boxing day|father.s day|international day of families|happiness/i.test(name)){
+      return {tone:'celebration',label:'CELEBRATION & TOGETHERNESS',upcoming:'SPECIAL DAY',todayKicker:'TOGETHERNESS · JOY · KINDNESS',todayStatus:'TODAY IS THE DAY',footer:'Celebrating'};
+    }
+    if(/nigerian independence|independence day|democracy day|national police day|national youth day|nigerian army day|nigerian navy day|nigerian air force day|armed forces celebration/i.test(name)||c==='nigerian national observance'||c==='nigerian public holiday'){
+      return {tone:'national',label:'NATIONAL DAY & COMMEMORATION',upcoming:'NATIONAL OBSERVANCE',todayKicker:'HONOURING OUR NATION · SERVICE · UNITY',todayStatus:'NATIONAL OBSERVANCE',footer:'Honouring'};
+    }
+    if(event.season||/festival|carnival|durbar|ofala|osun|argungu|new yam|mmanwu|igue|olojo|igbogo|nyalo|regatta|sango|boat show|beach festival|music festival|fashion festival/i.test(name)||/nigerian cultural festival|nigerian cultural event|nigerian tourism event/i.test(category)){
+      return {tone:'festival',label:'CULTURAL FESTIVAL & HERITAGE',upcoming:'CULTURAL FESTIVAL',todayKicker:'CULTURE · HERITAGE · COMMUNITY',todayStatus:'FESTIVAL IN PROGRESS',footer:'Celebrating the heritage of'};
+    }
+    if(/workers|teachers|nurses|education|skills day|youth day|women.s day|men.s day|families|small and medium|small businesses|public service|volunteer|friendship|sport|poetry|art day|theatre|dance|language|literacy|books|science|telecommunication|statistics|industrialisation|africa day|african union|integration|commonwealth|traditional medicine|tourism|maritime|cultural diversity|mandela|human solidarity|united nations|international cooperation|african union|africa day|african public service|statistics|industrialisation|telecommunication|traditional medicine|sport|science|education|art day|theatre|dance|poetry|literacy|books|language|commonwealth|cultural diversity/i.test(name)||/african union observance|state-level observance|international observance/i.test(c)){
+      return {tone:'recognition',label:'RECOGNITION & APPRECIATION',upcoming:'DAY OF RECOGNITION',todayKicker:'RECOGNISING CONTRIBUTION · SERVICE · IMPACT',todayStatus:'DAY OF RECOGNITION',footer:'Recognising'};
+    }
+    return {tone:'observance',label:'DAY OF OBSERVANCE',upcoming:'UPCOMING OBSERVANCE',todayKicker:'A DAY THAT MATTERS · LEARNING · CONNECTION',todayStatus:'OBSERVANCE TODAY',footer:'Observing'};
+  };
   const localParts = date => {
     const p = Object.fromEntries(fmtParts.formatToParts(date).map(x => [x.type, x.value]));
     return {year:+p.year,month:+p.month,day:+p.day,hour:+p.hour,minute:+p.minute,second:+p.second};
@@ -277,7 +435,7 @@
       [11,16,'International Day for Tolerance','🤝','Promoting respect, understanding and peaceful coexistence.','CHOOSE RESPECT AND TOLERANCE!','#e6c17c','#6a548f','Tolerance'],
       [11,19,'International Men’s Day','👨🏾','Recognising positive contributions of men and boys and promoting wellbeing.','INTERNATIONAL MEN’S DAY!','#8dbce1','#475a92','Men'],
       [11,20,'World Children’s Day','🧒🏾','Promoting children’s rights, safety, education and participation.','WORLD CHILDREN’S DAY!','#e8c56c','#4e94b3','Children'],
-      [11,25,'International Day for the Elimination of Violence against Women','🧡','Supporting safety, dignity and freedom from violence for women and girls.','ORANGE THE WORLD · END VIOLENCE!','#efaa75','#a44d67','Safety'],
+      [11,25,'International Day for the Elimination of Violence against Women','🧡','Supporting safety, dignity and freedom from violence for women and girls.','ORANGE THE WORLD · END VIOLENCE!','#efaa75','#a44d67','Women’s safety'],
       [12,1,'World AIDS Day','❤️','Remembering those affected by HIV and supporting prevention, treatment and solidarity.','WORLD AIDS DAY!','#e57c94','#94435c','Health and solidarity'],
       [12,3,'International Day of Persons with Disabilities','♿','Promoting accessibility, inclusion and equal participation for persons with disabilities.','INCLUSION FOR EVERYONE!','#8bc5dc','#4c5896','Accessibility'],
       [12,5,'International Volunteer Day','🤲','Thanking volunteers who give time and skills to support communities.','THANK YOU, VOLUNTEERS!','#e0bc72','#5c6f8a','Volunteers'],
@@ -288,6 +446,22 @@
       [12,24,'Christmas Eve','🕯️','A joyful Christmas Eve of reflection, family and anticipation.','WISHING YOU A PEACEFUL CHRISTMAS EVE!','#e6c16d','#8d4660','Christmas Eve'],
       [12,31,'New Year’s Eve','🎇','Celebrating the year’s journey and welcoming a new beginning.','HAPPY NEW YEAR’S EVE!','#e8bf61','#8f43da','New Year’s Eve']
     ];
+    // Restore core annual dates that were previously removed as apparent duplicates.
+    annualObservances.push(
+      [3,8,'International Women’s Day','👩🏽','Recognising the achievements, leadership, rights and contributions of women and girls.','HAPPY INTERNATIONAL WOMEN’S DAY!','#c18be0','#70428f','Women’s Day'],
+      [3,20,'International Day of Happiness','😊','Promoting wellbeing, kindness and the importance of happiness in our communities.','HAPPY INTERNATIONAL DAY OF HAPPINESS!','#f5d56d','#35a98b','Happiness'],
+      [3,22,'World Water Day','💧','Raising awareness of the importance of freshwater and advocating for sustainable water management.','WORLD WATER DAY · EVERY DROP MATTERS!','#55c6f4','#1764b4','Water'],
+      [4,7,'World Health Day','🩺','Drawing attention to a priority health issue and supporting healthier communities for everyone.','WORLD HEALTH DAY!','#55c78b','#2675a5','Health'],
+      [4,22,'Earth Day','🌎','Mobilising care and action to protect the planet and its natural systems.','EARTH DAY · ACT FOR OUR PLANET!','#5ecb83','#2875ad','Planet'],
+      [5,27,'Children’s Day (Nigeria)','🧒🏾','Recognising Nigerian children, their rights, safety, education and opportunities to thrive.','HAPPY CHILDREN’S DAY!','#ffd56b','#4d9bd4','Children'],
+      [6,5,'World Environment Day','🌱','Encouraging action to protect the environment and build a cleaner, healthier future.','WORLD ENVIRONMENT DAY · ACT FOR NATURE!','#68d18a','#218b68','Environment'],
+      [6,12,'Democracy Day (Nigeria)','🇳🇬','Recognising democracy, civic participation and the people who shape Nigeria’s future.','HAPPY DEMOCRACY DAY!','#61c986','#238d57','Democracy'],
+      [7,15,'World Youth Skills Day','🚀','Highlighting the importance of equipping young people with skills for work, enterprise and life.','WORLD YOUTH SKILLS DAY!','#e8bb64','#7b43c7','Youth skills'],
+      [8,12,'International Youth Day','🌟','Recognising young people’s contributions and the importance of their participation in society.','HAPPY INTERNATIONAL YOUTH DAY!','#e8c35e','#7950dc','Youth'],
+      [9,21,'International Day of Peace','🕊️','Promoting peace, non-violence, understanding and cooperation across communities.','INTERNATIONAL DAY OF PEACE!','#9bd9ef','#4b88c9','Peace'],
+      [10,1,'Nigeria Independence Day','🇳🇬','Commemorating Nigeria’s independence and recognising the country’s people, history and aspirations.','HAPPY INDEPENDENCE DAY, NIGERIA!','#67d28c','#16834e','Independence'],
+      [10,5,'World Teachers’ Day','📚','Recognising teachers and the essential role of educators in shaping futures.','WORLD TEACHERS’ DAY · THANK YOU, EDUCATORS!','#e9c66a','#6d48b6','Teachers']
+    );
     annualObservances.forEach(([m,d,name,emoji,description,greeting,accent,secondary,label])=>
       add(m,d,{name,emoji,description,greeting,accent,secondary,label,category:categoryForEvent(name)})
     );
@@ -481,19 +655,23 @@
     const scene=sceneForEvent(event.name);
     $('event-art').dataset.scene=scene.key;
     $('event-art').setAttribute('aria-label',scene.key.replace(/-/g,' ')+' celebration scene');
-    $('event-emoji').textContent=event.emoji;
+    const presentation=presentationForEvent(event);
+    root.dataset.tone=presentation.tone;
+    $('event-art').dataset.tone=presentation.tone;
+    $('event-art').setAttribute('aria-label',event.name+' — '+presentation.label.toLowerCase());
+    $('event-emoji').textContent=scene.main||event.emoji;
     $('event-scene-prop-one').textContent=scene.props[0];
     $('event-scene-prop-two').textContent=scene.props[1];
     $('event-scene-prop-three').textContent=scene.props[2];
     $('event-title').textContent=event.name;
     $('event-date').textContent=(event.dateLabel||dateFmt.format(event.start))+(event.dateNote?' · '+event.dateNote:(event.tentative&&!event.dateLabel?(event.category&&/public holiday|eid|mawlud/i.test(event.category+' '+event.name)?' · TENTATIVE — MAY SHIFT WITH MOON SIGHTING':' · EXPECTED DATE — LOCAL CONFIRMATION PENDING'):''));
-    $('event-category').textContent=event.category||categoryForEvent(event.name);
-    $('event-kicker').textContent=activeSeason?'FESTIVAL WINDOW · LOCAL PROGRAMME DATES VARY':(celebrating?'TODAY · CELEBRATION MODE':(event.season?'COUNTING DOWN TO THE FESTIVAL PERIOD':'COUNTING DOWN TO THE NEXT CELEBRATION'));
-    $('event-status').textContent=activeSeason?'FESTIVAL PERIOD':(celebrating?'TODAY IS THE DAY':'UPCOMING CELEBRATION');
+    $('event-category').textContent=presentation.label;
+    $('event-kicker').textContent=activeSeason?'CULTURAL FESTIVAL WINDOW · LOCAL DATES VARY':(celebrating?presentation.todayKicker:'COUNTING DOWN TO THE NEXT DAY THAT MATTERS');
+    $('event-status').textContent=activeSeason?'FESTIVAL PERIOD':(celebrating?presentation.todayStatus:'UPCOMING · '+presentation.upcoming);
     $('event-greeting').textContent=event.greeting;
     $('event-description').textContent=event.description;
-    $('event-footer-label').textContent=activeSeason?event.label+' season is in progress':(celebrating?event.label+' celebration is live':'Next up: '+event.label);
-    $('event-calendar-note').textContent='DCDS · NIGERIA TIME · '+(activeSeason?'SEASON WINDOW · CHECK LOCAL PROGRAMME':(celebrating?'CELEBRATING TODAY':'AUTOMATIC LIVE COUNTDOWN'));
+    $('event-footer-label').textContent=activeSeason?event.label+' season is in progress':(celebrating?presentation.footer+': '+event.label:'Next up: '+event.label);
+    $('event-calendar-note').textContent='DCDS · NIGERIA TIME · '+(activeSeason?'SEASON WINDOW · CHECK LOCAL PROGRAMME':(celebrating?presentation.todayStatus:'AUTOMATIC LIVE COUNTDOWN'));
     if(celebrating){
       ['days','hours','minutes','seconds'].forEach(key=>$('count-'+key).textContent='00');
       return;
