@@ -909,8 +909,8 @@ Deno.serve(async (request: Request) => {
   }
 
   const promptMessage = message || "Please analyse the attached image and explain what you can help me with.";
-  const skipPlatformSearch = (isRootAdmin && /\\b(biography|bio|who am i|what is my name|tell me about myself)\\b/i.test(promptMessage))
-    || /^\\s*(hi|hello|hey|good morning|good afternoon|good evening)\\s*[!.?]*\\s*$/i.test(promptMessage);
+  const skipPlatformSearch = (isRootAdmin && /\b(biography|bio|who am i|what is my name|tell me about myself)\b/i.test(promptMessage))
+    || /^\s*(hi|hello|hey|good morning|good afternoon|good evening)\s*[!.?]*\s*$/i.test(promptMessage);
   const [platformSearch, discoveredModels] = await Promise.all([
     (skipPlatformSearch
       ? Promise.resolve({
@@ -1085,7 +1085,7 @@ ${savedMemoryInstruction}`;
     studentAccountContext.slice(0, 850),
     "STUDENT-SAVED LEARNING CONTEXT",
     savedMemoryInstruction.slice(0, 450),
-  ].filter(Boolean).join("\\n\\n");
+  ].filter(Boolean).join("\n\n");
 
   console.info("DCDS AI prompt budget prepared.", {
     requestId,
