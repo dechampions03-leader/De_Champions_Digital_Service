@@ -1979,7 +1979,7 @@ async function refreshDcdsAuthCapabilities(){
 }
 function authScreen(message=''){
  const signup=authMode==='signup';
- openModal(`${authBrandMarkup()}<h2 id="modalTitle">${signup?'Create your DCDS account':'Welcome back'}</h2><p class="modal-sub">${signup?'Create your account and start your digital learning journey.':'Sign in to your DCDS account. Administrator access is displayed only after your role is verified.'}</p>
+ openModal(`${authBrandMarkup()}<h2 id="modalTitle">${signup?'Create your DCDS account':'DCDS Login'}</h2><p class="modal-sub">${signup?'Create your account and start your digital learning journey.':'Sign in with your registered email or mobile number. Authorised administrators are directed to the Administration Portal after their role is verified.'}</p>
  <div class="tabs"><button class="tab ${signup?'':'active'}" type="button" data-mode="login">Log in</button><button class="tab ${signup?'active':''}" type="button" data-mode="signup">Create account</button></div>
  <form id="authForm">${signup?'<label class="field"><span>Full name</span><input id="studentName" name="name" autocomplete="name" maxlength="100" required></label>':''}
  <label class="field"><span>${signup?'Email address':'Email address or mobile number'}</span><input id="studentEmail" name="email" type="${signup?'email':'text'}" autocomplete="${signup?'email':'username'}" placeholder="${signup?'name@example.com':'name@example.com or +2348012345678'}" required></label>
