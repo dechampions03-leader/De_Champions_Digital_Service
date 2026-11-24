@@ -134,6 +134,8 @@ main{width:min(1180px,calc(100% - 32px));margin:auto;padding:28px 0 64px}
     <div id="platformCollections" class="collection-grid" aria-label="Separate AI platform prompt libraries"></div>
   </section>
 
+  <div id="accessRoleNote" class="disclaimer" hidden></div>
+
   <div class="intro-row">
     <div><h2>Find your next prompt</h2><p>Every prompt explains what it is designed to do, gives an example brief, and provides a copy-ready instruction. The platform label and coloured arrow identify where that individual prompt is intended to be used.</p></div>
     <div class="hint">One platform per card · Purple and gold frame · Copy-ready format</div>
@@ -320,6 +322,13 @@ async function loadPage(){
     }
     if(!data?.success)throw new Error(data?.error||'The prompt collection could not be loaded.');
     if(!optionsLoaded)populateFilters(data.categories,data.directions);
+    const accessRoleNote=document.getElementById('accessRoleNote');
+    if(data.accessRole==='admin_preview'){
+      accessRoleNote.textContent='Administrator preview access is active. Enrolled students will see this library after their own course enrolment is verified.';
+      accessRoleNote.hidden=false;
+    }else{
+      accessRoleNote.hidden=true;
+    }
     pageItems=Array.isArray(data.items)?data.items:[];
     totalMatches=Number(data.total)||0;
     const start=totalMatches?(currentPage-1)*PAGE_SIZE+1:0;
