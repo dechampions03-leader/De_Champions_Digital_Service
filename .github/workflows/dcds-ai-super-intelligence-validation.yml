@@ -142,6 +142,9 @@ jobs:
                   and '"gemini-3.6-flash"' in function
                   and '"gemini-3.5-flash-lite"' in function
                   and '"gemini-3.1-flash-lite"' in function
+                  and '"gemma-4-26b-a4b-it"' in function
+                  and '"gemma-4-31b-it"' in function
+                  and '/^(?:gemini|gemma)-[a-z0-9.-]+$/i.test(name)' in function
                   and "gemini-4-carbon" not in function
                   and "gemini-4-argon" not in function,
               "Discovered Gemini models cannot bypass the free-tier allowlist":
@@ -154,10 +157,13 @@ jobs:
                   '"PROVIDER_COOLDOWN"' in function
                   and "retry_after_seconds" in function
                   and "retryAfterSeconds" in function,
-              "Gemini generation has a bounded 52-second retry window instead of a 7-second per-model abort":
-                  "Date.now() + 52_000" in function
-                  and "Math.min(14_000, generationDeadline - Date.now())" in function
-                  and "const maxModelAttempts = 5" in function,
+              "Gemini and Gemma fallback routing has a bounded 42-second generation window":
+                  "Date.now() + 42_000" in function
+                  and "Math.min(attemptedModels <= 2 ? 7_000 : 5_500, generationDeadline - Date.now())" in function
+                  and "const maxModelAttempts = 7" in function,
+              "the free-tier fallback pool includes hosted Gemma 4 after the Gemini models":
+                  function.indexOf('"gemini-3.1-flash-lite"') < function.indexOf('"gemma-4-26b-a4b-it"')
+                  and function.indexOf('"gemma-4-26b-a4b-it"') < function.indexOf('"gemma-4-31b-it"'),
               "normal DCDS tutoring turns prefer the documented fast Flash-Lite model":
                   'Deno.env.get("DCDS_AI_MODEL") || "gemini-3.5-flash-lite"' in function
                   and function.find('"gemini-3.5-flash-lite"') < function.find('"gemini-3.8-flash"'),
