@@ -157,7 +157,7 @@ jobs:
               "Gemini generation has a bounded 52-second retry window instead of a 7-second per-model abort":
                   "Date.now() + 52_000" in function
                   and "Math.min(14_000, generationDeadline - Date.now())" in function
-                  and "const maxModelAttempts = 4" in function,
+                  and "const maxModelAttempts = 5" in function,
               "normal DCDS tutoring turns prefer the documented fast Flash-Lite model":
                   'Deno.env.get("DCDS_AI_MODEL") || "gemini-3.5-flash-lite"' in function
                   and function.find('"gemini-3.5-flash-lite"') < function.find('"gemini-3.8-flash"'),
