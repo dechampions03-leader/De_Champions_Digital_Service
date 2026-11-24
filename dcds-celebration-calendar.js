@@ -90,7 +90,7 @@
     {key:'boxing-day-specific',test:/boxing day/i,main:'🎁',props:['🎀','💝','🤲']},
     {key:'family-father-specific',test:/father.s day/i,main:'👨🏽‍👧',props:['🤝','💙','⭐']},
     {key:'women-day-specific',test:/international women.s day|women.s day/i,main:'👩🏽',props:['💜','🌸','⭐']},
-    {key:'violence-against-women',test:/elimination of violence against women|violence against women/i,main:'🧡',props:['🎗️','🛡️','🤝']},
+    {key:'violence-against-women',test:/elimination of violence against women|violence against women/i,main:'🎗️',props:['🛡️','👭','🕊️']},
     {key:'human-trafficking-awareness',test:/trafficking in persons|human trafficking/i,main:'🛡️',props:['🕊️','🤝','🧡']},
     {key:'holocaust-remembrance',test:/holocaust/i,main:'🕯️',props:['🕊️','🌼','📖']},
     {key:'slave-trade-remembrance',test:/slave trade|abolition/i,main:'🕯️',props:['🕊️','📜','🌿']},
