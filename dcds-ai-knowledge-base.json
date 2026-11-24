@@ -338,5 +338,159 @@
       "Give feedback on the work the learner actually shares; never fabricate a score or claim that practice updates official progress.",
       "Never ask for passwords, OTPs, private student data, payment information or API credentials."
     ]
+  },
+  "platform_directory": {
+    "purpose": "A route-aware directory of DCDS public learning programmes, student services and protected administrative workspaces. Use this directory when a person asks what DCDS offers, which programme is available, or where to find a platform feature. Confirm changing course fees, availability and account entitlements from current live records before presenting them.",
+    "student_programmes": [
+      {
+        "name": "Public Website and Course Catalogue",
+        "route": "index.html#courses",
+        "audience": "public and students",
+        "description": "The DCDS homepage introduces the academy, lists its digital-skills courses and provides access to public services and information."
+      },
+      {
+        "name": "DCDS General Course",
+        "route": "general-course.html",
+        "audience": "students",
+        "description": "A separately listed learning package described by DCDS as a library of more than 100 courses with four learning channels."
+      },
+      {
+        "name": "DCDS AI Learning Assistant",
+        "route": "ai-learning-assistant.html",
+        "audience": "eligible adults, verified students and authorised administrators subject to current access rules",
+        "description": "Deyriva provides digital-skills explanations, step-by-step tutoring, learning guidance and approved DCDS platform information."
+      },
+      {
+        "name": "DCDS Prompt Studio",
+        "route": "prompt-library.html",
+        "audience": "verified students with the required course entitlement",
+        "description": "A protected library with 60,000 prompt combinations across ChatGPT, Claude, Gemini and Grok. Access is checked server-side against the student's own enrolment."
+      },
+      {
+        "name": "Student Dashboard",
+        "route": "student-dashboard.html",
+        "audience": "verified students",
+        "description": "The student home for enrolled courses, notifications, certificates, the Global Ambassador and Rewards Programme, and the Student Support Centre."
+      },
+      {
+        "name": "Student Learning Portal",
+        "route": "learn.html",
+        "audience": "verified students with the appropriate course enrolment",
+        "description": "Provides course access, learning progress, lessons, quizzes, assignments, learning materials and the certificate experience."
+      },
+      {
+        "name": "My Learning Hub",
+        "route": "student-learning-hub.html",
+        "audience": "verified students",
+        "description": "A personal learning workspace with continue-learning access, weekly learning goals, learning achievements and study history."
+      },
+      {
+        "name": "Professional Learning Centre",
+        "route": "student-learning-centre.html",
+        "audience": "verified students",
+        "description": "Provides guided learning paths, course discussions, student portfolios, live workshops and classes, assessment feedback and course resources."
+      },
+      {
+        "name": "Quizzes and Assignments",
+        "route": "assessments.html",
+        "audience": "verified students with relevant course access",
+        "description": "The student assessment area for available quizzes and course assignments."
+      },
+      {
+        "name": "Student Community Network",
+        "route": "student-community.html",
+        "audience": "eligible verified students subject to age, consent and community safety rules",
+        "description": "Includes the professional directory, group chat, community lounge, project and portfolio sharing, and community participation features."
+      },
+      {
+        "name": "Career and Mentorship Centre",
+        "route": "student-career-centre.html",
+        "audience": "verified students",
+        "description": "Supports career profiles, mentor discovery, mentorship requests, career opportunities, applications and career progress."
+      },
+      {
+        "name": "Global Ambassador and Rewards Programme",
+        "route": "student-dashboard.html",
+        "audience": "eligible students under the programme rules",
+        "description": "The DCDS student dashboard includes the ambassador and rewards programme. Eligibility, referral attribution and payout information remain governed by the platform's official controls."
+      },
+      {
+        "name": "Airtime and Data",
+        "route": "airtime-data.html",
+        "audience": "signed-in users who meet checkout requirements",
+        "description": "The DCDS VTU area for supported airtime and data services, with provider and checkout availability determined by current configuration."
+      },
+      {
+        "name": "Student Support Centre",
+        "route": "student-dashboard.html#studentSupportPanel",
+        "audience": "signed-in students",
+        "description": "The individual support route for account, course and other student issues. Financial disputes are handled through the authorised human support process."
+      },
+      {
+        "name": "Student Reviews",
+        "route": "index.html",
+        "audience": "public and students",
+        "description": "The public website displays approved student reviews and ratings."
+      }
+    ],
+    "administrative_workspaces": [
+      {
+        "name": "Administration Portal",
+        "route": "student-management.html",
+        "audience": "authorised DCDS administrators only",
+        "description": "The main protected operations workspace for student management, account access, payments and receipts, enrolments, certificates, regional pricing, rewards and administrator actions. Deyriva does not perform these actions."
+      },
+      {
+        "name": "Communications and Student Affairs",
+        "route": "admin-notifications.html",
+        "audience": "authorised DCDS administrators only",
+        "description": "The Administration Portal communications workspace for announcements, student notifications, reviews and ratings, and the support inbox."
+      },
+      {
+        "name": "Assessment Management",
+        "route": "admin-assessments.html",
+        "audience": "authorised DCDS administrators only",
+        "description": "Create and manage quizzes, questions, assignments, grading and student submissions."
+      },
+      {
+        "name": "Community and Safety Centre",
+        "route": "admin-community.html",
+        "audience": "authorised DCDS administrators only",
+        "description": "Manage community age review and guardian consent, memberships, profiles, group chat moderation, showcases, comments, safety reports and credential review."
+      },
+      {
+        "name": "Career and Mentorship Administration",
+        "route": "admin-career-centre.html",
+        "audience": "authorised DCDS administrators only",
+        "description": "Manage mentors, mentorship requests and sessions, career opportunities, applications, graduate outcomes and career operations."
+      },
+      {
+        "name": "Professional Learning Centre Administration",
+        "route": "admin-learning-centre.html",
+        "audience": "authorised DCDS administrators only",
+        "description": "Manage guided learning paths, course discussion moderation, portfolio review, live workshops and classes, learning resources and assessment rubrics."
+      },
+      {
+        "name": "DCDS AI Access Review",
+        "route": "dcds-ai-access-review.html",
+        "audience": "authorised DCDS administrators only",
+        "description": "Review AI access eligibility and related adult or guardian-consent requests under the current provider and safeguarding rules."
+      },
+      {
+        "name": "Account Deletion Review",
+        "route": "admin-account-deletions.html",
+        "audience": "authorised DCDS administrators only",
+        "description": "Review account deletion requests and associated retention or audit requirements."
+      }
+    ],
+    "guidance": [
+      "When listing DCDS programmes, distinguish student-facing services from protected administrative workspaces.",
+      "Do not imply that a student can open an administrative route or that an administrator can view another student's private AI conversations.",
+      "Use the current live course catalogue and database for changing prices, course status, enrolment, access and service availability.",
+      "Do not invent programmes, course modules, schedules, entitlements or external subscriptions.",
+      "Deyriva may explain where a feature is located, but she must not claim to approve payments, issue payouts, change student records or perform other administrative actions.",
+      "Student identity questions must use only the signed-in student's profile name and own-enrolment context. Never reveal another student's conversations or memory.",
+      "The verified Root Administrator should be addressed as Administrator or Director. Do not volunteer the Founder/CEO identity unless the person directly asks."
+    ]
   }
 }

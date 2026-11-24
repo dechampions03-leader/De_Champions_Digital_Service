@@ -452,7 +452,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
   </div>
   <button class="icon-action mobile-menu-trigger" id="mobileMenuBtn" type="button" aria-label="Open navigation menu" aria-expanded="false" aria-controls="mobileNavPanel"><span class="hamburger-lines" aria-hidden="true"><i></i><i></i><i></i></span></button>
   <a class="button dashboard-nav-btn" href="student-dashboard.html" aria-label="Open my student dashboard"><span class="dash-icon" aria-hidden="true">▦</span> MY DASHBOARD</a>
-  <button class="button button-light button-small" id="accountBtn" type="button">Student Login</button>
+  <button class="button button-light button-small" id="accountBtn" type="button">Login</button>
  </div>
  <nav class="mobile-nav-panel" id="mobileNavPanel" aria-label="Mobile navigation" hidden>
   <a class="mobile-dashboard-link" href="student-dashboard.html"><span aria-hidden="true">▦</span><span>MY DASHBOARD <small style="display:block;color:#79658f;font-size:10px;font-weight:650">Your personal learning space</small></span><span style="margin-left:auto">→</span></a>
@@ -1837,6 +1837,8 @@ let pendingVerificationMethod = 'email';
 let dcdsPhoneOtpEnabled = false;
 let otpCountdownTimer = null;
 let authNextPath = '';
+let dcdsAccountRole = 'visitor';
+let dcdsRoleLookupSequence = 0;
 // Preserve a valid DCDS referral code for this browser tab until signup.
 // The database independently validates that the code belongs to an active ambassador.
 const DCDS_REFERRAL_CODE = (() => {
@@ -1858,7 +1860,7 @@ function safeInternalNext(raw){
   const target=new URL(raw,base);
   if(target.origin!==window.location.origin || !target.pathname.startsWith(base.pathname))return '';
   const page=target.pathname.split('/').pop();
-  if(!['student-dashboard.html','learn.html','general-course.html','admin-notifications.html'].includes(page))return '';
+  if(!['student-dashboard.html','learn.html','general-course.html','admin-notifications.html','student-management.html','admin-assessments.html','admin-community.html','admin-learning-centre.html','admin-career-centre.html','admin-account-deletions.html','dcds-ai-access-review.html'].includes(page))return '';
   return target.pathname+target.search+target.hash;
  }catch(_){return '';}
 }
@@ -1977,7 +1979,7 @@ async function refreshDcdsAuthCapabilities(){
 }
 function authScreen(message=''){
  const signup=authMode==='signup';
- openModal(`${authBrandMarkup()}<h2 id="modalTitle">${signup?'Create your DCDS account':'Welcome back, Champion'}</h2><p class="modal-sub">${signup?'Create your account and start your digital learning journey.':'Log in to continue to your DCDS learning space.'}</p>
+ openModal(`${authBrandMarkup()}<h2 id="modalTitle">${signup?'Create your DCDS account':'DCDS Login'}</h2><p class="modal-sub">${signup?'Create your account and start your digital learning journey.':'Sign in with your registered email or mobile number. Authorised administrators are directed to the Administration Portal after their role is verified.'}</p>
  <div class="tabs"><button class="tab ${signup?'':'active'}" type="button" data-mode="login">Log in</button><button class="tab ${signup?'active':''}" type="button" data-mode="signup">Create account</button></div>
  <form id="authForm">${signup?'<label class="field"><span>Full name</span><input id="studentName" name="name" autocomplete="name" maxlength="100" required></label>':''}
  <label class="field"><span>${signup?'Email address':'Email address or mobile number'}</span><input id="studentEmail" name="email" type="${signup?'email':'text'}" autocomplete="${signup?'email':'username'}" placeholder="${signup?'name@example.com':'name@example.com or +2348012345678'}" required></label>
@@ -2092,6 +2094,27 @@ async function submitAuth(e){
 }
 function hasDcdsVerifiedContact(user){
  return Boolean(user?.email_confirmed_at||user?.phone_confirmed_at);
+}
+async function refreshDcdsAccountButton(user){
+ const requestSequence=++dcdsRoleLookupSequence;
+ if(!user||!hasDcdsVerifiedContact(user)){
+  dcdsAccountRole='visitor';
+  if($('accountBtn'))$('accountBtn').textContent='Login';
+  return dcdsAccountRole;
+ }
+ let resolvedRole='student';
+ try{
+  const {data:isAdmin,error}=await supabaseClient.rpc('is_dcds_admin');
+  if(error)throw error;
+  if(isAdmin===true)resolvedRole='admin';
+ }catch(error){
+  console.warn('DCDS administrator portal label could not be verified:',error);
+  resolvedRole='unverified';
+ }
+ if(requestSequence!==dcdsRoleLookupSequence)return dcdsAccountRole;
+ dcdsAccountRole=resolvedRole;
+ if($('accountBtn'))$('accountBtn').textContent=resolvedRole==='admin'?'Admin Portal':resolvedRole==='student'?'My Account':'Account';
+ return dcdsAccountRole;
 }
 function showPendingAccountVerification(user,message){
  const method=user?.user_metadata?.dcds_signup_verification_method==='sms'?'sms':'email';
@@ -2268,7 +2291,8 @@ async function afterAuthentication(user){
   return;
  }
  pendingVerificationEmail='';pendingVerificationPhone='';pendingVerificationMethod='email';stopOtpCountdown();
- $('accountBtn').textContent='My Account';
+ await refreshDcdsAccountButton(user);
+ if(!authNextPath&&dcdsAccountRole==='admin'){window.location.replace('student-management.html');return;}
  if(authNextPath){const destination=authNextPath;authNextPath='';window.location.replace(destination);return;}
  if(selectedCourseIndex!==null){showEnrollment(selectedCourseIndex,user);return;}
    openModal(`<h2 id="modalTitle">Welcome to DCDS</h2><p class="modal-sub">You are signed in as <b>${escapeHtml(user.email||'DCDS student')}</b>.</p><div class="signed-in">Your student account is connected successfully.</div><button class="button button-primary" id="accountDone" style="width:100%">Continue browsing courses</button>`);$('accountDone').onclick=closeModal;
@@ -2538,6 +2562,9 @@ if(generalBuyButton)generalBuyButton.addEventListener('click',async()=>{
 async function showAccount(){
  if(!supabaseClient){authMode='login';authScreen('Account service could not load.');return;}
  try{const {data:{user},error}=await supabaseClient.auth.getUser();if(error)throw error;if(!user){authMode='login';authScreen();return;}if(!hasDcdsVerifiedContact(user)){showPendingAccountVerification(user,'Verify your selected contact method to activate your student account.');return;}
+ await refreshDcdsAccountButton(user);
+ if(dcdsAccountRole==='admin'){window.location.assign('student-management.html');return;}
+ if(dcdsAccountRole==='unverified'){openModal('<h2 id="modalTitle">Account verification unavailable</h2><p class="modal-sub">Your account is signed in, but DCDS could not verify the workspace permissions. Please try again shortly.</p>');return;}
  openModal(`<h2 id="modalTitle">My DCDS account</h2><p class="modal-sub">Student account details</p><div class="selected-course"><span>FULL NAME</span><strong>${escapeHtml(user.user_metadata?.full_name||'DCDS Student')}</strong><span style="display:block;margin-top:10px">EMAIL ADDRESS</span><strong style="font-size:15px">${escapeHtml(user.email||'')}</strong></div><button class="button button-light" id="logoutBtn" style="width:100%">Log out</button>`);
  $('logoutBtn').onclick=async()=>{const {error}=await supabaseClient.auth.signOut();if(error){openModal(`<h2 id="modalTitle">Could not log out</h2><p class="modal-sub">${escapeHtml(error.message)}</p>`);return;}$('accountBtn').textContent='Student Login';setNotificationAccess(false);studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();closeModal();};
  }catch(err){authMode='login';authScreen(err.message||'Could not load your account.');}
@@ -2547,13 +2574,13 @@ if(supabaseClient){
  supabaseClient.auth.onAuthStateChange((event,session)=>{
   if(event==='PASSWORD_RECOVERY'){setTimeout(showPasswordRecoveryScreen,0);return;}
   const signedIn=hasDcdsVerifiedContact(session?.user);
-  $('accountBtn').textContent=signedIn?'My Account':'Student Login';
+  void refreshDcdsAccountButton(session?.user);
   setNotificationAccess(signedIn);
   if(signedIn){setTimeout(()=>refreshStudentEnrollmentState(),0);}else{studentEnrollmentIds=new Set();hasGeneralBundle=false;renderEnrollmentButtons();}
  });
  supabaseClient.auth.getSession().then(async({data})=>{
   const signedIn=hasDcdsVerifiedContact(data.session?.user);
-    $('accountBtn').textContent=signedIn?'My Account':'Student Login';setNotificationAccess(signedIn);
+    void refreshDcdsAccountButton(data.session?.user);setNotificationAccess(signedIn);
   if(signedIn){
    const {data:courseRows,error}=await supabaseClient.from('courses').select('id,slug').in('slug',COURSE_SLUGS);
    if(!error)courseIdsBySlug=new Map((courseRows||[]).map(row=>[row.slug,String(row.id)]));

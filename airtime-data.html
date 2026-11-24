@@ -259,7 +259,7 @@ async function startCheckout(){
  try{
   const {data:sessionData,error:sessionError}=await db.auth.getSession();
   if(sessionError||!sessionData?.session){
-   $("checkoutMessage").textContent="Please sign in through Student Login on the DCDS homepage, then return here to purchase.";
+   $("checkoutMessage").textContent="Please sign in through DCDS Login on the homepage, then return here to purchase.";
    return;
   }
   const payload={

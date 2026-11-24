@@ -11,9 +11,9 @@
     <meta name="theme-color" content="#160B27">
 
     <meta name="description"
-          content="DCDS Administrator Notification Center">
+          content="DCDS Administration Portal for communications, announcements, student notices and support.">
 
-    <title>DCDS Admin Notification Center</title>
+    <title>DCDS Administration Portal | Communications</title>
 
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -121,11 +121,11 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
         <aside class="admin-center-sidebar" id="adminCenterSidebar" aria-label="Admin communications navigation">
             <div class="admin-center-brand">
                 <div class="admin-center-mark" aria-hidden="true">DC</div>
-                <div class="admin-center-brand-copy"><strong>DCDS</strong><span>ADMIN CENTRE</span></div>
+                <div class="admin-center-brand-copy"><strong>DCDS</strong><span>ADMINISTRATION PORTAL</span></div>
                 <button class="admin-center-collapse" id="adminCenterCollapse" type="button" aria-label="Collapse navigation" aria-expanded="true" title="Collapse navigation"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m14.5 5-7 7 7 7"/></svg></button>
             </div>
             <div class="admin-center-divider"></div>
-            <p class="admin-center-kicker">COMMUNICATIONS</p>
+            <p class="admin-center-kicker">ADMINISTRATIVE WORKSPACE</p>
             <nav class="admin-center-nav" aria-label="Admin centre sections">
                 <button class="admin-center-nav-item active" type="button" data-admin-view="overview" aria-current="page" title="Overview"><span class="admin-center-nav-icon" aria-hidden="true">⌂</span><span class="admin-center-nav-copy"><strong>Overview</strong><small>Centre summary</small></span><span class="admin-center-active-dot"></span></button>
                 <button class="admin-center-nav-item" type="button" data-admin-view="announcements" title="Announcements"><span class="admin-center-nav-icon" aria-hidden="true">✦</span><span class="admin-center-nav-copy"><strong>Announcements</strong><small>Compose &amp; history</small></span><span class="admin-center-active-dot"></span></button>
@@ -156,7 +156,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
                     <span>DIGITAL SERVICES</span>
                 </h1>
 
-                <p>ADMIN NOTIFICATION CENTER</p>
+                <p>ADMINISTRATION PORTAL · COMMUNICATIONS</p>
 
             </div>
 
@@ -219,7 +219,7 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 
                         <div class="stat-card">
 
-                                            <p>Notification Center</p>
+                                            <p>Communications</p>
 
                 <h3>ACTIVE</h3>
 
@@ -2096,7 +2096,7 @@ async function verifyAdminRole() {
 ====================================== */
     
 console.log(
-    "DCDS Admin Notification Center configuration loaded."
+    "DCDS Administration Portal configuration loaded."
 );
 
                      </script>
@@ -3311,11 +3311,11 @@ setAdminCentreView("overview",{scroll:false});
 
 document.addEventListener("DOMContentLoaded", async () => {
     try {
-        console.log("DCDS Admin Notification Center starting...");
+        console.log("DCDS Administration Portal starting...");
 
         await initializeAdminCenter();
 
-        console.log("DCDS Admin Notification Center initialized.");
+        console.log("DCDS Administration Portal initialized.");
 
     } catch (error) {
         console.error("Admin initialization error:", error);
