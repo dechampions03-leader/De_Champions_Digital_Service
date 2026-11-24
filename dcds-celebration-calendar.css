@@ -1033,3 +1033,47 @@
    animation:none!important;
  }
 }
+
+
+/* Calm, purpose-led visual balance for all event types. */
+.dcds-celebration-art[data-tone="recognition"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(145,177,202,.18),transparent 64%),linear-gradient(135deg,#2b3548,#354258 60%,#20293b);
+}
+.dcds-celebration-art[data-tone="recognition"] .dcds-scene-main{
+ animation:dcdsSceneRecognition 4.8s ease-in-out infinite;
+}
+.dcds-celebration-art[data-tone="observance"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(160,166,188,.17),transparent 64%),linear-gradient(135deg,#2c3043,#35364c 60%,#202437);
+}
+.dcds-celebration-art[data-tone="observance"] .dcds-scene-main,
+.dcds-celebration-art[data-tone="observance"] .dcds-scene-prop{
+ animation-duration:5.2s;
+}
+.dcds-celebration-art[data-tone="religious-celebration"]{
+ background:radial-gradient(ellipse at 50% 44%,rgba(210,185,117,.2),transparent 63%),linear-gradient(135deg,#253c3b,#344653 60%,#211f3a);
+}
+.dcds-celebration-art[data-tone="religious-celebration"] .dcds-scene-main,
+.dcds-celebration-art[data-tone="religious-celebration"] .dcds-scene-prop{
+ animation-duration:4.2s;
+}
+.dcds-celebration-art[data-tone="festival"] .dcds-scene-main{
+ animation-duration:2.9s;
+}
+.dcds-celebration-art[data-scene="islamic-new-year-specific"]{
+ background:radial-gradient(ellipse at 50% 43%,rgba(122,197,180,.21),transparent 62%),linear-gradient(135deg,#193a4d,#26395a 60%,#1d1b3b);
+}
+.dcds-celebration-art[data-scene="blood-donor-awareness"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(203,112,130,.22),transparent 62%),linear-gradient(135deg,#4a293a,#343049 60%,#211d31);
+}
+.dcds-celebration-art[data-scene="peace-observance"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(158,201,218,.21),transparent 62%),linear-gradient(135deg,#2a4057,#36445d 60%,#202a42);
+}
+.dcds-celebration-art[data-scene="africa-school-feeding"],
+.dcds-celebration-art[data-scene="food-security-specific"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(218,184,107,.22),transparent 62%),linear-gradient(135deg,#493a33,#49513f 60%,#252b3b);
+}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-glint,
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-glint{
+ animation:none;
+ opacity:.2;
+}
