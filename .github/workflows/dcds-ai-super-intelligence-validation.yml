@@ -246,7 +246,7 @@ jobs:
                   and "student-community.html" in function
                   and "admin-notifications.html#supportInboxSection" in function,
               "health scope states services not checked":
-                  "'not_checked'" in function or '"not_checked"' in function,
+                  "not_checked" in function,
               "raw internal source IDs are stripped from generated answers":
                   'replace(/\\[(?:DCDS|WEB)-\\d+\\]/g, "")' in function
           }
