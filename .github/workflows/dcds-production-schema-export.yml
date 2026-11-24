@@ -154,8 +154,21 @@ jobs:
           mkdir -p "${WORKSPACE}"
           cd "${WORKSPACE}"
           supabase init --force
-          grep -q '\[experimental.pgdelta\]' supabase/config.toml
-          grep -q 'enabled = true' supabase/config.toml
+          # Supabase CLI versions may initialise the workspace without writing
+          # config.toml. Create the minimal isolated pg-delta configuration
+          # when absent; this does not change the linked Production project.
+          mkdir -p supabase
+          if [[ ! -f supabase/config.toml ]]; then
+            cat > supabase/config.toml <<'TOML'
+          project_id = "dcds-production-schema-audit"
+
+          [experimental.pgdelta]
+          enabled = true
+          TOML
+          else
+            grep -q '\[experimental.pgdelta\]' supabase/config.toml
+            grep -q 'enabled = true' supabase/config.toml
+          fi
           supabase db diff --remote="${DCDS_PRODUCTION_DB_URL}" --strict-coverage \
             > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
           cd "${GITHUB_WORKSPACE}"
