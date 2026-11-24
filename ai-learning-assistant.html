@@ -107,12 +107,13 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
 .memory-actions button{border:1px solid #e2d2f1;border-radius:9px;padding:8px 10px;background:#fff;color:#5c258e;font:800 10px 'DM Sans',sans-serif;cursor:pointer}
 .memory-actions button.primary{border-color:#6b2aa7;background:#6827a4;color:#fff}
 
-/* Deyriva — DCDS AI profile refinement */
+/* Deyriva — DCDS AI companion idle animation */
 .assistant-mark{gap:12px}
-.assistant-icon{width:52px;height:52px;flex:0 0 52px;overflow:hidden;border-radius:16px;border:1px solid #e6d4f7;background:linear-gradient(145deg,#f1e5ff,#e3ceff);box-shadow:0 5px 14px #5a218b18;font-size:0}
+.assistant-icon{width:56px;height:56px;flex:0 0 56px;overflow:hidden;border-radius:17px;border:1px solid #e6d4f7;background:linear-gradient(145deg,#f1e5ff,#e3ceff);box-shadow:0 5px 14px #5a218b18;font-size:0;transform-origin:center}
 .assistant-icon img{display:block;width:100%;height:100%;object-fit:cover;transform-origin:center bottom}
-@media(max-width:580px){.assistant-icon{width:50px;height:50px;flex-basis:50px}.assistant-mark{gap:10px}.assistant-mark strong{font-size:13px}}
-@media(prefers-reduced-motion:no-preference){.assistant-icon img{animation:deyrivaIdle 5.2s ease-in-out infinite;will-change:transform}@keyframes deyrivaIdle{0%,100%{transform:translateY(0) scale(1)}50%{transform:translateY(-3px) scale(1.035)}}}@media(prefers-reduced-motion:reduce){.assistant-icon img{animation:none}}
+@media(max-width:580px){.assistant-icon{width:54px;height:54px;flex-basis:54px}.assistant-mark{gap:10px}.assistant-mark strong{font-size:13px}}
+@media(prefers-reduced-motion:no-preference){.assistant-icon img{animation:deyrivaIdle 4.8s ease-in-out infinite;will-change:transform}@keyframes deyrivaIdle{0%,100%{transform:translateY(0) scale(1)}46%{transform:translateY(-4px) scale(1.04)}72%{transform:translateY(-1px) scale(1.01)}}}
+@media(prefers-reduced-motion:reduce){.assistant-icon img{animation:none}}
 
 
 
@@ -300,10 +301,10 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   {name:'Paystack',aliases:['paystack'],href:'https://paystack.com/'}
  ];
 
- let welcomeMessage="Hello! My name is Deyriva, the DCDS AI Companion. How can I assist you today? I can teach digital skills, explain general topics and help you explore DCDS courses.";
+ let welcomeMessage="Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you today?";
  function configureWelcomeGreeting(mode){
   const metadata=currentUser?.user_metadata&&typeof currentUser.user_metadata==='object'?currentUser.user_metadata:{};
-  const candidate=metadata.full_name||metadata.name||metadata.display_name||'';
+  const candidate=metadata.full_name||metadata.name||metadata.display_name||metadata.first_name||metadata.given_name||metadata.username||'';
   const safeName=typeof candidate==='string'?candidate.replace(/[<>\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().slice(0,80):'';
   const firstName=safeName.split(' ')[0]||'';
   const personalIntro=firstName
@@ -318,9 +319,10 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   }
   conversation.length=0;
   messagesEl.replaceChildren();
+  conversation.push({role:'model',text:welcomeMessage});
   addMessage('assistant',welcomeMessage);
  }
-
+ 
  function setStatus(message,isError=false){
   statusEl.textContent=message;
   statusEl.classList.toggle('error',isError);
@@ -659,6 +661,7 @@ async function submitAiEligibilityRequest(){
   activeConversationId=null;
   conversation.length=0;
   messagesEl.replaceChildren();
+  conversation.push({role:'model',text:welcomeMessage});
   addMessage('assistant',welcomeMessage);
   historyPanel.hidden=true;
   memoryPanel.hidden=true;
@@ -730,7 +733,7 @@ async function submitAiEligibilityRequest(){
   activeConversationId=id;
   conversation.length=0;
   messagesEl.replaceChildren();
-  if(!rows?.length)addMessage('assistant',welcomeMessage);
+  if(!rows?.length){conversation.push({role:'model',text:welcomeMessage});addMessage('assistant',welcomeMessage);}
   for(const row of rows||[]){
    const role=row.role==='user'?'user':'model';
    conversation.push({role,text:row.content});
