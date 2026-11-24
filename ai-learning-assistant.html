@@ -309,16 +309,16 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
   const safeName=typeof candidate==='string'?candidate.replace(/[<>\u0000-\u001f]/g,' ').replace(/\s+/g,' ').trim().slice(0,80):'';
   const firstName=safeName.split(' ')[0]||'';
   const personalIntro=firstName
-   ?\`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you, \${firstName}?\`
-   :\`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you today?\`;
+   ?`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you, ${firstName}?`
+   :`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you today?`;
   if(mode==='admin'){
    welcomeMessage=isRootAdminSession
     ? "Hello, Administrator. I'm Deyriva, your DCDS AI Companion. I recognise your verified authority to direct DCDS and my approved improvements. I will address you as Administrator or Director and keep founder and CEO details private unless you ask directly."
     : "Hello, Administrator. I'm Deyriva, the DCDS AI Companion. I can assist with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.";
   }else if(mode==='student'){
-   welcomeMessage=\`\${personalIntro} I can help you learn step by step, practise digital skills and continue your learning journey. I can refer to your own saved conversations and learning context while keeping them private to your account. What shall we work on today?\`;
+   welcomeMessage=`${personalIntro} I can help you learn step by step, practise digital skills and continue your learning journey. I can refer to your own saved conversations and learning context while keeping them private to your account. What shall we work on today?`;
   }else{
-   welcomeMessage=\`\${personalIntro} I can explain general topics, teach digital skills and help you explore public DCDS information.\`;
+   welcomeMessage=`${personalIntro} I can explain general topics, teach digital skills and help you explore public DCDS information.`;
   }
   conversation.length=0;
   messagesEl.replaceChildren();
@@ -892,7 +892,7 @@ async function submitAiEligibilityRequest(){
   if(!adminAdultConfirm.checked){setStatus('Please confirm that you are 18 or older before continuing.',true);return;}
   adminAgeGate.hidden=true;isAdminSession=true;setChatEnabled(true);
   await loadResourceIndex();configureWelcomeGreeting('admin');
-  document.getElementById('accountLabel').textContent=isRootAdminSession?'Root Administrator · Deyriva owner':'Administrator · Read-only Copilot';
+  document.getElementById('accountLabel').textContent=isRootAdminSession?'Director · Deyriva owner':'Administrator · Read-only Copilot';
   setStatus(isRootAdminSession
    ? 'Verified DCDS Root Administrator access. I can help identify gaps and prepare system, knowledge and playbook improvements for your review.'
    : 'Administrator access confirmed for an adult account. This assistant is read-only and cannot change student records, payments or payouts.');
