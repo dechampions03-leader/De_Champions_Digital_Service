@@ -243,9 +243,11 @@ jobs:
           support_fallback_end = function.index("let result: Record<string, any>", support_fallback_start)
           support_fallback = function[support_fallback_start:support_fallback_end]
           provider_invariants = {
-              "all five documented free-tier model candidates can be attempted":
-                  "const maxModelAttempts = 5;" in function
-                  and "attemptedModels >= maxModelAttempts" in function,
+              "all seven documented free-tier Gemini and Gemma candidates can be attempted":
+                  "const maxModelAttempts = 7;" in function
+                  and "attemptedModels >= maxModelAttempts" in function
+                  and '"gemma-4-26b-a4b-it"' in function
+                  and '"gemma-4-31b-it"' in function,
               "provider failure reports attempted and available candidate counts":
                   "attemptedModels," in function and "candidateCount: orderedCandidates.length" in function,
               "provider outage response preserves the draft and provides retry timing":
