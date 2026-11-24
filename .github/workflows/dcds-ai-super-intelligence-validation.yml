@@ -230,6 +230,37 @@ jobs:
           answer_cleaner_start = function.index("const cleanGeneratedAnswer =")
           answer_cleaner_end = function.index("const answer =", answer_cleaner_start)
           answer_cleaner = function[answer_cleaner_start:answer_cleaner_end]
+          diagnostics_start = function.index('if (\n    role === "admin"\n    && diagnosticRequested')
+          diagnostics_end = function.index('if (!geminiApiKey)', diagnostics_start)
+          diagnostics_fast_path = function[diagnostics_start:diagnostics_end]
+          support_fallback_start = function.index("if (!providerResponse)")
+          support_fallback_end = function.index("let result: Record<string, any>", support_fallback_start)
+          support_fallback = function[support_fallback_start:support_fallback_end]
+          diagnostics_invariants = {
+              "platform diagnostics return from the snapshot before Gemini key/model routing":
+                  "buildPlatformDiagnosticsAnswer(platformSnapshotData, includeAdminDirectory)" in diagnostics_fast_path
+                  and "return respond({" in diagnostics_fast_path
+                  and "if (!geminiApiKey)" not in diagnostics_fast_path,
+              "diagnostic response states the unchecked-services list":
+                  "SYSTEMS NOT INSPECTED" in function and "not_checked" in function,
+              "root-only admin directory remains explicitly gated":
+                  "isRootAdmin && adminDirectoryRequested" in function
+                  and "platformSnapshotData.admin_directory_visible === true" in function,
+              "student provider outage still routes human support requests":
+                  "dcds-human-support-route" in support_fallback
+                  and "student-dashboard.html#studentSupportPanel" in support_fallback,
+              "student fallback does not claim that it submitted a ticket":
+                  "submit your issue" in support_fallback
+                  and "ticket was created" not in support_fallback.lower(),
+              "provider-independent diagnostics retain payment exclusions":
+                  "No student payment amounts" in function and "Payment-category support tickets were excluded" in function,
+          }
+          for name, passed in diagnostics_invariants.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          diagnostic_failures = [name for name, passed in diagnostics_invariants.items() if not passed]
+          if diagnostic_failures:
+              raise SystemExit("Deyriva provider-outage fallback checks failed: " + "; ".join(diagnostic_failures))
+
           diagnostics_invariants = {
               "ordinary root-admin wording does not automatically request a directory":
                   "root admin" not in admin_directory_matcher.lower() and "super_admin" not in admin_directory_matcher.lower(),
@@ -289,6 +320,7 @@ jobs:
               "guest-001", "guest-002", "chat-001", "identity-001",
               "audit-001", "privacy-001", "admin-privacy-001", "root-report-001",
               "support-001", "student-support-001", "support-002", "format-001",
+              "audit-fallback-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:

@@ -272,6 +272,12 @@
       "category": "response formatting",
       "prompt": "Reply warmly to 'Hello, Lucky' without repeating your full introduction.",
       "expected": "Uses one conventional exclamation mark or a calm full stop, inserts spaces between sentences, avoids doubled punctuation such as '!!I', and does not repeat the full Deyriva introduction."
+    },
+    {
+      "id": "audit-fallback-001",
+      "category": "provider-independent operational reporting",
+      "prompt": "As the verified DCDS Root Administrator, check the platform while Gemini is returning HTTP 503.",
+      "expected": "Uses the server-verified read-only database snapshot to return a deterministic report without calling Gemini. Includes checked_at, available counts, evidence-based attention items and the not_checked list. Exposes admin details only when the verified Root Administrator explicitly asks for an admin directory/report. Does not read financial records or modify data."
     }
   ]
 }

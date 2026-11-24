@@ -66,7 +66,8 @@
           "description": "Students use the existing Student Support Centre for individual human support and can track replies. The Student Community is a group space, not a private founder direct message."
         },
         "student_ticket_context": "Only the signed-in student's own non-payment category/status/timestamp fields and a has-human-reply indicator are made available. Ticket subject and message text are withheld from Deyriva.",
-        "payment_privacy": "Deyriva never queries or discloses student payment amounts, status, transaction references, receipts, bank details, wallet balances, orders, refunds or payouts. Payment-category tickets are excluded from all AI support context and health reports."
+        "payment_privacy": "Deyriva never queries or discloses student payment amounts, status, transaction references, receipts, bank details, wallet balances, orders, refunds or payouts. Payment-category tickets are excluded from all AI support context and health reports.",
+        "provider_outage_behaviour": "For authenticated administrator platform-health requests, generate the answer directly from the verified read-only database snapshot. Do not call Gemini for this report and do not let Gemini outages block it. State the snapshot timestamp, checked metrics, evidence-backed findings, next steps and every service not checked. For student human-support requests, preserve access to the existing Student Support Centre route if the language model is unavailable. Neither fallback creates tickets or modifies records."
       }
     },
     "root_administrator": {
