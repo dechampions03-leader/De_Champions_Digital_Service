@@ -901,3 +901,135 @@
 .dcds-celebration-art[data-scene="beer-festival"]{
  background:radial-gradient(ellipse at 50% 45%,rgba(232,189,93,.25),transparent 60%),linear-gradient(135deg,#493528,#473348 60%,#231b31);
 }
+
+
+/* DCDS semantic event design system */
+.dcds-celebration-frame[data-tone="awareness"] .dcds-celebration-art{
+ border-color:#d99b65;
+ box-shadow:inset 0 0 0 1px rgba(255,236,216,.12),0 0 18px rgba(217,155,101,.11);
+}
+.dcds-celebration-art[data-tone="awareness"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(92,134,147,.19),transparent 63%),linear-gradient(135deg,#263746,#29354a 58%,#1b2234);
+}
+.dcds-celebration-art[data-scene="violence-against-women"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(221,143,76,.24),transparent 63%),linear-gradient(135deg,#493326,#352c3b 60%,#242033);
+ border-color:#e5a05b;
+}
+.dcds-celebration-art[data-scene="human-trafficking-awareness"],
+.dcds-celebration-art[data-scene="refugee-solidarity"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(124,162,180,.2),transparent 63%),linear-gradient(135deg,#243847,#344454 60%,#202b3b);
+}
+.dcds-celebration-art[data-scene="holocaust-remembrance"],
+.dcds-celebration-art[data-scene="slave-trade-remembrance"],
+.dcds-celebration-art[data-scene="cuito-remembrance"],
+.dcds-celebration-art[data-scene="armed-forces-remembrance"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(183,174,156,.13),transparent 65%),linear-gradient(135deg,#34323a,#292b39 62%,#1c1d2b);
+ border-color:#bcb4a4;
+}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-glint{opacity:.22;animation-duration:5s}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-main{
+ animation:dcdsSceneRemembrance 6s ease-in-out infinite;
+ filter:drop-shadow(0 3px 6px rgba(0,0,0,.3));
+}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-prop{
+ animation:dcdsSceneRemembrance 7s ease-in-out infinite;
+ opacity:.82;
+}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-prop-two{animation-delay:-2.3s}
+.dcds-celebration-art[data-tone="remembrance"] .dcds-scene-prop-three{animation-delay:-4.4s}
+@keyframes dcdsSceneRemembrance{
+ 0%,100%{transform:translateY(1px);opacity:.76}
+ 50%{transform:translateY(-3px);opacity:1}
+}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-main{
+ animation:dcdsSceneAwareness 5s ease-in-out infinite;
+}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-prop{
+ animation:dcdsSceneAwareness 5.8s ease-in-out infinite;
+}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-prop-two{animation-delay:-1.9s}
+.dcds-celebration-art[data-tone="awareness"] .dcds-scene-prop-three{animation-delay:-3.7s}
+@keyframes dcdsSceneAwareness{
+ 0%,100%{transform:translateY(1px) scale(.98);opacity:.82}
+ 50%{transform:translateY(-3px) scale(1.02);opacity:1}
+}
+.dcds-celebration-frame[data-tone="awareness"] .dcds-celebration-sparkles i{
+ opacity:.18;
+ animation-duration:5s;
+}
+.dcds-celebration-art[data-scene="violence-against-women"] .dcds-scene-prop{
+ filter:drop-shadow(0 3px 8px rgba(0,0,0,.26));
+}
+.dcds-celebration-art[data-scene="racial-equality"],
+.dcds-celebration-art[data-scene="justice-advocacy"],
+.dcds-celebration-art[data-scene="human-rights-specific"],
+.dcds-celebration-art[data-scene="anti-corruption-specific"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(133,174,191,.22),transparent 63%),linear-gradient(135deg,#273847,#334051 62%,#1d2534);
+}
+.dcds-celebration-art[data-scene="cancer-awareness"],
+.dcds-celebration-art[data-scene="hiv-awareness"],
+.dcds-celebration-art[data-scene="tropical-disease-awareness"],
+.dcds-celebration-art[data-scene="diabetes-awareness"],
+.dcds-celebration-art[data-scene="mental-health-awareness"],
+.dcds-celebration-art[data-scene="no-tobacco-awareness"],
+.dcds-celebration-art[data-scene="health-awareness"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(109,190,164,.2),transparent 63%),linear-gradient(135deg,#1e4148,#2e4552 60%,#1a2935);
+}
+.dcds-celebration-art[data-scene="autism-acceptance"],
+.dcds-celebration-art[data-scene="disability-inclusion"],
+.dcds-celebration-art[data-scene="sign-language-inclusion"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(117,165,217,.22),transparent 63%),linear-gradient(135deg,#273657,#35436a 60%,#202842);
+}
+.dcds-celebration-art[data-scene="girl-child-rights"],
+.dcds-celebration-art[data-scene="children-rights-specific"],
+.dcds-celebration-art[data-scene="african-child-rights"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(210,181,126,.19),transparent 63%),linear-gradient(135deg,#3a3447,#34445a 60%,#20283a);
+}
+.dcds-celebration-art[data-scene="indigenous-peoples-rights"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(177,155,119,.18),transparent 63%),linear-gradient(135deg,#403a37,#37464a 60%,#212d32);
+}
+.dcds-celebration-art[data-scene="environment-action"],
+.dcds-celebration-art[data-scene="water-protection"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(102,185,144,.2),transparent 63%),linear-gradient(135deg,#1c4541,#2c4e53 60%,#1c3039);
+}
+.dcds-celebration-art[data-tone="religious"] .dcds-scene-main{
+ animation:dcdsSceneReverent 5.5s ease-in-out infinite;
+}
+.dcds-celebration-art[data-tone="religious"] .dcds-scene-prop{
+ animation:dcdsSceneReverent 6.2s ease-in-out infinite;
+}
+@keyframes dcdsSceneReverent{
+ 0%,100%{transform:translateY(1px) scale(.99);opacity:.82}
+ 50%{transform:translateY(-3px) scale(1.025);opacity:1}
+}
+.dcds-celebration-art[data-tone="religious"] .dcds-scene-glint{opacity:.42;animation-duration:4.5s}
+.dcds-celebration-art[data-tone="national"]{
+ background:radial-gradient(ellipse at 50% 45%,rgba(112,181,139,.2),transparent 62%),linear-gradient(135deg,#183e38,#263e49 60%,#1b2b35);
+}
+.dcds-celebration-art[data-tone="national"] .dcds-scene-main{animation:dcdsSceneProud 4.8s ease-in-out infinite}
+@keyframes dcdsSceneProud{
+ 0%,100%{transform:translateY(1px) scale(.98)}
+ 50%{transform:translateY(-4px) scale(1.04)}
+}
+.dcds-celebration-art[data-tone="recognition"] .dcds-scene-main{
+ animation:dcdsSceneRecognition 4.6s ease-in-out infinite;
+}
+@keyframes dcdsSceneRecognition{
+ 0%,100%{transform:translateY(2px) rotate(-1deg)}
+ 50%{transform:translateY(-4px) rotate(1deg)}
+}
+.dcds-celebration-frame[data-tone="remembrance"] .dcds-celebration-sparkles i{
+ animation:none;
+ opacity:.12;
+}
+.dcds-celebration-frame[data-tone="awareness"] .dcds-celebration-art,
+.dcds-celebration-frame[data-tone="remembrance"] .dcds-celebration-art{
+ border-radius:18px;
+}
+@media(prefers-reduced-motion:reduce){
+ .dcds-celebration-art[data-tone] .dcds-scene-main,
+ .dcds-celebration-art[data-tone] .dcds-scene-prop,
+ .dcds-celebration-art[data-tone] .dcds-scene-glint{
+   animation:none!important;
+ }
+}
