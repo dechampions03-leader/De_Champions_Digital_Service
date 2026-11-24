@@ -162,8 +162,8 @@ jobs:
                   and "Math.min(attemptedModels <= 2 ? 7_000 : attemptedModels <= 5 ? 5_000 : 6_500, generationDeadline - Date.now())" in function
                   and "const maxModelAttempts = 7" in function,
               "the free-tier fallback pool includes hosted Gemma 4 after the Gemini models":
-                  function.indexOf('"gemini-3.1-flash-lite"') < function.indexOf('"gemma-4-26b-a4b-it"')
-                  and function.indexOf('"gemma-4-26b-a4b-it"') < function.indexOf('"gemma-4-31b-it"'),
+                  function.index('"gemini-3.1-flash-lite"') < function.index('"gemma-4-26b-a4b-it"')
+                  and function.index('"gemma-4-26b-a4b-it"') < function.index('"gemma-4-31b-it"'),
               "normal DCDS tutoring turns prefer the documented fast Flash-Lite model":
                   'Deno.env.get("DCDS_AI_MODEL") || "gemini-3.5-flash-lite"' in function
                   and function.find('"gemini-3.5-flash-lite"') < function.find('"gemini-3.8-flash"'),
@@ -345,7 +345,7 @@ jobs:
               "audit-001", "privacy-001", "admin-privacy-001", "root-report-001",
               "support-001", "student-support-001", "support-002", "format-001",
               "audit-fallback-001",
-              "provider-503-001",
+              "provider-503-001", "gemma-fallback-001", "founder-biography-privacy-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
