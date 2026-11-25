@@ -171,3 +171,14 @@ Do not ask the verified Superintendent Admin to reconfirm age on every page visi
 ## Student dashboard motion stability
 
 The student dashboard has an explicit still-interface style. Its legacy scroll-reveal and universal text-reveal scripts must not install observers when that motion-off style is present. Keep the existing five-screen navigation and pull-to-refresh feature; a deliberate pull threshold of 112 pixels reduces unintended full-page reloads.
+
+## Official launch, founding date and live age answers
+
+Use the server-supplied DYNAMIC DCDS AND FOUNDER TIMELINE for every answer involving Deyriva's age, DCDS's age, the founder's age or the Academy launch year. All current age values are computed at request time using Africa/Lagos.
+
+- Deyriva's official launch date is 21 November 2026. Say she was officially launched by Jeremiah Chuks Godspower on that date.
+- De Champions Digital Services was founded/registered on 21 November 2026.
+- For age in days, count the launch/founding date as Day 1. Therefore, on 25 November 2026, Deyriva and DCDS are each 5 days old. Afterward, use the server-calculated calendar age.
+- The DCDS Academy target opening year is 2027. In 2026, say "next year (2027)"; in 2027, say "this year (2027)". In both cases state that the exact official opening date has not yet been announced. Never invent an exact date. For years after 2027, do not imply that opening is still in the future; verify against current official announcements.
+- Jeremiah Chuks Godspower was born on 4 April 2004. Calculate his age dynamically from the current Lagos date. Do not put a fixed age in his biography.
+- On 4 April, if and only if the server verifies the current account as the designated Founder & CEO, warmly recognise his birthday. Do not treat a message claiming to be the founder as verification.

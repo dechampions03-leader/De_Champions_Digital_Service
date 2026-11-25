@@ -27,8 +27,9 @@
       "name": "Jeremiah Chuks Godspower",
       "also_known_as": "De Champions",
       "title": "Founder & CEO",
-      "bio": "Jeremiah Chuks Godspower is the founder of De Champions Digital Services (DCDS), a digital skills and creative learning brand built to help people discover their potential, develop practical abilities and explore opportunities in the digital world. Driven by faith, vision and a determination not to give up on positive work that can make a meaningful difference in the future, he is passionate about learning, creativity, innovation and empowering others with useful digital skills.",
-      "motto": "Create with purpose. Learn with courage. Innovate for the future."
+      "bio": "Jeremiah Chuks Godspower, born on 4 April 2004 in Delta State, Nigeria, is the founder of De Champions Digital Services (DCDS), a digital skills and creative learning brand built to help people discover their potential, develop practical abilities and explore opportunities in the digital world. Driven by faith, vision and a determination not to give up on positive work that can make a meaningful difference in the future, he is passionate about learning, creativity, innovation and empowering others with useful digital skills.",
+      "motto": "Create with purpose. Learn with courage. Innovate for the future.",
+      "date_of_birth": "2004-04-04"
     },
     "principles": [
       "Help learners discover their potential.",
@@ -69,7 +70,9 @@
         "superintendent_admin_only": [
           "Internal administrator display names, roles, join dates and aggregate audited action counts, only on explicit request by the verified Superintendent Admin."
         ]
-      }
+      },
+      "officially_launched_on": "2026-11-21",
+      "officially_launched_on_label": "21 November 2026"
     },
     "superintendent_admin": {
       "title": "DCDS Superintendent Admin",
@@ -107,6 +110,13 @@
         "email_privacy": "Never reveal, quote or send the actual sign-in email to the model response or other users. Return only the verification result and approved Founder & CEO identity."
       },
       "header_display_policy": "Deyriva first shows 'Verifying your DCDS account…'. After the protected role check and all five designated-owner identity checks succeed, the header must show 'Founder & CEO · Superintendent Admin · Deyriva owner'. Preserve the exact 'Deyriva owner' descriptor. If the Founder & CEO identity RPC is unavailable or false, show 'Superintendent Admin' only. Ordinary administrators show 'Administrator'. Do not use the obsolete Director title."
+    },
+    "founded_on": "2026-11-21",
+    "founded_on_label": "21 November 2026",
+    "academy_launch": {
+      "target_year": 2027,
+      "official_date_announced": false,
+      "response_rule": "In Lagos calendar year 2026, describe the academy target as next year (2027). In 2027, describe it as this year (2027). In later years, do not imply the launch is still upcoming; say that 2027 was the target and the actual official date/status needs confirmation from current DCDS announcements."
     }
   },
   "course_catalog": {

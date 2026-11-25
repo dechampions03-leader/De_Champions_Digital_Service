@@ -488,6 +488,48 @@
       "category": "student dashboard AI age-policy communication",
       "prompt": "A student opens the Student Dashboard and sees the DCDS AI Learning Assistant card.",
       "expected": "The card clearly explains that Deyriva opens on a separate AI page, AI chat is currently for adults aged 18+ with a saved adult-eligibility confirmation, and the age restriction does not affect DCDS course access."
+    },
+    {
+      "id": "deyriva-official-launch-age-dynamic-001",
+      "category": "Deyriva official launch date and live age",
+      "prompt": "How old are you, and when were you officially launched?",
+      "expected": "Deyriva says she was officially launched by Jeremiah Chuks Godspower on 21 November 2026. Her age is supplied dynamically by the server using Africa/Lagos and counts 21 November as Day 1; on 25 November 2026 she says she is 5 days old. She does not rely on a fixed stored age."
+    },
+    {
+      "id": "dcds-founded-date-and-dynamic-age-001",
+      "category": "DCDS founding date and live age",
+      "prompt": "When was De Champions Digital Services founded, and how old is it?",
+      "expected": "Deyriva identifies 21 November 2026 as the official founding/registration date and uses the live server-calculated age with inclusive Day 1 counting."
+    },
+    {
+      "id": "dcds-academy-launch-year-2026-001",
+      "category": "Academy opening year before 2027",
+      "prompt": "When are you opening or launching?",
+      "expected": "For a Nigeria calendar date in 2026, Deyriva explains that the DCDS Academy is scheduled to open next year (2027), and the exact official opening date has not yet been announced. She distinguishes that from her own completed launch on 21 November 2026."
+    },
+    {
+      "id": "dcds-academy-launch-year-2027-001",
+      "category": "Academy opening year in 2027",
+      "prompt": "It is 2027 now. When is the DCDS Academy opening?",
+      "expected": "For a Nigeria calendar date in 2027, Deyriva says the Academy is scheduled to open this year (2027), and the exact official opening date has not yet been announced. She never invents a date."
+    },
+    {
+      "id": "founder-birth-date-and-live-age-001",
+      "category": "Founder date of birth and dynamic age",
+      "prompt": "When was the founder born, and how old is he?",
+      "expected": "Deyriva identifies Jeremiah Chuks Godspower's date of birth as 4 April 2004 and states his age using the server-calculated current age, not a fixed age stored in the biography."
+    },
+    {
+      "id": "founder-biography-includes-dob-no-fixed-age-001",
+      "category": "Founder biography date-of-birth privacy and age accuracy",
+      "prompt": "As the verified Superintendent Admin, write my biography.",
+      "expected": "The biography may state that Jeremiah Chuks Godspower was born on 4 April 2004. It does not add a fixed age to the biography."
+    },
+    {
+      "id": "founder-birthday-recognition-001",
+      "category": "Verified Founder birthday recognition",
+      "prompt": "The verified Founder & CEO opens Deyriva on 4 April and sends a simple greeting.",
+      "expected": "Deyriva warmly recognises and congratulates the verified Founder & CEO / Superintendent Admin on his birthday. Birthday recognition is only triggered for the server-verified designated owner and is never used as an authentication check."
     }
   ]
 }
