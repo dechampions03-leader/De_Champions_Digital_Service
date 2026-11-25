@@ -148,7 +148,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  <div class="layout">
   <section class="chat-card" aria-label="Deyriva, DCDS AI chat">
    <div class="chat-head">
-    <div class="assistant-mark"><div class="assistant-icon"><img src="assets/deyriva-ai-profile.webp" alt="Deyriva, DCDS AI Companion"></div><div><strong>Deyriva by DCDS</strong><small id="accountLabel">Verifying your DCDS account…</small></div></div>
+    <div class="assistant-mark"><div class="assistant-icon"><img src="assets/deyriva-ai-profile.webp" alt="Deyriva, DCDS AI Companion"></div><div><strong>Deyriva by DCDS</strong><small id="accountLabel" aria-live="polite">Verifying your DCDS account…</small></div></div>
     <button class="new-chat" id="newChat" type="button">＋ New chat</button>
    </div>
       
@@ -270,11 +270,17 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let isGuestSession=false;
  let isAdminSession=false;
  let isSuperintendentAdminSession=false;
+ let isVerifiedFounderCeoSession=false;
  let guestCaptchaToken="";
  let guestTurnstileWidgetId=null;
  let guestTurnstileLoader=null;
  let activeConversationId=null;
  function canUsePersistentConversations(){return isPersistentStudent||isPersistentOwner;}
+ function superintendentAccountLabel(includeAgeGate=false){
+  if(isVerifiedFounderCeoSession)return 'Founder & CEO · Superintendent Admin'+(includeAgeGate?' · adult confirmation required':'');
+  if(isSuperintendentAdminSession)return 'Superintendent Admin'+(includeAgeGate?' · adult confirmation required':'');
+  return 'Administrator'+(includeAgeGate?' · adult confirmation required':' · Read-only Copilot');
+ }
  input.disabled=true;sendButton.disabled=true;document.getElementById('newChat').disabled=true;
  voiceButton.disabled=true;
  let activeRecognition=null;
@@ -897,7 +903,7 @@ async function submitAiEligibilityRequest(){
   if(!adminAdultConfirm.checked){setStatus('Please confirm that you are 18 or older before continuing.',true);return;}
   adminAgeGate.hidden=true;isAdminSession=true;setChatEnabled(true);
   await loadResourceIndex();configureWelcomeGreeting('admin');
-  document.getElementById('accountLabel').textContent=isSuperintendentAdminSession?'Superintendent Admin':'Administrator · Read-only Copilot';
+  document.getElementById('accountLabel').textContent=superintendentAccountLabel();
   if(isSuperintendentAdminSession){
    isPersistentOwner=true;studentTools.hidden=false;memoryToggle.hidden=true;
    historyToggle.textContent='◷ Conversation history · 365-day recall';
@@ -930,8 +936,18 @@ async function submitAiEligibilityRequest(){
     const {data:superintendentAdminData,error:superintendentAdminError}=await client.rpc('is_dcds_super_admin');
     if(superintendentAdminError){document.getElementById('accountLabel').textContent='Superintendent Admin verification unavailable';setStatus('We could not verify your DCDS Superintendent Admin status. Please refresh and try again.',true);return;}
     isSuperintendentAdminSession=superintendentAdminData===true;
+    isVerifiedFounderCeoSession=false;
+    if(isSuperintendentAdminSession){
+     const {data:founderIdentityData,error:founderIdentityError}=await client.rpc('dcds_get_verified_superintendent_identity');
+     isVerifiedFounderCeoSession=!founderIdentityError
+      && founderIdentityData?.identity_verified===true
+      && founderIdentityData?.email_verified===true
+      && founderIdentityData?.administrator_membership_verified===true
+      && founderIdentityData?.protected_role_verified===true
+      && founderIdentityData?.designated_owner_mapping_verified===true;
+    }
     isAdminSession=true;setChatEnabled(false);adminAgeGate.hidden=false;
-    document.getElementById('accountLabel').textContent=isSuperintendentAdminSession?'Superintendent Admin · adult confirmation required':'Administrator · adult confirmation required';
+    document.getElementById('accountLabel').textContent=superintendentAccountLabel(true);
     setStatus('DCDS AI is for adults aged 18+ while Gemini is the active provider. Confirm your age to continue.');
    }else{
     const accessApproved=await loadAiEligibility();
@@ -992,7 +1008,13 @@ async function submitAiEligibilityRequest(){
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
    const roleLabels={student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot',guest:'Visitor · Public learning access'};
    if(!roleLabels[data.role])throw new Error('The DCDS AI returned an unrecognised access mode. Your draft has been kept.');
-   const resolvedRoleLabel=data.role==='admin'&&data.is_superintendent_admin===true?'Superintendent Admin':roleLabels[data.role];
+   if(data.role==='admin'){
+    isSuperintendentAdminSession=data.is_superintendent_admin===true;
+    isVerifiedFounderCeoSession=data.is_founder_ceo_verified===true;
+   }
+   const resolvedRoleLabel=data.role==='admin'&&data.is_superintendent_admin===true
+    ? superintendentAccountLabel()
+    : roleLabels[data.role];
    if(userRow)userRow.dataset.delivery='sent';
    conversation.push({role:'model',text:data.answer});
    addMessage('assistant',data.answer,Array.isArray(data.resources)?data.resources:inferResourceActions(data.answer));
