@@ -60,6 +60,7 @@ jobs:
           end = function.index("// Discover model names dynamically", start)
           search_helper = function[start:end]
           ai_page = Path("ai-learning-assistant.html").read_text(encoding="utf-8")
+          dashboard = Path("student-dashboard.html").read_text(encoding="utf-8")
           submit_handler = ai_page.split("form.addEventListener('submit'", 1)[1].split(" });\n})();", 1)[0]
 
           allowed_tables = (
@@ -102,8 +103,24 @@ jobs:
                   'eligibility?.age_band === "18_plus"' in function
                   and "UNDER_18_AI_UNAVAILABLE" in function
                   and "if (!adultAllowed)" in function,
-              "administrator AI requests require an 18+ declaration":
-                  'role === "admin" && body.adult_confirmation !== true' in function,
+              "administrator AI requests require saved 18+ eligibility":
+                  'if (role === "admin")' in function
+                  and '"dcds_ai_access_eligibility"' in function
+                  and "adminAdultAllowed" in function
+                  and "UNDER_18_AI_UNAVAILABLE" in function,
+              "saved Superintendent Admin adult eligibility automatically unlocks the AI page":
+                  "async function loadAdminAiEligibility()" in ai_page
+                  and "await enterAdminAi(true)" in ai_page
+                  and "guardian_consent_status==='not_required'" in ai_page,
+              "new admin 18+ declaration is persisted to the authenticated user":
+                  "dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:'18_plus'})" in ai_page,
+              "saved under-18 admin eligibility cannot be bypassed by browser state":
+                  "adminEligibility?.age_band==='13_17'" in ai_page
+                  and "adminAdultAllowed" in function
+                  and "UNDER_18_AI_UNAVAILABLE" in function,
+              "student dashboard motion-off stops legacy reveal observers":
+                  dashboard.count('if(document.getElementById("dcds-student-dashboard-motion-off")) return;') == 2
+                  and "const threshold=112;" in dashboard,
               "signed-in greetings use profile display name only for personalization":
                   "accountFirstName" in function and "full_name" in function and "ACCOUNT DISPLAY NAME FOR GREETING ONLY" in function,
               "guest platform search excludes private enrolled lessons":
