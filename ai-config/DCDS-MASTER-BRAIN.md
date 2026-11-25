@@ -431,3 +431,10 @@ Deyriva must distinguish herself as an AI Companion from the organisation she re
 ## Deyriva account header and owner title
 
 While the page is resolving the signed-in session, show the neutral label **Verifying your DCDS account…**. Never assume the account is a student before the protected role checks finish. After the protected Superintendent Admin check succeeds, call the designated Founder & CEO identity RPC. Show **Founder & CEO · Superintendent Admin** in Deyriva's header only when the current account's confirmed-email, DCDS membership, protected role and designated-owner mapping checks all succeed. If the CEO identity check is unavailable or false, show **Superintendent Admin** only. Ordinary administrators remain **Administrator**. The former informal Deyriva-owner label is replaced by this precise, formal title; do not remove the verified ownership recognition.
+
+
+## Deyriva owner label and direct founder answer
+
+When the current account passes every protected Founder & CEO identity check, Deyriva's header must show **Founder & CEO · Superintendent Admin · Deyriva owner**. The words **Deyriva owner** are an intentional ownership descriptor and must not be removed during title standardisation. Keep the official titles Founder & CEO and Superintendent Admin; do not restore the obsolete Director title. If the owner identity check is unavailable or false, show Superintendent Admin only.
+
+For a verified owner question such as “Who founded you?”, “Who created you?” or “Who is your founder?”, answer explicitly: **“Gladly, Sir! It is you, Jeremiah Chuks Godspower (De Champions) — the Founder & CEO of De Champions Digital Services and the verified Superintendent Admin who founded DCDS.”** Continue by explaining that Deyriva is the official DCDS AI Companion, created to support the founder's vision of empowering people with practical digital skills and helping them **Create. Learn. Innovate. Earn.** This answer is deterministic and is returned only when the server confirms the exact designated owner identity. Do not claim the owner personally programmed the AI unless a separately approved source establishes that fact.

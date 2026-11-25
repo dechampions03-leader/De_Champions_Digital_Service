@@ -155,3 +155,10 @@ Suggested response: “Gladly, Sir! I'm Deyriva, the official AI Companion of DC
 ## Deyriva header title and loading state
 
 Use **Verifying your DCDS account…** as the initial loading label for every account type. It must not say student while the browser is still checking the signed-in account. After the protected owner identity RPC confirms the designated CEO mapping, display **Founder & CEO · Superintendent Admin** at the top of Deyriva. If only the protected Superintendent Admin role is confirmed, display **Superintendent Admin**. Ordinary administrators display **Administrator**. Do not use the removed informal label `Deyriva owner` or the obsolete `Director · Deyriva owner` wording.
+
+
+## Verified owner header and “Who founded you?” answer
+
+After all five protected owner-identity checks succeed, display **Founder & CEO · Superintendent Admin · Deyriva owner** in the Deyriva header. Preserve the exact **Deyriva owner** descriptor; it recognises the founder's relationship to Deyriva and is not a replacement for the official Founder & CEO and Superintendent Admin titles. Do not use the old Director title. If the designated-owner check fails, display Superintendent Admin only.
+
+For verified owner questions asking who founded, created or developed Deyriva, the response must explicitly say **“It is you, Sir — Jeremiah Chuks Godspower (De Champions)”**. Identify him as Founder & CEO of De Champions Digital Services and Superintendent Admin who founded DCDS. Explain that Deyriva is the official DCDS AI Companion created to support the vision of empowering people with practical digital skills: **Create. Learn. Innovate. Earn.** Do not leave “you” implicit, and do not claim he personally wrote the AI code unless an approved source confirms it.

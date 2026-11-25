@@ -725,7 +725,7 @@ Deno.serve(async (request: Request) => {
         "- This is an authenticated identity link for the current account, not merely a public founder biography. The Founder & CEO and Superintendent Admin are the same verified person.",
         "- The person's platform title is " + platformTitle + ". Use Superintendent Admin for platform operations and Founder & CEO when answering who the person is or asking about their company position.",
         "- If asked who they are, who the CEO is, whether they are CEO, or a similar identity question, reply warmly and with honour. Preferred answer: Gladly, Sir! You are " + ownerName + " (" + ownerAlias + "), the Founder & CEO of " + organisation + " and the verified DCDS Superintendent Admin. I recognise you through your confirmed sign-in identity and protected DCDS owner credentials.",
-        "- If asked who founded, created, developed or built you, or who your founder is, distinguish Deyriva from the organisation: say that you are Deyriva, the official DCDS AI Companion, and that DCDS was founded by " + ownerName + " (" + ownerAlias + "), the verified Founder & CEO and Superintendent Admin. Name the person explicitly; never answer only with the vague phrase 'founded by you, Superintendent Admin'.",
+        "- If asked who founded, created, developed or built you, or who your founder is, say directly and proudly: It is you, Sir — " + ownerName + " (" + ownerAlias + "), the Founder & CEO of " + organisation + " and the verified Superintendent Admin who founded DCDS. Then explain that you are Deyriva, the official DCDS AI Companion created to support the vision of empowering people through digital skills and learning. Do not leave the answer at 'founded by you, Superintendent Admin'; explicitly say 'It is you, Sir' and give the full name.",
         "- Do not claim that the owner personally wrote or programmed the AI unless a verified DCDS source specifically supports that separate claim. It is accurate to say that Deyriva was created as the official AI Companion for the founder's organisation.",
         "- Remember this identity on every turn of this verified owner session. Do not separate the account holder from the founder/CEO record or describe the founder record as unverified.",
         "- The account's profile display name is editable and may differ. Do not use it to contradict the protected owner identity.",
@@ -989,6 +989,7 @@ Deno.serve(async (request: Request) => {
   }
 
   const promptMessage = message || "Please analyse the attached image and explain what you can help me with.";
+  const asksWhoFoundedDeyriva = /\b(?:who\s+(?:founded|created|built|developed)\s+(?:you|dcds|the\s+company)|who\s+is\s+(?:your|the)\s+(?:founder|creator)|who\s+founded\s+you|who\s+created\s+you)\b/i.test(promptMessage);
   if (isSuperintendentAdmin && promptMessage.trim().length >= 3
       && !/^\s*(hi|hello|hey|good morning|good afternoon|good evening)\s*[!.?]*\s*$/i.test(promptMessage)) {
     const { data: memoryMatches, error: memorySearchError } = await userClient.rpc(
@@ -1588,9 +1589,13 @@ ${superintendentMemoryInstruction}${savedMemoryInstruction}`;
     .replace(/\s+([,.!?;:])/g, "$1")
     .replace(/([.!?])(?=[A-Z])/g, "$1 ")
     .trim();
-  const answer = sourceLines.length
-    ? cleanGeneratedAnswer + "\n\nSources checked:\n" + sourceLines.map((line) => "• " + line).join("\n")
+  const ownerFounderAnswer = "Gladly, Sir! It is you, Jeremiah Chuks Godspower (De Champions) — the Founder & CEO of De Champions Digital Services and the verified Superintendent Admin who founded DCDS. You established the DCDS vision, ‘Create. Learn. Innovate. Earn.’, to empower people with practical digital skills and help them turn creativity into opportunity. I am Deyriva, the official DCDS AI Companion, created to support that vision by helping learners build skills, gain knowledge and grow. I recognise you through your confirmed sign-in identity and private DCDS owner credentials. It is an honour to support the vision you founded, Sir. 💜";
+  const finalGeneratedAnswer = isVerifiedFounderCeo && asksWhoFoundedDeyriva
+    ? ownerFounderAnswer
     : cleanGeneratedAnswer;
+  const answer = sourceLines.length && !(isVerifiedFounderCeo && asksWhoFoundedDeyriva)
+    ? finalGeneratedAnswer + "\n\nSources checked:\n" + sourceLines.map((line) => "• " + line).join("\n")
+    : finalGeneratedAnswer;
 
   let persistedConversationId: string | null = null;
   let historySaved = false;
