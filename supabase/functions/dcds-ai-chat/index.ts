@@ -700,6 +700,7 @@ Deno.serve(async (request: Request) => {
       && ownerIdentity.email_verified === true
       && ownerIdentity.administrator_membership_verified === true
       && ownerIdentity.protected_role_verified === true
+      && ownerIdentity.designated_owner_mapping_verified === true
     ) {
       const ownerName = typeof ownerIdentity.owner_name === "string"
         ? ownerIdentity.owner_name.slice(0, 100)
