@@ -1,0 +1,35 @@
+name: DCDS NGN hosted payment validation
+
+on:
+  push:
+    branches:
+      - feat/dcds-ngn-secure-hosted-checkout-release-20261119
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/create-payment/**"
+      - "supabase/functions/verify-payment/**"
+      - "supabase/functions/verify-payment/flutterwave-course-payment.ts"
+      - "supabase/migrations/**dcds_student_flutterwave_checkout_finalize.sql"
+      - ".github/workflows/dcds-ngn-payment-validation.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+      - name: Test Flutterwave course transaction validation
+        run: deno test supabase/functions/verify-payment/flutterwave-course-payment.test.ts
+      - name: Type-check hosted checkout functions
+        run: |
+          deno check supabase/functions/create-payment/index.ts
+          deno check supabase/functions/verify-payment/index.ts
