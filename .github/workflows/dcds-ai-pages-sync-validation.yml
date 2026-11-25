@@ -24,6 +24,7 @@ on:
       - "supabase/migrations/20261113160210_dcds_ai_age_policy_autoapproval_guard.sql"
       - "supabase/migrations/20261124130000_dcds_ai_root_admin_identity.sql"
       - "supabase/migrations/20261125120000_dcds_ai_superintendent_one_year_memory.sql"
+      - "supabase/migrations/20261125170000_dcds_superintendent_admin_display.sql"
       - ".github/workflows/dcds-ai-pages-sync-validation.yml"
 
 permissions:
@@ -55,6 +56,7 @@ jobs:
               "age-policy-migration": Path("supabase/migrations/20261113160000_dcds_ai_global_age_access_controls.sql").read_text(encoding="utf-8"),
               "root-admin-migration": Path("supabase/migrations/20261124130000_dcds_ai_root_admin_identity.sql").read_text(encoding="utf-8"),
               "owner-memory-migration": Path("supabase/migrations/20261125120000_dcds_ai_superintendent_one_year_memory.sql").read_text(encoding="utf-8"),
+              "superintendent-display-migration": Path("supabase/migrations/20261125170000_dcds_superintendent_admin_display.sql").read_text(encoding="utf-8"),
               "brain": Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8"),
               "memory": Path("ai-config/DCDS-AI-MEMORY-GOVERNANCE.md").read_text(encoding="utf-8"),
               "playbook": Path("ai-config/DCDS-RESPONSE-PLAYBOOK.md").read_text(encoding="utf-8"),
@@ -118,11 +120,14 @@ jobs:
               "Visitors and administrators must explicitly confirm 18+": "body.adult_confirmation !== true" in files["edge"] and "adminAgeGate" in files["ai"] and "guestAdultConfirm" in files["ai"],
               "Visitor mode does not return before the chat form handler is attached": "await showGuestAccess();" in files["ai"] and "await showGuestAccess();return" not in files["ai"],
               "Signed-in welcome greeting is personalised from profile full_name": "user_metadata" in files["ai"] and "configureWelcomeGreeting" in files["ai"],
-              "Superintendent Admin authorization is verified only through the protected database role": "is_dcds_super_admin" in files["edge"] and "isRootAdmin" in files["edge"] and "a.role = 'super_admin'" in files["root-admin-migration"] and "public.dcds_admins" in files["root-admin-migration"],
-              "Deyriva receives verified Superintendent Admin guidance and reports the role to the UI": "VERIFIED DCDS SUPERINTENDENT ADMIN" in files["edge"] and "is_root_admin: isRootAdmin" in files["edge"] and "data.is_root_admin===true" in files["ai"],
+              "Superintendent Admin authorization is verified only through the protected database role": "is_dcds_super_admin" in files["edge"] and "isSuperintendentAdmin" in files["edge"] and "a.role = 'super_admin'" in files["root-admin-migration"] and "public.dcds_admins" in files["root-admin-migration"],
+              "Deyriva receives verified Superintendent Admin guidance and reports the role to the UI": "VERIFIED DCDS SUPERINTENDENT ADMIN" in files["edge"] and "is_superintendent_admin: isSuperintendentAdmin" in files["edge"] and "data.is_superintendent_admin===true" in files["ai"],
               "DCDS AI page displays Superintendent Admin status only after the authenticated owner-role RPC": "client.rpc('is_dcds_super_admin')" in files["ai"] and "Superintendent Admin" in files["ai"],
               "Homepage resolves administrator access only after a server-side role check": "refreshDcdsAccountButton" in files["home"] and "rpc('is_dcds_admin')" in files["home"] and "Admin Portal" in files["home"] and "if(dcdsAccountRole==='admin')" in files["home"],
               "Administrator portal wording is consistent across the main admin workspaces": "DCDS Administration Portal | Communications" in files["admin"] and "DCDS Administration Portal" in files["student-management"] and "Administration Portal" in files["dashboard"],
+              "Superintendent Admin is the platform-wide display title": "DCDS Superintendent Admin" in files["knowledge"] and "Superintendent Admin" in files["superintendent-display-migration"] and "Superintendent Admin" in files["edge"],
+              "Operational snapshot returns a display label, not an internal root role": "'superintendent_admin'" in files["superintendent-display-migration"] and "'admin_role', CASE WHEN a.role = 'super_admin' THEN 'Superintendent Admin' ELSE initcap(replace(a.role, '_', ' ')) END" in files["superintendent-display-migration"],
+              "The protected super_admin authorization remains intact": "public.is_dcds_super_admin()" in files["superintendent-display-migration"] and "a.role = 'super_admin'" in files["root-admin-migration"],
               "Deyriva addresses the verified Superintendent Admin by the requested title": "Hello, Superintendent Admin." in files["ai"] and "Address this person exactly as" in files["edge"],
               "Deyriva does not volunteer the Superintendent Admin account holder's Founder/CEO identity": "Do not volunteer or casually mention their Founder/CEO identity" in files["edge"],
               "Financial escalation protocol is present in the response playbook": "Financial and Sensitive Account Escalations" in files["playbook"] and "student-dashboard.html#studentSupportPanel" in files["playbook"] and "admin-notifications.html#supportInboxSection" in files["playbook"],
