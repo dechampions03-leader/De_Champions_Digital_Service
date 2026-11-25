@@ -280,6 +280,12 @@ jobs:
               "Verified CEO founder questions use a deterministic answer that explicitly says it is the authenticated owner": "asksWhoFoundedDeyriva" in function and "isVerifiedFounderCeo && asksWhoFoundedDeyriva" in function and "Jeremiah Chuks Godspower (De Champions)" in function and "Create. Learn. Innovate. Earn." in function,
               "CEO identity requires a matching private designated-owner mapping": "dcds_get_verified_superintendent_identity" in function and "designated_owner_mapping_verified === true" in function and "identity_verified === true" in function,
               "founder biography requests avoid unnecessary live platform lookup": "skipPlatformSearch" in function and "isSuperintendentAdmin &&" in function and "biography" in function,
+              "Deyriva chronology uses the Nigeria calendar and injects server-computed facts": "Africa/Lagos" in function and "buildDeyrivaTimelineGuidance" in function and "DYNAMIC DCDS AND FOUNDER TIMELINE" in function,
+              "Deyriva and DCDS ages count the start date as Day 1": "describeInclusiveCalendarAge" in function and "inclusiveDays" in function and "DEYRIVA_OFFICIAL_LAUNCH_DATE" in function,
+              "founder age and birthday recognition are date-derived": "FOUNDER_DATE_OF_BIRTH" in function and "getCompletedAgeYears" in function and "founderBirthdayToday" in function,
+              "Academy launch wording switches between next year and this year": "next year (2027)" in function and "this year (2027)" in function and "official opening date has not yet been announced" in function,
+              "founder DOB is included in the biography without a fixed age": "2004-04-04" in Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8") and "4 April 2004" in Path("founder.html").read_text(encoding="utf-8"),
+              "company foundation and Deyriva launch use the CAC date": "2026-11-21" in Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8") and "officially_launched_on" in Path("dcds-ai-knowledge-base.json").read_text(encoding="utf-8"),
           }
           for name, passed in provider_invariants.items():
               print(("PASS " if passed else "FAIL ") + name)
@@ -374,6 +380,10 @@ jobs:
               "audit-fallback-001",
               "provider-503-001", "gemma-fallback-001", "founder-biography-privacy-001",
               "prompt-budget-001", "token-rate-limit-001", "biography-lookup-001",
+              "deyriva-official-launch-age-dynamic-001", "dcds-founded-date-and-dynamic-age-001",
+              "dcds-academy-launch-year-2026-001", "dcds-academy-launch-year-2027-001",
+              "founder-birth-date-and-live-age-001", "founder-biography-includes-dob-no-fixed-age-001",
+              "founder-birthday-recognition-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
