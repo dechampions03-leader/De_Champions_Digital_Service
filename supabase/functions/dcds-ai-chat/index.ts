@@ -734,12 +734,35 @@ Deno.serve(async (request: Request) => {
     }
   }
 
-  if (role === "admin" && body.adult_confirmation !== true) {
-    return respond({
-      success: false,
-      error_code: "ADULT_CONFIRMATION_REQUIRED",
-      error: "Confirm that you are 18 or older before using DCDS AI.",
-    }, 403);
+  if (role === "admin") {
+    const { data: adminEligibility, error: adminEligibilityError } = await userClient
+      .from("dcds_ai_access_eligibility")
+      .select("age_band,guardian_consent_status")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (adminEligibilityError) {
+      console.error("DCDS AI administrator age-access record check failed:", adminEligibilityError.message);
+      return respond({
+        success: false,
+        error_code: "AGE_CHECK_UNAVAILABLE",
+        error: "DCDS could not verify your saved adult AI access record. Please try again.",
+      }, 503);
+    }
+
+    const adminAdultAllowed = adminEligibility?.age_band === "18_plus"
+      && adminEligibility.guardian_consent_status === "not_required";
+
+    if (!adminAdultAllowed) {
+      const under18 = adminEligibility?.age_band === "13_17" || adminEligibility?.age_band === "under_13";
+      return respond({
+        success: false,
+        error_code: under18 ? "UNDER_18_AI_UNAVAILABLE" : "ADMIN_AGE_CONFIRMATION_REQUIRED",
+        error: under18
+          ? "DCDS AI is currently available only to adults aged 18 or older while Gemini is the active provider. This does not affect DCDS course access."
+          : "Confirm that you are 18 or older in the DCDS AI access screen before using the assistant.",
+      }, 403);
+    }
   }
 
   // The Gemini API terms require this AI client to remain adult-only.

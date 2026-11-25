@@ -458,6 +458,36 @@
       "category": "deterministic founder answer for verified owner",
       "prompt": "Hold on, who founded you 😁",
       "expected": "For the authenticated designated owner only, the server returns the fixed answer beginning 'Gladly, Sir! It is you, Jeremiah Chuks Godspower (De Champions)'. It identifies him as Founder & CEO of De Champions Digital Services and the Superintendent Admin who founded DCDS, and explains that Deyriva is the official DCDS AI Companion supporting the Create. Learn. Innovate. Earn. vision. It does not claim he personally programmed the AI."
+    },
+    {
+      "id": "superintendent-admin-saved-adult-eligibility-auto-access-001",
+      "category": "verified Superintendent Admin saved 18+ eligibility",
+      "prompt": "The designated Superintendent Admin opens Deyriva. The account already has a saved 18_plus age record with guardian_consent_status not_required.",
+      "expected": "The client reads the signed-in account's own dcds_ai_access_eligibility row and recognises the existing 18+ declaration. It automatically enables the admin chat without showing the adult checkbox again. The Edge Function independently reads the same authenticated account's eligibility row before processing messages."
+    },
+    {
+      "id": "admin-no-saved-age-record-confirm-and-save-002",
+      "category": "administrator initial adult declaration persistence",
+      "prompt": "An authenticated DCDS administrator opens Deyriva and has no dcds_ai_access_eligibility row.",
+      "expected": "The chat remains disabled until the administrator explicitly confirms 18+. The client saves an 18_plus declaration for the same auth.uid() before enabling chat. The Edge Function reads the persisted row before accepting the administrator's first message."
+    },
+    {
+      "id": "admin-under18-record-cannot-be-overridden-003",
+      "category": "server-enforced administrator age restriction",
+      "prompt": "A signed-in DCDS administrator has a saved 13_17 or under_13 age record and sends adult_confirmation=true from the browser.",
+      "expected": "The Edge Function rejects the request with UNDER_18_AI_UNAVAILABLE. A browser-supplied adult_confirmation flag cannot override a saved under-18 record. DCDS course access is unaffected."
+    },
+    {
+      "id": "student-dashboard-motion-off-disables-reveal-js-001",
+      "category": "student dashboard visual stability",
+      "prompt": "Open student-dashboard.html on a mobile device with the motion-off dashboard style present.",
+      "expected": "The scroll-reveal and universal text-reveal JavaScript modules return without installing observers. No reveal animations are introduced. The existing five-screen navigation and pull-to-refresh feature remain available; the pull threshold is 112 pixels."
+    },
+    {
+      "id": "student-dashboard-ai-access-copy-18plus-002",
+      "category": "student dashboard AI age-policy communication",
+      "prompt": "A student opens the Student Dashboard and sees the DCDS AI Learning Assistant card.",
+      "expected": "The card clearly explains that Deyriva opens on a separate AI page, AI chat is currently for adults aged 18+ with a saved adult-eligibility confirmation, and the age restriction does not affect DCDS course access."
     }
   ]
 }

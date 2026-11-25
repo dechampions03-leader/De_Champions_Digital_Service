@@ -162,7 +162,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    </section>
    <section class="guest-access-panel" id="adminAgeGate" hidden aria-labelledby="adminAgeGateTitle">
     <h2 id="adminAgeGateTitle">Adult access confirmation</h2>
-    <p>DCDS AI is currently available only to adults aged 18 or older while the Gemini API is the active provider.</p>
+    <p id="adminAgeMessage">DCDS AI is currently available only to adults aged 18 or older while the Gemini API is the active provider.</p>
     <label for="adminAdultConfirm"><input id="adminAdultConfirm" type="checkbox"> <span>I confirm that I am 18 years old or older. I understand that the AI assistant is adult-only while this provider is in use.</span></label>
     <button class="eligibility-submit" id="adminAgeContinue" type="button" disabled>Continue to DCDS AI</button>
    </section>
@@ -898,9 +898,24 @@ async function submitAiEligibilityRequest(){
  }
  guestAdultConfirm.addEventListener('change',updateGuestContinueState);
  guestContinue.addEventListener('click',enterGuestAccess);
- function updateAdminAdultContinueState(){adminAgeContinue.disabled=!adminAdultConfirm.checked;}
- async function enterAdminAi(){
-  if(!adminAdultConfirm.checked){setStatus('Please confirm that you are 18 or older before continuing.',true);return;}
+ function updateAdminAdultContinueState(){adminAgeContinue.disabled=adminAdultConfirm.disabled||!adminAdultConfirm.checked;}
+ async function enterAdminAi(useSavedAdultApproval=false){
+  if(!useSavedAdultApproval&&!adminAdultConfirm.checked){setStatus('Please confirm that you are 18 or older before continuing.',true);return;}
+  if(!useSavedAdultApproval){
+   adminAgeContinue.disabled=true;
+   const {data:existingAgeRecord,error:ageReadError}=await client.from('dcds_ai_access_eligibility')
+    .select('age_band,guardian_consent_status').eq('user_id',currentUser.id).maybeSingle();
+   if(ageReadError){adminAgeContinue.disabled=false;setStatus('DCDS could not verify your adult AI access record. Please try again.',true);return;}
+   if(existingAgeRecord&&(existingAgeRecord.age_band!=='18_plus'||existingAgeRecord.guardian_consent_status!=='not_required')){
+    const msg='The saved age record does not currently confirm adult AI access. Please contact DCDS support if this record is incorrect.';
+    document.getElementById('adminAgeMessage').textContent=msg;
+    adminAdultConfirm.disabled=true;adminAgeContinue.disabled=true;setStatus(msg,true);return;
+   }
+   if(!existingAgeRecord){
+    const {error:saveAgeError}=await client.from('dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:'18_plus'});
+    if(saveAgeError){adminAgeContinue.disabled=false;setStatus('Your 18+ confirmation could not be saved. Please refresh or contact DCDS support.',true);return;}
+   }
+  }
   adminAgeGate.hidden=true;isAdminSession=true;setChatEnabled(true);
   await loadResourceIndex();configureWelcomeGreeting('admin');
   document.getElementById('accountLabel').textContent=superintendentAccountLabel();
@@ -913,12 +928,44 @@ async function submitAiEligibilityRequest(){
    await loadConversationList();
   }
   setStatus(isSuperintendentAdminSession
-   ? 'Verified DCDS Superintendent Admin access. Your private conversation archive is active, and I can search relevant discussions from the previous 365 days.'
-   : 'Administrator access confirmed for an adult account. This assistant is read-only and cannot change student records, payments or payouts.');
+   ? 'Verified DCDS Superintendent Admin access. Your saved 18+ eligibility is recognised and your private conversation archive is active.'
+   : 'Administrator access confirmed for an adult account. Your saved 18+ eligibility is recognised. This assistant is read-only for platform records.');
   input.focus();
  }
+ async function loadAdminAiEligibility(){
+  setChatEnabled(false);
+  const {data:eligibility,error}=await client.from('dcds_ai_access_eligibility')
+   .select('age_band,access_status,guardian_consent_status')
+   .eq('user_id',currentUser.id).maybeSingle();
+  if(error){
+   adminAgeGate.hidden=false;
+   adminAdultConfirm.disabled=true;adminAgeContinue.disabled=true;
+   document.getElementById('adminAgeMessage').textContent='DCDS could not verify your saved adult-access record. The assistant remains locked until the check succeeds.';
+   setStatus('AI eligibility could not be checked. Please try again later.',true);
+   return false;
+  }
+  const adultAllowed=eligibility?.age_band==='18_plus'&&eligibility?.guardian_consent_status==='not_required';
+  if(adultAllowed){
+   adminAdultConfirm.disabled=false;
+   await enterAdminAi(true);
+   setStatus('Your saved 18+ eligibility is verified. Deyriva is ready to assist you.');
+   return true;
+  }
+  adminAgeGate.hidden=false;
+  if(eligibility&&(eligibility.age_band==='13_17'||eligibility.age_band==='under_13')){
+   const msg='This account’s saved age record is under 18. AI chat is unavailable while Gemini is the active provider. DCDS courses remain available.';
+   document.getElementById('adminAgeMessage').textContent=msg;
+   adminAdultConfirm.disabled=true;adminAdultConfirm.checked=false;adminAgeContinue.disabled=true;
+   setStatus(msg,true);
+  }else{
+   adminAdultConfirm.disabled=false;adminAdultConfirm.checked=false;updateAdminAdultContinueState();
+   document.getElementById('adminAgeMessage').textContent='DCDS AI is for adults aged 18 or older. Confirm once and DCDS will save the declaration to this signed-in account for future visits.';
+   setStatus('Confirm your age once to enable Deyriva for this account.');
+  }
+  return false;
+ }
  adminAdultConfirm.addEventListener('change',updateAdminAdultContinueState);
- adminAgeContinue.addEventListener('click',enterAdminAi);
+ adminAgeContinue.addEventListener('click',()=>enterAdminAi(false));
  try{
   if(!window.supabase?.createClient){setStatus('The DCDS account service could not load. Check your connection and reload.',true);return;}
   client=window.supabase.createClient(SUPABASE_URL,SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
@@ -946,9 +993,9 @@ async function submitAiEligibilityRequest(){
       && founderIdentityData?.protected_role_verified===true
       && founderIdentityData?.designated_owner_mapping_verified===true;
     }
-    isAdminSession=true;setChatEnabled(false);adminAgeGate.hidden=false;
+    isAdminSession=true;setChatEnabled(false);
     document.getElementById('accountLabel').textContent=superintendentAccountLabel(true);
-    setStatus('DCDS AI is for adults aged 18+ while Gemini is the active provider. Confirm your age to continue.');
+    await loadAdminAiEligibility();
    }else{
     const accessApproved=await loadAiEligibility();
     if(!accessApproved){document.getElementById('accountLabel').textContent='Student · Adult age confirmation required';}

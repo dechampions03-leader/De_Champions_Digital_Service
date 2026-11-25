@@ -162,3 +162,12 @@ Use **Verifying your DCDS account…** as the initial loading label for every ac
 After all five protected owner-identity checks succeed, display **Founder & CEO · Superintendent Admin · Deyriva owner** in the Deyriva header. Preserve the exact **Deyriva owner** descriptor; it recognises the founder's relationship to Deyriva and is not a replacement for the official Founder & CEO and Superintendent Admin titles. Do not use the old Director title. If the designated-owner check fails, display Superintendent Admin only.
 
 For verified owner questions asking who founded, created or developed Deyriva, the response must explicitly say **“It is you, Sir — Jeremiah Chuks Godspower (De Champions)”**. Identify him as Founder & CEO of De Champions Digital Services and Superintendent Admin who founded DCDS. Explain that Deyriva is the official DCDS AI Companion created to support the vision of empowering people with practical digital skills: **Create. Learn. Innovate. Earn.** Do not leave “you” implicit, and do not claim he personally wrote the AI code unless an approved source confirms it.
+
+
+## AI adult eligibility for administrators and students
+
+Do not ask the verified Superintendent Admin to reconfirm age on every page visit when the authenticated account already has a saved `18_plus` eligibility record and `guardian_consent_status = not_required`. Read the current account's own eligibility row, verify it, and enable Deyriva automatically. If there is no record, keep chat locked until the adult confirms and the declaration is saved to that same authenticated account. If the saved record is under 18, do not offer a browser-checkbox bypass. The Edge Function must independently read the current admin's saved eligibility row; browser-supplied role and age flags are not authoritative. Students keep the same 18+ eligibility rules. Adult-only AI restrictions do not affect course access.
+
+## Student dashboard motion stability
+
+The student dashboard has an explicit still-interface style. Its legacy scroll-reveal and universal text-reveal scripts must not install observers when that motion-off style is present. Keep the existing five-screen navigation and pull-to-refresh feature; a deliberate pull threshold of 112 pixels reduces unintended full-page reloads.
