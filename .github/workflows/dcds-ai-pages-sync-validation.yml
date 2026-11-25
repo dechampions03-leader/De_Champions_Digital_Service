@@ -73,6 +73,15 @@ jobs:
               "Student dashboard links to DCDS AI": 'href="ai-learning-assistant.html?source=student-dashboard"' in files["dashboard"],
               "Admin dashboard links directly to AI Access Review": 'href="dcds-ai-access-review.html"' in files["student-management"] and "is_dcds_admin" in files["student-management"],
               "Homepage retains its public AI entry point": "ai-learning-assistant.html" in files["home"],
+              "Main admin dashboard exposes a direct Student Support & Resolution route": 'href="admin-notifications.html?view=support"' in files["student-management"] and "Student Support &amp; Resolution" in files["student-management"],
+              "Student Support & Resolution is the first quick-access workspace": (
+                  'href="admin-notifications.html?view=support"' in files["student-management"].split('<section class="panel admin-quick-access"', 1)[1].split('</section>', 1)[0]
+                  and files["student-management"].split('<section class="panel admin-quick-access"', 1)[1].split('</section>', 1)[0].index('href="admin-notifications.html?view=support"')
+                  < files["student-management"].split('<section class="panel admin-quick-access"', 1)[1].split('</section>', 1)[0].index('data-admin-view="students"')
+              ),
+              "Student lookup accepts a registered email or mobile and automatically resolves the matched identity": "supportLookupInput" in files["admin"] and "admin_lookup_student_for_support" in files["admin"] and "setTimeout(() => lookupSupportStudent" in files["admin"] and "renderSupportStudentMatch(data.student)" in files["admin"],
+              "Support workflow opens a case and supports replies plus resolved/closed statuses": "admin_create_student_support_case" in files["admin"] and "admin_update_student_support_ticket" in files["admin"] and '["resolved","Resolved"]' in files["admin"] and '["closed","Closed"]' in files["admin"],
+              "Support inbox does not expose raw internal student UUIDs": '"Student ID: " + ticket.user_id' not in files["admin"] and "Student identity not loaded in this view" in files["admin"],
               "Main login page loads the Turnstile public configuration": 'src="ai-config/captcha-public-config.js"' in files["home"],
               "Turnstile UI and token validation hooks are present": "dcdsCaptchaMarkup" in files["home"] and "getDcdsCaptchaToken" in files["home"],
               "Turnstile widget is visible when enabled": 'appearance:"always"' in files["home"],
@@ -126,7 +135,7 @@ jobs:
           if failures:
               raise SystemExit(f"{len(failures)} GitHub Pages release checks failed.")
 
-          for page_name in ("index.html", "ai-learning-assistant.html", "dcds-ai-access-review.html"):
+          for page_name in ("index.html", "ai-learning-assistant.html", "dcds-ai-access-review.html", "student-management.html", "admin-notifications.html"):
               html = Path(page_name).read_text(encoding="utf-8")
               scripts = re.findall(r"<script\b(?![^>]*\bsrc=)[^>]*>([\s\S]*?)</script>", html, re.I)
               if not scripts:
