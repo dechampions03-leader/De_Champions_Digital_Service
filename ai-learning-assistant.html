@@ -183,7 +183,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    <section class="history-panel" id="historyPanel" hidden aria-label="Saved DCDS AI conversations">
     <div class="panel-heading"><span>Your saved conversations</span><button class="panel-action" id="clearAllConversations" type="button">Delete all</button></div>
     <div class="conversation-list" id="conversationList"><p class="empty-state">Loading your conversations…</p></div>
-    <small class="memory-help">Only verified accounts can save chats. Each conversation is private to its owner. Delete a chat to remove its messages.</small>
+    <small class="memory-help">Each saved conversation is private to its verified owner. Delete a chat to remove its messages.</small>
    </section>
    <section class="memory-panel" id="memoryPanel" hidden aria-label="Saved learning memory">
     <div class="panel-heading"><span>Your learning memory</span></div>
@@ -266,6 +266,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let client=null;
  let currentUser=null;
  let isPersistentStudent=false;
+ let isPersistentOwner=false;
  let isGuestSession=false;
  let isAdminSession=false;
  let isRootAdminSession=false;
@@ -273,6 +274,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let guestTurnstileWidgetId=null;
  let guestTurnstileLoader=null;
  let activeConversationId=null;
+ function canUsePersistentConversations(){return isPersistentStudent||isPersistentOwner;}
  input.disabled=true;sendButton.disabled=true;document.getElementById('newChat').disabled=true;
  voiceButton.disabled=true;
  let activeRecognition=null;
@@ -679,12 +681,12 @@ async function submitAiEligibilityRequest(){
   return Number.isNaN(date.getTime())?'':date.toLocaleString();
  }
  async function loadConversationList(){
-  if(!isPersistentStudent)return;
+  if(!canUsePersistentConversations())return;
   const {data,error}=await client
    .from('dcds_ai_conversations')
    .select('id,title,last_message_at')
    .order('last_message_at',{ascending:false})
-   .limit(30);
+   .limit(100);
   if(error){
    console.error('DCDS saved conversation list could not load:',error.message);
    historyList.replaceChildren();
@@ -715,7 +717,7 @@ async function submitAiEligibilityRequest(){
   }
  }
  async function openConversation(id){
-  if(!isPersistentStudent)return;
+  if(!canUsePersistentConversations())return;
   setStatus('Opening your saved conversation…');
   const {data:owned,error:ownedError}=await client
    .from('dcds_ai_conversations').select('id,title').eq('id',id).maybeSingle();
@@ -747,7 +749,7 @@ async function submitAiEligibilityRequest(){
   input.focus();
  }
  async function deleteConversation(id){
-  if(!isPersistentStudent||!window.confirm('Delete this conversation and all its messages? This cannot be undone.'))return;
+  if(!canUsePersistentConversations()||!window.confirm('Delete this conversation and all its messages? This cannot be undone.'))return;
   const {error}=await client.from('dcds_ai_conversations').delete().eq('id',id);
   if(error){
    setStatus('The conversation could not be deleted. Please try again.',true);
@@ -758,7 +760,8 @@ async function submitAiEligibilityRequest(){
   setStatus('Conversation deleted.');
  }
  async function clearAllConversations(){
-  if(!isPersistentStudent||!window.confirm('Delete all your saved DCDS AI conversations? Your separate learning-memory note will remain. This cannot be undone.'))return;
+  const extra=isPersistentOwner?' Your one-year recall archive will also be cleared.':' Your separate learning-memory note will remain.';
+  if(!canUsePersistentConversations()||!window.confirm('Delete all your saved DCDS AI conversations?'+extra+' This cannot be undone.'))return;
   const {error}=await client.from('dcds_ai_conversations').delete().eq('user_id',currentUser.id);
   if(error){
    setStatus('Your saved conversations could not be cleared.',true);
@@ -893,8 +896,16 @@ async function submitAiEligibilityRequest(){
   adminAgeGate.hidden=true;isAdminSession=true;setChatEnabled(true);
   await loadResourceIndex();configureWelcomeGreeting('admin');
   document.getElementById('accountLabel').textContent=isRootAdminSession?'Superintendent Admin':'Administrator · Read-only Copilot';
+  if(isRootAdminSession){
+   isPersistentOwner=true;studentTools.hidden=false;memoryToggle.hidden=true;
+   historyToggle.textContent='◷ Conversation history · 365-day recall';
+   historyPanel.querySelector('.panel-heading span').textContent='Private Superintendent Admin archive';
+   const help=historyPanel.querySelector('.memory-help');
+   if(help)help.textContent='Only your verified Superintendent Admin account can see this archive. Deyriva can search relevant saved discussions from the previous 365 days. Conversations remain saved until you delete them or your account is deleted.';
+   await loadConversationList();
+  }
   setStatus(isRootAdminSession
-   ? 'Verified DCDS Superintendent Admin access. I can help identify gaps and prepare system, knowledge and playbook improvements for your review.'
+   ? 'Verified DCDS Superintendent Admin access. Your private conversation archive is active, and I can search relevant discussions from the previous 365 days.'
    : 'Administrator access confirmed for an adult account. This assistant is read-only and cannot change student records, payments or payouts.');
   input.focus();
  }
@@ -918,7 +929,7 @@ async function submitAiEligibilityRequest(){
     if(rootAdminError){document.getElementById('accountLabel').textContent='Superintendent Admin verification unavailable';setStatus('We could not verify your DCDS Superintendent Admin status. Please refresh and try again.',true);return;}
     isRootAdminSession=rootAdminData===true;
     isAdminSession=true;setChatEnabled(false);adminAgeGate.hidden=false;
-    document.getElementById('accountLabel').textContent=isRootAdminSession?'Director · adult confirmation required':'Administrator · adult confirmation required';
+    document.getElementById('accountLabel').textContent=isRootAdminSession?'Superintendent Admin · adult confirmation required':'Administrator · adult confirmation required';
     setStatus('DCDS AI is for adults aged 18+ while Gemini is the active provider. Confirm your age to continue.');
    }else{
     const accessApproved=await loadAiEligibility();
@@ -941,7 +952,7 @@ async function submitAiEligibilityRequest(){
  });
  document.getElementById('newChat').addEventListener('click',resetChat);
  document.getElementById('historyToggle').addEventListener('click',()=>{
-  if(!isPersistentStudent)return;
+  if(!canUsePersistentConversations())return;
   historyPanel.hidden=!historyPanel.hidden;
   memoryPanel.hidden=true;
   if(!historyPanel.hidden)loadConversationList();
@@ -985,15 +996,17 @@ async function submitAiEligibilityRequest(){
    addMessage('assistant',data.answer,Array.isArray(data.resources)?data.resources:inferResourceActions(data.answer));
    input.value='';updateCharacterCount();
    document.getElementById('accountLabel').textContent=resolvedRoleLabel;
-   if(data.role==='student'&&data.history_saved&&data.conversation_id){
+   if((data.role==='student'||(data.role==='admin'&&data.is_root_admin===true))&&data.history_saved&&data.conversation_id){
     activeConversationId=data.conversation_id;await loadConversationList();
-    setStatus('Connected. This conversation has been saved to your private DCDS chat history.');
+    setStatus(data.role==='admin'
+     ? 'Connected. This conversation is saved to your private Superintendent Admin archive. Relevant discussions from the previous 365 days can be recalled in new chats.'
+     : 'Connected. This conversation has been saved to your private DCDS chat history.');
    }else if(data.role==='student'){
     setStatus('Your answer is ready. This turn could not be added to saved history, but the answer is available on this page.',true);
    }else if(data.role==='guest'){
     setStatus('Your answer is ready. Visitor chats are temporary and are not saved to a student account.');
    }else if(data.is_root_admin===true){
-    setStatus('Connected to your verified DCDS Superintendent Admin account. I will point out gaps and prepare proposed upgrades to my knowledge, instructions and playbook. Actual production changes still require the approved release process; I cannot change student records, payments or payouts in this chat.');
+    setStatus('Your answer is ready, but this turn could not be saved to your private Superintendent Admin archive. Your conversation draft remains on this page; please retry or refresh and check the history panel.',true);
    }else{
     setStatus('Connected to the read-only DCDS administrator assistant. No administrative actions can be performed here.');
    }
