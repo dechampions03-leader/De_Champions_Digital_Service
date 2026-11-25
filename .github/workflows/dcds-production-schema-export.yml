@@ -160,7 +160,14 @@ jobs:
             supabase config convert --to toml --reason ci-or-deploy
           fi
           test -s supabase/config.toml
-          if ! grep -q '^\\[experimental.pgdelta\\]
+          if ! grep -Fqx '[experimental.pgdelta]' supabase/config.toml; then
+            cat >> supabase/config.toml <<'TOML'
+          [experimental.pgdelta]
+          enabled = true
+          TOML
+          fi
+          grep -Fqx '[experimental.pgdelta]' supabase/config.toml
+          grep -A1 -F '[experimental.pgdelta]' supabase/config.toml | grep -q '^enabled = true$'
           supabase db diff --remote="${DCDS_PRODUCTION_DB_URL}" --strict-coverage \
             > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
           cd "${GITHUB_WORKSPACE}"
