@@ -69,7 +69,17 @@ jobs:
           checks = {
               "AI chat page points to Production Supabase": production_url in files["ai"],
               "Admin review page points to Production Supabase": production_url in files["review"],
-              "No Development project URL is embedded in published pages": all(development_ref not in value for value in files.values()),
+              "Cloudflare Admin previews select the Development Supabase project only on the dedicated Pages preview host": (
+                'window.location.hostname === "dcds-dev-auth-preview.pages.dev"' in files["student-management"]
+                and 'window.location.hostname.endsWith(".dcds-dev-auth-preview.pages.dev")' in files["student-management"]
+                and 'const SUPABASE_URL = DCDS_DEV_PREVIEW_HOST' in files["student-management"]
+                and "https://tjgsxbmkpvktlqulbktv.supabase.co" in files["student-management"]
+                and "sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn" in files["student-management"]
+                and production_url in files["student-management"]
+            ),
+            "No Development project URL is embedded in the other published pages": all(
+                development_ref not in value for key, value in files.items() if key != "student-management"
+            ),
               "Public guest entry is visible and visitor mode cannot display private student tools": "guestAccessPanel" in files["ai"] and "studentTools.hidden=true" in files["ai"] and "visitor chats are temporary" in files["ai"],
               "AI access review form is present": "dcds_ai_access_eligibility" in files["ai"] and "aiEligibilityPanel" in files["ai"],
               "Admin access review screen is noindex": "noindex" in files["review"].lower() and "nofollow" in files["review"].lower(),
