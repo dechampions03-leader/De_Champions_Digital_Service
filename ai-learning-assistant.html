@@ -915,7 +915,7 @@ async function submitAiEligibilityRequest(){
    isRootAdminSession=false;
    if(isAdmin){
     const {data:rootAdminData,error:rootAdminError}=await client.rpc('is_dcds_super_admin');
-    if(rootAdminError){document.getElementById('accountLabel').textContent='Root-admin verification unavailable';setStatus('We could not verify your DCDS Root Administrator status. Please refresh and try again.',true);return;}
+    if(rootAdminError){document.getElementById('accountLabel').textContent='Superintendent Admin verification unavailable';setStatus('We could not verify your DCDS Superintendent Admin status. Please refresh and try again.',true);return;}
     isRootAdminSession=rootAdminData===true;
     isAdminSession=true;setChatEnabled(false);adminAgeGate.hidden=false;
     document.getElementById('accountLabel').textContent=isRootAdminSession?'Director · adult confirmation required':'Administrator · adult confirmation required';
