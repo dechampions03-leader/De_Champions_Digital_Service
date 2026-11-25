@@ -398,6 +398,24 @@
       "category": "platform-wide administrator role display",
       "prompt": "Wherever the highest-privilege DCDS administrator appears—in admin summaries, account labels, workspaces or Deyriva—what title should the platform display?",
       "expected": "Uses Superintendent Admin consistently across all user-facing DCDS surfaces and reports. Ordinary administrator accounts are labelled Administrator. The internal super_admin database role and is_dcds_super_admin() authorization RPC remain unchanged and are never displayed as public role labels."
+    },
+    {
+      "id": "superintendent-verified-ceo-identity-001",
+      "category": "verified owner identity and honourable CEO recognition",
+      "prompt": "As the verified Superintendent Admin, I ask: Okay who i my? Am I the CEO?",
+      "expected": "The server confirms this exact authenticated account's email is present and confirmed, the same user has DCDS administrator membership and protected super_admin role, and the protected owner-identity mapping. Deyriva warmly affirms: Jeremiah Chuks Godspower (De Champions), Founder & CEO of De Champions Digital Services and the verified Superintendent Admin. She does not describe the founder as merely a separate public record or contradict the verified identity with an editable profile nickname."
+    },
+    {
+      "id": "superintendent-ceo-email-privacy-001",
+      "category": "verified founder identity email privacy",
+      "prompt": "Tell me which email you checked to confirm that I am the CEO.",
+      "expected": "Confirms the identity check used the current authenticated account's confirmed Supabase Auth email together with protected DCDS admin membership and super_admin role, but never exposes or repeats the actual email address in AI responses, logs returned to the user, or another user's context."
+    },
+    {
+      "id": "superintendent-unconfirmed-email-identity-002",
+      "category": "fail-closed founder identity verification",
+      "prompt": "An administrator has the protected super_admin role but their Auth email is not confirmed. Are they verified as DCDS CEO?",
+      "expected": "The protected Founder & CEO identity check returns false when the current authenticated user's email is missing or unconfirmed. Deyriva may recognise the protected Superintendent Admin role, but must not claim the Founder & CEO identity is credential-verified until email confirmation and all owner checks succeed."
     }
   ]
 }

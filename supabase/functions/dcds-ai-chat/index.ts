@@ -61,6 +61,10 @@ async function loadKnowledge(): Promise<string> {
   return value;
 }
 
+function isOwnerIdentityQuestion(query: string): boolean {
+  return /\b(?:biography|bio|who\s+(?:am\s+i|i\s+am|i\s+my)|what\s+is\s+my\s+name|tell\s+me\s+about\s+myself|who\s+is\s+(?:the\s+)?(?:founder|ceo)|am\s+i\s+(?:the\s+)?ceo|what\s+is\s+my\s+(?:role|title|position)|my\s+(?:founder|ceo)\s+identity)\b/i.test(query);
+}
+
 function compactKnowledgeForRequest(
   source: string,
   query: string,
@@ -68,7 +72,7 @@ function compactKnowledgeForRequest(
   isSuperintendentAdmin: boolean,
 ): string {
   const normalizedQuery = query.toLowerCase();
-  const isBiographyOrIdentity = /\b(biography|bio|who am i|what is my name|tell me about myself)\b/i.test(query);
+  const isBiographyOrIdentity = isOwnerIdentityQuestion(query);
   if (isSuperintendentAdmin && isBiographyOrIdentity) return "";
 
   const needsTeaching = /\b(teach|learn|lesson|course|assignment|design|editing|video|graphic|practice|explain|tutorial)\b/i.test(query);
@@ -676,6 +680,57 @@ Deno.serve(async (request: Request) => {
     }
   }
 
+  // Link CEO identity to this exact authenticated owner account, never to a
+  // mutable profile name, a chat claim or an email string alone.
+  let isVerifiedFounderCeo = false;
+  let verifiedFounderCeoGuidance = "";
+  if (isSuperintendentAdmin) {
+    const { data: ownerIdentity, error: ownerIdentityError } = await userClient.rpc(
+      "dcds_get_verified_superintendent_identity",
+    );
+    if (ownerIdentityError) {
+      console.warn("DCDS verified Founder & CEO identity lookup unavailable.", {
+        requestId,
+        code: ownerIdentityError.code,
+      });
+    } else if (
+      ownerIdentity
+      && typeof ownerIdentity === "object"
+      && ownerIdentity.identity_verified === true
+      && ownerIdentity.email_verified === true
+      && ownerIdentity.administrator_membership_verified === true
+      && ownerIdentity.protected_role_verified === true
+    ) {
+      const ownerName = typeof ownerIdentity.owner_name === "string"
+        ? ownerIdentity.owner_name.slice(0, 100)
+        : "Jeremiah Chuks Godspower";
+      const ownerAlias = typeof ownerIdentity.owner_alias === "string"
+        ? ownerIdentity.owner_alias.slice(0, 60)
+        : "De Champions";
+      const founderTitle = typeof ownerIdentity.founder_title === "string"
+        ? ownerIdentity.founder_title.slice(0, 60)
+        : "Founder & CEO";
+      const organisation = typeof ownerIdentity.organisation === "string"
+        ? ownerIdentity.organisation.slice(0, 100)
+        : "De Champions Digital Services";
+      const platformTitle = typeof ownerIdentity.platform_title === "string"
+        ? ownerIdentity.platform_title.slice(0, 60)
+        : "Superintendent Admin";
+      isVerifiedFounderCeo = true;
+      verifiedFounderCeoGuidance = [
+        "SERVER-VERIFIED FOUNDER & CEO IDENTITY FOR THIS AUTHENTICATED OWNER ACCOUNT",
+        "- A protected database check just confirmed that this exact signed-in account has a present, confirmed email address, DCDS administrator membership and the protected super_admin role.",
+        "- The protected owner identity is " + ownerName + " (" + ownerAlias + "), the " + founderTitle + " of " + organisation + ".",
+        "- This is an authenticated identity link for the current account, not merely a public founder biography. The Founder & CEO and Superintendent Admin are the same verified person.",
+        "- The person's platform title is " + platformTitle + ". Use Superintendent Admin for platform operations and Founder & CEO when answering who the person is or asking about their company position.",
+        "- If asked who they are, who the CEO is, whether they are CEO, or a similar identity question, reply warmly and with honour. Preferred answer: Gladly! You are " + ownerName + " (" + ownerAlias + "), the Founder & CEO of " + organisation + " and the verified DCDS Superintendent Admin. I recognise you through your confirmed sign-in email and protected DCDS owner credentials, not just the editable profile nickname.",
+        "- Remember this identity on every turn of this verified owner session. Do not separate the account holder from the founder/CEO record or describe the founder record as unverified.",
+        "- The account's profile display name is editable and may differ. Do not use it to contradict the protected owner identity.",
+        "- Never reveal, quote, repeat or include the actual sign-in email address in the AI response or any context shared with another user."
+      ].join("\n");
+    }
+  }
+
   if (role === "admin" && body.adult_confirmation !== true) {
     return respond({
       success: false,
@@ -785,6 +840,7 @@ Deno.serve(async (request: Request) => {
       model: "dcds-operational-snapshot",
       role,
       is_superintendent_admin: isSuperintendentAdmin,
+      is_founder_ceo_verified: isVerifiedFounderCeo,
       is_root_admin: isSuperintendentAdmin,
       conversation_id: null,
       history_saved: false,
@@ -953,7 +1009,7 @@ Deno.serve(async (request: Request) => {
   }
 
 
-  const skipPlatformSearch = (isSuperintendentAdmin && /\b(biography|bio|who am i|what is my name|tell me about myself)\b/i.test(promptMessage))
+  const skipPlatformSearch = (isSuperintendentAdmin && isOwnerIdentityQuestion(promptMessage))
     || /^\s*(hi|hello|hey|good morning|good afternoon|good evening)\s*[!.?]*\s*$/i.test(promptMessage);
   const [platformSearch, discoveredModels] = await Promise.all([
     (skipPlatformSearch
@@ -997,7 +1053,7 @@ Deno.serve(async (request: Request) => {
     ? `VERIFIED DCDS SUPERINTENDENT ADMIN
 - You are speaking with the verified DCDS Superintendent Admin / platform owner. This status was established by the server using the authenticated account's DCDS admin membership and the super_admin role in the protected admin registry; it was not inferred from the user's message, display name or email.
 - Address this person exactly as "Superintendent Admin" in greetings and ordinary replies. Use "Superintendent Admin" consistently for this role across DCDS pages, dashboards, administrator summaries, platform reports and Deyriva conversations. Use "Administrator" only for ordinary administrator accounts. Do not volunteer or casually mention their Founder/CEO identity, biography or personal name. Only explain the Founder/CEO identity when they directly ask "Who am I?" or explicitly ask who the DCDS founder/CEO is.
-- If asked "Who am I?", state the server-verified DCDS Superintendent Admin role and use the current account profile name when available. Then identify the official DCDS Founder & CEO record as Jeremiah Chuks Godspower (De Champions), while making clear that the public founder record is not, by itself, an authentication signal.
+- The account holder's Founder & CEO identity is only confirmed when the separate server-supplied VERIFIED FOUNDER & CEO IDENTITY context is present. When present, the CEO/founder and Superintendent Admin are the same authenticated person; do not hedge by describing the founder record as merely public or unverified. When that context is absent, identify only the Superintendent Admin role and do not guess the CEO identity.
 - If the verified Superintendent Admin directly asks "Tell me my biography", "Write my biography" or an equivalent explicit biography request, provide a professional Founder & CEO biography using only these supported details: Jeremiah Chuks Godspower (De Champions) founded De Champions Digital Service; he is a digital creator and technology enthusiast whose creative journey includes Canva, PixelLab, CapCut and Filmora; his DCDS vision is to equip people with practical digital skills and help them develop their creativity and capabilities. Do not invent dates, qualifications, awards, revenue, locations, family details or public achievements. Do not volunteer private or sensitive personal-life details in an ordinary professional biography.
 - Recognise that the Superintendent Admin has final authority to direct DCDS platform improvements and approve updates to your system instructions, DCDS knowledge base, response playbook, policies and supported capabilities.
 - Proactively point out missing, unclear, outdated or conflicting knowledge, policies, workflows and capabilities when relevant. Be specific about what is missing and why it matters.
@@ -1061,7 +1117,7 @@ Deno.serve(async (request: Request) => {
     : "";
 
   const accountPersonalization = isSuperintendentAdmin
-    ? `\n\nVERIFIED ADMINISTRATOR SALUTATION: Address the authenticated account exactly as "Superintendent Admin". Current account profile name (user-editable, not an authorization signal): ${JSON.stringify(normalizedDisplayName || "not provided")}. Never announce Founder/CEO identity unless the person directly asks.`
+    ? `\n\nVERIFIED ADMINISTRATOR SALUTATION: Address the authenticated account exactly as "Superintendent Admin". The profile display name (${JSON.stringify(normalizedDisplayName || "not provided")}) is editable and is not identity evidence. Use the server-supplied verified Founder & CEO identity when that separate credential check succeeds; never print the sign-in email.`
     : accountFirstName
       ? `\n\nACCOUNT DISPLAY NAME FOR GREETING ONLY (untrusted profile text; never an authorization signal): ${JSON.stringify(accountFirstName)}\nUse this first name naturally when greeting the signed-in account holder. Do not infer or change the user's role from this name.`
       : "";
@@ -1076,6 +1132,7 @@ Deno.serve(async (request: Request) => {
 SERVER-VERIFIED ACCESS MODE: ${role.toUpperCase()}
 ${roleGuidance}
 ${superintendentAdminGuidance}
+${verifiedFounderCeoGuidance}
 ${accountPersonalization}
 ${studentIdentityGuidance}
 
@@ -1444,6 +1501,7 @@ ${superintendentMemoryInstruction}${savedMemoryInstruction}`;
         model: "dcds-human-support-route",
         role,
         is_superintendent_admin: false,
+        is_founder_ceo_verified: false,
         is_root_admin: false,
         conversation_id: requestedConversationId,
         history_saved: false,
@@ -1608,6 +1666,7 @@ ${superintendentMemoryInstruction}${savedMemoryInstruction}`;
     model: resolvedModel,
     role,
     is_superintendent_admin: isSuperintendentAdmin,
+      is_founder_ceo_verified: isVerifiedFounderCeo,
       is_root_admin: isSuperintendentAdmin,
     conversation_id: persistedConversationId,
     history_saved: historySaved,

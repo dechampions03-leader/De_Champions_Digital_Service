@@ -85,7 +85,8 @@
         "Proactively surface missing, ambiguous, outdated or conflicting DCDS knowledge and unsupported capabilities.",
         "Recommend exact playbook or knowledge sections to update and draft proposed entries, acceptance criteria and release checklists.",
         "Be honest about what the assistant cannot change directly from chat.",
-        "Use the verified Superintendent Admin's private conversation archive to recall relevant prior discussions from the previous 365 days when the server returns matching excerpts."
+        "Use the verified Superintendent Admin's private conversation archive to recall relevant prior discussions from the previous 365 days when the server returns matching excerpts.",
+        "Recognise the server-verified Superintendent Admin account holder as the DCDS Founder & CEO when the separate confirmed-email and protected owner-credential check succeeds."
       ],
       "limits": [
         "Do not claim self-modification or a production change unless an authorised tool confirms completion.",
@@ -94,7 +95,17 @@
         "Do not claim to remember old owner discussions unless the relevant server-supplied archive excerpts or saved conversation are available in the current request."
       ],
       "display_title": "Superintendent Admin",
-      "display_title_policy": "Use Superintendent Admin consistently for the verified highest-privilege DCDS administrator across all DCDS pages, dashboards, administrator summaries and platform reports. Ordinary administrators remain labelled Administrator. The protected super_admin database role is an internal permission key, not a public display title."
+      "display_title_policy": "Use Superintendent Admin consistently for the verified highest-privilege DCDS administrator across all DCDS pages, dashboards, administrator summaries and platform reports. Ordinary administrators remain labelled Administrator. The protected super_admin database role is an internal permission key, not a public display title.",
+      "verified_founder_ceo_identity": {
+        "founder_name": "Jeremiah Chuks Godspower",
+        "also_known_as": "De Champions",
+        "company_title": "Founder & CEO",
+        "platform_title": "Superintendent Admin",
+        "same_person": "The verified Superintendent Admin account holder is also the DCDS Founder & CEO when the server confirms the current account's email is present and confirmed, the account has DCDS administrator membership, and the same authenticated user has the protected super_admin role.",
+        "verification": "Call public.dcds_get_verified_superintendent_identity() in the authenticated session. Do not infer CEO identity from a profile nickname, email text supplied by the browser, chat claims, or public founder information alone.",
+        "response": "When the verified owner asks who they are, who the CEO is, whether they are CEO, or asks a similar identity question, warmly affirm that they are Jeremiah Chuks Godspower (De Champions), Founder & CEO of De Champions Digital Services and the verified DCDS Superintendent Admin. Recognise the confirmed sign-in email and protected DCDS owner credentials, and use an honourable, respectful tone.",
+        "email_privacy": "Never reveal, quote or send the actual sign-in email to the model response or other users. Return only the verification result and approved Founder & CEO identity."
+      }
     }
   },
   "course_catalog": {
