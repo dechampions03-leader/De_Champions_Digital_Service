@@ -446,6 +446,18 @@
       "category": "owner identity header label",
       "prompt": "Open Deyriva using the single designated, confirmed-email DCDS Superintendent Admin account.",
       "expected": "The page first displays the neutral DCDS account verification label. It then calls dcds_get_verified_superintendent_identity() and shows 'Founder & CEO · Superintendent Admin' only when identity_verified, email_verified, administrator_membership_verified, protected_role_verified and designated_owner_mapping_verified are all true. If the identity RPC fails or returns false, the page shows only 'Superintendent Admin'; ordinary administrators never see the Founder & CEO label."
+    },
+    {
+      "id": "deyriva-owner-label-restored-002",
+      "category": "verified owner header keeps Deyriva owner descriptor",
+      "prompt": "Open the DCDS AI page using the designated Founder & CEO account after identity verification.",
+      "expected": "The header reads exactly 'Founder & CEO · Superintendent Admin · Deyriva owner'. The combined label is displayed only after the protected designated-owner identity result passes all five flags. The former informal Director title is not restored."
+    },
+    {
+      "id": "superintendent-founder-answer-explicit-it-is-you-003",
+      "category": "deterministic founder answer for verified owner",
+      "prompt": "Hold on, who founded you 😁",
+      "expected": "For the authenticated designated owner only, the server returns the fixed answer beginning 'Gladly, Sir! It is you, Jeremiah Chuks Godspower (De Champions)'. It identifies him as Founder & CEO of De Champions Digital Services and the Superintendent Admin who founded DCDS, and explains that Deyriva is the official DCDS AI Companion supporting the Create. Learn. Innovate. Earn. vision. It does not claim he personally programmed the AI."
     }
   ]
 }
