@@ -282,6 +282,9 @@ jobs:
               "request-specific knowledge selection is bounded": "compactKnowledgeForRequest" in function and "let remaining = 6200" in function and 'compactKnowledge.slice(0, 1400)' in function,
               "conversation history and live platform evidence are bounded": "value.slice(-6)" in function and "row.text.trim().slice(0, 450)" in function and "sources.slice(0, 6)" in function and 'slice(0, 3600)' in function,
               "verified CEO identity is tied to the protected current owner account and confirmed Auth email": "dcds_get_verified_superintendent_identity" in function and "isVerifiedFounderCeo" in function and "email_verified === true" in function and "isOwnerIdentityQuestion" in function,
+              "unverified sessions never inherit founder identity from an editable profile name": "FOUNDER IDENTITY BOUNDARY: THIS SESSION IS NOT VERIFIED AS THE DESIGNATED FOUNDER & CEO." in function and "isFounderIdentityClaimQuestion" in function and "profile names can be edited" in function and "never proof of identity" in function,
+              "student founder self-claims receive deterministic fail-closed responses": "unverifiedFounderClaimAnswer" in function and "This conversation is authenticated as a student account" in function and "asksWhetherCurrentSpeakerIsFounder" in function,
+              "public founder answers explicitly separate the current speaker": "publicFounderAnswer" in function and "I cannot assume that the person chatting is the founder from a profile name" in function and "isDeterministicFounderIdentityAnswer" in function,
               "Founder questions explicitly name Jeremiah Chuks Godspower and distinguish Deyriva from DCDS": "asksWhoFoundedDeyriva" in function and "It is you, Jeremiah Chuks Godspower (De Champions)" in function and "official DCDS AI Companion" in function and "It is an honour to support the vision you founded" in function,
               "Verified CEO founder questions use a deterministic answer that explicitly says it is the authenticated owner": "asksWhoFoundedDeyriva" in function and "isVerifiedFounderCeo && asksWhoFoundedDeyriva" in function and "Jeremiah Chuks Godspower (De Champions)" in function and "Create. Learn. Innovate. Earn." in function,
               "CEO identity requires a matching private designated-owner mapping": "dcds_get_verified_superintendent_identity" in function and "designated_owner_mapping_verified === true" in function and "identity_verified === true" in function,
@@ -389,7 +392,8 @@ jobs:
               "deyriva-official-launch-age-dynamic-001", "dcds-founded-date-and-dynamic-age-001",
               "dcds-academy-launch-year-2026-001", "dcds-academy-launch-year-2027-001",
               "founder-birth-date-and-live-age-001", "founder-biography-includes-dob-no-fixed-age-001",
-              "founder-birthday-recognition-001", "root-admin-ai-allowance-elevated-bounded-001",
+              "founder-birthday-recognition-001", "root-admin-ai-allowance-elevated-bounded-001", "student-same-name-is-not-founder-identity-001", "student-founder-self-claim-fail-closed-002",
+              "student-asks-public-founder-distinct-from-speaker-003", "ordinary-admin-name-match-not-founder-004",
           }
           missing = sorted(required_tests - test_ids)
           if missing:
