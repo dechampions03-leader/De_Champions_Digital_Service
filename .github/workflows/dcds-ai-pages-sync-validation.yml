@@ -163,6 +163,45 @@ jobs:
                       Path(f"/tmp/{Path(page_name).stem}-{index}.js").write_text(script, encoding="utf-8")
           print("Validated GitHub Pages wiring and DCDS AI release gates.")
           PY
+          node <<'NODE'
+          const fs = require("fs");
+          const vm = require("vm");
+          const html = fs.readFileSync("student-management.html", "utf8");
+          const marker = "// Keep Cloudflare branch previews isolated from live Production data.";
+          const start = html.indexOf(marker);
+          const end = html.indexOf("const $ = id", start);
+          if (start < 0 || end < 0) throw new Error("Admin Supabase routing block could not be located.");
+          const source = html.slice(start, end) + "\\nJSON.stringify([SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY]);";
+          const development = [
+            "https://tjgsxbmkpvktlqulbktv.supabase.co",
+            "sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn"
+          ];
+          const production = [
+            "https://qxsenflgaweeadvggnyp.supabase.co",
+            "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP"
+          ];
+          const cases = [
+            ["dcds-dev-auth-preview.pages.dev", development],
+            ["4a462e28.dcds-dev-auth-preview.pages.dev", development],
+            ["feature-dcds-production-read.dcds-dev-auth-preview.pages.dev", development],
+            ["dechampions03-leader.github.io", production],
+            ["www.dechampionsdigital.com", production],
+            ["dcds-dev-auth-preview.pages.dev.attacker.example", production]
+          ];
+          for (const [hostname, expected] of cases) {
+            const sandbox = {
+              window: {
+                location: { hostname },
+                supabase: { createClient: () => ({}) }
+              }
+            };
+            const actual = JSON.parse(vm.runInNewContext(source, sandbox));
+            if (JSON.stringify(actual) !== JSON.stringify(expected)) {
+              throw new Error("Incorrect Supabase environment selected for host: " + hostname);
+            }
+            console.log("PASS Admin backend routing for " + hostname);
+          }
+          NODE
           for script in /tmp/ai-learning-assistant-*.js /tmp/dcds-ai-access-review-*.js /tmp/student-management-*.js /tmp/admin-notifications-*.js; do
             [ -f "$script" ] && node --check "$script"
           done
