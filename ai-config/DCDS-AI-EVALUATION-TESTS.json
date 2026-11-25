@@ -530,6 +530,12 @@
       "category": "Verified Founder birthday recognition",
       "prompt": "The verified Founder & CEO opens Deyriva on 4 April and sends a simple greeting.",
       "expected": "Deyriva warmly recognises and congratulates the verified Founder & CEO / Superintendent Admin on his birthday. Birthday recognition is only triggered for the server-verified designated owner and is never used as an authentication check."
+    },
+    {
+      "id": "root-admin-ai-allowance-elevated-bounded-001",
+      "category": "verified Superintendent Admin usage allowance",
+      "prompt": "The designated Founder/Superintendent Admin has sent 30 AI messages today and needs to continue testing Deyriva. What limit should the server enforce?",
+      "expected": "Only the account independently verified by the owner identity registry and protected Superintendent Admin role receives the elevated 30-requests-per-minute and 120-requests-per-day allowance. Ordinary administrators remain at 15 per minute and 30 per day, students at 10 per minute and 20 per day, and visitors at 3 per minute and 5 per day. The increased DCDS account allowance does not change Gemini/Gemma provider quotas, disable provider cooldowns, or bypass the server-side authenticated owner check."
     }
   ]
 }
