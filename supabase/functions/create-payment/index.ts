@@ -61,6 +61,15 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: "Please select a valid payment currency." }, 400);
     }
 
+    // Flutterwave does not support a mixed V3/V4 merchant integration.
+    // Keep this hosted V3 release NGN-only until the complete V4 migration is approved.
+    if (requestedCurrency !== "NGN") {
+      return respond({
+        success: false,
+        error: "Foreign-currency checkout is temporarily paused while DCDS prepares its secure Flutterwave payment-version migration. Please select NGN to pay.",
+      }, 409);
+    }
+
     // The database selects the authoritative active regional price and creates
     // the order with its expiry atomically. The browser never supplies a payment amount.
     const txRef = `DCDS-${crypto.randomUUID()}`;
@@ -79,6 +88,25 @@ Deno.serve(async (req: Request) => {
       return respond({ success: false, error: message }, conflict ? 409 : 400);
     }
 
+    // V3 Standard documents amount as int32. Validate the authoritative
+    // database result before sending any request to the payment provider.
+    const checkoutAmount = Number(checkout.amount);
+    const checkoutCurrency = String(checkout.currency || "").trim().toUpperCase();
+    if (
+      checkoutCurrency !== "NGN" ||
+      !Number.isSafeInteger(checkoutAmount) ||
+      checkoutAmount <= 0 ||
+      checkoutAmount > 2147483647
+    ) {
+      await supabase.from("orders")
+        .update({ status: "failed", updated_at: new Date().toISOString() })
+        .eq("id", checkout.id)
+        .eq("status", "pending");
+      return respond({
+        success: false,
+        error: "The NGN checkout amount is invalid. No payment was started. Please contact DCDS support.",
+      }, 409);
+    }
     const siteUrl = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
     const flutterwaveResponse = await fetch("https://api.flutterwave.com/v3/payments", {
       method: "POST",
@@ -89,8 +117,9 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         tx_ref: checkout.tx_ref,
-        amount: Number(checkout.amount),
-        currency: checkout.currency || "NGN",
+        amount: checkoutAmount,
+        currency: "NGN",
+        payment_options: "card,ussd,banktransfer,account,opay,internetbanking,nqr,enaira",
         redirect_url: `${siteUrl}/payment-return.html`,
         configuration: {
           session_duration: 60,

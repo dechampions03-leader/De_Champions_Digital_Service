@@ -2351,14 +2351,12 @@ function showEnrollment(index,user){
  const c=courses[index];
  const slug=COURSE_SLUGS[index];
  const selectedCurrency=window.DCDSGlobalCurrency?.currency||'NGN';
- const canPay=!window.DCDSGlobalCurrency||window.DCDSGlobalCurrency.canCheckout(slug);
+ const canPay=selectedCurrency==='NGN'&&(!window.DCDSGlobalCurrency||window.DCDSGlobalCurrency.canCheckout(slug));
  const displayPrice=window.DCDSGlobalCurrency?.formatCourse
    ?window.DCDSGlobalCurrency.formatCourse(c.price,slug):money(c.price);
- const paymentNote=canPay
-   ?(selectedCurrency==='NGN'
-     ?'Your payment will use the existing approved Nigerian naira course price.'
-     :'This is an approved DCDS regional price. Flutterwave will attempt checkout in '+selectedCurrency+' subject to your account and Flutterwave currency support.')
-   :'This amount is an indicative conversion only. DCDS has not activated an approved '+selectedCurrency+' checkout price for this course yet. Please switch to NGN, USD, GBP or EUR.';
+ const paymentNote=selectedCurrency==='NGN'
+   ?'Your payment will use the existing approved Nigerian naira course price.'
+   :'Your '+selectedCurrency+' price is displayed for reference only. Foreign-currency checkout is temporarily paused while DCDS prepares its secure Flutterwave payment-version migration. Switch to NGN to pay.';
  openModal(`<h2 id="modalTitle">Your selected course</h2>
  <p class="modal-sub">You are signed in as <b>${escapeHtml(user.email||'DCDS student')}</b>.</p>
  <div class="selected-course"><span>COURSE SELECTED</span><strong>${escapeHtml(c.title)}</strong>
@@ -2366,7 +2364,7 @@ function showEnrollment(index,user){
  <div class="modal-note">${paymentNote} Course access is granted only after payment verification.</div>
  <p class="modal-note">If Flutterwave displays “Card not enrolled for Safe Token”, your bank has not enrolled that card on its Safe Token platform. Contact the card-issuing bank to activate it, or return to checkout and choose another payment method offered there. Avoid repeatedly retrying the same card.</p>
  <p class="form-error" id="paymentError" role="alert"></p>
- <button class="button button-primary" style="width:100%;margin-top:15px" id="payNowBtn" ${canPay?'':'disabled'}>${canPay?'Pay securely with Flutterwave':'Choose an available currency to pay'}</button>
+ <button class="button button-primary" style="width:100%;margin-top:15px" id="payNowBtn" ${canPay?'':'disabled'}>${canPay?'Pay securely with Flutterwave':selectedCurrency!=='NGN'?'Switch to NGN to pay':'Choose an approved price to pay'}</button>
  <button class="button button-light" style="width:100%;margin-top:9px" id="enrollCancel">Cancel</button>`);
  $('payNowBtn').onclick=()=>startCoursePayment(index);
  $('enrollCancel').onclick=()=>{selectedCourseIndex=null;closeModal()};
@@ -2392,8 +2390,12 @@ async function startCoursePayment(index){
  const btn=$('payNowBtn'),err=$('paymentError');
  const requestedCurrency=window.DCDSGlobalCurrency?.currency||'NGN';
  const requestedSlug=COURSE_SLUGS[index];
+ if(requestedCurrency!=="NGN"){
+  if(err)err.textContent='Foreign-currency checkout is temporarily paused while DCDS prepares its secure Flutterwave payment-version migration. Switch to NGN to pay.';
+  return;
+ }
  if(window.DCDSGlobalCurrency&&!window.DCDSGlobalCurrency.canCheckout(requestedSlug)){
-  if(err)err.textContent='There is no approved '+requestedCurrency+' price for this course yet. Please select NGN, USD, GBP or EUR.';
+  if(err)err.textContent='This course is not configured for the selected checkout currency. Please select NGN.';
   return;
  }
  if(!supabaseClient){if(err)err.textContent='The account service is unavailable. Reload the page and try again.';return;}
@@ -2449,21 +2451,19 @@ const GENERAL_COURSE_ID = 'a1030000-0000-4000-8000-000000000001';
 
 function showGeneralEnrollment(user){
  const selectedCurrency=window.DCDSGlobalCurrency?.currency||'NGN';
- const canPay=!window.DCDSGlobalCurrency||window.DCDSGlobalCurrency.canCheckout('general-course');
+ const canPay=selectedCurrency==='NGN'&&(!window.DCDSGlobalCurrency||window.DCDSGlobalCurrency.canCheckout('general-course'));
  const displayPrice=window.DCDSGlobalCurrency?.formatCourse
    ?window.DCDSGlobalCurrency.formatCourse(103000,'general-course'):'₦103,000';
- const paymentNote=canPay
-   ?(selectedCurrency==='NGN'
-     ?'Your payment will use the existing approved Nigerian naira General Course price.'
-     :'This is an approved DCDS regional price. Flutterwave will attempt checkout in '+selectedCurrency+' subject to your account and Flutterwave currency support.')
-   :'This amount is an indicative conversion only. DCDS has not activated an approved '+selectedCurrency+' General Course price. Please switch to NGN, USD, GBP or EUR.';
+ const paymentNote=selectedCurrency==='NGN'
+   ?'Your payment will use the existing approved Nigerian naira General Course price.'
+   :'Your '+selectedCurrency+' price is displayed for reference only. Foreign-currency checkout is temporarily paused while DCDS prepares its secure Flutterwave payment-version migration. Switch to NGN to pay.';
  openModal(`<h2 id="modalTitle">DCDS General Course</h2> <p class="modal-sub">You are signed in as <b>${escapeHtml(user.email||'DCDS student')}</b>.</p>
  <div class="selected-course"><span>100+ COURSES · FOUR LEARNING CHANNELS</span><strong>DCDS General Course</strong>
  <div class="total"><span>Special offer</span><b>${displayPrice}</b></div></div>
  <div class="modal-note">${paymentNote} Access to the General Course learning area is granted only after payment verification.</div>
  <p class="modal-note">If Flutterwave displays “Card not enrolled for Safe Token”, your bank has not enrolled that card on its Safe Token platform. Contact the card-issuing bank to activate it, or return to checkout and choose another payment method offered there. Avoid repeatedly retrying the same card.</p>
  <p class="form-error" id="paymentError" role="alert"></p>
- <button class="button button-primary" style="width:100%;margin-top:15px" id="payGeneralNowBtn" ${canPay?'':'disabled'}>${canPay?'Pay securely with Flutterwave':'Choose an available currency to pay'}</button>
+ <button class="button button-primary" style="width:100%;margin-top:15px" id="payGeneralNowBtn" ${canPay?'':'disabled'}>${canPay?'Pay securely with Flutterwave':selectedCurrency!=='NGN'?'Switch to NGN to pay':'Choose an approved price to pay'}</button>
  <button class="button button-light" style="width:100%;margin-top:9px" id="generalEnrollCancel">Cancel</button>`);
  $('payGeneralNowBtn').onclick=startGeneralCoursePayment;
  $('generalEnrollCancel').onclick=closeModal;
@@ -2472,8 +2472,12 @@ function showGeneralEnrollment(user){
 async function startGeneralCoursePayment(){
  const btn=$('payGeneralNowBtn'),err=$('paymentError');
  const requestedCurrency=window.DCDSGlobalCurrency?.currency||'NGN';
+ if(requestedCurrency!=="NGN"){
+  if(err)err.textContent='Foreign-currency checkout is temporarily paused while DCDS prepares its secure Flutterwave payment-version migration. Switch to NGN to pay.';
+  return;
+ }
  if(window.DCDSGlobalCurrency&&!window.DCDSGlobalCurrency.canCheckout('general-course')){
-  if(err)err.textContent='There is no approved '+requestedCurrency+' General Course price yet. Please select NGN, USD, GBP or EUR.';
+  if(err)err.textContent='The General Course is not configured for the selected checkout currency. Please select NGN.';
   return;
  }
  if(!supabaseClient){if(err)err.textContent='The account service is unavailable. Reload the page and try again.';return;}
