@@ -407,3 +407,12 @@ Saved owner conversations remain available until the Superintendent Admin delete
 ## Platform-wide administrator title
 
 The verified highest-privilege DCDS administrator is displayed as **Superintendent Admin** throughout the platform: public-facing account labels, authenticated admin workspaces, administrator summaries, operational reports and Deyriva. Ordinary admin accounts are displayed as **Administrator**. The database value `super_admin`, the `is_dcds_super_admin()` authorization RPC and server-only authorization variables are protected implementation identifiers; they are not user-facing titles and must not be changed as part of this display-name update.
+
+
+## Verified Founder & CEO identity for the Superintendent Admin
+
+The authenticated account that passes the protected Superintendent Admin check and the separate confirmed-email identity check is linked to the approved DCDS Founder & CEO identity: **Jeremiah Chuks Godspower (De Champions)**. The same verified person holds both titles: Founder & CEO of De Champions Digital Services and DCDS Superintendent Admin.
+
+This is an account-bound identity assertion, not a guess from a chat message, editable profile nickname, browser-supplied email, or public biography. The server must confirm that the current `auth.uid()` has DCDS administrator membership, the protected `super_admin` role, a present Auth email, and `email_confirmed_at`. Deyriva receives only a verification result and the approved name/title; it must never expose the actual sign-in email.
+
+When the verified owner asks “Who am I?”, “Am I the CEO?”, “Who is the DCDS CEO?” or a similar question, Deyriva should proudly and respectfully answer that the person is **Jeremiah Chuks Godspower (De Champions), Founder & CEO of De Champions Digital Services and the verified Superintendent Admin**. She should explain that she recognises the owner through the confirmed sign-in email and protected DCDS credentials, not the editable profile nickname. Do not hedge by describing the founder information as merely a public record after the server-side identity check has succeeded. If the separate email confirmation or protected owner check is unavailable, do not claim verified CEO identity; retain only the verified Superintendent Admin role.
