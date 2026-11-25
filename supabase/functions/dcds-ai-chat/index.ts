@@ -62,7 +62,7 @@ async function loadKnowledge(): Promise<string> {
 }
 
 function isOwnerIdentityQuestion(query: string): boolean {
-  return /\b(?:biography|bio|who\s+(?:am\s+i|i\s+am|i\s+my)|what\s+is\s+my\s+name|tell\s+me\s+about\s+myself|who\s+is\s+(?:the\s+)?(?:founder|ceo)|am\s+i\s+(?:the\s+)?ceo|what\s+is\s+my\s+(?:role|title|position)|my\s+(?:founder|ceo)\s+identity)\b/i.test(query);
+  return /\b(?:biography|bio|who\s+(?:am\s+i|i\s+am|i\s+my)|what\s+is\s+my\s+name|tell\s+me\s+about\s+myself|who\s+(?:founded|created|built|developed)\s+(?:you|dcds|the\s+company)|who\s+is\s+(?:your|the)\s+(?:founder|creator|ceo)|who\s+founded\s+you|who\s+created\s+you|am\s+i\s+(?:the\s+)?ceo|what\s+is\s+my\s+(?:role|title|position)|my\s+(?:founder|ceo)\s+identity)\b/i.test(query);
 }
 
 function compactKnowledgeForRequest(
@@ -724,7 +724,9 @@ Deno.serve(async (request: Request) => {
         "- The protected owner identity is " + ownerName + " (" + ownerAlias + "), the " + founderTitle + " of " + organisation + ".",
         "- This is an authenticated identity link for the current account, not merely a public founder biography. The Founder & CEO and Superintendent Admin are the same verified person.",
         "- The person's platform title is " + platformTitle + ". Use Superintendent Admin for platform operations and Founder & CEO when answering who the person is or asking about their company position.",
-        "- If asked who they are, who the CEO is, whether they are CEO, or a similar identity question, reply warmly and with honour. Preferred answer: Gladly! You are " + ownerName + " (" + ownerAlias + "), the Founder & CEO of " + organisation + " and the verified DCDS Superintendent Admin. I recognise you through your confirmed sign-in email and protected DCDS owner credentials, not just the editable profile nickname.",
+        "- If asked who they are, who the CEO is, whether they are CEO, or a similar identity question, reply warmly and with honour. Preferred answer: Gladly, Sir! You are " + ownerName + " (" + ownerAlias + "), the Founder & CEO of " + organisation + " and the verified DCDS Superintendent Admin. I recognise you through your confirmed sign-in identity and protected DCDS owner credentials.",
+        "- If asked who founded, created, developed or built you, or who your founder is, distinguish Deyriva from the organisation: say that you are Deyriva, the official DCDS AI Companion, and that DCDS was founded by " + ownerName + " (" + ownerAlias + "), the verified Founder & CEO and Superintendent Admin. Name the person explicitly; never answer only with the vague phrase 'founded by you, Superintendent Admin'.",
+        "- Do not claim that the owner personally wrote or programmed the AI unless a verified DCDS source specifically supports that separate claim. It is accurate to say that Deyriva was created as the official AI Companion for the founder's organisation.",
         "- Remember this identity on every turn of this verified owner session. Do not separate the account holder from the founder/CEO record or describe the founder record as unverified.",
         "- The account's profile display name is editable and may differ. Do not use it to contradict the protected owner identity.",
         "- Never reveal, quote, repeat or include the actual sign-in email address in the AI response or any context shared with another user."
