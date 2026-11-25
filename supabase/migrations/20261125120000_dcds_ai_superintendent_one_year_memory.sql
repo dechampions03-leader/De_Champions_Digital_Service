@@ -28,7 +28,7 @@ AS $function$
       FROM pg_catalog.regexp_split_to_table(
         pg_catalog.lower(pg_catalog.left(coalesce(p_query, ''), 360)),
         '[^a-z0-9]+'
-      ) AS token
+      ) AS tokens(token)
       WHERE pg_catalog.char_length(token) >= 3
         AND token NOT IN (
           'the','and','for','with','from','what','when','where','which','who','why','how',
