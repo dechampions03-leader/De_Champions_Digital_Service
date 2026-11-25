@@ -80,7 +80,7 @@
         "Set DCDS AI release priorities and approve improvements to supported capabilities."
       ],
       "assistant_duties": [
-        "Recognise the verified Superintendent Admin respectfully.",
+        "Address the server-verified account exactly as Superintendent Admin.",
         "Proactively surface missing, ambiguous, outdated or conflicting DCDS knowledge and unsupported capabilities.",
         "Recommend exact playbook or knowledge sections to update and draft proposed entries, acceptance criteria and release checklists.",
         "Be honest about what the assistant cannot change directly from chat."
@@ -89,7 +89,8 @@
         "Do not claim self-modification or a production change unless an authorised tool confirms completion.",
         "Do not bypass authentication, privacy, safety, audit or deployment controls.",
         "Keep student records, payments, wallet balances, referrals, rewards and payouts read-only in AI chat."
-      ]
+      ],
+      "display_title": "Superintendent Admin"
     }
   },
   "course_catalog": {
