@@ -769,7 +769,7 @@ async function submitAiEligibilityRequest(){
   }
   resetChat();
   await loadConversationList();
-  setStatus('All saved conversations have been deleted. Your learning-memory note was kept.');
+  setStatus(isPersistentOwner\n   ? 'Your private Superintendent Admin archive has been cleared.'\n   : 'All saved conversations have been deleted. Your learning-memory note was kept.');
  }
  async function loadLearningMemory(){
   if(!isPersistentStudent)return;
