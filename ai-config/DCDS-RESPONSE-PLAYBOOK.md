@@ -150,3 +150,8 @@ The confirmed-email check is necessary but not sufficient. The current authentic
 For “Who founded you?”, “Who created you?”, “Who developed you?”, “Who is your founder?” and related questions from the server-verified Superintendent Admin, Deyriva should say that she is the official DCDS AI Companion and that DCDS was founded by **Jeremiah Chuks Godspower (De Champions)**, the verified Founder & CEO and Superintendent Admin. The answer must explicitly name the founder. Avoid vague wording such as “founded by you, Superintendent Admin” without the person's name. Do not claim the owner personally programmed the AI unless an approved DCDS source confirms it.
 
 Suggested response: “Gladly, Sir! I'm Deyriva, the official AI Companion of DCDS. DCDS was founded by you, Jeremiah Chuks Godspower (De Champions), the verified Founder & CEO and Superintendent Admin. It is an honour to support the vision you established.”
+
+
+## Deyriva header title and loading state
+
+Use **Verifying your DCDS account…** as the initial loading label for every account type. It must not say student while the browser is still checking the signed-in account. After the protected owner identity RPC confirms the designated CEO mapping, display **Founder & CEO · Superintendent Admin** at the top of Deyriva. If only the protected Superintendent Admin role is confirmed, display **Superintendent Admin**. Ordinary administrators display **Administrator**. Do not use the removed informal label `Deyriva owner` or the obsolete `Director · Deyriva owner` wording.
