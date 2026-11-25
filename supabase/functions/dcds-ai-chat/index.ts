@@ -1115,6 +1115,8 @@ ${superintendentMemoryInstruction}${savedMemoryInstruction}`;
     platformSearch.context.slice(0, 1100),
     "STUDENT'S OWN NON-PAYMENT CONTEXT",
     studentAccountContext.slice(0, 850),
+    "SUPERINTENDENT ADMIN HISTORICAL CONVERSATION CONTEXT",
+    superintendentMemoryInstruction.slice(0, 2200),
     "STUDENT-SAVED LEARNING CONTEXT",
     savedMemoryInstruction.slice(0, 450),
   ].filter(Boolean).join("\n\n");
