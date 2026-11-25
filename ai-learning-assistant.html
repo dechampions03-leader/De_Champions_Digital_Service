@@ -902,7 +902,7 @@ async function submitAiEligibilityRequest(){
  async function enterAdminAi(useSavedAdultApproval=false){
   if(!useSavedAdultApproval&&!adminAdultConfirm.checked){setStatus('Please confirm that you are 18 or older before continuing.',true);return;}
   if(!useSavedAdultApproval){
-   adminAdultContinue.disabled=true;
+   adminAgeContinue.disabled=true;
    const {data:existingAgeRecord,error:ageReadError}=await client.from('dcds_ai_access_eligibility')
     .select('age_band,guardian_consent_status').eq('user_id',currentUser.id).maybeSingle();
    if(ageReadError){adminAgeContinue.disabled=false;setStatus('DCDS could not verify your adult AI access record. Please try again.',true);return;}
