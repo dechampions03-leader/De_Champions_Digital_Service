@@ -849,7 +849,10 @@ Deno.serve(async (request: Request) => {
         return respond({ success: false, error: "Your saved conversation history could not be loaded." }, 503);
       }
 
-      const historyForPrompt = (storedMessages ?? []).reverse().map((row) => ({
+      const safeStoredMessages = role === "admin"
+        ? (storedMessages ?? []).filter((row) => !containsPaymentOrBankingIntent(String(row.content ?? "")))
+        : (storedMessages ?? []);
+      const historyForPrompt = safeStoredMessages.reverse().map((row) => ({
         role: row.role === "assistant" ? "model" : "user",
         text: row.content,
       }));
@@ -877,7 +880,10 @@ Deno.serve(async (request: Request) => {
         if (recentMessagesError) {
           console.warn("Deyriva could not load recent private messages for continuity.", recentMessagesError.message);
         } else {
-          const recentHistory = (recentMessages ?? []).reverse().map((row) => ({
+          const safeRecentMessages = role === "admin"
+            ? (recentMessages ?? []).filter((row) => !containsPaymentOrBankingIntent(String(row.content ?? "")))
+            : (recentMessages ?? []);
+          const recentHistory = safeRecentMessages.reverse().map((row) => ({
             role: row.role === "assistant" ? "model" : "user",
             text: row.content,
           }));
@@ -925,7 +931,10 @@ Deno.serve(async (request: Request) => {
     if (memorySearchError) {
       console.warn("Deyriva's one-year Superintendent Admin memory search was unavailable.", memorySearchError.message);
     } else if (Array.isArray(memoryMatches) && memoryMatches.length) {
-      superintendentMemoryContext = memoryMatches.map((row: Record<string, unknown>) => {
+      const safeMemoryMatches = memoryMatches.filter((row: Record<string, unknown>) =>
+        !containsPaymentOrBankingIntent(String(row.excerpt ?? "")),
+      );
+      superintendentMemoryContext = safeMemoryMatches.map((row: Record<string, unknown>) => {
         const title = typeof row.conversation_title === "string" ? row.conversation_title.slice(0, 100) : "Saved DCDS discussion";
         const at = typeof row.message_created_at === "string" ? row.message_created_at : "date not returned";
         const roleLabel = row.message_role === "assistant" ? "Deyriva" : "Superintendent Admin";
