@@ -331,7 +331,7 @@
       "id": "prompt-budget-001",
       "category": "context efficiency and role-specific retrieval",
       "prompt": "As the DCDS Superintendent Admin, tell me my biography.",
-      "expected": "Uses the server-verified Founder & CEO biography facts and the compact root-admin persona. Does not load the full DCDS document collection or run unnecessary public platform searches for this personal request. Retains Administrator/Director recognition, owner verification, privacy rules and factual biography limits."
+      "expected": "Uses the server-verified Founder & CEO biography facts and the compact Superintendent Admin persona. Does not load the full DCDS document collection or run unnecessary public platform searches for this personal request. Retains Administrator/Director recognition, owner verification, privacy rules and factual biography limits."
     },
     {
       "id": "token-rate-limit-001",
