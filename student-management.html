@@ -1051,8 +1051,15 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 </div>
 
 <script>
-const SUPABASE_URL = "https://qxsenflgaweeadvggnyp.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+// Keep Cloudflare branch previews isolated from live Production data.
+const DCDS_DEV_PREVIEW_HOST = window.location.hostname === "dcds-dev-auth-preview.pages.dev"
+  || window.location.hostname.endsWith(".dcds-dev-auth-preview.pages.dev");
+const SUPABASE_URL = DCDS_DEV_PREVIEW_HOST
+  ? "https://tjgsxbmkpvktlqulbktv.supabase.co"
+  : "https://qxsenflgaweeadvggnyp.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = DCDS_DEV_PREVIEW_HOST
+  ? "sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn"
+  : "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
