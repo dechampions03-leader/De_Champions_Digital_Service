@@ -5,7 +5,7 @@ Provide a transparent, privacy-conscious memory experience for verified DCDS lea
 
 ## Conversation history
 - Only a verified, non-anonymous authenticated account can save DCDS AI conversations.
-- Saved conversations and messages are stored in the Development Supabase project during the isolated rollout.
+- Saved conversations and messages are stored in the Supabase environment configured for the current release. Development and Production projects remain separate; owner chat history is never copied between environments.
 - Row-level security and the server-side verified-account check restrict every row to its authenticated owner.
 - The student can reopen a saved conversation, continue it, delete one conversation, or clear all saved conversations from the chat history controls.
 - The student chat history screen lists up to 100 most recently active conversations. Opening a chat loads up to 250 visible messages; the AI receives only the latest 10 saved messages as context for the next turn.
