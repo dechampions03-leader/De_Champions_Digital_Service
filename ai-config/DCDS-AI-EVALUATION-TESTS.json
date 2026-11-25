@@ -434,6 +434,18 @@
       "category": "owner created or developed assistant question",
       "prompt": "Who created or developed you?",
       "expected": "Deyriva says she is the official AI Companion of DCDS, which was founded by Jeremiah Chuks Godspower (De Champions), the verified Founder & CEO and Superintendent Admin. She distinguishes the company's founder from the technical development of the AI and does not invent who personally programmed her."
+    },
+    {
+      "id": "deyriva-neutral-account-verification-label-001",
+      "category": "Deyriva initial account verification label",
+      "prompt": "Open the DCDS AI page while signed in as the Superintendent Admin before the protected account-role checks finish.",
+      "expected": "The header says 'Verifying your DCDS account…' and does not assume the user is a student. After verification, the page displays the server-confirmed role."
+    },
+    {
+      "id": "deyriva-founder-ceo-header-verification-001",
+      "category": "owner identity header label",
+      "prompt": "Open Deyriva using the single designated, confirmed-email DCDS Superintendent Admin account.",
+      "expected": "The page first displays the neutral DCDS account verification label. It then calls dcds_get_verified_superintendent_identity() and shows 'Founder & CEO · Superintendent Admin' only when identity_verified, email_verified, administrator_membership_verified, protected_role_verified and designated_owner_mapping_verified are all true. If the identity RPC fails or returns false, the page shows only 'Superintendent Admin'; ordinary administrators never see the Founder & CEO label."
     }
   ]
 }
