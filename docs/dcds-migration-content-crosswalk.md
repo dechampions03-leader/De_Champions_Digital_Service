@@ -1,0 +1,135 @@
+# DCDS migration content crosswalk — candidate mappings
+
+**Audit date:** 2026-11-21  
+**Mode:** Read-only repository and migration-metadata inspection  
+**Repository ref:** `feature/dcds-verified-plus-ecosystem`  
+**Supabase projects:** DCDS-Development (`tjgsxbmkpvktlqulbktv`), production-candidate (`qxsenflgaweeadvggnyp`)
+
+## Executive result
+
+The repository contains 48 checked-in SQL files. The current remote histories contain 54 Development records and 80 production-candidate records. Exact filename-timestamp overlap remains 4 for Development and 8 for production-candidate.
+
+This inspection advances the crosswalk for repeated remote migration names. It does **not** establish SQL equivalence. The Supabase migration-list response exposes remote version/name metadata, not the SQL body that was executed for each remote version. Therefore each same-name match below is a candidate mapping only.
+
+**Do not run migration repair, db push, linked reset, baseline restore, or any migration against either shared project based on this report.**
+
+## 1. Repeated logical names in DCDS-Development
+
+| Remote version | Remote migration name | Candidate checked-in file | Candidate local timestamp |
+|---|---|---|---|
+| `20261117122715` | `dcds_community_course_qna_channels` | `20261117135000_dcds_community_course_qna_channels.sql` | `20261117135000` |
+| `20261117122938` | `dcds_community_course_qna_channels` | Same candidate file | `20261117135000` |
+| `20261117122742` | `dcds_community_official_staff_badges` | `20261117140000_dcds_community_official_staff_badges.sql` | `20261117140000` |
+| `20261117122941` | `dcds_community_official_staff_badges` | Same candidate file | `20261117140000` |
+| `20261119193053` | `dcds_regional_course_pricing` | `20261111090000_dcds_regional_course_pricing.sql` | `20261111090000` |
+| `20261119193834` | `dcds_regional_course_pricing` | Same candidate file | `20261111090000` |
+| `20261119193056` | `dcds_admin_payment_operations` | `20261111110000_dcds_admin_payment_operations.sql` | `20261111110000` |
+| `20261119194002` | `dcds_admin_payment_operations` | Same candidate file | `20261111110000` |
+| `20261119193100` | `dcds_payment_verification_audit_event` | `20261111113000_dcds_payment_verification_audit_event.sql` | `20261111113000` |
+| `20261119194013` | `dcds_payment_verification_audit_event` | Same candidate file | `20261111113000` |
+| `20261119193103` | `dcds_pending_checkout_reconciliation` | `20261112081327_dcds_pending_checkout_reconciliation.sql` | `20261112081327` |
+| `20261119194055` | `dcds_pending_checkout_reconciliation` | Same candidate file | `20261112081327` |
+
+There are six repeated logical names in the Development history. The two remote versions for each name must be treated as distinct applied records until their actual SQL effects are established.
+
+## 2. Repeated logical name in production-candidate
+
+| Remote version | Remote migration name | Candidate checked-in file | Candidate local timestamp |
+|---|---|---|---|
+| `20261118165734` | `dcds_vtu_pay_per_order_checkout` | `20261118165000_dcds_vtu_pay_per_order_checkout.sql` | `20261118165000` |
+| `20261118165809` | `dcds_vtu_pay_per_order_checkout` | Same candidate file | `20261118165000` |
+
+The production-candidate history has one repeated logical name. The local SQL file is a candidate, not proof that both remote versions ran identical SQL.
+
+## 3. Local SQL effect fingerprints inspected
+
+These are observations from the checked-in SQL bodies, not statements about the exact SQL executed at each remote version.
+
+| Candidate file | Observed local SQL effects | Reconciliation concern |
+|---|---|---|
+| `20261111090000_dcds_regional_course_pricing.sql` | Creates/maintains the regional course-price index and RLS policies; contains `dcds_create_checkout_order` function logic. | The remote history contains two records with this name. Compare actual checkout function definition and policy state before assigning either remote version. |
+| `20261111110000_dcds_admin_payment_operations.sql` | Payment-receipt review/event indexes and RLS, payment-receipt Storage policies, manual bank-order and review functions. | This is operational payment logic, not merely dashboard metadata. Confirm function bodies, grants, Storage policies and related tables. |
+| `20261111113000_dcds_payment_verification_audit_event.sql` | Defines `admin_finalize_flutterwave_payment`, verifies order/transaction/amount/currency relationships, inserts payment records, marks course orders successful, enrols the learner, and records a payment-review event. Execute is revoked from browser roles and granted to `service_role`. | Despite its filename, the file contains course-payment finalization and enrolment behavior. It must not be treated as an inert audit-only migration. Protect course/payment integrity. |
+| `20261112081327_dcds_pending_checkout_reconciliation.sql` | Adds `orders.checkout_expires_at`, creates a pending-checkout index, alters payment-review event constraints and drops/replaces checkout/admin-list functions. | This can affect checkout behavior. Compare the current function signatures and bodies, constraints and index definition before any migration-history decision. |
+| `20261117135000_dcds_community_course_qna_channels.sql` | Adds course linkage to Student Community rooms; changes room types/policies and adds enrollment-synchronization trigger/function logic. | This is tied to the supervised Student Community room/cohort model. Do not repurpose it for Verified+ network content or moderation. |
+| `20261117140000_dcds_community_official_staff_badges.sql` | Defines a stable security-definer helper that returns only administrator user IDs for official staff badges; grants authenticated execution but not public/anon execution. | Check the exact remote function definition and EXECUTE grants. It exposes only a constrained boolean-like staff identity lookup, not admin-table access. |
+| `20261118165000_dcds_vtu_pay_per_order_checkout.sql` | Adds indexes for `dcds_vtu_orders` and enables RLS; the header describes server-only writes/reads and no client-role table access. | This is money-moving VTU order infrastructure. Do not repair or replay its history without checking table schema, RLS, grants, indexes and Edge Function assumptions. |
+
+## 4. Other important local migration status
+
+### Draft phase-one migration
+
+`supabase/migrations/20261110000100_phase1_security_reliability.sql` explicitly labels itself a feature-branch draft and says not to apply it to Production. It is not timestamp-matched in either remote history. It changes course checkout/support-ticket behavior and has a dedicated workflow dependency. Keep it excluded from any bulk migration application until separately resolved.
+
+### Timestamp matches are not content matches
+
+The current filename-to-remote comparison is based on timestamp equality. A logical name match can identify a candidate file, but the remote migration metadata does not provide the SQL text, hash, or repository commit that produced a particular remote version. Repeated remote names could represent replays, corrected SQL, separate revisions, or renamed history records. Do not guess which.
+
+## 5. Workflow safeguards and stale-baseline observations
+
+The current branch contains two baseline-related workflows:
+
+- `.github/workflows/dcds-production-schema-export.yml` has a manual dispatch path and an automatic push trigger scoped to `feature/phase1-security-reliability`, not this Verified+ feature branch. Its script uses a production database URL secret for schema-only export and custom-trigger inspection. It was inspected but not triggered.
+- `.github/workflows/dcds-development-baseline-restore.yml` is a write-capable Development restore workflow. It is scoped to `feature/phase1-security-reliability` plus manual dispatch, validates a hard-coded old artifact/run reference, and expects a historical baseline of 34 public tables, 26 functions, 59 policies and other fixed counts. The latest Development inventory contains 81 public tables. Its preflight should classify the current Development schema as unsafe rather than empty or matching that older baseline and exit before the SQL-apply step. **Do not dispatch this workflow as the current Development restore plan.** The artifact/run reference and expected schema counts need revalidation before the workflow is used at all.
+
+Neither workflow was run. No database connection or SQL execution was initiated by this inspection.
+
+## 6. Read-only object-level comparison — 2026-11-21
+
+A targeted `SELECT`/catalog inspection was run against both Supabase projects. It returned definitions and metadata only; it did not read customer/payment rows or change schema.
+
+### Shared objects present in both environments
+
+The inspected objects `course_regional_prices`, `dcds_payment_receipt_reviews`, `dcds_payment_review_events`, `orders`, `dcds_community_rooms` and `dcds_vtu_orders` are present in both projects and have RLS enabled. The inspected `orders.checkout_expires_at` and `dcds_community_rooms.course_id` columns are present in both. This is evidence of common current object state, not proof of which exact migration version created it.
+
+### Function-definition comparison
+
+| Function | Development vs production-candidate | Local candidate comparison | Observation |
+|---|---|---|---|
+| `dcds_create_checkout_order` | Same catalog definition fingerprint | Same current signature/behavior family | Identical definition fingerprint in both environments; SECURITY DEFINER; EXECUTE restricted to postgres/service_role. |
+| `admin_finalize_flutterwave_payment` | Same catalog definition fingerprint | Candidate file `20261111113000...` matches the observed logic | Identical definition fingerprint in both; SECURITY DEFINER; EXECUTE restricted to postgres/service_role. It finalizes a course order and enrolment after Flutterwave transaction checks. |
+| `admin_create_manual_bank_order` | Different definition fingerprint | Development body matches the local `20261111110000...` candidate after whitespace normalization; production-candidate does not | Confirmed behavior difference: Development requires a confirmed email address; production-candidate permits either confirmed email or confirmed mobile. Both are SECURITY DEFINER and grant EXECUTE to authenticated/service_role, with an internal DCDS-admin check. Decide which contact-verification rule is canonical before any function/migration reconciliation. |
+| `admin_reject_payment_receipt` | Different raw definition fingerprint | Development body matches the local candidate after whitespace normalization; production-candidate does not | Line review shows broadly similar rejection flow and mostly formatting/statement-layout differences. Treat as **not yet semantically classified**; compare the full function bodies before making any history decision. |
+| `dcds_community_official_staff_ids` | Same definition fingerprint | Matches the checked-in staff-badge helper | Same constrained admin-ID lookup definition in both. |
+| `private.dcds_community_sync_course_enrollment` and `private.dcds_sync_community_access_request` | Same definition fingerprints | Not enough to identify exact historical versions | Same current definitions in both environments; keep these scoped to Student Community provisioning. |
+
+### VTU schema drift — high priority
+
+The same `public.dcds_vtu_orders` table has different column contracts:
+
+- **Development:** has `provider_request_id` and `provider`; its provider check allows `legacy` and `vtpass`.
+- **Production-candidate:** has `oplug_request_id` and does not have the `provider` column.
+
+This aligns with the Development migration history containing remote record `20261119202303 dcds_vtu_vtpass_only_provider_cutover`, which has no exact same-name file in the current 48-file migration directory. A related source candidate was found on the separate branches `feature/vtpass-provider-migration` and `feature/dcds-vtu-wallet`:
+
+- Candidate file: `supabase/migrations/20261119223000_add_dcds_vtu_provider_source.sql`
+- Blob SHA: `47896c6b9ba5386da23ba6b4b92b3d3fe456d482`
+- Source link: [Open candidate migration on feature/vtpass-provider-migration](https://github.com/dechampions03-leader/De_Champions_Digital_Service/blob/feature/vtpass-provider-migration/supabase/migrations/20261119223000_add_dcds_vtu_provider_source.sql)
+
+Its intended effect matches the observed Development end state: rename `oplug_request_id` to `provider_request_id`, add a `provider` column, backfill existing rows as `legacy`, default new rows to `vtpass`, constrain the provider to `legacy` or `vtpass`, and add a provider/status/time index. This is a strong candidate for explaining the Development schema, but it is not proof of the exact remote migration body.
+
+**Important timestamp caveat:** the remote Development migration version `20261119202303` corresponds to 2026-11-19 20:23:03 UTC. The candidate file's accessible Git history shows a related revision at 20:21:16 UTC, then delimiter/PL/pgSQL terminator fixes at 20:24:10 and 20:24:20 UTC. Since those fixes are after the remote migration timestamp, the checked-in candidate cannot be certified as the exact SQL that was applied remotely. The separate exact-path lookup for `20261119202303_dcds_vtu_vtpass_only_provider_cutover.sql` returned no commits. Recover the actual applied SQL or authoritative backup before treating this as resolved.
+
+**Do not copy either table definition over the other.** VTU is transaction infrastructure. Recover the missing cutover SQL and compare its Edge Function assumptions, constraints, indexes and grants before considering a canonical version.
+
+### Immediate implication
+
+The live object comparison has moved several candidates beyond simple name matching, but it has also confirmed project drift. The Development manual-bank-order function currently implements a stricter email-confirmation requirement than production-candidate; the VTU schema differs materially; and one Development cutover migration has no checked-in source file. None of these can be safely solved with `migration repair`.
+
+## 7. Next reconciliation actions
+
+1. Obtain fresh schema-only exports from both projects using approved read-only credentials and store them as private, short-retention artifacts; never commit production data or secrets.
+2. Extract the actual current definitions of the objects touched by each candidate migration: function bodies and grants, table/column/constraint/index definitions, policies, triggers and Storage policies.
+3. Compare those live object definitions against each local candidate SQL file and available Git history. Record each remote version as **confirmed equivalent**, **later revision**, **partially represented**, **unmapped**, or **unknown**.
+4. Recover any missing SQL from reviewed Git commits or backup artifacts where possible. A live schema dump can confirm current state, but cannot by itself prove the exact historical SQL that created it.
+5. Only after this crosswalk is evidenced should we design a canonical local baseline and a forward-only migration sequence. Test it on a disposable local PostgreSQL/Supabase environment before considering a Development-only change.
+6. Keep Production read-only until the project-to-deployment mapping, backup/rollback process and migration history are independently verified.
+
+## 8. Actions deliberately not performed
+
+- No `supabase migration repair`, `supabase db push`, linked reset, schema reset or SQL migration was run.
+- No remote schema, row, role, grant, secret, Edge Function or payment setting was changed.
+- No baseline restore or production export workflow was dispatched.
+- No Student Community policy or Verified+ domain table was changed.
+
+**Status:** Candidate migration names are crosswalked and targeted live objects have been compared. The next task is to recover the missing VTU cutover SQL, semantically diff the divergent payment functions, and expand the object-level comparison using approved schema-only exports. The migration history is still not safe to repair or apply.

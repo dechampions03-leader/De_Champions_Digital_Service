@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#35105f">
+  <meta name="description" content="DCDS Verified+ moderation centre prototype. Synthetic case data only.">
+  <title>Verified+ Moderation Centre | DCDS</title>
+  <style>
+    :root{
+      --purple:#7628d8;--purple-dark:#35105f;--purple-deep:#21083f;
+      --lavender:#f3edfc;--lavender-2:#e9def9;--gold:#d7b45a;
+      --ink:#211832;--muted:#756b82;--line:#e9e2f0;--white:#fff;
+      --surface:#f7f5fa;--red:#b32636;--red-soft:#fff0f1;
+      --amber:#8b5700;--amber-soft:#fff6e3;--green:#17683a;--green-soft:#eaf7ef;
+      --shadow:0 14px 38px rgba(42,18,73,.08);--radius:20px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth;scroll-padding-top:90px}
+    body{margin:0;background:var(--surface);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5;overflow-x:hidden}
+    button,input,select,textarea{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid rgba(118,40,216,.28);outline-offset:2px}
+    .topbar{position:sticky;top:0;z-index:30;background:rgba(255,255,255,.97);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+    .topbar-inner{max-width:1440px;margin:auto;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .brand-mark{width:43px;height:43px;flex:0 0 43px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#8d4ce4,#421078);color:white;font-family:Georgia,serif;font-weight:800;letter-spacing:-2px;font-size:16px;box-shadow:0 7px 18px rgba(88,30,150,.2)}
+    .brand-name{font-family:Georgia,serif;font-weight:700;letter-spacing:.065em;color:var(--purple-dark);font-size:13px;line-height:1.2}
+    .brand-sub{font-size:10px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:4px}
+    .top-actions{display:flex;align-items:center;gap:9px;flex:0 0 auto}
+    .demo-pill,.role-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:7px 10px;font-size:10px;font-weight:850;letter-spacing:.06em;text-transform:uppercase;white-space:nowrap}
+    .demo-pill{color:#8a4d00;background:#fff3db;border:1px solid #f5dfb4}
+    .role-pill{color:var(--purple-dark);background:var(--lavender);border:1px solid #e4d5f7}
+    .top-avatar{width:37px;height:37px;border-radius:50%;display:grid;place-items:center;background:var(--purple-dark);color:white;font-size:11px;font-weight:850}
+    .page{max-width:1440px;margin:24px auto;padding:0 22px 65px}
+    .hero{position:relative;overflow:hidden;background:linear-gradient(120deg,#2b0c4d 0%,#552092 58%,#7d42c3 100%);color:white;border-radius:26px;padding:25px 28px;margin-bottom:18px;box-shadow:var(--shadow)}
+    .hero:after{content:"";position:absolute;width:290px;height:290px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-55px;top:-175px;box-shadow:0 0 0 30px rgba(255,255,255,.035),0 0 0 62px rgba(255,255,255,.025)}
+    .hero-inner{position:relative;z-index:1;max-width:850px}
+    .eyebrow{font-size:10px;font-weight:850;letter-spacing:.18em;text-transform:uppercase;color:#e7d8ff}
+    h1{font-family:Georgia,serif;font-size:clamp(28px,4vw,40px);line-height:1.1;margin:8px 0 9px}
+    .hero p{margin:0;color:#efe7f8;font-size:13px;max-width:770px;line-height:1.65}
+    .hero-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+    .hero-tag{font-size:10px;color:#f3eafa;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.18);padding:6px 10px;border-radius:99px}
+    .demo-warning{display:flex;align-items:flex-start;gap:10px;background:var(--amber-soft);border:1px solid #f0dba9;color:#654500;border-radius:14px;padding:12px 14px;margin:0 0 18px;font-size:11px;line-height:1.55}
+    .demo-warning strong{display:block;font-size:12px;margin-bottom:2px;color:#624000}
+    .workspace{display:grid;grid-template-columns:220px minmax(0,1fr);gap:18px;align-items:start}
+    .sidebar{position:sticky;top:88px;background:white;border:1px solid var(--line);border-radius:var(--radius);padding:14px;box-shadow:var(--shadow)}
+    .admin-profile{display:flex;align-items:center;gap:9px;padding:3px 2px 14px;border-bottom:1px solid var(--line);margin-bottom:12px}
+    .admin-avatar{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(145deg,#8850d3,#431278);color:white;font-size:11px;font-weight:850}
+    .admin-name{font-size:12px;font-weight:850}
+    .admin-role{font-size:10px;color:var(--muted)}
+    .nav-label{font-size:9px;text-transform:uppercase;letter-spacing:.15em;color:#968aa1;font-weight:850;margin:15px 8px 7px}
+    .nav{display:grid;gap:5px}
+    .nav button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:transparent;color:#5d526c;text-align:left;border-radius:11px;padding:10px 11px;font-size:12px;font-weight:800}
+    .nav button.active,.nav button:hover{background:var(--lavender);color:var(--purple-dark)}
+    .nav-icon{width:21px;text-align:center;font-size:15px}
+    .nav-count{margin-left:auto;padding:2px 7px;border-radius:99px;background:#f0ebf6;font-size:10px}
+    .main{min-width:0}
+    .toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:14px}
+    .page-heading{font-family:Georgia,serif;color:var(--purple-dark);font-size:25px;margin:0}
+    .toolbar-right{display:flex;align-items:center;gap:8px}
+    .select,.search{min-height:41px;border:1px solid var(--line);border-radius:11px;background:#fff;padding:8px 11px;color:var(--ink);font-size:11px;min-width:0}
+    .search{width:230px}
+    .stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+    .stat{background:#fff;border:1px solid var(--line);border-radius:16px;padding:14px;box-shadow:var(--shadow);min-width:0}
+    .stat-label{font-size:9px;color:var(--muted);font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+    .stat-value{font-family:Georgia,serif;font-size:27px;color:var(--purple-dark);font-weight:700;line-height:1.25;margin-top:5px}
+    .stat-note{font-size:10px;color:var(--muted);margin-top:3px}
+    .stat.alert .stat-value{color:var(--red)}
+    .stat.review .stat-value{color:var(--amber)}
+    .panel{background:white;border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow);min-width:0}
+    .panel-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+    .panel-title{font-family:Georgia,serif;font-size:18px;color:var(--purple-dark);margin:0}
+    .muted{color:var(--muted)}
+    .tiny{font-size:10px}
+    .case-list{display:grid;gap:11px}
+    .case{border:1px solid var(--line);border-radius:15px;padding:14px;background:#fff;min-width:0}
+    .case.urgent{border-color:#edbdc2;background:linear-gradient(180deg,#fff 0%,#fffafa 100%)}
+    .case-top{display:flex;justify-content:space-between;align-items:flex-start;gap:10px}
+    .case-id{font-size:10px;color:var(--muted);font-weight:850;letter-spacing:.07em}
+    .case-member{font-size:13px;font-weight:900;margin-top:2px}
+    .case-meta{font-size:10px;color:var(--muted);margin-top:2px}
+    .badge{display:inline-flex;align-items:center;gap:5px;border-radius:99px;padding:5px 8px;font-size:9px;font-weight:850;white-space:nowrap}
+    .badge.red{background:var(--red-soft);color:var(--red)}
+    .badge.amber{background:var(--amber-soft);color:var(--amber)}
+    .badge.green{background:var(--green-soft);color:var(--green)}
+    .badge.purple{background:var(--lavender);color:var(--purple-dark)}
+    .case-body{background:#f9f7fb;border:1px solid #eee8f4;border-radius:11px;padding:11px 12px;margin:11px 0;font-size:12px;line-height:1.55;overflow-wrap:anywhere}
+    .case-reason{display:flex;gap:7px;flex-wrap:wrap;align-items:center;font-size:10px;color:var(--muted)}
+    .case-reason strong{color:var(--ink)}
+    .case-foot{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-top:11px;padding-top:10px;border-top:1px solid #f0ebf4}
+    .case-foot small{font-size:10px;color:var(--muted)}
+    .actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px}
+    .btn{border:0;border-radius:10px;padding:9px 12px;font-size:10px;font-weight:850;min-height:38px}
+    .btn.primary{background:var(--purple);color:#fff}
+    .btn.primary:hover{background:#6120b5}
+    .btn.quiet{background:#f3eff8;color:var(--purple-dark)}
+    .btn.danger{background:var(--red-soft);color:var(--red)}
+    .btn.warning{background:var(--amber-soft);color:var(--amber)}
+    .btn.success{background:var(--green-soft);color:var(--green)}
+    .btn:disabled{opacity:.42;cursor:not-allowed}
+    .empty{background:#fbf9fd;border:1px dashed #d7c9e7;border-radius:13px;padding:24px;text-align:center;color:var(--muted);font-size:12px}
+    .empty strong{display:block;color:var(--purple-dark);font-size:14px;margin-bottom:4px}
+    .split{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(260px,.75fr);gap:12px}
+    .side-card{background:#faf8fd;border:1px solid var(--line);border-radius:14px;padding:13px}
+    .ladder{display:grid;gap:9px}
+    .ladder-row{display:grid;grid-template-columns:28px 1fr;gap:9px;align-items:start}
+    .ladder-num{width:26px;height:26px;border-radius:50%;background:var(--lavender);color:var(--purple-dark);display:grid;place-items:center;font-size:10px;font-weight:900}
+    .ladder-row strong{font-size:11px;display:block}
+    .ladder-row span{font-size:10px;color:var(--muted);display:block;margin-top:2px}
+    .table-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:13px}
+    table{width:100%;border-collapse:collapse;min-width:650px;font-size:11px}
+    th,td{padding:11px 12px;text-align:left;border-bottom:1px solid #f0ebf4;vertical-align:top}
+    th{background:#faf8fd;color:#655a71;font-size:9px;letter-spacing:.09em;text-transform:uppercase}
+    tr:last-child td{border-bottom:0}
+    .appeal{border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px}
+    .appeal h3{font-size:12px;margin:0 0 5px}
+    .appeal p{font-size:11px;color:#62586c;margin:6px 0;line-height:1.5}
+    .audit-list{display:grid;gap:0}
+    .audit-item{display:grid;grid-template-columns:104px minmax(0,1fr);gap:12px;padding:12px 3px;border-bottom:1px solid #f0ebf4}
+    .audit-item:last-child{border-bottom:0}
+    .audit-time{font-size:10px;color:var(--muted)}
+    .audit-event{font-size:11px;font-weight:800}
+    .audit-detail{font-size:10px;color:var(--muted);margin-top:3px}
+    .notice{background:var(--lavender);border:1px solid #e5d8f4;color:#4b276d;border-radius:12px;padding:10px 12px;font-size:10px;line-height:1.5}
+    .modal-backdrop{position:fixed;inset:0;background:rgba(28,11,45,.58);display:none;align-items:center;justify-content:center;padding:16px;z-index:60}
+    .modal-backdrop.open{display:flex}
+    .modal{width:min(480px,100%);background:white;border-radius:19px;padding:20px;box-shadow:0 25px 90px rgba(20,5,38,.3)}
+    .modal h2{font-family:Georgia,serif;color:var(--purple-dark);font-size:23px;margin:0 0 6px}
+    .modal p{font-size:11px;color:var(--muted);line-height:1.55}
+    .modal input,.modal textarea,.modal select{width:100%;border:1px solid var(--line);border-radius:10px;padding:10px 11px;font-size:12px;margin:5px 0 10px}
+    .modal textarea{min-height:80px;resize:vertical}
+    .modal-actions{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .toast{position:fixed;left:50%;bottom:20px;transform:translate(-50%,18px);opacity:0;pointer-events:none;background:#24103b;color:white;padding:11px 14px;border-radius:12px;font-size:11px;box-shadow:var(--shadow);transition:.2s;z-index:80;max-width:calc(100% - 28px);text-align:center}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+    .hidden{display:none!important}
+    @media(max-width:1020px){.workspace{grid-template-columns:190px minmax(0,1fr)}.split{grid-template-columns:1fr}}
+    @media(max-width:720px){
+      .topbar-inner{padding:9px 12px;gap:8px}
+      .brand{gap:8px;flex:1}
+      .brand-mark{width:38px;height:38px;flex-basis:38px;font-size:15px}
+      .brand-name{font-size:10px;letter-spacing:.045em}
+      .brand-sub{font-size:8px;letter-spacing:.08em}
+      .top-actions{gap:5px}
+      .demo-pill{font-size:8px;padding:5px 6px}
+      .role-pill{display:none}
+      .top-avatar{width:33px;height:33px}
+      .page{width:100%;padding:0 12px calc(40px + env(safe-area-inset-bottom,0px));margin:13px auto 0}
+      .hero{padding:20px 17px;border-radius:20px;margin-bottom:13px}
+      h1{font-size:clamp(27px,7.5vw,35px)}
+      .hero p{font-size:12px}
+      .workspace{display:flex;flex-direction:column;gap:12px}
+      .sidebar{position:static;width:100%;padding:10px;order:0}
+      .admin-profile{padding-bottom:9px;margin-bottom:8px}
+      .nav-label{display:none}
+      .nav{display:flex;overflow-x:auto;gap:6px;scrollbar-width:thin;overscroll-behavior-x:contain}
+      .nav button{width:auto;flex:0 0 auto;white-space:nowrap;min-height:42px;padding:9px 11px;font-size:11px}
+      .nav-count{margin-left:0}
+      .main{width:100%;order:1}
+      .toolbar{align-items:stretch;flex-direction:column}
+      .toolbar-right{display:grid;grid-template-columns:minmax(0,1fr);width:100%}
+      .search{width:100%}
+      .stats{grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+      .stat{padding:12px}
+      .stat-value{font-size:24px}
+      .panel{padding:13px;border-radius:16px}
+      .case{padding:12px}
+      .case-top{flex-direction:column}
+      .case-body{font-size:12px}
+      .actions .btn{flex:1 1 145px;min-height:42px}
+      .audit-item{grid-template-columns:78px minmax(0,1fr);gap:8px}
+      .demo-warning{font-size:10px;padding:10px}
+      .page-heading{font-size:23px}
+    }
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" aria-label="De Champions Digital Service">
+        <div class="brand-mark" aria-hidden="true">DCDS</div>
+        <div><div class="brand-name">DE CHAMPIONS DIGITAL SERVICES</div><div class="brand-sub">Create · Learn · Innovate · Earn</div></div>
+      </div>
+      <div class="top-actions">
+        <span class="demo-pill">● Demo only</span>
+        <span class="role-pill" id="topRole">Moderator workspace</span>
+        <div class="top-avatar" id="topAvatar">MO</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero">
+      <div class="hero-inner">
+        <div class="eyebrow">DCDS · VERIFIED+ GOVERNANCE</div>
+        <h1>Moderation Centre</h1>
+        <p>Review reports, enforce the DCDS brand-content policy, track strikes, handle appeals and preserve an auditable record. Automated checks assist the team; authorised people make formal decisions.</p>
+        <div class="hero-tags">
+          <span class="hero-tag">🛡️ Brand safety</span>
+          <span class="hero-tag">⚖️ Human review</span>
+          <span class="hero-tag">📋 Reason-coded actions</span>
+          <span class="hero-tag">💜 DCDS network only</span>
+        </div>
+      </div>
+    </section>
+
+    <div class="demo-warning">
+      <span aria-hidden="true">⚠️</span>
+      <div><strong>Synthetic demonstration — not connected to real accounts</strong>All cases, member names, reports, strikes and audit events are fictional. Actions change only this page's temporary in-memory demo state. No live moderation, notification, account restriction or database write occurs.</div>
+    </div>
+
+    <div class="workspace">
+      <aside class="sidebar" aria-label="Moderation navigation">
+        <div class="admin-profile">
+          <div class="admin-avatar" id="profileAvatar">MO</div>
+          <div><div class="admin-name" id="profileName">Moderator Demo</div><div class="admin-role" id="profileRole">Content moderator · Demo</div></div>
+        </div>
+        <div class="nav-label">Governance workspace</div>
+        <nav class="nav">
+          <button class="active" type="button" data-view="overview"><span class="nav-icon">▦</span>Overview</button>
+          <button type="button" data-view="queue"><span class="nav-icon">◷</span>Review queue <span class="nav-count" id="queueCount">5</span></button>
+          <button type="button" data-view="strikes"><span class="nav-icon">⚑</span>Strikes</button>
+          <button type="button" data-view="appeals"><span class="nav-icon">↶</span>Appeals <span class="nav-count" id="appealCount">2</span></button>
+          <button type="button" data-view="audit"><span class="nav-icon">≡</span>Audit trail</button>
+        </nav>
+      </aside>
+
+      <section class="main">
+        <div class="toolbar">
+          <h2 class="page-heading" id="viewTitle">Governance overview</h2>
+          <div class="toolbar-right">
+            <input class="search" id="caseSearch" type="search" placeholder="Search case, member or rule…" aria-label="Search cases" autocomplete="off">
+            <select class="select" id="roleSelect" aria-label="Preview admin role">
+              <option value="moderator">Preview: Moderator</option>
+              <option value="root">Preview: Root Administrator</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="viewContent"></div>
+      </section>
+    </div>
+  </main>
+
+  <div class="modal-backdrop" id="modalBackdrop" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+    <form class="modal" id="actionForm">
+      <h2 id="modalTitle">Confirm moderation action</h2>
+      <p id="modalDescription"></p>
+      <label class="tiny" for="reasonSelect">Policy reason</label>
+      <select id="reasonSelect" required>
+        <option value="">Choose a reason code…</option>
+        <option value="off_topic">Off-brand / unrelated content</option>
+        <option value="external_link">Unapproved external link or contact invitation</option>
+        <option value="spam">Spam or repetitive engagement</option>
+        <option value="harassment">Harassment or targeted abuse</option>
+        <option value="fraud">Scam, phishing or deceptive promotion</option>
+        <option value="privacy">Privacy violation / doxxing</option>
+        <option value="child_safety">Child-safety concern</option>
+        <option value="other">Other policy violation</option>
+      </select>
+      <label class="tiny" for="actionNote">Moderator note (required)</label>
+      <textarea id="actionNote" maxlength="500" placeholder="Record the policy basis and what you reviewed…" required></textarea>
+      <div id="rootConfirmWrap" class="hidden">
+        <label class="tiny" for="rootConfirm">Root confirmation — type PERMANENT to continue</label>
+        <input id="rootConfirm" autocomplete="off" placeholder="PERMANENT">
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn quiet" id="cancelAction">Cancel</button>
+        <button type="submit" class="btn primary" id="confirmAction">Confirm demo action</button>
+      </div>
+    </form>
+  </div>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+
+    const cases = [
+      {id:"VP-1042",member:"Didi Ajayi",account:"Verified+ active",surface:"Original post",category:"external_link",reason:"Unapproved off-platform contact invitation",severity:"High",snippet:"I made a new WhatsApp group for everyone here. Join through the link in my bio and let's continue the conversation there.",strikes:0,reported:"8 min ago",status:"pending",flag:"External contact / link pattern",urgent:false},
+      {id:"VP-1043",member:"Ben Okafor",account:"Verified+ active",surface:"Comment",category:"off_topic",reason:"Unrelated social promotion",severity:"Medium",snippet:"Forget the design challenge. Who is coming for the weekend party? Send me a DM and I will add you.",strikes:1,reported:"21 min ago",status:"pending",flag:"Off-topic social invitation",urgent:false},
+      {id:"VP-1044",member:"Mina Yusuf",account:"Verified+ active",surface:"Original post",category:"off_topic",reason:"Unrelated promotion and repeated redirection",severity:"High",snippet:"Follow my other page for giveaways, lifestyle updates and daily entertainment. Let's grow together outside this platform.",strikes:2,reported:"34 min ago",status:"pending",flag:"External social account promotion",urgent:false},
+      {id:"VP-1045",member:"Tobi James",account:"Verified+ active",surface:"Reshare caption",category:"fraud",reason:"Unverified investment and guaranteed-income claim",severity:"Critical",snippet:"Guaranteed returns every week. Message me privately to invest today. No risk and instant profit.",strikes:3,reported:"5 min ago",status:"pending",flag:"Potential financial scam language",urgent:true},
+      {id:"VP-1046",member:"Nora Eze",account:"Standard member",surface:"Comment",category:"privacy",reason:"Possible exposure of personal contact details",severity:"Critical",snippet:"A comment appears to contain another member's phone number and home-location details. Review the original evidence in the restricted case record.",strikes:0,reported:"2 min ago",status:"pending",flag:"Possible doxxing / privacy incident",urgent:true}
+    ];
+    const appeals = [
+      {id:"AP-208",member:"Ayo Martins",caseId:"VP-1018",action:"30-day network suspension",date:"Today · 09:15",text:"I understand that the comment was off-topic, but I believe the restriction was applied to the wrong account. Please review the account and comment again.",status:"pending",prior:"Moderator Team Member B"},
+      {id:"AP-209",member:"Lara Bello",caseId:"VP-1021",action:"7-day posting restriction",date:"Today · 11:42",text:"I shared a course resource link and did not realise it was not on the approved DCDS domain list. I have removed the link and understand the rule.",status:"pending",prior:"Moderator Demo"}
+    ];
+    const audit = [
+      {time:"14:06",actor:"System check · Demo",event:"Content held for human review",detail:"Case VP-1046 · Possible privacy exposure · No automated sanction applied."},
+      {time:"13:58",actor:"Moderator Demo",event:"Report received",detail:"Case VP-1045 · Potential deceptive investment claim."},
+      {time:"13:41",actor:"Moderator Demo",event:"Content flagged",detail:"Case VP-1044 · Repeated off-brand social promotion."},
+      {time:"12:52",actor:"System check · Demo",event:"External-link pattern detected",detail:"Case VP-1042 · Queued for human review; content was not auto-banned."}
+    ];
+    const state={role:"moderator",view:"overview",activeAction:null,activeCase:null,toastTimer:null};
+    const root=document.getElementById("viewContent");
+    const search=document.getElementById("caseSearch");
+    const toast=document.getElementById("toast");
+
+    function el(tag,cls,text){
+      const n=document.createElement(tag);
+      if(cls)n.className=cls;
+      if(text!==undefined)n.textContent=text;
+      return n;
+    }
+    function button(label,cls,handler,disabled=false){
+      const b=el("button","btn "+cls,label);b.type="button";b.disabled=disabled;b.addEventListener("click",handler);return b;
+    }
+    function showToast(message){
+      toast.textContent=message;toast.classList.add("show");
+      clearTimeout(state.toastTimer);
+      state.toastTimer=setTimeout(()=>toast.classList.remove("show"),2600);
+    }
+    function isRoot(){return state.role==="root";}
+    function activeCases(){return cases.filter(c=>c.status==="pending"||c.status==="root_review"||c.status==="safety_hold");}
+    function pendingAppeals(){return appeals.filter(a=>a.status==="pending");}
+    function updateRole(){
+      const rootRole=isRoot();
+      document.getElementById("topRole").textContent=rootRole?"Root Administrator workspace":"Moderator workspace";
+      document.getElementById("topAvatar").textContent=rootRole?"RA":"MO";
+      document.getElementById("profileAvatar").textContent=rootRole?"RA":"MO";
+      document.getElementById("profileName").textContent=rootRole?"Root Admin Demo":"Moderator Demo";
+      document.getElementById("profileRole").textContent=rootRole?"Platform governance · Demo":"Content moderator · Demo";
+    }
+    function badge(text,kind){return el("span","badge "+kind,text);}
+    function renderStats(){
+      const pending=cases.filter(c=>c.status==="pending").length;
+      const urgent=cases.filter(c=>c.urgent&&["pending","safety_hold","root_review"].includes(c.status)).length;
+      const struck=cases.reduce((n,c)=>n+c.strikes,0);
+      return [
+        ["Pending review",pending,"Awaiting human decision",""],
+        ["Priority safety cases",urgent,"Temporary hold / rapid review","alert"],
+        ["Open appeals",pendingAppeals().length,"14-day appeal window","review"],
+        ["Recorded demo strikes",struck,"Synthetic data only",""]
+      ];
+    }
+    function makeStats(){
+      const wrap=el("div","stats");
+      renderStats().forEach(([label,value,note,cls])=>{
+        const card=el("div","stat "+cls);
+        card.append(el("div","stat-label",label),el("div","stat-value",String(value)),el("div","stat-note",note));
+        wrap.append(card);
+      });
+      return wrap;
+    }
+    function caseCard(c){
+      const card=el("article","case"+(c.urgent?" urgent":""));
+      const top=el("div","case-top");
+      const identity=el("div");
+      identity.append(el("div","case-id","#"+c.id),el("div","case-member",c.member),el("div","case-meta",c.surface+" · "+c.account));
+      const tags=el("div");
+      tags.append(badge(c.severity,c.severity==="Critical"?"red":c.severity==="High"?"amber":"purple"));
+      if(c.status==="root_review")tags.append(badge("Root review","amber"));
+      if(c.status==="safety_hold")tags.append(badge("Temporary safety hold","red"));
+      top.append(identity,tags);
+      card.append(top,el("div","case-body","“"+c.snippet+"”"));
+      const reason=el("div","case-reason");
+      reason.append(el("span","","Automated flag:"),el("strong","",c.flag));
+      card.append(reason);
+      const foot=el("div","case-foot");
+      foot.append(el("small","","Reported "+c.reported+" · Previous strikes: "+c.strikes));
+      foot.append(el("small","","Rule category: "+c.category.replaceAll("_"," ")));
+      card.append(foot);
+      const actions=el("div","actions");
+      if(c.status==="pending"){
+        actions.append(button("Approve / no violation","success",()=>openAction(c.id,"approve")));
+        actions.append(button("Remove + record strike","primary",()=>openAction(c.id,"strike")));
+        actions.append(button("Urgent safety hold","danger",()=>openAction(c.id,"hold"),!c.urgent));
+        if(isRoot()&&c.strikes>=3)actions.append(button("Apply 90-day network suspension","warning",()=>openAction(c.id,"suspend90")));
+      }else if(c.status==="root_review"&&!isRoot()){
+        actions.append(badge("Awaiting Root Administrator","amber"));
+      }else if(c.status==="root_review"&&isRoot()){
+        actions.append(button("Approve 90-day network suspension","warning",()=>openAction(c.id,"suspend90")));
+        actions.append(button("Close with warning only","quiet",()=>openAction(c.id,"warning")));
+      }else if(c.status==="safety_hold"){
+        actions.append(badge("Human safety review required","red"));
+        if(isRoot()){
+          actions.append(button("Release hold / no violation","success",()=>openAction(c.id,"approve")));
+          actions.append(button("Apply 90-day network suspension","warning",()=>openAction(c.id,"suspend90")));
+          actions.append(button("Permanent network ban (Root only)","danger",()=>openAction(c.id,"permanent")));
+        }
+      }
+      card.append(actions);
+      return card;
+    }
+    function renderQueue(){
+      const wrap=el("div","case-list");
+      const q=search.value.trim().toLowerCase();
+      const filtered=activeCases().filter(c=>[c.id,c.member,c.reason,c.category,c.snippet,c.flag].join(" ").toLowerCase().includes(q));
+      filtered.forEach(c=>wrap.append(caseCard(c)));
+      if(!filtered.length){const e=el("div","empty");e.append(el("strong","","Queue is clear"),el("span","","No open cases match this search."));wrap.append(e);}
+      return wrap;
+    }
+    function renderLadder(){
+      const panel=el("div","panel");
+      panel.append(el("h3","panel-title","Progressive enforcement ladder"));
+      const ladder=el("div","ladder");
+      [
+        ["1","First confirmed violation","Remove/reject content · warning · strike 1"],
+        ["2","Second within rolling 180 days","Strike 2 · 7-day original-posting restriction"],
+        ["3","Third within rolling 180 days","Strike 3 · 30-day network posting and engagement suspension"],
+        ["4","Fourth within rolling 180 days","Escalate to Root Administrator · 90-day network participation suspension after human review"]
+      ].forEach(([n,title,desc])=>{
+        const row=el("div","ladder-row");row.append(el("div","ladder-num",n));
+        const text=el("div");text.append(el("strong","",title),el("span","",desc));row.append(text);ladder.append(row);
+      });
+      panel.append(ladder);
+      return panel;
+    }
+    function renderOverview(){
+      const frag=document.createDocumentFragment();
+      frag.append(makeStats());
+      const split=el("div","split");
+      const queuePanel=el("div","panel");
+      const head=el("div","panel-head");head.append(el("h3","panel-title","Priority review queue"),badge(activeCases().length+" open","purple"));
+      queuePanel.append(head,renderQueue());
+      const side=el("div","side-card");
+      side.append(el("h3","panel-title","Human-in-the-loop safeguards"),el("p","tiny muted","Automated checks can flag, reject obvious prohibited formats or hold uncertain content. They do not determine identity status, cancel membership or permanently ban a member."));
+      side.append(renderLadder());
+      const roleNote=el("div","notice",isRoot()?"Root Admin preview: you can review fourth-strike escalations and access the permanent network-ban confirmation flow.":"Moderator preview: you can review cases, issue ordinary strikes, apply policy-defined short restrictions and escalate fourth-strike or severe cases.");
+      side.append(roleNote);
+      split.append(queuePanel,side);frag.append(split);
+      return frag;
+    }
+    function renderStrikes(){
+      const wrap=el("div","panel");
+      const head=el("div","panel-head");head.append(el("h3","panel-title","Member strike history"),badge("Rolling 180 days","purple"));wrap.append(head);
+      const tableWrap=el("div","table-wrap"),table=el("table");
+      const thead=el("thead"),hr=el("tr");
+      ["Member","Case","Confirmed strikes","Current demo status","Next policy step"].forEach(t=>hr.append(el("th","",t)));
+      thead.append(hr);const tbody=el("tbody");
+      cases.filter(c=>c.strikes>0).forEach(c=>{
+        const tr=el("tr");const next=c.strikes===1?"7-day posting restriction":c.strikes===2?"30-day network suspension":c.strikes>=3?"Root Admin review":"Warning";
+        [c.member,c.id,String(c.strikes),c.status.replaceAll("_"," "),next].forEach(t=>tr.append(el("td","",t)));
+        tbody.append(tr);
+      });
+      table.append(thead,tbody);tableWrap.append(table);wrap.append(tableWrap);
+      const note=el("p","notice","Strike history is a network-only record in this demo. It must never directly change identity verification, paid membership, course access, payments, balances, payouts or VTU records.");
+      wrap.append(note);return wrap;
+    }
+    function renderAppeals(){
+      const wrap=el("div","case-list");
+      const q=search.value.trim().toLowerCase();
+      appeals.filter(a=>a.status==="pending"&&[a.id,a.member,a.caseId,a.text].join(" ").toLowerCase().includes(q)).forEach(a=>{
+        const card=el("article","appeal");
+        const top=el("div","case-top"),left=el("div");left.append(el("div","case-id",a.id+" · "+a.caseId),el("h3","",a.member+" · Appeal"));
+        top.append(left,badge("Pending independent review","amber"));card.append(top,el("p","",a.text));
+        card.append(el("p","tiny muted","Original action: "+a.action+" · Filed: "+a.date+" · Original decision maker: "+a.prior));
+        const actions=el("div","actions");
+        actions.append(button("Uphold action","quiet",()=>resolveAppeal(a.id,"uphold")));
+        actions.append(button("Overturn + restore access","success",()=>resolveAppeal(a.id,"overturn")));
+        card.append(actions);wrap.append(card);
+      });
+      if(!wrap.children.length){const e=el("div","empty");e.append(el("strong","","No pending appeals"),el("span","","The appeal queue is clear in this demo."));wrap.append(e);}
+      if(!isRoot()){
+        const note=el("p","notice","An appeal must be decided by an authorised reviewer who did not make the original decision. This preview uses a separate demo reviewer identity. Production assignment must enforce this server-side.");
+        wrap.prepend(note);
+      }
+      return wrap;
+    }
+    function renderAudit(){
+      const panel=el("div","panel");panel.append(el("h3","panel-title","Append-only audit preview"));
+      const list=el("div","audit-list");
+      audit.forEach(a=>{
+        const row=el("div","audit-item");row.append(el("div","audit-time",a.time),el("div"));
+        const detail=row.lastChild;detail.append(el("div","audit-event",a.actor+" · "+a.event),el("div","audit-detail",a.detail));list.append(row);
+      });
+      panel.append(list,el("p","notice","Production audit events must be append-only to application roles, access-controlled, reason-coded and retained only under an approved schedule. This page's log is temporary demonstration state."));
+      return panel;
+    }
+    function render(){
+      updateRole();
+      document.getElementById("queueCount").textContent=String(activeCases().length);
+      document.getElementById("appealCount").textContent=String(pendingAppeals().length);
+      const titles={overview:"Governance overview",queue:"Content review queue",strikes:"Strikes & restrictions",appeals:"Appeal review",audit:"Audit trail"};
+      document.getElementById("viewTitle").textContent=titles[state.view];
+      document.querySelectorAll("[data-view]").forEach(b=>b.classList.toggle("active",b.dataset.view===state.view));
+      root.replaceChildren();
+      if(state.view==="overview")root.append(renderOverview());
+      if(state.view==="queue"){const p=el("div","panel");p.append(renderQueue());root.append(p);}
+      if(state.view==="strikes")root.append(renderStrikes());
+      if(state.view==="appeals")root.append(renderAppeals());
+      if(state.view==="audit")root.append(renderAudit());
+      search.classList.toggle("hidden",state.view==="overview"||state.view==="audit");
+    }
+    function log(event,detail){
+      audit.unshift({time:new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit"}),actor:isRoot()?"Root Admin Demo":"Moderator Demo",event,detail});
+    }
+    function openAction(caseId,action){
+      const c=cases.find(x=>x.id===caseId);if(!c)return;
+      if((action==="suspend90"||action==="permanent")&&!isRoot()){showToast("Only Root Administrator can approve this restriction.");return;}
+      if(action==="permanent"&&c.status!=="safety_hold"){showToast("Permanent network ban requires a severe case under Root safety review.");return;}
+      state.activeCase=caseId;state.activeAction=action;
+      const labels={approve:"Approve content — no violation",strike:"Remove content and record the next strike",hold:"Place content/account in a temporary network safety hold",suspend90:"Root review: approve 90-day network participation suspension",warning:"Close with warning only"};
+      document.getElementById("modalTitle").textContent=labels[action]||"Confirm moderation action";
+      document.getElementById("modalDescription").textContent="Case "+c.id+" · "+c.member+". This decision applies only to the Verified+ network in this demo. Record the policy reason and a concise review note.";
+      document.getElementById("reasonSelect").value=c.category||"";
+      document.getElementById("actionNote").value="";
+      const rootConfirm=action==="permanent";
+      document.getElementById("rootConfirmWrap").classList.toggle("hidden",!rootConfirm);
+      document.getElementById("rootConfirm").value="";
+      document.getElementById("modalBackdrop").classList.add("open");
+      document.getElementById("actionNote").focus();
+    }
+    function closeAction(){document.getElementById("modalBackdrop").classList.remove("open");state.activeAction=null;state.activeCase=null;}
+    document.getElementById("cancelAction").addEventListener("click",closeAction);
+    document.getElementById("modalBackdrop").addEventListener("click",e=>{if(e.target.id==="modalBackdrop")closeAction();});
+    function confirmDemoAction(event){
+      event.preventDefault();
+      const c=cases.find(x=>x.id===state.activeCase),action=state.activeAction;
+      if(!c||!action)return;
+      const reason=document.getElementById("reasonSelect").value;
+      const note=document.getElementById("actionNote").value.trim();
+      if(!reason||!note){showToast("Select a reason and write a moderation note.");return;}
+      let result="";
+      if(action==="approve"){c.status="approved";result="Content approved after human review · "+c.id;}
+      if(action==="warning"){c.status="closed_warning";result="Case closed with warning only · "+c.id;}
+      if(action==="hold"){c.status="safety_hold";result="Temporary network safety hold applied pending human safety review · "+c.id;}
+      if(action==="suspend90"){c.status="suspended_90d";result="90-day Verified+ network participation suspension approved by Root Admin · "+c.id;}
+      if(action==="permanent"){
+        if(!isRoot()||document.getElementById("rootConfirm").value.trim()!=="PERMANENT"){
+          showToast("Root Administrator must type PERMANENT to confirm this network-only ban.");return;
+        }
+        c.status="permanent_network_ban";result="Permanent Verified+ network ban approved by Root Admin after human safety review · "+c.id;
+      }
+      if(action==="strike"){
+        c.strikes+=1;
+        if(c.strikes===1){c.status="removed_warning";result="Content removed; strike 1 and warning issued · "+c.id;}
+        else if(c.strikes===2){c.status="restricted_7d";result="Content removed; strike 2 and 7-day original-posting restriction applied · "+c.id;}
+        else if(c.strikes===3){c.status="suspended_30d";result="Content removed; strike 3 and 30-day network posting/engagement suspension applied · "+c.id;}
+        else if(c.strikes>=4){
+          if(isRoot()){c.status="suspended_90d";result="Fourth strike confirmed; 90-day network suspension approved after Root Admin review · "+c.id;}
+          else{c.status="root_review";result="Fourth strike recorded and escalated to Root Administrator review · "+c.id;}
+        }
+      }
+      c.lastReason=reason;c.lastNote=note;c.decidedBy=isRoot()?"Root Admin Demo":"Moderator Demo";
+      log(result,"Reason: "+reason+". Note: "+note);
+      showToast(result);
+      closeAction();render();
+    }
+    document.getElementById("actionForm").addEventListener("submit",confirmDemoAction);
+    function resolveAppeal(id,outcome){
+      const a=appeals.find(x=>x.id===id);if(!a||a.status!=="pending")return;
+      if(a.prior===(isRoot()?"Root Admin Demo":"Moderator Demo")){showToast("The original decision maker cannot review their own appeal.");return;}
+      a.status=outcome==="uphold"?"upheld":"overturned";
+      if(outcome==="overturn"){
+        const original=cases.find(c=>c.id===a.caseId);
+        if(original){original.status="appeal_overturned";original.strikes=Math.max(0,original.strikes-1);}
+      }
+      log("Appeal "+a.status,a.id+" · "+a.caseId+" · reviewed by "+(isRoot()?"Root Admin Demo":"Moderator Demo"));
+      showToast(outcome==="overturn"?"Appeal overturned; demo access restored.":"Appeal upheld after independent demo review.");
+      render();
+    }
+    document.querySelectorAll("[data-view]").forEach(b=>b.addEventListener("click",()=>{state.view=b.dataset.view;render();}));
+    document.getElementById("roleSelect").addEventListener("change",e=>{state.role=e.target.value;render();});
+    search.addEventListener("input",render);
+    document.addEventListener("keydown",e=>{if(e.key==="Escape")closeAction();});
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,302 @@
+name: DCDS Verified+ synthetic identity adapter validation
+
+on:
+  push:
+    branches:
+      - feature/dcds-verified-plus-ecosystem
+    paths:
+      - "supabase/functions/_shared/verified-plus/**"
+      - "verified-plus-community-preview.html"
+      - "verified-plus-moderation-preview.html"
+      - "docs/dcds-verified-plus-brand-content-policy.md"
+      - "docs/dcds-verified-plus-exclusive-network.md"
+      - "docs/dcds-verified-plus-architecture.md"
+      - "docs/dcds-verified-plus-pricing-and-commercial-policy.md"
+      - "docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md"
+      - "docs/dcds-verified-plus-flutterwave-sandbox-runbook.md"
+      - "verified-plus-pricing-preview.html"
+      - "verified-plus.html"
+      - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
+      - "docs/dcds-verified-plus-moderation-engine-contract.md"
+      - "docs/dcds-migration-reconciliation.md"
+      - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "supabase/functions/_shared/verified-plus/**"
+      - "verified-plus-community-preview.html"
+      - "verified-plus-moderation-preview.html"
+      - "docs/dcds-verified-plus-brand-content-policy.md"
+      - "docs/dcds-verified-plus-exclusive-network.md"
+      - "docs/dcds-verified-plus-architecture.md"
+      - "docs/dcds-verified-plus-pricing-and-commercial-policy.md"
+      - "docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md"
+      - "docs/dcds-verified-plus-flutterwave-sandbox-runbook.md"
+      - "verified-plus-pricing-preview.html"
+      - "docs/dcds-verified-plus-moderation-persistence-and-rls-design.md"
+      - "docs/dcds-verified-plus-moderation-engine-contract.md"
+      - "docs/dcds-migration-reconciliation.md"
+      - ".github/workflows/dcds-verified-plus-adapter-validation.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: dcds-verified-plus-adapter-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  synthetic-adapter-tests:
+    name: Synthetic adapter type-check and tests (no external services)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Deno
+        uses: denoland/setup-deno@v2
+        with:
+          deno-version: v2.x
+
+      - name: Type-check provider-neutral contract and synthetic adapter
+        run: |
+          deno check supabase/functions/_shared/verified-plus/identity-provider.ts
+          deno check supabase/functions/_shared/verified-plus/mock-identity-provider.ts
+          deno check supabase/functions/_shared/verified-plus/identity-provider_test.ts
+          deno check supabase/functions/_shared/verified-plus/moderation-engine.ts
+          deno check supabase/functions/_shared/verified-plus/moderation-engine_test.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing_test.ts
+          deno check supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts
+          deno check supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing-service.ts
+          deno check supabase/functions/_shared/verified-plus/membership-billing-service_test.ts
+
+      - name: Run synthetic-only tests
+        run: deno test --no-check supabase/functions/_shared/verified-plus/identity-provider_test.ts supabase/functions/_shared/verified-plus/moderation-engine_test.ts supabase/functions/_shared/verified-plus/membership-billing_test.ts supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts supabase/functions/_shared/verified-plus/membership-billing-service_test.ts
+
+      - name: Verify mock adapter is not wired into a live Edge Function
+        shell: bash
+        run: |
+          if grep -R -n --include='*.ts' 'mock-identity-provider' supabase/functions/*/index.ts; then
+            echo "The synthetic identity adapter must not be imported by a deployable Edge Function."
+            exit 1
+          fi
+
+      - name: Verify Verified+ community preview stays synthetic and offline
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+
+          pricing_page_path = Path("verified-plus-pricing-preview.html")
+          pricing_page = pricing_page_path.read_text(encoding="utf-8")
+          public_pricing_page = Path("verified-plus.html").read_text(encoding="utf-8")
+          page_path = Path("verified-plus-community-preview.html")
+          page = page_path.read_text(encoding="utf-8")
+          moderation_path = Path("verified-plus-moderation-preview.html")
+          moderation_page = moderation_path.read_text(encoding="utf-8")
+          home = Path("index.html").read_text(encoding="utf-8")
+          student_safety = Path("docs/dcds-student-community-safety-and-moderation.md").read_text(encoding="utf-8")
+          brand_policy = Path("docs/dcds-verified-plus-brand-content-policy.md").read_text(encoding="utf-8")
+          network_spec = Path("docs/dcds-verified-plus-exclusive-network.md").read_text(encoding="utf-8")
+          architecture = Path("docs/dcds-verified-plus-architecture.md").read_text(encoding="utf-8")
+          pricing_policy = Path("docs/dcds-verified-plus-pricing-and-commercial-policy.md").read_text(encoding="utf-8")
+          renewal_policy = Path("docs/dcds-verified-plus-auto-renewal-and-cancellation-spec.md").read_text(encoding="utf-8")
+          membership_billing = Path("supabase/functions/_shared/verified-plus/membership-billing.ts").read_text(encoding="utf-8")
+          flutterwave_adapter = Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8")
+          flutterwave_adapter_tests = Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider_test.ts").read_text(encoding="utf-8")
+          billing_service = Path("supabase/functions/_shared/verified-plus/membership-billing-service.ts").read_text(encoding="utf-8")
+          billing_service_tests = Path("supabase/functions/_shared/verified-plus/membership-billing-service_test.ts").read_text(encoding="utf-8")
+
+          flutterwave_runbook = Path("docs/dcds-verified-plus-flutterwave-sandbox-runbook.md").read_text(encoding="utf-8")
+          provider_contract = Path("docs/dcds-verified-plus-provider-adapter-contract.md").read_text(encoding="utf-8")
+          moderation_contract = Path("docs/dcds-verified-plus-moderation-engine-contract.md").read_text(encoding="utf-8")
+          persistence_design = Path("docs/dcds-verified-plus-moderation-persistence-and-rls-design.md").read_text(encoding="utf-8")
+          moderation_contract = Path("docs/dcds-verified-plus-moderation-engine-contract.md").read_text(encoding="utf-8")
+          migration_reconciliation = Path("docs/dcds-migration-reconciliation.md").read_text(encoding="utf-8")
+
+          checks = {
+              "public Verified+ page shows all three approved prices": "₦7,500" in public_pricing_page and "₦75,000" in public_pricing_page and "₦320,000" in public_pricing_page,
+              "public Verified+ page embeds its DCDS logo and icons for standalone viewing": 'src="data:image/png;base64,' in public_pricing_page and 'href="data:image/svg+xml,' in public_pricing_page and './assets/dcds-splash-icon-v4-192.png' not in public_pricing_page,
+              "public comparison is mobile-friendly without sideways table scrolling": 'class="compare-mobile"' in public_pricing_page and "compare-wrap{display:none}" in public_pricing_page and "Membership duration" in public_pricing_page,
+              "public Verified+ page preserves the plan labels and annual emphasis": "Recommended" in public_pricing_page and "Best annual value" in public_pricing_page and "Long-term membership" in public_pricing_page and "BEST ANNUAL VALUE" in public_pricing_page,
+              "public Verified+ page is responsive and accessible": 'name="viewport"' in public_pricing_page and "Skip to content" in public_pricing_page and 'aria-label="Main navigation"' in public_pricing_page and "@media(max-width:760px)" in public_pricing_page and "prefers-reduced-motion:reduce" in public_pricing_page,
+              "public Verified+ page explains the two-part badge gate": "identity approval" in public_pricing_page and "active paid membership" in public_pricing_page,
+              "public Verified+ page keeps identity verification separate": "not included in ₦7,500, ₦75,000 or ₦320,000" in public_pricing_page and "not yet been approved" in public_pricing_page,
+              "public Verified+ page does not pretend checkout is live": "Please do not send payment for these plans" in public_pricing_page and "does not take payment" in public_pricing_page and "Flutterwave" not in public_pricing_page and "createClient" not in public_pricing_page,
+              "public Verified+ page discloses provider country/document limits": "exact countries, government documents and checks available at launch" in public_pricing_page and "Not every document is guaranteed" in public_pricing_page,
+              "public Verified+ page provides working plan enquiry links": public_pricing_page.count("https://wa.me/2348109146285?text=") >= 4 and "mailto:dechampions82@gmail.com" in public_pricing_page,
+              "public page has comparison and FAQ sections": 'id="comparison"' in public_pricing_page and 'id="faq"' in public_pricing_page and "Five-Year plan a lifetime membership" in public_pricing_page,
+              "homepage links to Verified+ from desktop, mobile and footer": 'href="verified-plus.html"' in home and "Verified+ Membership" in home,
+              "five-year Verified+ plan is NGN 320,000 for 60 months": "NGN 320,000" in architecture and "| Five-Year | NGN 320,000 | 60 months, paid upfront |" in architecture and "60 months" in architecture,
+              "five-year pricing is 14.7 percent below five Annual terms": "NGN 55,000 less" in pricing_policy and "14.7%" in pricing_policy and "NGN 375,000" in pricing_policy,
+              "five-year membership is a fixed term, not lifetime": "Five-Year access ends after 60 months" in pricing_policy and "not a lifetime or perpetual entitlement" in pricing_policy,
+              "pricing preview displays all three exact prices and duration": "₦7,500" in pricing_page and "₦75,000" in pricing_page and "₦320,000" in pricing_page and "60-month membership" in pricing_page,
+              "pricing preview carries the approved plan labels": "Recommended" in pricing_page and "Best annual value" in pricing_page and "Long-term membership" in pricing_page,
+              "pricing preview cannot collect payments": "Preview only" in pricing_page and "does not collect payment" in pricing_page and "payment processing" in pricing_page,
+              "monthly Verified+ plan is NGN 7,500 for 30 days": "NGN 7,500" in architecture and "30 days" in architecture and "| Monthly | NGN 7,500 | 30 days |" in architecture,
+              "annual Verified+ plan is NGN 75,000 for 12 months": "NGN 75,000" in architecture and "| Annual | NGN 75,000 | 12 months, paid upfront |" in architecture,
+              "lifetime Verified+ membership is explicitly unavailable": "Lifetime membership is discontinued" in architecture and "no perpetual paid entitlement" in architecture,
+              "identity verification fee stays separate from all membership plans": "separate applicant-paid fee" in architecture and "outside both membership prices" in architecture and "not included in the NGN 7,500 Monthly or NGN 75,000 Annual membership price" in pricing_policy and "NGN 320,000 Five-Year membership price" in pricing_policy,
+              "automatic renewal is opt-in for all three plans": "opt-in automatic renewal every 30 days" in pricing_policy.lower() and "opt-in automatic renewal every one year" in pricing_policy.lower() and "opt-in automatic renewal every five years" in pricing_policy.lower(),
+              "members can cancel without administrator approval": "waiting for administrator approval" in renewal_policy.lower() and "must not require an administrator" in renewal_policy.lower(),
+              "cancellation preserves already-paid access": "already-paid membership period" in renewal_policy and "paid-through timestamp" in renewal_policy,
+              "cancellation reasons and feedback are optional": "reason and any free-text feedback are optional" in renewal_policy and "without selecting a reason" in renewal_policy,
+              "renewal requires explicit unticked consent": "separate, unticked consent control" in renewal_policy and "Do not preselect consent" in renewal_policy,
+              "Five-Year renewal interval must pass sandbox validation": "every five years" in renewal_policy and "must be created and tested in the Flutterwave sandbox" in renewal_policy,
+              "billing integration never stores raw card credentials": "Never collect or store raw card numbers, CVV, PIN or OTP" in renewal_policy,
+              "billing release respects the existing database migration blocker": "migration-reconciliation report identifies mismatched Supabase migration histories" in renewal_policy and "Do not create or apply membership billing tables" in renewal_policy,
+              "manual renewal uses a separate Flutterwave checkout with no payment plan": "createOneTimeMembershipCheckout" in flutterwave_adapter and "payment_plan" not in flutterwave_adapter.split("async createOneTimeMembershipCheckout", 1)[1].split("async cancelSubscription", 1)[0],
+              "one-time checkout tests prove auto-renew is disabled": "one-time membership checkout sends exact amount and does not attach a recurring plan" in flutterwave_adapter_tests and '"payment_plan" in body' in flutterwave_adapter_tests and "dcds_auto_renew" in flutterwave_adapter_tests,
+              "billing service separates one-time and recurring checkout": "createOneTimeMembershipCheckout" in billing_service and "createSubscriptionCheckout" in billing_service and "auto_renew" in billing_service and "one_time" in billing_service,
+              "billing service verifies charges before finalization": "verifyInitialPayment" in billing_service and "validateVerifiedPlusTransaction" in billing_service and "finalizeInitialPayment" in billing_service,
+              "billing service resolves an individual recurring subscription before entitlement": "resolveSubscriptionFromInitialCharge" in billing_service and "providerSubscriptionId" in billing_service,
+              "billing service supports member-owned cancellation and provider confirmation": "cancelAutoRenew" in billing_service and "getOwnedAutoRenewSubscription" in billing_service and "confirmProviderCancellation" in billing_service,
+              "billing service makes payment finalization replay-safe": "findFinalizedCheckoutForMember" in billing_service and "if (finalized) return finalized" in billing_service,
+              "billing service tests cover separate checkout, verified payments, replay and cancellation": "manual one-time checkout" in billing_service_tests and "initial recurring payment" in billing_service_tests and "repeated verification" in billing_service_tests and "self-service cancellation" in billing_service_tests,
+              "Flutterwave recurring checkout enforces explicit persisted consent": "validateRecurringBillingConsent" in flutterwave_adapter and "input.consent" in flutterwave_adapter,
+              "Flutterwave provider plan IDs come only from the server-side plan mapping": "providerPlanIds[input.planId]" in flutterwave_adapter and "providerPlanIds?: Partial<Record<VerifiedPlusPlanId, number>>" in flutterwave_adapter and "readonly providerPlanId:" not in flutterwave_adapter.split("export class FlutterwaveRecurringPayments", 1)[0] and "input.providerPlanId" not in flutterwave_adapter,
+              "Flutterwave sandbox qualification is available only in Test mode": "allowSandboxQualification" in flutterwave_adapter and "environment !== \"test\"" in flutterwave_adapter,
+              "Flutterwave subscription resolver checks initial transaction plan amount and customer email": "resolveSubscriptionFromInitialCharge" in flutterwave_adapter and "Number(record.amount) === terms.amount" in flutterwave_adapter and "customer_email" in flutterwave_adapter,
+              "Flutterwave tests cover sandbox-only interval qualification": "Test mode can explicitly qualify a custom interval" in flutterwave_adapter_tests and "Sandbox interval qualification cannot be enabled with Live mode" in flutterwave_adapter_tests,
+              "Flutterwave provider tests prove request data cannot override a provider plan ID": "checkout reads the provider plan ID from trusted plan configuration" in flutterwave_adapter_tests and "checkout is blocked when no trusted provider plan ID is configured" in flutterwave_adapter_tests,
+              "Flutterwave recurring checkout requires sandbox-approved plan IDs": "validatedPlanIds.has(input.planId)" in flutterwave_adapter and "PROVIDER_INTERVAL_NOT_VALIDATED" in flutterwave_adapter,
+              "Flutterwave adapter defaults to Test keys and rejects malformed Live keys": 'options.environment ?? "test"' in flutterwave_adapter and 'startsWith("FLWSECK_TEST-")' in flutterwave_adapter and "isRecognizedLiveKey" in flutterwave_adapter,
+              "Flutterwave recurring adapter tests cover consent and environment gates": "blocks recurring checkout without stored member consent" in flutterwave_adapter_tests and "adapter defaults to Test mode" in flutterwave_adapter_tests and "unknown key formats" in flutterwave_adapter_tests,
+              "membership billing domain includes the exact approved prices": "amount: 7500" in membership_billing and "amount: 75000" in membership_billing and "amount: 320000" in membership_billing,
+              "Flutterwave webhook validation uses only the documented verif-hash header": 'input.headers.get("verif-hash")' in flutterwave_adapter and "flutterwave-signature" not in flutterwave_adapter and "documented Flutterwave verif-hash header" in flutterwave_adapter_tests,
+              "Flutterwave sandbox runbook uses the individual subscription cancellation endpoint": "PUT /v3/subscriptions/{id}/cancel" in flutterwave_runbook and "Never call the plan-cancellation endpoint" in flutterwave_runbook,
+              "Flutterwave runbook records test-mode and credential isolation": "Test API keys" in flutterwave_runbook and "Never place the Flutterwave secret key in browser code" in flutterwave_runbook,
+              "Five-Year cadence remains blocked until sandbox acceptance": "every five years" in flutterwave_runbook and "remains a DCDS release gate" in flutterwave_runbook,
+              "provider adapter contract includes exact plan currency and cadence": "currency: terms.currency" in Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8") and "transaction_id" in Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8") and "/subscriptions/" in Path("supabase/functions/_shared/verified-plus/flutterwave-recurring-provider.ts").read_text(encoding="utf-8"),
+              "commercial policy records exactly the approved three membership prices": "| Monthly | NGN 7,500 | 30 days |" in pricing_policy and "| Annual | NGN 75,000 | 12 months |" in pricing_policy and "| Five-Year | NGN 320,000 | 60 months |" in pricing_policy,
+              "commercial policy discontinues lifetime entitlements": "Lifetime membership is discontinued" in pricing_policy and "Do not offer, advertise, sell, or grant" in pricing_policy,
+              "provider, network, moderation and persistence contracts use all three entitlements": "active monthly, active annual, active five-year" in provider_contract and "Monthly for 30 days, Annual for 12 months or Five-Year for 60 months" in network_spec and "Monthly/Annual/Five-Year membership entitlement" in moderation_contract and "Monthly (30-day), Annual (12-month) or Five-Year (60-month)" in persistence_design,
+              "Blue Badge is a blue SVG rosette with a white check": 'fill: "#1678ed"' in page and 'stroke: "#fff"' in page and 'function verifiedBadge(sizeClass' in page and 'paintVerifiedBadge(node);' in page,
+              "Creator medal seal is gold while star and both ribbons remain purple": 'id: "dcdsCreatorGold"' in page and '"stop-color": "#e89b00"' in page and 'id: "dcdsCreatorPurple"' in page and '"stop-color": "#7628d8"' in page and 'id: "dcdsCreatorRibbon"' in page and 'fill: "url(#dcdsCreatorRibbon)"' in page and page.count('fill: "url(#dcdsCreatorRibbon)"') >= 2,
+              "Creator medal accessible label says gold with purple star and ribbons": "gold seal with purple star and purple ribbons" in page,
+              "discover member cards contain inline SVG artwork without JavaScript hydration": page.count('aria-label="DCDS Verified+ Blue Badge"') == 4 and page.count('aria-label="DCDS Creator Medal: gold seal, purple star and purple ribbons"') == 4,
+              "Verified+ and Creator cards are visible when scripts are disabled": 'class="verified-badge badge-sm" role="img" aria-label="DCDS Verified+ Blue Badge"><svg' in page and 'class="creator-pill"><span class="creator-medal creator-medal-xs"' in page,
+              "all three discover cards include both exact badge artworks": page.count('aria-label="Verified+ member"') == 3 and page.count('>Creator</span></span>') == 3,
+              "badge showcase lays out both designs responsively": 'class="badge-sample"' in page and "grid-template-columns:repeat(2,minmax(0,1fr))" in page and "@media(max-width:720px)" in page,
+              "preview is visibly marked demo only": "Demo only" in page,
+              "preview uses synthetic member data": "Fictional sample members only" in page and "Sample post" in page,
+              "post composer is present": 'id="composeForm"' in page and 'id="postText"' in page,
+              "role switch demonstrates publisher and standard account": 'id="demoRole"' in page and 'value="standard"' in page,
+              "standard account cannot publish originals": "postInput.disabled = !verifiedPublisher" in page and 'document.getElementById("demoRole").value !== "verified"' in page,
+              "standard and verified accounts share the DCDS feed": "DCDS MEMBERS" in page and "DCDS member feed" in page,
+              "all text-entry surfaces reject external links in preview": "hasDisallowedExternalLink" in page and "rejectExternalLink(text)" in page and page.count("rejectExternalLink(value)") >= 2,
+              "bare domains and off-platform handles are also detected": "a-z0-9_.]{2,}" in page and "xyz" in page and "www\\.)" in page,
+              "mobile composer uses a shrink-safe grid": "grid-template-columns:40px minmax(0,1fr)" in page and "min-width:0" in page and 'aria-describedby="composerHint"' in page,
+              "mobile composer textarea has proper height and padding": "min-height:104px" in page and "padding:14px" in page,
+              "feed anchors clear the sticky header": "scroll-margin-top:104px" in page and "#feed,#discover,#guidelines" in page,
+              "mobile navigation remains horizontally scrollable": "overscroll-behavior-x:contain" in page and "flex:0 0 auto;min-height:42px" in page,
+              "mobile action controls have touch-friendly sizing": ".action{min-height:44px" in page and ".react{min-height:42px" in page,
+              "mobile layout respects device safe areas": "safe-area-inset-bottom" in page,
+              "reduced-motion preference is respected": "prefers-reduced-motion:reduce" in page,
+              "moderation centre is visibly synthetic": "Demo only" in moderation_page and "Synthetic demonstration" in moderation_page,
+              "moderation queue uses fictional case IDs": all(case_id in moderation_page for case_id in ["VP-1042", "VP-1043", "VP-1044", "VP-1045", "VP-1046"]),
+              "moderator and Root Admin roles can be previewed separately": 'id="roleSelect"' in moderation_page and 'value="moderator"' in moderation_page and 'value="root"' in moderation_page,
+              "fourth strike escalates from moderator to Root review": 'c.status="root_review"' in moderation_page and 'if(isRoot())' in moderation_page,
+              "permanent network ban is Root-only and requires typed confirmation": 'action==="permanent")&&!isRoot()' in moderation_page and 'value.trim()!=="PERMANENT"' in moderation_page and 'c.status="permanent_network_ban"' in moderation_page,
+              "permanent network ban is limited to a severe safety hold": 'action==="permanent"&&c.status!=="safety_hold"' in moderation_page,
+              "appeal review prevents original decision maker reviewing own case": 'a.prior===(isRoot()?"Root Admin Demo":"Moderator Demo")' in moderation_page,
+              "formal actions require reason and moderator note": 'if(!reason||!note)' in moderation_page,
+              "audit history records moderator decisions": 'audit.unshift({time:' in moderation_page and 'function log(event,detail)' in moderation_page,
+              "moderation preview does not connect to production services": "supabase-js" not in moderation_page and "createClient" not in moderation_page and "fetch(" not in moderation_page,
+              "moderation preview is responsive and safe-area aware": "@media(max-width:720px)" in moderation_page and "safe-area-inset-bottom" in moderation_page,
+              "brand policy defines strict off-topic and external-link rules": "general-purpose social-media wall" in brand_policy and "External URLs are blocked by default" in brand_policy,
+              "brand policy defines strikes and appeals": "4th violation" in brand_policy and "7 days" in brand_policy and "30 days" in brand_policy and "90 days" in brand_policy and "14 calendar days" in brand_policy,
+              "automated moderation cannot permanently ban alone": "ai alone must not impose a permanent ban" in brand_policy.lower(),
+              "product spec grants standard accounts engagement, not publishing": "standard/unverified accounts may react, comment, reply" in network_spec.lower() and "may not create original posts" in network_spec.lower(),
+              "Verified+ persistence design keeps Student Community separate": "do not repurpose them for the verified+ network" in persistence_design.lower() and "room/cohort" in persistence_design.lower(),
+              "Verified+ persistence design requires isolated tables and no direct moderation writes": "dcds_verified_network_moderation_cases" in persistence_design and "must not receive direct insert/update/delete privileges" in persistence_design.lower(),
+              "database writes remain blocked by migration reconciliation": "migration reconciliation is not complete" in migration_reconciliation.lower() and "do not run" in migration_reconciliation.lower(),
+              "moderation engine contract references persistence design": "Moderation Persistence and RLS Design" in moderation_contract,
+              "moderation contract headings have unique sequential numbers": len([line for line in moderation_contract.splitlines() if line.startswith("## ")]) == len(set(line.split(".")[0] for line in moderation_contract.splitlines() if line.startswith("## "))),
+              "emoji reactions are present": all(emoji in page for emoji in ["👍", "❤️", "💖", "😂", "😭", "😘", "😀", "🤔", "😉"]),
+              "one active reaction can be toggled or changed": "post.myReaction" in page and "previous === emoji" in page,
+              "comments and threaded replies are present": "comment-form" in page and "reply-form" in page,
+              "in-network reshare preserves original audience": "Share inside network" in page and "The audience did not change" in page and "sharedFrom" in page,
+              "preview has no live account or backend integration": "createClient" not in page and "supabase-js" not in page,
+              "preview is not linked from the live homepage": "verified-plus-community-preview.html" not in home,
+              "existing teen age cohorts and moderation rules remain specified": "13–17" in student_safety and "Every student group-chat message" in student_safety and "No student-to-student direct messaging" in student_safety,
+          }
+
+          forbidden_patterns = {
+              "network fetch": r"\bfetch\s*\(",
+              "XHR": r"XMLHttpRequest",
+              "WebSocket": r"WebSocket",
+              "local storage": r"localStorage",
+              "session storage": r"sessionStorage",
+              "IndexedDB": r"indexedDB",
+              "native external share": r"navigator\.share",
+              "external window opening": r"window\.open",
+              "remote asset URL": r"""(?:src|href)\s*=\s*["']https?://""",
+          }
+          for label, pattern in forbidden_patterns.items():
+              checks["no " + label] = re.search(pattern, page, re.IGNORECASE) is None
+
+          failures = [name for name, passed in checks.items() if not passed]
+          for name, passed in checks.items():
+              print(("PASS " if passed else "FAIL ") + name)
+          if failures:
+              raise SystemExit(f"{len(failures)} Verified+ preview safety checks failed.")
+
+          script = re.search(r"<script>\s*(.*?)\s*</script>", page, re.DOTALL)
+          if not script:
+              raise SystemExit("FAIL no inline preview script found")
+          Path("/tmp/verified-plus-community-preview.js").write_text(script.group(1), encoding="utf-8")
+          PY
+          node --check /tmp/verified-plus-community-preview.js
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          page = Path("verified-plus-moderation-preview.html").read_text(encoding="utf-8")
+          script = re.search(r"<script>\s*(.*?)\s*</script>", page, re.DOTALL)
+          if not script:
+              raise SystemExit("FAIL no moderation preview script found")
+          Path("/tmp/verified-plus-moderation-preview.js").write_text(script.group(1), encoding="utf-8")
+          PY
+          node --check /tmp/verified-plus-moderation-preview.js
+
+      - name: Package standalone HTML preview for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: DCDS-Verified-Plus-Network-Preview
+          path: verified-plus-community-preview.html
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Package standalone moderation centre preview for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: DCDS-Verified-Plus-Moderation-Preview
+          path: verified-plus-moderation-preview.html
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Validate public Verified+ page JavaScript
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          import re
+          source = Path("verified-plus.html").read_text(encoding="utf-8")
+          scripts = re.findall(r"<script(?:\\s[^>]*)?>(.*?)</script>", source, re.DOTALL)
+          if not scripts:
+              raise SystemExit("FAIL no public page script found")
+          Path("/tmp/verified-plus-public-page.js").write_text("\\n".join(scripts), encoding="utf-8")
+          PY
+          node --check /tmp/verified-plus-public-page.js
+
+      - name: Package public Verified+ membership page for download
+        uses: actions/upload-artifact@v4
+        with:
+          name: DCDS-Verified-Plus-Membership-Page
+          path: verified-plus.html
+          if-no-files-found: error
+          retention-days: 14

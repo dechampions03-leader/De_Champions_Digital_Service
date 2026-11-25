@@ -1,0 +1,1120 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#35105f">
+  <meta name="description" content="DCDS Verified+ member network prototype. Synthetic demonstration only.">
+  <title>Verified+ Network Preview | DCDS</title>
+  <style>
+    :root{
+      --purple:#7628d8;--purple-dark:#35105f;--purple-deep:#21083f;
+      --lavender:#f3edfc;--lavender-2:#e9def9;--gold:#d7b45a;
+      --ink:#211832;--muted:#756b82;--line:#e9e2f0;--white:#fff;
+      --surface:#f7f5fa;--good:#17683a;--shadow:0 14px 38px rgba(42,18,73,.08);
+      --radius:22px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--surface);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;line-height:1.5}
+    button,input,textarea{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,a:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid rgba(118,40,216,.25);outline-offset:2px}
+    .topbar{position:sticky;top:0;z-index:20;background:rgba(255,255,255,.96);border-bottom:1px solid var(--line);backdrop-filter:blur(12px)}
+    .topbar-inner{max-width:1320px;margin:auto;padding:12px 22px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+    .brand{display:flex;align-items:center;gap:11px;min-width:0}
+    .brand-mark{width:42px;height:42px;border-radius:14px;display:grid;place-items:center;background:linear-gradient(145deg,#8d4ce4,#421078);color:white;font-family:Georgia,serif;font-weight:800;letter-spacing:-2px;font-size:18px;box-shadow:0 7px 18px rgba(88,30,150,.2)}
+    .brand-name{font-family:Georgia,serif;font-weight:700;letter-spacing:.07em;color:var(--purple-dark);font-size:13px;line-height:1.2}
+    .brand-sub{font-size:11px;color:var(--muted);letter-spacing:.12em;text-transform:uppercase;margin-top:3px}
+    .top-actions{display:flex;align-items:center;gap:10px}
+    .demo-pill,.member-pill,.audience-pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:6px 10px;font-size:11px;font-weight:800;letter-spacing:.05em;text-transform:uppercase}
+    .demo-pill{color:#8a4d00;background:#fff3db;border:1px solid #f5dfb4}
+    .member-pill{color:var(--purple-dark);background:var(--lavender);border:1px solid #e4d5f7}
+    .top-avatar,.avatar{display:grid;place-items:center;flex:none;border-radius:50%;font-weight:800}
+    .top-avatar{width:38px;height:38px;background:var(--purple-dark);color:#fff;font-size:12px}
+    .page{max-width:1320px;margin:26px auto;padding:0 22px 70px}
+    .hero{background:linear-gradient(120deg,#2b0c4d 0%,#552092 57%,#7d42c3 100%);color:white;border-radius:28px;padding:26px 30px;position:relative;overflow:hidden;box-shadow:var(--shadow);margin-bottom:22px}
+    .hero:after{content:"";position:absolute;width:300px;height:300px;border:1px solid rgba(255,255,255,.12);border-radius:50%;right:-55px;top:-165px;box-shadow:0 0 0 30px rgba(255,255,255,.035),0 0 0 62px rgba(255,255,255,.025)}
+    .hero-content{position:relative;z-index:1;max-width:760px}
+    .eyebrow{font-size:11px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:#e7d8ff}
+    h1{font-family:Georgia,serif;font-size:clamp(28px,4vw,42px);line-height:1.08;letter-spacing:-.025em;margin:8px 0 10px}
+    .hero p{margin:0;color:#efe7f8;max-width:680px;font-size:14px}
+    .hero-bottom{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:18px}
+    .hero-note{font-size:11px;color:#f3eafa;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);padding:7px 10px;border-radius:99px}
+    .layout{display:grid;grid-template-columns:220px minmax(0,1fr) 270px;gap:20px;align-items:start}
+    .panel,.card{background:white;border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+    .panel{padding:17px}
+    .left-rail,.right-rail{position:sticky;top:88px;display:grid;gap:14px}
+    .demo-profile{display:flex;align-items:center;gap:10px;padding:3px 0 14px;border-bottom:1px solid var(--line);margin-bottom:12px}
+    .avatar{width:43px;height:43px;color:#fff;background:linear-gradient(145deg,#8850d3,#431278);font-size:12px}
+    .avatar.teal{background:linear-gradient(145deg,#299d99,#176d78)}
+    .avatar.rose{background:linear-gradient(145deg,#da7598,#873b75)}
+    .avatar.gold{background:linear-gradient(145deg,#d9a943,#99661c)}
+    .avatar.blue{background:linear-gradient(145deg,#6498dc,#3d5aa8)}
+    .person-name{font-size:13px;font-weight:800}
+    .person-sub{font-size:11px;color:var(--muted)}
+    .nav-list{display:grid;gap:5px}.mobile-nav{display:none}
+    .nav-link{display:flex;align-items:center;gap:10px;padding:10px 11px;border:0;background:transparent;border-radius:12px;text-align:left;color:#594d69;font-weight:700;font-size:13px;text-decoration:none}
+    .nav-link.active,.nav-link:hover{background:var(--lavender);color:var(--purple-dark)}
+    .nav-icon{width:22px;text-align:center;font-size:16px}
+    .small-label{font-size:10px;text-transform:uppercase;letter-spacing:.14em;color:#93879f;font-weight:800;margin:18px 0 8px}
+    .mini-note{font-size:11px;color:var(--muted);margin:0;line-height:1.55}
+    .feed-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:0 0 13px}
+    .feed-title{font-family:Georgia,serif;font-size:23px;color:var(--purple-dark);margin:0}
+    .search{width:210px;max-width:45%;border:1px solid var(--line);background:#fcfbfd;padding:9px 12px;border-radius:12px;font-size:12px;color:var(--ink)}
+    .compose{padding:17px;margin-bottom:16px}
+    .compose-top{display:flex;gap:11px;align-items:flex-start}
+    .compose textarea{resize:vertical;min-height:74px;max-height:240px;flex:1;border:1px solid var(--line);background:#fcfbfd;border-radius:14px;padding:12px 13px;font-size:13px;line-height:1.5;color:var(--ink)}
+    .compose-bottom{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-top:13px}
+    .role-preview{display:grid;grid-template-columns:auto minmax(220px,1fr);gap:7px 12px;align-items:center;background:#fff;border:1px solid var(--line);padding:12px 14px;border-radius:15px;margin:0 0 12px}
+    .role-preview label{font-size:12px;font-weight:850;color:var(--purple-dark)}
+    .role-preview select{border:1px solid var(--line);background:#fcfbfd;border-radius:10px;padding:8px 10px;font-size:11px;color:var(--ink);min-width:0}
+    .role-preview .mini-note{grid-column:1/-1}
+    .policy-hint{font-size:11px;color:#786a87;margin:-6px 3px 15px}
+    .btn:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+    .audience{font-size:11px;color:var(--purple-dark);font-weight:800;background:var(--lavender);padding:7px 10px;border-radius:99px}
+    .btn{border:0;border-radius:12px;padding:10px 15px;font-size:12px;font-weight:800}
+    .btn-primary{background:var(--purple);color:#fff;box-shadow:0 7px 16px rgba(118,40,216,.18)}
+    .btn-primary:hover{background:#6120b5}
+    .btn-quiet{background:#f4eff9;color:var(--purple-dark)}
+    .btn-quiet:hover{background:#eae0f7}
+    .filters{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:1px 1px 12px;margin-bottom:3px}
+    .filter{white-space:nowrap;border:1px solid var(--line);background:#fff;color:#6c6078;border-radius:99px;padding:8px 13px;font-size:11px;font-weight:800}
+    .filter[aria-pressed="true"]{background:var(--purple-dark);border-color:var(--purple-dark);color:#fff}
+    .post{padding:18px;margin-bottom:14px}
+    .post-head{display:flex;align-items:center;gap:10px}
+    .post-meta{min-width:0;flex:1}
+    .post-author{font-size:13px;font-weight:850;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .verified-badge{display:inline-grid;place-items:center;flex:none;color:#fff;background:linear-gradient(145deg,#258cff 0%,#0865dc 100%);clip-path:polygon(50% 0%,61% 12%,77% 6%,84% 22%,100% 31%,91% 48%,100% 64%,84% 76%,86% 94%,66% 90%,50% 100%,34% 90%,14% 94%,16% 76%,0 64%,9% 48%,0 31%,16% 22%,23% 6%,39% 12%);filter:drop-shadow(0 2px 3px rgba(16,103,222,.24));line-height:1;font-size:0}
+    .verified-badge::before{content:"✓";font:900 .72em/1 Arial,sans-serif;color:#fff;transform:translateY(-.02em)}
+    .badge-xs{width:15px;height:15px}
+    .badge-sm{width:19px;height:19px}
+    .badge-md{width:24px;height:24px}
+    .badge-lg{width:40px;height:40px}
+    .badge-xl{width:92px;height:92px}
+    .creator-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:#f2e9ff;border:1px solid #e2d0fa;color:#53218a;font-size:10px;font-weight:850;white-space:nowrap}
+    .badge-intro{display:flex;align-items:center;gap:18px;background:linear-gradient(110deg,#fff 0%,#f3edfc 100%);border:1px solid #e7dcf4;border-radius:22px;padding:18px 22px;margin:0 0 20px;box-shadow:var(--shadow)}
+    .badge-intro-copy{min-width:0;flex:1}
+    .badge-intro-title{display:block;color:var(--purple-dark);font-family:Georgia,serif;font-size:20px;margin:3px 0 4px}
+    .badge-intro-copy p{font-size:12px;color:var(--muted);margin:0;line-height:1.55}
+    .badge-intro .creator-pill{font-size:11px}
+    .member-row{display:flex;align-items:flex-start;gap:10px;margin:14px 0;padding:0 0 14px;border-bottom:1px solid #f0ebf4}
+    .member-row:last-of-type{border-bottom:0;padding-bottom:0}
+    .member-row .avatar{width:40px;height:40px;font-size:11px}
+    .discover-details{flex:1;min-width:0}
+    .member-name-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+    .member-role{font-size:10px;color:var(--muted);margin-top:3px}
+    .member-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+    .member-tags .member-pill{font-size:9px;padding:4px 7px}
+    .member-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+    .member-actions .btn{min-height:36px;padding:8px 11px;font-size:10px}
+    .follow-btn.is-following{background:#f0e9f8;color:var(--purple-dark);border:1px solid #dfd0f0;box-shadow:none}
+    .comment-name-line{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+    .comment-name-line .creator-pill{font-size:9px;padding:2px 6px}
+    .demo-action-note{font-size:10px;color:var(--muted);line-height:1.5;margin:10px 0 0}
+    .post-sub{font-size:10px;color:var(--muted);margin-top:2px}
+    .post-audience{font-size:9px;font-weight:850;color:var(--purple-dark);background:var(--lavender);padding:5px 8px;border-radius:99px;white-space:nowrap}
+    .post-text{font-size:13px;line-height:1.65;margin:14px 0 12px;white-space:pre-wrap;overflow-wrap:anywhere}
+    .artwork{min-height:164px;border-radius:16px;padding:21px;display:flex;flex-direction:column;justify-content:space-between;color:white;background:linear-gradient(135deg,#36105f,#7d37c0 65%,#b68ce2);overflow:hidden;position:relative}
+    .artwork:after{content:"";position:absolute;width:190px;height:190px;border:1px solid rgba(255,255,255,.2);border-radius:50%;right:-22px;bottom:-115px;box-shadow:0 0 0 22px rgba(255,255,255,.05),0 0 0 45px rgba(255,255,255,.04)}
+    .artwork.teal-art{background:linear-gradient(135deg,#145960,#299c91)}
+    .artwork.gold-art{background:linear-gradient(135deg,#775018,#d6a545)}
+    .artwork-kicker{font-size:9px;font-weight:850;letter-spacing:.18em;text-transform:uppercase;opacity:.85;position:relative;z-index:1}
+    .artwork-title{font-family:Georgia,serif;font-size:27px;line-height:1.08;max-width:390px;position:relative;z-index:1}
+    .artwork-foot{font-size:10px;opacity:.85;position:relative;z-index:1}
+    .post-stats{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:10px;padding:12px 1px 9px;border-bottom:1px solid #f0ebf4}
+    .reaction-row{display:flex;gap:5px;flex-wrap:wrap;padding:11px 0 2px}
+    .react{border:1px solid var(--line);background:#fff;border-radius:99px;padding:7px 10px;display:inline-flex;align-items:center;gap:6px;font-size:11px;color:#60546c}
+    .react[aria-pressed="true"]{background:var(--lavender);border-color:#d6c0f1;color:var(--purple-dark)}
+    .react .emoji{font-size:15px}
+    .post-actions{display:flex;align-items:center;gap:5px;flex-wrap:wrap;border-top:1px solid #f0ebf4;margin-top:10px;padding-top:9px}
+    .action{border:0;background:transparent;color:#6c6077;padding:8px 10px;border-radius:10px;font-size:11px;font-weight:800}
+    .action:hover{background:#f6f1fb;color:var(--purple-dark)}
+    .comments{border-top:1px solid #f0ebf4;margin-top:10px;padding-top:12px}
+    .comment{display:flex;gap:8px;margin:10px 0}
+    .comment .avatar{width:31px;height:31px;font-size:9px}
+    .comment-box{background:#f8f6fa;border-radius:12px;padding:9px 11px;flex:1;min-width:0}
+    .comment-name{font-size:11px;font-weight:850}
+    .comment-text{font-size:11px;margin-top:3px;overflow-wrap:anywhere}
+    .reply-link{border:0;background:none;color:var(--purple);font-size:10px;font-weight:800;padding:5px 0 0}
+    .reply-form,.comment-form{display:flex;gap:7px;margin-top:9px}
+    .reply-form input,.comment-form input{min-width:0;flex:1;border:1px solid var(--line);border-radius:10px;padding:9px 10px;font-size:11px}
+    .reply-form button,.comment-form button{border:0;border-radius:10px;background:var(--purple);color:white;padding:8px 11px;font-size:10px;font-weight:800}
+    .reply-list{margin-left:38px;border-left:2px solid #e9def7;padding-left:10px}
+    .empty{padding:28px 16px;text-align:center;color:var(--muted);font-size:13px;background:#fff;border:1px dashed #d9cbe8;border-radius:16px}
+    .right-card{padding:16px}
+    .side-title{font-family:Georgia,serif;color:var(--purple-dark);font-size:17px;margin:0 0 12px}
+    .entitlement{background:linear-gradient(150deg,#2d0b50,#6428a4);color:white;border-radius:15px;padding:15px}
+    .entitlement .member-pill{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.15);color:#fff}
+    .entitlement strong{display:block;font-family:Georgia,serif;font-size:21px;margin:10px 0 3px}
+    .entitlement p{font-size:10px;color:#e8dff1;margin:0}
+    .member-row{display:flex;align-items:center;gap:9px;margin:11px 0}
+    .member-row .avatar{width:34px;height:34px;font-size:10px}
+    .member-role{font-size:10px;color:var(--muted)}
+    .guideline{font-size:11px;color:#5d5267;padding:9px 0;border-top:1px solid #f0ebf4}
+    .guideline:first-of-type{border-top:0}
+    .guideline b{color:var(--purple-dark)}
+    .footer-note{text-align:center;color:#90869a;font-size:10px;margin:24px 0 0}
+    dialog{border:1px solid var(--line);border-radius:20px;padding:0;width:min(440px,calc(100% - 28px));box-shadow:0 28px 90px rgba(30,8,52,.25);color:var(--ink)}
+    dialog::backdrop{background:rgba(25,10,42,.55);backdrop-filter:blur(3px)}
+    .dialog-inner{padding:22px}
+    .dialog-inner h2{font-family:Georgia,serif;color:var(--purple-dark);font-size:23px;margin:0 0 7px}
+    .dialog-inner p{font-size:12px;color:var(--muted);line-height:1.6}
+    .share-preview{border:1px solid var(--line);border-radius:13px;padding:12px;background:#fbf9fd;font-size:12px;margin:13px 0}
+    .dialog-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}
+    .toast{position:fixed;left:50%;bottom:22px;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:#24103b;color:white;padding:11px 15px;border-radius:12px;font-size:12px;box-shadow:var(--shadow);transition:.22s;z-index:50;max-width:calc(100% - 30px);text-align:center}
+    .toast.show{opacity:1;transform:translate(-50%,0)}
+
+    /* Mobile layout hardening: prevent flex overflow, clipped fields and anchor headings
+       being hidden underneath the sticky brand bar. */
+    html{scroll-padding-top:104px}
+    body{overflow-x:hidden}
+    #feed,#discover,#guidelines{scroll-margin-top:104px}
+    .layout>*,.feed-column,.left-rail,.right-rail,.panel,.card,.post{min-width:0}
+    .compose-top{display:grid;grid-template-columns:43px minmax(0,1fr);gap:11px;align-items:start;min-width:0}
+    .compose-top>.avatar{width:43px;height:43px}
+    .compose textarea{
+      display:block;width:100%;max-width:100%;min-width:0;min-height:96px;
+      box-sizing:border-box;margin:0;padding:14px 15px;line-height:1.55;
+      overflow:auto;vertical-align:top;
+    }
+    .role-preview select{width:100%;max-width:100%}
+    .nav-link{flex:0 0 auto;min-height:42px}
+    .search{min-width:0;min-height:44px}
+    .filter,.react,.action,.reply-link{min-height:40px}
+    .comment-form input,.reply-form input{min-height:42px;min-width:0}
+    .comment-form button,.reply-form button{min-height:42px}
+    @media(prefers-reduced-motion:reduce){
+      html{scroll-behavior:auto}
+      *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+    }
+
+    @media(max-width:1080px){.layout{grid-template-columns:190px minmax(0,1fr)}.right-rail{grid-column:2;position:static;grid-template-columns:repeat(2,minmax(0,1fr))}.right-rail .wide{grid-column:span 2}}
+    @media(max-width:720px){
+      .topbar-inner{padding:10px 13px;gap:9px;min-height:62px}
+      .brand{gap:8px;flex:1}
+      .brand-mark{width:39px;height:39px;flex:0 0 39px;font-size:16px}
+      .brand-name{font-size:clamp(10px,2.7vw,12px);line-height:1.12;letter-spacing:.055em;overflow-wrap:anywhere}
+      .brand-sub{font-size:9px;line-height:1.35;letter-spacing:.075em}
+      .top-actions{gap:6px;flex:0 0 auto}
+      .top-actions .member-pill{display:none}
+      .demo-pill{font-size:9px;padding:5px 7px}
+      .top-avatar{width:34px;height:34px}
+      .page{width:100%;max-width:100%;padding:0 12px calc(44px + env(safe-area-inset-bottom,0px));margin:14px auto 0}
+      .hero{padding:22px 19px;border-radius:21px;margin-bottom:16px}
+      .hero p{font-size:13px;line-height:1.65}
+      h1{font-size:clamp(30px,8vw,38px)}
+      .layout{display:flex;flex-direction:column;gap:14px}
+      .left-rail{position:static;width:100%;order:0}
+      .left-rail .profile-panel{display:none}
+      .left-rail .nav-list{display:flex;overflow-x:auto;overflow-y:hidden;padding:2px 2px 7px;scrollbar-width:thin;overscroll-behavior-x:contain}
+      .mobile-nav{display:flex;width:100%;max-width:100%;flex-wrap:nowrap;gap:7px}
+      .left-rail .small-label,.left-rail .rail-note{display:none}
+      .nav-link{white-space:nowrap;background:white;border:1px solid var(--line);padding:9px 12px;border-radius:13px;font-size:12px}
+      .feed-column{width:100%;order:1}
+      .feed-head{align-items:stretch;flex-direction:column;gap:9px;margin-bottom:12px}
+      .feed-title{font-size:25px}
+      .search{width:100%;max-width:none;font-size:14px;padding:11px 13px}
+      .right-rail{display:grid;grid-template-columns:minmax(0,1fr);order:2;position:static;width:100%;gap:11px}
+      .right-rail .wide{grid-column:auto}
+      .panel,.post,.compose{border-radius:17px}
+      .compose{padding:14px}
+      .compose-top{grid-template-columns:40px minmax(0,1fr);gap:10px}
+      .compose-top>.avatar{width:40px;height:40px}
+      .compose textarea{min-height:104px;padding:14px;font-size:14px;line-height:1.55}
+      .compose-bottom{display:grid;grid-template-columns:minmax(0,1fr);gap:10px}
+      .audience{width:100%;text-align:center;white-space:normal}
+      .compose-bottom .btn{width:100%;min-height:46px;font-size:13px}
+      .role-preview{grid-template-columns:minmax(0,1fr);gap:9px;padding:13px}
+      .role-preview .mini-note{grid-column:auto}
+      .role-preview select{font-size:13px;min-height:44px}
+      .policy-hint{font-size:12px;line-height:1.55;margin:0 4px 13px}
+      .filters{padding-bottom:9px;scrollbar-width:thin;overscroll-behavior-x:contain}
+      .filter{min-height:42px}
+      .post{padding:15px}
+      .post-head{align-items:flex-start}
+      .post-sub{font-size:11px;line-height:1.4}
+      .post-text{font-size:14px;line-height:1.65}
+      .post-stats{font-size:11px;flex-wrap:wrap}
+      .reaction-row{gap:7px}
+      .react{min-height:42px;padding:8px 10px}
+      .post-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}
+      .action{min-height:44px;font-size:12px;background:#faf8fd}
+      .comment-form,.reply-form{gap:7px}
+      .comment-form input,.reply-form input{font-size:13px;padding:10px}
+      .comment-form button,.reply-form button{font-size:11px;padding:9px 12px}
+      .post-audience{display:none}
+      .hero:after{right:-130px}
+      .right-card{padding:14px}
+      dialog{width:calc(100% - 20px);max-width:440px;max-height:calc(100% - 30px);overflow:auto}
+      .dialog-inner{padding:18px}
+    }
+    @media(max-width:420px){
+      .topbar-inner{padding-left:10px;padding-right:10px}
+      .brand-name{font-size:10px}
+      .brand-sub{font-size:8px}
+      .demo-pill{font-size:8px;padding:4px 6px}
+      .hero{padding:20px 17px}
+      .hero-note{font-size:10px}
+      .compose-top{grid-template-columns:36px minmax(0,1fr);gap:9px}
+      .compose-top>.avatar{width:36px;height:36px}
+      .artwork{min-height:145px;padding:18px}
+      .artwork-title{font-size:24px}
+    }
+
+    /* Badge artwork and responsive showcase. Keep the two marks visually distinct. */
+    .verified-badge{
+      display:inline-grid;place-items:center;flex:none;width:var(--badge-size,20px);
+      height:var(--badge-size,20px);background:none;clip-path:none;filter:none;
+      vertical-align:middle;line-height:normal;font-size:initial;overflow:visible;
+    }
+    .verified-badge::before{content:none!important}
+    .verified-badge svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 2px rgba(12,91,200,.22))}
+    .badge-xs{--badge-size:15px;width:15px;height:15px}
+    .badge-sm{--badge-size:20px;width:20px;height:20px}
+    .badge-md{--badge-size:26px;width:26px;height:26px}
+    .badge-lg{--badge-size:42px;width:42px;height:42px}
+    .badge-xl{--badge-size:92px;width:92px;height:92px}
+    .creator-medal{display:inline-flex;align-items:center;justify-content:center;flex:none;vertical-align:middle}
+    .creator-medal svg{display:block;width:100%;height:100%;overflow:visible;filter:drop-shadow(0 2px 1px rgba(42,12,77,.28)) drop-shadow(0 5px 5px rgba(64,25,111,.24))}
+    .creator-medal-xs{width:20px;height:24px}
+    .creator-medal-sm{width:24px;height:30px}
+    .creator-medal-md{width:32px;height:40px}
+    .creator-medal-lg{width:54px;height:66px}
+    .creator-medal-showcase{width:90px;height:110px}
+    /* Compact creator marks in feed and comments; keep the full 3D medal in the showcase. */
+    .post-author>.creator-pill{gap:4px;padding:2px 6px;font-size:9px;line-height:1.1;white-space:nowrap}
+    .post-author>.creator-pill .creator-medal-xs{width:16px;height:20px}
+    .comment-name-line>.creator-pill{gap:3px;padding:2px 5px;font-size:9px;line-height:1.1}
+    .comment-name-line>.creator-pill .creator-medal-xs{width:14px;height:17px}
+    .post-author .verified-badge{width:18px;height:18px}
+
+    .creator-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:#f2e9ff;border:1px solid #e2d0fa;color:#53218a;font-size:10px;font-weight:850;white-space:nowrap}
+    .badge-intro{
+      display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;
+      background:linear-gradient(110deg,#fff 0%,#f3edfc 100%);
+      border:1px solid #e7dcf4;border-radius:22px;padding:16px;
+      margin:0 0 20px;box-shadow:var(--shadow);min-width:0
+    }
+    .badge-sample{display:grid;grid-template-columns:82px minmax(0,1fr);align-items:center;gap:12px;min-width:0;background:rgba(255,255,255,.84);border:1px solid #e9e0f4;border-radius:16px;padding:14px}
+    .badge-sample>.verified-badge,.badge-sample>.creator-medal{justify-self:center}
+    .badge-sample-copy{min-width:0}
+    .badge-intro-title{display:block;color:var(--purple-dark);font-family:Georgia,serif;font-size:19px;line-height:1.18;margin:3px 0 5px;overflow-wrap:normal}
+    .badge-sample-copy p{font-size:11px;color:var(--muted);margin:0;line-height:1.48}
+    .member-row{display:grid;grid-template-columns:40px minmax(0,1fr);align-items:start;gap:10px;margin:14px 0;padding:0 0 14px;border-bottom:1px solid #f0ebf4;min-width:0}
+    .member-row:last-of-type{border-bottom:0;padding-bottom:0}
+    .member-row>.avatar{grid-column:1;grid-row:1;width:40px;height:40px;font-size:11px}
+    .discover-details{grid-column:2;grid-row:1;min-width:0;width:100%}
+    .member-name-line{display:flex;align-items:center;gap:6px;flex-wrap:wrap;min-width:0}
+    .member-role{font-size:10px;color:var(--muted);margin-top:3px}
+    .member-tags{display:flex;flex-wrap:wrap;gap:6px;margin-top:7px}
+    .member-tags .member-pill{font-size:9px;padding:4px 7px}
+    .member-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+    .member-actions .btn{min-height:40px;padding:8px 12px;font-size:11px}
+    .follow-btn.is-following{background:#f0e9f8;color:var(--purple-dark);border:1px solid #dfd0f0;box-shadow:none}
+    .comment-name-line{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+    .comment-name-line .creator-pill{font-size:9px;padding:2px 6px}
+    @media(max-width:900px){.badge-intro{grid-template-columns:minmax(0,1fr)}}
+    @media(max-width:720px){
+      .badge-intro{grid-template-columns:minmax(0,1fr);gap:10px;padding:12px}
+      .badge-sample{grid-template-columns:64px minmax(0,1fr);gap:10px;padding:12px}
+      .badge-sample>.verified-badge{--badge-size:60px;width:60px;height:60px}
+      .badge-sample>.creator-medal-showcase{width:52px;height:64px}
+      .badge-intro-title{font-size:18px}
+      .badge-sample-copy p{font-size:12px;line-height:1.48}
+      .member-row{grid-template-columns:40px minmax(0,1fr);gap:9px}
+      .member-tags{gap:5px}
+      .member-actions .btn{min-height:42px}
+    }
+    @media(max-width:420px){
+      .badge-sample{grid-template-columns:54px minmax(0,1fr);gap:9px;padding:10px}
+      .badge-sample>.verified-badge{--badge-size:50px;width:50px;height:50px}
+      .badge-sample>.creator-medal-showcase{width:44px;height:54px}
+      .badge-intro-title{font-size:17px}
+      .badge-sample-copy p{font-size:11px}
+      .creator-pill{padding:4px 7px;font-size:9px}
+    }
+
+    </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar-inner">
+      <div class="brand" aria-label="De Champions Digital Services">
+        <div class="brand-mark" aria-hidden="true">DCDS</div>
+        <div><div class="brand-name">DE CHAMPIONS DIGITAL SERVICES</div><div class="brand-sub">Create · Learn · Innovate · Earn</div></div>
+      </div>
+      <div class="top-actions">
+        <span class="demo-pill">● Demo only</span>
+        <span class="member-pill" id="rolePill">✦ Verified+ Publisher</span>
+        <div class="top-avatar" aria-label="Synthetic demo member">DC</div>
+      </div>
+    </div>
+  </header>
+
+  <main class="page">
+    <section class="hero" aria-labelledby="heroTitle">
+      <div class="hero-content">
+        <div class="eyebrow">DCDS · VERIFIED+ MEMBER NETWORK</div>
+        <h1 id="heroTitle">Your people. Your ideas. Your network.</h1>
+        <p>A DCDS learning and professional network. Verified+ members publish original posts; all signed-in DCDS members can view and engage with approved content.</p>
+        <div class="hero-bottom">
+          <span class="hero-note">✦ Verified+ publishing privilege</span>
+          <span class="hero-note">👥 All signed-in DCDS members can view</span>
+          <span class="hero-note">💜 DCDS activities only</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="badge-intro" aria-label="DCDS Verified+ and Creator badge designs">
+      <article class="badge-sample" aria-label="Identity verification badge sample">
+        <span class="verified-badge badge-xl" role="img" aria-label="DCDS Verified+ Blue Badge"></span>
+        <div class="badge-sample-copy">
+          <div class="eyebrow" style="color:var(--purple)">IDENTITY VERIFICATION</div>
+          <strong class="badge-intro-title">Verified+ Blue Badge</strong>
+          <p>Blue scalloped rosette with a bold white check. Displayed only when identity approval and the required Verified+ entitlement are both confirmed.</p>
+        </div>
+      </article>
+      <article class="badge-sample" aria-label="Creator recognition medal sample">
+        <span class="creator-medal creator-medal-showcase" role="img" aria-label="DCDS Creator Medal: gold seal, purple star and purple ribbons"><svg viewBox="0 0 64 78" aria-hidden="true" focusable="false"><path d="M16 42 L8 75 L26 65 L32 77 L36 46 Z" fill="#7628d8" stroke="#56209f" stroke-width="1"/><path d="M48 42 L56 75 L38 65 L32 77 L28 46 Z" fill="#7628d8" stroke="#56209f" stroke-width="1"/><path d="M32 2 L40 8 L50 6 L53 16 L62 22 L58 32 L63 42 L54 49 L51 59 L40 57 L32 65 L24 57 L13 59 L10 49 L1 42 L6 32 L2 22 L11 16 L14 6 L24 8 Z" fill="#e8ad12" stroke="#b87900" stroke-width="2.4" stroke-linejoin="round"/><circle cx="32" cy="33" r="22" fill="none" stroke="#ffd76a" stroke-width="1.7"/><path d="M32 15 L36.8 26 L48.5 26.7 L39.5 34.4 L42.5 46 L32 39.5 L21.5 46 L24.5 34.4 L15.5 26.7 L27.2 26 Z" fill="#7628d8" stroke="#56209f" stroke-width="1" stroke-linejoin="round"/></svg></span>
+        <div class="badge-sample-copy">
+          <div class="eyebrow" style="color:var(--purple)">CREATOR RECOGNITION</div>
+          <strong class="badge-intro-title">DCDS Creator Medal</strong>
+          <p>Gold scalloped seal with a purple centre star and purple ribbon tails. A separate creator designation, not an identity badge.</p>
+        </div>
+      </article>
+    </section>
+
+    <div class="layout">
+      <aside class="left-rail" aria-label="Network navigation">
+        <section class="panel profile-panel">
+          <div class="demo-profile">
+            <div class="avatar">DC</div>
+            <div><div class="person-name">Demo Member</div><div class="person-sub">Your preview profile</div></div>
+          </div>
+          <div class="small-label">Your space</div>
+          <nav class="nav-list">
+            <a class="nav-link active" href="#feed"><span class="nav-icon">⌂</span>Network feed</a>
+            <a class="nav-link" href="#discover"><span class="nav-icon">◎</span>Discover members</a>
+            <a class="nav-link" href="#guidelines"><span class="nav-icon">♡</span>Community values</a>
+          </nav>
+          <div class="small-label">Preview information</div>
+          <p class="mini-note rail-note">This page uses fictional profiles and temporary in-memory interactions. Nothing is sent to a DCDS account.</p>
+        </section>
+        <nav class="panel nav-list mobile-nav" aria-label="Quick navigation">
+          <a class="nav-link active" href="#feed"><span class="nav-icon">⌂</span>Feed</a>
+          <a class="nav-link" href="#discover"><span class="nav-icon">◎</span>Discover</a>
+          <a class="nav-link" href="#guidelines"><span class="nav-icon">♡</span>Values</a>
+        </nav>
+      </aside>
+
+      <section class="feed-column" id="feed" aria-label="Verified+ network feed">
+        <div class="feed-head">
+          <div><div class="eyebrow" style="color:var(--purple);">THE DCDS MEMBER NETWORK</div><h2 class="feed-title">Member network feed</h2></div>
+          <input class="search" id="feedSearch" type="search" placeholder="Search demo posts or members…" aria-label="Search demo posts or members" autocomplete="off">
+        </div>
+
+        <div class="role-preview">
+          <label for="demoRole">Preview account access</label>
+          <select id="demoRole" aria-describedby="roleDescription">
+            <option value="verified">Verified+ active member — can publish</option>
+            <option value="standard">Standard / unverified member — view & engage</option>
+          </select>
+          <p class="mini-note" id="roleDescription">Verified+ members can publish original posts. Both roles can view approved posts and engage.</p>
+        </div>
+
+        <form class="card compose" id="composeForm">
+          <div class="compose-top">
+            <div class="avatar" aria-hidden="true">DC</div>
+            <textarea id="postText" rows="3" maxlength="1200" placeholder="Share a DCDS-related project, lesson or professional milestone…" aria-label="Write a DCDS-related network post" aria-describedby="composerHint" required></textarea>
+          </div>
+          <div class="compose-bottom">
+            <span class="audience" id="composerAudience">👥 Audience: DCDS members</span>
+            <button class="btn btn-primary" id="publishDemoPost" type="submit">＋ Publish demo post</button>
+          </div>
+        </form>
+        <p class="policy-hint" id="composerHint">Only DCDS-related content is permitted. External/social links and unrelated social posts are blocked by policy.</p>
+
+        <div class="filters" role="group" aria-label="Filter network feed">
+          <button class="filter" type="button" data-filter="all" aria-pressed="true">For you</button>
+          <button class="filter" type="button" data-filter="projects" aria-pressed="false">Creative projects</button>
+          <button class="filter" type="button" data-filter="learning" aria-pressed="false">Learning & growth</button>
+          <button class="filter" type="button" data-filter="community" aria-pressed="false">DCDS community</button>
+        </div>
+        <div id="feedPosts" aria-live="polite"></div>
+        <div class="empty" id="emptyState" hidden>No demo posts match this view. Try another filter or search.</div>
+      </section>
+
+      <aside class="right-rail">
+        <section class="panel right-card">
+          <div class="entitlement">
+            <span class="member-pill">✦ Demo entitlement</span>
+            <strong id="entitlementTitle">Verified+ Publisher</strong>
+            <p id="entitlementCopy">Preview state only · Not connected to billing or identity records</p>
+          </div>
+          <p class="mini-note" style="margin-top:12px">Both account types can see approved posts and engage. Only an eligible active Verified+ member can publish original posts. Production access must be checked server-side.</p>
+        </section>
+
+        <section class="panel right-card" id="discover">
+          <h3 class="side-title">Discover Verified+ creators</h3>
+          <div class="member-row" data-member-card="amara">
+            <div class="avatar teal">AO</div>
+            <div class="discover-details">
+              <div class="member-name-line"><span class="person-name">Amara Okoye</span><span class="verified-badge badge-sm" role="img" aria-label="DCDS Verified+ Blue Badge"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 2 L39 8 L49 5 L53 15 L62 21 L58 32 L62 43 L52 49 L49 59 L39 56 L32 63 L25 56 L15 59 L11 49 L2 43 L6 32 L2 21 L11 15 L15 5 L25 8 Z" fill="#1678ed" stroke="#075fc9" stroke-width="1.2" stroke-linejoin="round"/><path d="M17 32.5 L27 42.5 L48 21.5" fill="none" stroke="#fff" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              <div class="member-role">Visual designer · Demo profile</div>
+              <div class="member-tags"><span class="member-pill"><span class="verified-badge badge-xs" role="img" aria-label="Verified+ member"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 2 L39 8 L49 5 L53 15 L62 21 L58 32 L62 43 L52 49 L49 59 L39 56 L32 63 L25 56 L15 59 L11 49 L2 43 L6 32 L2 21 L11 15 L15 5 L25 8 Z" fill="#1678ed" stroke="#075fc9" stroke-width="1.2" stroke-linejoin="round"/><path d="M17 32.5 L27 42.5 L48 21.5" fill="none" stroke="#fff" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Verified+ Member</span><span class="creator-pill"><span class="creator-medal creator-medal-xs" role="img" aria-label="DCDS Creator Medal: gold seal, purple star and purple ribbons"><svg viewBox="0 0 64 78" aria-hidden="true" focusable="false"><path d="M16 42 L8 75 L26 65 L32 77 L36 46 Z" fill="#7628d8" stroke="#56209f" stroke-width="1"/><path d="M48 42 L56 75 L38 65 L32 77 L28 46 Z" fill="#7628d8" stroke="#56209f" stroke-width="1"/><path d="M32 2 L40 8 L50 6 L53 16 L62 22 L58 32 L63 42 L54 49 L51 59 L40 57 L32 65 L24 57 L13 59 L10 49 L1 42 L6 32 L2 22 L11 16 L14 6 L24 8 Z" fill="#e8ad12" stroke="#b87900" stroke-width="2.4" stroke-linejoin="round"/><circle cx="32" cy="33" r="22" fill="none" stroke="#ffd76a" stroke-width="1.7"/><path d="M32 15 L36.8 26 L48.5 26.7 L39.5 34.4 L42.5 46 L32 39.5 L21.5 46 L24.5 34.4 L15.5 26.7 L27.2 26 Z" fill="#7628d8" stroke="#56209f" stroke-width="1" stroke-linejoin="round"/></svg></span><span>Creator</span></span></div>
+              <div class="member-actions">
+                <button class="btn btn-primary follow-btn" type="button" data-follow="amara" aria-pressed="false">＋ Follow</button>
+                <button class="btn btn-quiet message-btn" type="button" data-message="Amara Okoye">Message</button>
+              </div>
+            </div>
+          </div>
+          <div class="member-row" data-member-card="zara">
+            <div class="avatar rose">ZB</div>
+            <div class="discover-details">
+              <div class="member-name-line"><span class="person-name">Zara Bello</span><span class="verified-badge badge-sm" role="img" aria-label="DCDS Verified+ Blue Badge"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 2 L39 8 L49 5 L53 15 L62 21 L58 32 L62 43 L52 49 L49 59 L39 56 L32 63 L25 56 L15 59 L11 49 L2 43 L6 32 L2 21 L11 15 L15 5 L25 8 Z" fill="#1678ed" stroke="#075fc9" stroke-width="1.2" stroke-linejoin="round"/><path d="M17 32.5 L27 42.5 L48 21.5" fill="none" stroke="#fff" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              <div class="member-role">AI creator · Demo profile</div>
+              <div class="member-tags"><span class="member-pill"><span class="verified-badge badge-xs" role="img" aria-label="Verified+ member"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 2 L39 8 L49 5 L53 15 L62 21 L58 32 L62 43 L52 49 L49 59 L39 56 L32 63 L25 56 L15 59 L11 49 L2 43 L6 32 L2 21 L11 15 L15 5 L25 8 Z" fill="#1678ed" stroke="#075fc9" stroke-width="1.2" stroke-linejoin="round"/><path d="M17 32.5 L27 42.5 L48 21.5" fill="none" stroke="#fff" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Verified+ Member</span><span class="creator-pill"><span class="creator-medal creator-medal-xs" role="img" aria-label="DCDS Creator Medal: gold seal, purple star and purple ribbons"><svg viewBox="0 0 64 78" aria-hidden="true" focusable="false"><path d="M16 42 L8 75 L26 65 L32 77 L36 46 Z" fill="#7628d8" stroke="#56209f" stroke-width="1"/><path d="M48 42 L56 75 L38 65 L32 77 L28 46 Z" fill="#7628d8" stroke="#56209f" stroke-width="1"/><path d="M32 2 L40 8 L50 6 L53 16 L62 22 L58 32 L63 42 L54 49 L51 59 L40 57 L32 65 L24 57 L13 59 L10 49 L1 42 L6 32 L2 22 L11 16 L14 6 L24 8 Z" fill="#e8ad12" stroke="#b87900" stroke-width="2.4" stroke-linejoin="round"/><circle cx="32" cy="33" r="22" fill="none" stroke="#ffd76a" stroke-width="1.7"/><path d="M32 15 L36.8 26 L48.5 26.7 L39.5 34.4 L42.5 46 L32 39.5 L21.5 46 L24.5 34.4 L15.5 26.7 L27.2 26 Z" fill="#7628d8" stroke="#56209f" stroke-width="1" stroke-linejoin="round"/></svg></span><span>Creator</span></span></div>
+              <div class="member-actions">
+                <button class="btn btn-primary follow-btn" type="button" data-follow="zara" aria-pressed="false">＋ Follow</button>
+                <button class="btn btn-quiet message-btn" type="button" data-message="Zara Bello">Message</button>
+              </div>
+            </div>
+          </div>
+          <div class="member-row" data-member-card="kofi">
+            <div class="avatar blue">KM</div>
+            <div class="discover-details">
+              <div class="member-name-line"><span class="person-name">Kofi Mensah</span><span class="verified-badge badge-sm" role="img" aria-label="DCDS Verified+ Blue Badge"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 2 L39 8 L49 5 L53 15 L62 21 L58 32 L62 43 L52 49 L49 59 L39 56 L32 63 L25 56 L15 59 L11 49 L2 43 L6 32 L2 21 L11 15 L15 5 L25 8 Z" fill="#1678ed" stroke="#075fc9" stroke-width="1.2" stroke-linejoin="round"/><path d="M17 32.5 L27 42.5 L48 21.5" fill="none" stroke="#fff" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span></div>
+              <div class="member-role">Web developer · Demo profile</div>
+              <div class="member-tags"><span class="member-pill"><span class="verified-badge badge-xs" role="img" aria-label="Verified+ member"><svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path d="M32 2 L39 8 L49 5 L53 15 L62 21 L58 32 L62 43 L52 49 L49 59 L39 56 L32 63 L25 56 L15 59 L11 49 L2 43 L6 32 L2 21 L11 15 L15 5 L25 8 Z" fill="#1678ed" stroke="#075fc9" stroke-width="1.2" stroke-linejoin="round"/><path d="M17 32.5 L27 42.5 L48 21.5" fill="none" stroke="#fff" stroke-width="7.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span> Verified+ Member</span><span class="creator-pill"><span class="creator-medal creator-medal-xs" role="img" aria-label="DCDS Creator Medal: gold seal, purple star and purple ribbons"><svg viewBox="0 0 64 78" aria-hidden="true" focusable="false"><path d="M16 42 L8 75 L26 65 L32 77 L36 46 Z" fill="#7628d8" stroke="#56209f" stroke-width="1"/><path d="M48 42 L56 75 L38 65 L32 77 L28 46 Z" fill="#7628d8" stroke="#56209f" stroke-width="1"/><path d="M32 2 L40 8 L50 6 L53 16 L62 22 L58 32 L63 42 L54 49 L51 59 L40 57 L32 65 L24 57 L13 59 L10 49 L1 42 L6 32 L2 22 L11 16 L14 6 L24 8 Z" fill="#e8ad12" stroke="#b87900" stroke-width="2.4" stroke-linejoin="round"/><circle cx="32" cy="33" r="22" fill="none" stroke="#ffd76a" stroke-width="1.7"/><path d="M32 15 L36.8 26 L48.5 26.7 L39.5 34.4 L42.5 46 L32 39.5 L21.5 46 L24.5 34.4 L15.5 26.7 L27.2 26 Z" fill="#7628d8" stroke="#56209f" stroke-width="1" stroke-linejoin="round"/></svg></span><span>Creator</span></span></div>
+              <div class="member-actions">
+                <button class="btn btn-primary follow-btn" type="button" data-follow="kofi" aria-pressed="false">＋ Follow</button>
+                <button class="btn btn-quiet message-btn" type="button" data-message="Kofi Mensah">Message</button>
+              </div>
+            </div>
+          </div>
+          <p class="demo-action-note">Follow changes are temporary in this preview. Message opens a local demonstration composer; no message is sent to a real member.</p>
+          <p class="mini-note">Fictional sample members only. Profiles, badge states and creator labels are synthetic demo data.</p>
+        </section>
+
+        <section class="panel right-card wide" id="guidelines">
+          <h3 class="side-title">Strict DCDS network rules</h3>
+          <div class="guideline"><b>Stay on-brand.</b> Posts must concern DCDS learning, digital skills, creativity, projects or professional growth.</div>
+          <div class="guideline"><b>No social wall.</b> Dating, lifestyle chatter, unrelated memes, invitations and off-topic promotions are removed.</div>
+          <div class="guideline"><b>No external links.</b> Social URLs, contact links, QR codes and off-platform invitations are blocked unless DCDS formally allowlists the exact destination.</div>
+          <div class="guideline"><b>Every interaction counts.</b> Comments, replies and reshares follow the same rules as posts.</div>
+          <div class="guideline"><b>Strikes have consequences.</b> Repeated violations lead to posting restrictions or network suspension; appeals are available.</div>
+        </section>
+      </aside>
+    </div>
+
+    <p class="footer-note">DCDS Verified+ Member Network · Interactive prototype · Synthetic data only · No backend, moderation engine, account, payment or identity connection</p>
+  </main>
+
+  <dialog id="shareDialog" aria-labelledby="shareTitle">
+    <form method="dialog" class="dialog-inner" id="shareForm">
+      <h2 id="shareTitle">Share with your network</h2>
+      <p>This demo reshare stays inside the signed-in DCDS member feed as an attributed reference card. No caption or external link is added, and the original audience is never expanded.</p>
+      <div class="share-preview" id="sharePreview"></div>
+      <div class="audience">👥 Signed-in DCDS members</div>
+      <div class="dialog-actions">
+        <button class="btn btn-quiet" value="cancel" type="button" id="cancelShare">Cancel</button>
+        <button class="btn btn-primary" value="share" type="submit">Share inside network</button>
+      </div>
+    </form>
+  </dialog>
+  <dialog id="messageDialog" aria-labelledby="messageTitle">
+    <form class="dialog-inner" id="messageForm">
+      <h2 id="messageTitle">Message member</h2>
+      <p id="messageDescription">This is a local-only demonstration. Nothing will be delivered to a DCDS account.</p>
+      <label class="mini-note" for="demoMessageText">Your message</label>
+      <textarea id="demoMessageText" maxlength="1000" rows="4" placeholder="Write a friendly DCDS-related message…" required style="width:100%;border:1px solid var(--line);border-radius:12px;padding:12px;margin-top:7px;resize:vertical"></textarea>
+      <div class="dialog-actions">
+        <button class="btn btn-quiet" type="button" id="cancelMessage">Cancel</button>
+        <button class="btn btn-primary" type="submit">Preview message</button>
+      </div>
+    </form>
+  </dialog>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    "use strict";
+
+    // All demo state is local to this page lifetime. Nothing is persisted or transmitted.
+    const demoPosts = [
+      {
+        id: 1, author: "Amara Okoye", initials: "AO", tone: "teal",
+        role: "Visual designer · Demo profile", time: "Just now · Sample post",
+        category: "projects", kind: "art", myReaction: null, creator: true,
+        text: "Just wrapped up a fresh visual direction for a small creative brand. I wanted the identity to feel confident, warm and unmistakably memorable. What detail catches your eye first?",
+        artwork: {kicker:"CREATIVE SHOWCASE · DEMO", title:"Design with intention.", foot:"A fictional project preview · DCDS Verified+"},
+        reactions: {"👍":18,"❤️":12,"💖":7,"😂":2},
+        comments: [
+          {name:"Zara Bello",initials:"ZB",tone:"rose",text:"The balance and spacing are beautiful. The colour story feels warm too.",replies:[{name:"Amara Okoye",initials:"AO",tone:"teal",text:"Thank you! I was aiming for a calm but confident feel."}]},
+          {name:"Kofi Mensah",initials:"KM",tone:"blue",text:"That headline hierarchy is clean. Nice work!",replies:[]}
+        ]
+      },
+      {
+        id: 2, author: "Kofi Mensah", initials: "KM", tone: "blue",
+        role: "Web developer · Demo profile", time: "Sample post · 2h",
+        category: "learning", kind: "art", myReaction: null, creator: true,
+        text: "A reminder from this week's learning sprint: small, consistent improvements compound. I finally understood a layout problem that had been confusing me. Keep asking questions and keep building.",
+        artwork: {kicker:"LEARN · BUILD · IMPROVE", title:"Progress is built one step at a time.", foot:"Learning milestone · Synthetic demo"},
+        reactions: {"👍":24,"❤️":9,"💖":4,"🤔":3},
+        comments: [
+          {name:"Amara Okoye",initials:"AO",tone:"teal",text:"Consistency really does make the difference.",replies:[]}
+        ]
+      },
+      {
+        id: 3, author: "Zara Bello", initials: "ZB", tone: "rose",
+        role: "AI creator · Demo profile", time: "Sample post · Yesterday",
+        category: "community", kind: "text", myReaction: null, creator: true,
+        text: "What is one skill you are intentionally improving this month? Mine is turning creative ideas into clear, useful experiences. I would love to hear what everyone is working on. 💜",
+        reactions: {"❤️":15,"😂":3,"😘":2,"👍":11},
+        comments: [
+          {name:"Kofi Mensah",initials:"KM",tone:"blue",text:"Writing cleaner code and explaining my process better.",replies:[]}
+        ]
+      }
+    ];
+
+    const reactionOptions = ["👍","❤️","💖","😂","😭","😘","😀","🤔","😉"];
+    let nextId = 4;
+    let activeFilter = "all";
+    let pendingShareId = null;
+    let toastTimer = null;
+
+    const feed = document.getElementById("feedPosts");
+    const emptyState = document.getElementById("emptyState");
+    const search = document.getElementById("feedSearch");
+    const toast = document.getElementById("toast");
+    const shareDialog = document.getElementById("shareDialog");
+
+    function element(tag, className, text) {
+      const node = document.createElement(tag);
+      if (className) node.className = className;
+      if (text !== undefined) node.textContent = text;
+      return node;
+    }
+
+    const SVG_NS = "http://www.w3.org/2000/svg";
+
+    function makeSvg(tag, attrs = {}) {
+      const node = document.createElementNS(SVG_NS, tag);
+      Object.entries(attrs).forEach(([name, value]) => node.setAttribute(name, value));
+      return node;
+    }
+
+    function verifiedBadgeArtwork() {
+      const svg = makeSvg("svg", { viewBox: "0 0 64 64", "aria-hidden": "true", focusable: "false" });
+      const rosette = makeSvg("path", {
+        d: "M32 2 L39 8 L49 5 L53 15 L62 21 L58 32 L62 43 L52 49 L49 59 L39 56 L32 63 L25 56 L15 59 L11 49 L2 43 L6 32 L2 21 L11 15 L15 5 L25 8 Z",
+        fill: "#1678ed", stroke: "#075fc9", "stroke-width": "1.2", "stroke-linejoin": "round"
+      });
+      const check = makeSvg("path", {
+        d: "M17 32.5 L27 42.5 L48 21.5", fill: "none", stroke: "#fff",
+        "stroke-width": "7.5", "stroke-linecap": "round", "stroke-linejoin": "round"
+      });
+      svg.append(rosette, check);
+      return svg;
+    }
+
+    function paintVerifiedBadge(node) {
+      node.replaceChildren(verifiedBadgeArtwork());
+      node.setAttribute("role", "img");
+      node.setAttribute("aria-label", "DCDS Verified+ Blue Badge · blue rosette with white check · demo preview");
+      node.title = "DCDS Verified+ identity badge · demo only";
+    }
+
+    function verifiedBadge(sizeClass = "badge-sm") {
+      const node = element("span", "verified-badge " + sizeClass);
+      paintVerifiedBadge(node);
+      return node;
+    }
+
+    function creatorMedalArtwork() {
+      const svg = makeSvg("svg", { viewBox: "0 0 64 78", "aria-hidden": "true", focusable: "false" });
+      const defs = makeSvg("defs");
+      const gold = makeSvg("linearGradient", { id: "dcdsCreatorGold", x1: "0", y1: "0", x2: "1", y2: "1" });
+      gold.append(
+        makeSvg("stop", { offset: "0%", "stop-color": "#fff3a0" }),
+        makeSvg("stop", { offset: "20%", "stop-color": "#ffd84b" }),
+        makeSvg("stop", { offset: "48%", "stop-color": "#e89b00" }),
+        makeSvg("stop", { offset: "72%", "stop-color": "#ffcf32" }),
+        makeSvg("stop", { offset: "100%", "stop-color": "#a95a00" })
+      );
+      const purple = makeSvg("linearGradient", { id: "dcdsCreatorPurple", x1: "0", y1: "0", x2: "1", y2: "1" });
+      purple.append(
+        makeSvg("stop", { offset: "0%", "stop-color": "#f0b7ff" }),
+        makeSvg("stop", { offset: "24%", "stop-color": "#a43cff" }),
+        makeSvg("stop", { offset: "58%", "stop-color": "#7628d8" }),
+        makeSvg("stop", { offset: "100%", "stop-color": "#3b086f" })
+      );
+      const ribbon = makeSvg("linearGradient", { id: "dcdsCreatorRibbon", x1: "0", y1: "0", x2: "1", y2: "0" });
+      ribbon.append(
+        makeSvg("stop", { offset: "0%", "stop-color": "#4b0c91" }),
+        makeSvg("stop", { offset: "35%", "stop-color": "#a64bff" }),
+        makeSvg("stop", { offset: "58%", "stop-color": "#7628d8" }),
+        makeSvg("stop", { offset: "100%", "stop-color": "#3c0879" })
+      );
+      const shadow = makeSvg("filter", { id: "dcdsCreatorDepth", x: "-35%", y: "-25%", width: "170%", height: "175%" });
+      shadow.append(
+        makeSvg("feGaussianBlur", { in: "SourceAlpha", stdDeviation: "1.5", result: "blur" }),
+        makeSvg("feOffset", { in: "blur", dx: "0", dy: "2.2", result: "offset" }),
+        makeSvg("feComponentTransfer", { in: "offset", result: "shadow" })
+      );
+      const shadowAlpha = shadow.querySelector("feComponentTransfer");
+      if (shadowAlpha) shadowAlpha.append(makeSvg("feFuncA", { type: "linear", slope: "0.48" }));
+      shadow.append(makeSvg("feMerge"));
+      const merge = shadow.querySelector("feMerge");
+      if (merge) merge.append(makeSvg("feMergeNode", { in: "shadow" }), makeSvg("feMergeNode", { in: "SourceGraphic" }));
+      defs.append(gold, purple, ribbon, shadow);
+      const leftRibbon = makeSvg("path", {
+        d: "M15 42 L7 74 Q7 77 10 75 L25 66 L31 77 L36 45 Z",
+        fill: "url(#dcdsCreatorRibbon)", stroke: "#3b0875", "stroke-width": "1.4", "stroke-linejoin": "round", filter: "url(#dcdsCreatorDepth)"
+      });
+      const rightRibbon = makeSvg("path", {
+        d: "M49 42 L57 74 Q57 77 54 75 L39 66 L33 77 L28 45 Z",
+        fill: "url(#dcdsCreatorRibbon)", stroke: "#3b0875", "stroke-width": "1.4", "stroke-linejoin": "round", filter: "url(#dcdsCreatorDepth)"
+      });
+      const sealShadow = makeSvg("path", {
+        d: "M32 2 L40 8 L50 6 L53 16 L62 22 L58 32 L63 42 L54 49 L51 59 L40 57 L32 65 L24 57 L13 59 L10 49 L1 42 L6 32 L2 22 L11 16 L14 6 L24 8 Z",
+        fill: "#754000", transform: "translate(0 2.5)", opacity: ".7"
+      });
+      const seal = makeSvg("path", {
+        d: "M32 2 L40 8 L50 6 L53 16 L62 22 L58 32 L63 42 L54 49 L51 59 L40 57 L32 65 L24 57 L13 59 L10 49 L1 42 L6 32 L2 22 L11 16 L14 6 L24 8 Z",
+        fill: "url(#dcdsCreatorGold)", stroke: "#9c5200", "stroke-width": "2.2", "stroke-linejoin": "round", filter: "url(#dcdsCreatorDepth)"
+      });
+      const innerRing = makeSvg("circle", { cx: "32", cy: "33", r: "22.5", fill: "none", stroke: "#fff0a0", "stroke-width": "2.2", opacity: ".95" });
+      const innerShade = makeSvg("circle", { cx: "32", cy: "33", r: "19.8", fill: "none", stroke: "#a85a00", "stroke-width": "1.6", opacity: ".8" });
+      const starShadow = makeSvg("path", {
+        d: "M32 15 L36.8 26 L48.5 26.7 L39.5 34.4 L42.5 46 L32 39.5 L21.5 46 L24.5 34.4 L15.5 26.7 L27.2 26 Z",
+        fill: "#3b086f", transform: "translate(0 2.2)"
+      });
+      const star = makeSvg("path", {
+        d: "M32 15 L36.8 26 L48.5 26.7 L39.5 34.4 L42.5 46 L32 39.5 L21.5 46 L24.5 34.4 L15.5 26.7 L27.2 26 Z",
+        fill: "url(#dcdsCreatorPurple)", stroke: "#4b087d", "stroke-width": "1.5", "stroke-linejoin": "round", filter: "url(#dcdsCreatorDepth)"
+      });
+      const starHighlight = makeSvg("path", {
+        d: "M32 17 L35.5 26.5 L45 27 L38 33.5",
+        fill: "none", stroke: "#f5d7ff", "stroke-width": "1.5", "stroke-linecap": "round", opacity: ".8"
+      });
+      const goldGlint = makeSvg("path", {
+        d: "M14 17 Q22 6 34 6",
+        fill: "none", stroke: "#fff8c9", "stroke-width": "2", "stroke-linecap": "round", opacity: ".9"
+      });
+      svg.append(defs, leftRibbon, rightRibbon, sealShadow, seal, innerRing, innerShade, starShadow, star, starHighlight, goldGlint);
+      return svg;
+    }
+
+    function creatorMedal(sizeClass = "creator-medal-xs") {
+      const medal = element("span", "creator-medal " + sizeClass);
+      medal.append(creatorMedalArtwork());
+      medal.setAttribute("role", "img");
+      medal.setAttribute("aria-label", "DCDS Creator medal · gold seal with purple star and purple ribbons");
+      return medal;
+    }
+
+    function creatorPill() {
+      const pill = element("span", "creator-pill");
+      pill.append(creatorMedal("creator-medal-xs"), element("span", "", "Creator"));
+      return pill;
+    }
+
+    function hydrateBadgeArtwork() {
+      document.querySelectorAll(".verified-badge").forEach(node => {
+        if (!node.querySelector("svg")) paintVerifiedBadge(node);
+      });
+      document.querySelectorAll(".creator-medal").forEach(node => {
+        if (!node.querySelector("svg")) node.append(creatorMedalArtwork());
+      });
+      document.querySelectorAll(".creator-pill").forEach(pill => {
+        if (pill.querySelector("svg")) return;
+        pill.replaceChildren(creatorMedal("creator-medal-xs"), element("span", "", "Creator"));
+      });
+    }
+
+    function avatar(initials, tone, sizeClass) {
+      const node = element("div", "avatar " + (tone || "") + (sizeClass ? " " + sizeClass : ""), initials);
+      node.setAttribute("aria-hidden", "true");
+      return node;
+    }
+
+    function showToast(message) {
+      toast.textContent = message;
+      toast.classList.add("show");
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => toast.classList.remove("show"), 2600);
+    }
+
+
+    function hasDisallowedExternalLink(value) {
+      const candidates = value.match(/(?:https?:\/\/|www\.)[^\s<]+|\b(?:[a-z0-9-]+\.)+(?:com|net|org|io|co|ng|app|dev|me|xyz)(?:\/[^\s<]*)?/ig) || [];
+      if (/(?:^|\s)@[a-z0-9_.]{2,}/i.test(value)) return true;
+      return candidates.some((candidate) => {
+        const normalized = /^https?:\/\//i.test(candidate) ? candidate : "https://" + candidate;
+        try {
+          const parsed = new URL(normalized);
+          const allowedHost = parsed.hostname === "dechampions03-leader.github.io";
+          const allowedPath = parsed.pathname.startsWith("/De_Champions_Digital_Service");
+          return !(allowedHost && allowedPath);
+        } catch (_) {
+          return true;
+        }
+      });
+    }
+
+    function rejectExternalLink(value) {
+      if (!hasDisallowedExternalLink(value)) return false;
+      showToast("External links are not allowed in this DCDS network preview. Only formally approved DCDS links may pass.");
+      return true;
+    }
+
+    function updatePreviewRole() {
+      const verifiedPublisher = document.getElementById("demoRole").value === "verified";
+      const postInput = document.getElementById("postText");
+      const submit = document.getElementById("publishDemoPost");
+      postInput.disabled = !verifiedPublisher;
+      submit.disabled = !verifiedPublisher;
+      postInput.placeholder = verifiedPublisher
+        ? "Share a DCDS-related project, lesson or professional milestone…"
+        : "Original posting is reserved for active Verified+ members.";
+      document.getElementById("composerHint").textContent = verifiedPublisher
+        ? "Only DCDS-related content is permitted. External/social links and unrelated social posts are blocked by policy."
+        : "Standard accounts can view, react, comment, reply and reshare attributed cards, but cannot create original posts.";
+      document.getElementById("rolePill").textContent = verifiedPublisher
+        ? "✦ Verified+ Publisher" : "Standard Member · Engage";
+      document.getElementById("entitlementTitle").textContent = verifiedPublisher
+        ? "Verified+ Publisher" : "Standard Member";
+      document.getElementById("entitlementCopy").textContent = verifiedPublisher
+        ? "Synthetic preview role · No real identity or billing check"
+        : "Synthetic preview role · View and engage only";
+      document.getElementById("roleDescription").textContent = verifiedPublisher
+        ? "This role can publish original DCDS-related posts. Both roles can view approved posts and engage."
+        : "This role can view approved posts and engage, but the original-post composer is disabled.";
+    }
+
+    function makePostHeader(post) {
+      const header = element("div", "post-head");
+      header.append(avatar(post.initials, post.tone));
+      const meta = element("div", "post-meta");
+      const author = element("div", "post-author");
+      author.append(document.createTextNode(post.author + " "), verifiedBadge("badge-sm"));
+      if (post.creator) author.append(creatorPill());
+      meta.append(author, element("div", "post-sub", post.role + " · " + post.time));
+      header.append(meta, element("span", "post-audience", "DCDS MEMBERS"));
+      return header;
+    }
+
+    function makeArtwork(post) {
+      if (!post.artwork) return null;
+      const art = element("div", "artwork " + (post.tone === "teal" ? "teal-art" : post.tone === "gold" ? "gold-art" : ""));
+      art.append(
+        element("div", "artwork-kicker", post.artwork.kicker),
+        element("div", "artwork-title", post.artwork.title),
+        element("div", "artwork-foot", post.artwork.foot)
+      );
+      return art;
+    }
+
+    function makeReactionButtons(post) {
+      const row = element("div", "reaction-row");
+      reactionOptions.forEach((emoji) => {
+        const count = post.reactions[emoji] || 0;
+        const button = element("button", "react");
+        button.type = "button";
+        button.dataset.reaction = emoji;
+        button.setAttribute("aria-pressed", String(post.myReaction === emoji));
+        button.setAttribute("aria-label", "React with " + emoji + ", " + count + " reactions");
+        button.append(element("span", "emoji", emoji), element("span", "count", String(count)));
+        row.append(button);
+      });
+      return row;
+    }
+
+    function makeComment(comment, post) {
+      const wrap = element("div", "comment");
+      wrap.append(avatar(comment.initials, comment.tone));
+      const box = element("div", "comment-box");
+      const commentName = element("div", "comment-name-line");
+      commentName.append(element("div", "comment-name", comment.name), verifiedBadge("badge-xs"));
+      if (comment.creator) commentName.append(creatorPill());
+      box.append(commentName, element("div", "comment-text", comment.text));
+      const replyButton = element("button", "reply-link", "↳ Reply");
+      replyButton.type = "button";
+      replyButton.dataset.reply = "true";
+      box.append(replyButton);
+
+      const replies = element("div", "reply-list");
+      (comment.replies || []).forEach((reply) => {
+        const item = element("div", "comment");
+        item.append(avatar(reply.initials, reply.tone));
+        const replyBox = element("div", "comment-box");
+        const replyName = element("div", "comment-name-line");
+        replyName.append(element("div", "comment-name", reply.name), verifiedBadge("badge-xs"));
+        if (reply.creator) replyName.append(creatorPill());
+        replyBox.append(replyName, element("div", "comment-text", reply.text));
+        item.append(replyBox);
+        replies.append(item);
+      });
+
+      wrap.append(box);
+      const group = element("div");
+      group.append(wrap, replies);
+      return group;
+    }
+
+    function makeReplyForm(comment, post) {
+      const form = element("form", "reply-form");
+      const input = element("input");
+      input.type = "text";
+      input.maxLength = 400;
+      input.placeholder = "Write a friendly reply…";
+      input.setAttribute("aria-label", "Write a reply");
+      const submit = element("button", "", "Reply");
+      submit.type = "submit";
+      form.append(input, submit);
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const value = input.value.trim();
+        if (!value) return;
+        if (rejectExternalLink(value)) return;
+        comment.replies = comment.replies || [];
+        comment.replies.push({name:"Demo Member",initials:"DC",tone:"",text:value});
+        renderFeed();
+        const updatedComments = feed.querySelector('[data-post-id="' + post.id + '"] .comments');
+        if (updatedComments) updatedComments.hidden = false;
+        showToast("Reply added to this local demo.");
+      });
+      return form;
+    }
+
+    function makeComments(post) {
+      const section = element("section", "comments");
+      section.hidden = true;
+      section.setAttribute("aria-label", "Comments on " + post.author + "'s post");
+      const list = element("div");
+      (post.comments || []).forEach((comment) => list.append(makeComment(comment, post)));
+      section.append(list);
+
+      const form = element("form", "comment-form");
+      const input = element("input");
+      input.type = "text";
+      input.maxLength = 500;
+      input.placeholder = "Add a thoughtful comment…";
+      input.setAttribute("aria-label", "Add a comment");
+      const submit = element("button", "", "Comment");
+      submit.type = "submit";
+      form.append(input, submit);
+      form.addEventListener("submit", (event) => {
+        event.preventDefault();
+        const value = input.value.trim();
+        if (!value) return;
+        if (rejectExternalLink(value)) return;
+        post.comments = post.comments || [];
+        post.comments.push({name:"Demo Member",initials:"DC",tone:"",text:value,replies:[]});
+        renderFeed();
+        const updated = feed.querySelector('[data-post-id="' + post.id + '"] .comments');
+        if (updated) updated.hidden = false;
+        showToast("Comment added to this local demo.");
+      });
+      section.append(form);
+      post._commentsNode = section;
+      return section;
+    }
+
+    function renderPost(post) {
+      const card = element("article", "card post");
+      card.dataset.postId = String(post.id);
+      card.dataset.category = post.category || "community";
+      card.append(makePostHeader(post), element("p", "post-text", post.text));
+      if (post.sharedFrom) {
+        const quoted = element("div", "share-preview");
+        quoted.append(
+          element("div", "comment-name", "Original post · " + post.sharedFrom.author),
+          element("div", "comment-text", post.sharedFrom.text),
+          element("span", "post-audience", "DCDS MEMBERS")
+        );
+        card.append(quoted);
+      }
+      const artwork = makeArtwork(post);
+      if (artwork) card.append(artwork);
+
+      const stats = element("div", "post-stats");
+      const reactionTotal = Object.values(post.reactions || {}).reduce((sum, value) => sum + value, 0);
+      stats.append(
+        element("span", "", "♡ " + reactionTotal + " reactions"),
+        element("span", "", (post.comments || []).length + " comments · " + (post.shares || 0) + " shares")
+      );
+      card.append(stats, makeReactionButtons(post));
+
+      const actions = element("div", "post-actions");
+      const commentButton = element("button", "action", "▤  Comment");
+      commentButton.type = "button";
+      commentButton.dataset.toggleComments = "true";
+      const shareButton = element("button", "action", "↗  Share");
+      shareButton.type = "button";
+      shareButton.dataset.share = "true";
+      actions.append(commentButton, shareButton);
+      card.append(actions, makeComments(post));
+      return card;
+    }
+
+    function renderFeed() {
+      const query = search.value.trim().toLowerCase();
+      const visible = demoPosts.filter((post) => {
+        const filterMatch = activeFilter === "all" || post.category === activeFilter;
+        const textMatch = !query || (post.author + " " + post.role + " " + post.text).toLowerCase().includes(query);
+        return filterMatch && textMatch;
+      });
+      feed.replaceChildren(...visible.map(renderPost));
+      emptyState.hidden = visible.length !== 0;
+    }
+
+    document.getElementById("demoRole").addEventListener("change", updatePreviewRole);
+    updatePreviewRole();
+
+    document.getElementById("composeForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = document.getElementById("postText");
+      const text = input.value.trim();
+      if (!text) return;
+      if (document.getElementById("demoRole").value !== "verified") return;
+      if (rejectExternalLink(text)) return;
+      demoPosts.unshift({
+        id: nextId++, author:"Demo Member", initials:"DC", tone:"",
+        role:"Your preview profile", time:"Just now · Local demo",
+        category:"community", kind:"text", myReaction:null, text,
+        reactions:{}, comments:[], shares:0
+      });
+      input.value = "";
+      activeFilter = "all";
+      document.querySelectorAll("[data-filter]").forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.filter === "all"));
+      });
+      renderFeed();
+      showToast("Your demo post is now at the top of this preview.");
+    });
+
+    document.querySelectorAll("[data-filter]").forEach((button) => {
+      button.addEventListener("click", () => {
+        activeFilter = button.dataset.filter;
+        document.querySelectorAll("[data-filter]").forEach((item) => {
+          item.setAttribute("aria-pressed", String(item === button));
+        });
+        renderFeed();
+      });
+    });
+
+    search.addEventListener("input", renderFeed);
+
+    const followedMembers = new Set();
+    const messageDialog = document.getElementById("messageDialog");
+    const messageForm = document.getElementById("messageForm");
+    const messageText = document.getElementById("demoMessageText");
+    let messageRecipient = "";
+
+    document.getElementById("discover").addEventListener("click", (event) => {
+      const followButton = event.target.closest("[data-follow]");
+      if (followButton) {
+        const memberId = followButton.dataset.follow;
+        const isFollowing = followedMembers.has(memberId);
+        if (isFollowing) followedMembers.delete(memberId);
+        else followedMembers.add(memberId);
+        const followingNow = followedMembers.has(memberId);
+        followButton.classList.toggle("is-following", followingNow);
+        followButton.setAttribute("aria-pressed", String(followingNow));
+        followButton.textContent = followingNow ? "✓ Following" : "＋ Follow";
+        showToast(followingNow ? "You are now following this demo creator." : "You unfollowed this demo creator.");
+        return;
+      }
+
+      const messageButton = event.target.closest("[data-message]");
+      if (messageButton) {
+        messageRecipient = messageButton.dataset.message;
+        document.getElementById("messageTitle").textContent = "Message " + messageRecipient;
+        messageText.value = "";
+        messageDialog.showModal();
+        messageText.focus();
+      }
+    });
+
+    document.getElementById("cancelMessage").addEventListener("click", () => messageDialog.close());
+    messageForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const body = messageText.value.trim();
+      if (!body) return;
+      messageDialog.close();
+      showToast("Demo message prepared for " + messageRecipient + ". It was not sent.");
+      messageForm.reset();
+    });
+
+    feed.addEventListener("click", (event) => {
+      const button = event.target.closest("button");
+      if (!button) return;
+      const card = button.closest("[data-post-id]");
+      if (!card) return;
+      const post = demoPosts.find((item) => String(item.id) === card.dataset.postId);
+      if (!post) return;
+
+      if (button.dataset.reaction) {
+        const emoji = button.dataset.reaction;
+        const previous = post.myReaction || null;
+        if (previous === emoji) {
+          post.reactions[emoji] = Math.max(0, (post.reactions[emoji] || 0) - 1);
+          post.myReaction = null;
+          renderFeed();
+          showToast("Your reaction was removed in this local demo.");
+        } else {
+          if (previous) post.reactions[previous] = Math.max(0, (post.reactions[previous] || 0) - 1);
+          post.reactions[emoji] = (post.reactions[emoji] || 0) + 1;
+          post.myReaction = emoji;
+          renderFeed();
+          showToast(previous ? "Your reaction was changed." : "Reaction added in this local demo.");
+        }
+      } else if (button.dataset.toggleComments) {
+        const comments = card.querySelector(".comments");
+        comments.hidden = !comments.hidden;
+      } else if (button.dataset.reply) {
+        const existing = button.parentElement.querySelector(".reply-form");
+        if (existing) { existing.remove(); return; }
+        const commentGroup = button.closest(".comment").parentElement;
+        const commentIndex = Array.from(commentGroup.parentElement.children).indexOf(commentGroup);
+        const comment = post.comments[commentIndex];
+        if (comment) button.parentElement.append(makeReplyForm(comment, post));
+      } else if (button.dataset.share) {
+        pendingShareId = post.id;
+        document.getElementById("sharePreview").textContent = post.author + ": " + post.text.slice(0, 170);
+        shareDialog.showModal();
+      }
+    });
+
+    document.getElementById("cancelShare").addEventListener("click", () => {
+      pendingShareId = null;
+      shareDialog.close();
+    });
+
+    document.getElementById("shareForm").addEventListener("submit", (event) => {
+      event.preventDefault();
+      if (pendingShareId === null) return;
+      const original = demoPosts.find((post) => post.id === pendingShareId);
+      if (!original) return;
+      original.shares = (original.shares || 0) + 1;
+      demoPosts.unshift({
+        id: nextId++, author:"Demo Member", initials:"DC", tone:"",
+        role:"Shared inside DCDS · Local demo", time:"Just now",
+        category:"community", kind:"repost", myReaction:null,
+        text:"Shared a post from " + original.author + ". The original audience remains signed-in DCDS members.",
+        sharedFrom:{author:original.author,text:original.text},
+        artwork:null, reactions:{}, comments:[], shares:0
+      });
+      pendingShareId = null;
+      shareDialog.close();
+      renderFeed();
+      showToast("Shared inside the DCDS demo feed. The audience did not change.");
+    });
+
+    hydrateBadgeArtwork();
+    renderFeed();
+  </script>
+</body>
+</html>
