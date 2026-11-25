@@ -15,7 +15,6 @@ CREATE TABLE IF NOT EXISTS public.dcds_verified_owner_identities (
 );
 
 ALTER TABLE public.dcds_verified_owner_identities ENABLE ROW LEVEL SECURITY;
-ALTER TABLE public.dcds_verified_owner_identities FORCE ROW LEVEL SECURITY;
 
 REVOKE ALL ON TABLE public.dcds_verified_owner_identities FROM PUBLIC;
 REVOKE ALL ON TABLE public.dcds_verified_owner_identities FROM anon;
