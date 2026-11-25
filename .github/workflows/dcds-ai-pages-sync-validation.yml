@@ -25,6 +25,7 @@ on:
       - "supabase/migrations/20261124130000_dcds_ai_root_admin_identity.sql"
       - "supabase/migrations/20261125120000_dcds_ai_superintendent_one_year_memory.sql"
       - "supabase/migrations/20261125170000_dcds_superintendent_admin_display.sql"
+      - "supabase/migrations/20261125180000_dcds_verified_superintendent_ceo_identity.sql"
       - ".github/workflows/dcds-ai-pages-sync-validation.yml"
 
 permissions:
@@ -57,6 +58,7 @@ jobs:
               "superintendent-auth-migration": Path("supabase/migrations/20261124130000_dcds_ai_root_admin_identity.sql").read_text(encoding="utf-8"),
               "owner-memory-migration": Path("supabase/migrations/20261125120000_dcds_ai_superintendent_one_year_memory.sql").read_text(encoding="utf-8"),
               "superintendent-display-migration": Path("supabase/migrations/20261125170000_dcds_superintendent_admin_display.sql").read_text(encoding="utf-8"),
+              "founder-identity-migration": Path("supabase/migrations/20261125180000_dcds_verified_superintendent_ceo_identity.sql").read_text(encoding="utf-8"),
               "brain": Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8"),
               "memory": Path("ai-config/DCDS-AI-MEMORY-GOVERNANCE.md").read_text(encoding="utf-8"),
               "playbook": Path("ai-config/DCDS-RESPONSE-PLAYBOOK.md").read_text(encoding="utf-8"),
@@ -125,6 +127,9 @@ jobs:
               "DCDS AI page displays Superintendent Admin status only after the authenticated owner-role RPC": "client.rpc('is_dcds_super_admin')" in files["ai"] and "Superintendent Admin" in files["ai"],
               "Homepage resolves administrator access only after a server-side role check": "refreshDcdsAccountButton" in files["home"] and "rpc('is_dcds_admin')" in files["home"] and "Admin Portal" in files["home"] and "if(dcdsAccountRole==='admin')" in files["home"],
               "Administrator portal wording is consistent across the main admin workspaces": "DCDS Administration Portal | Communications" in files["admin"] and "DCDS Administration Portal" in files["student-management"] and "Administration Portal" in files["dashboard"],
+              "Founder & CEO identity is verified for the current auth account through confirmed email and protected owner credentials": "dcds_get_verified_superintendent_identity" in files["edge"] and "ownerIdentity.email_verified === true" in files["edge"] and "email_confirmed_at IS NOT NULL" in files["founder-identity-migration"] and "public.is_dcds_super_admin()" in files["founder-identity-migration"],
+              "Deyriva carries verified Founder & CEO identity into every owner response without exposing the email": "verifiedFounderCeoGuidance" in files["edge"] and "Never reveal, quote, repeat or include the actual sign-in email address" in files["edge"] and "is_founder_ceo_verified: isVerifiedFounderCeo" in files["edge"],
+              "Owner identity questions include natural language and common wording mistakes": "isOwnerIdentityQuestion" in files["edge"] and "who\\\\s+(?:am\\\\s+i|i\\\\s+am|i\\\\s+my)" in files["edge"],
               "Superintendent Admin is the platform-wide display title": "DCDS Superintendent Admin" in files["knowledge"] and "Superintendent Admin" in files["superintendent-display-migration"] and "Superintendent Admin" in files["edge"],
               "Operational snapshot returns a display label, not an internal root role": "'superintendent_admin'" in files["superintendent-display-migration"] and "'admin_role', CASE WHEN a.role = 'super_admin' THEN 'Superintendent Admin' ELSE initcap(replace(a.role, '_', ' ')) END" in files["superintendent-display-migration"],
               "The protected super_admin authorization remains intact": "public.is_dcds_super_admin()" in files["superintendent-display-migration"] and "a.role = 'super_admin'" in files["superintendent-auth-migration"],
