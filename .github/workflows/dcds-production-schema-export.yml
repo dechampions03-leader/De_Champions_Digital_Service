@@ -160,8 +160,81 @@ jobs:
             supabase config convert --to toml --reason ci-or-deploy
           fi
           test -s supabase/config.toml
-          grep -q '\\[experimental.pgdelta\\]' supabase/config.toml
-          grep -q 'enabled = true' supabase/config.toml
+          if ! grep -Fqx '[experimental.pgdelta]' supabase/config.toml; then
+            cat >> supabase/config.toml <<'TOML'
+          [experimental.pgdelta]
+          enabled = true
+          TOML
+          fi
+          grep -Fqx '[experimental.pgdelta]' supabase/config.toml
+          grep -A1 -F '[experimental.pgdelta]' supabase/config.toml | grep -q '^enabled = true$'
+          supabase db diff --remote="${DCDS_PRODUCTION_DB_URL}" --strict-coverage \
+            > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
+          cd "${GITHUB_WORKSPACE}"
+          test -s dcds-production-complete-baseline.sql
+          if grep -Eiq '^(INSERT INTO|COPY .* FROM stdin)' dcds-production-complete-baseline.sql; then
+            echo "Unexpected top-level data statements found in schema diff."
+            exit 1
+          fi
+
+      - name: Upload reviewed schema artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-production-schema-and-customizations
+          path: |
+            dcds-production-public-schema.sql
+            dcds-production-custom-triggers.sql
+            dcds-production-complete-baseline.sql
+          if-no-files-found: error
+          retention-days: 7
+ supabase/config.toml; then
+            cat >> supabase/config.toml <<'TOML'
+          [experimental.pgdelta]
+          enabled = true
+          TOML
+          fi
+          grep -q '^\\[experimental.pgdelta\\]
+          supabase db diff --remote="${DCDS_PRODUCTION_DB_URL}" --strict-coverage \
+            > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
+          cd "${GITHUB_WORKSPACE}"
+          test -s dcds-production-complete-baseline.sql
+          if grep -Eiq '^(INSERT INTO|COPY .* FROM stdin)' dcds-production-complete-baseline.sql; then
+            echo "Unexpected top-level data statements found in schema diff."
+            exit 1
+          fi
+
+      - name: Upload reviewed schema artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-production-schema-and-customizations
+          path: |
+            dcds-production-public-schema.sql
+            dcds-production-custom-triggers.sql
+            dcds-production-complete-baseline.sql
+          if-no-files-found: error
+          retention-days: 7
+ supabase/config.toml
+          grep -A1 '^\\[experimental.pgdelta\\]
+          supabase db diff --remote="${DCDS_PRODUCTION_DB_URL}" --strict-coverage \
+            > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
+          cd "${GITHUB_WORKSPACE}"
+          test -s dcds-production-complete-baseline.sql
+          if grep -Eiq '^(INSERT INTO|COPY .* FROM stdin)' dcds-production-complete-baseline.sql; then
+            echo "Unexpected top-level data statements found in schema diff."
+            exit 1
+          fi
+
+      - name: Upload reviewed schema artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dcds-production-schema-and-customizations
+          path: |
+            dcds-production-public-schema.sql
+            dcds-production-custom-triggers.sql
+            dcds-production-complete-baseline.sql
+          if-no-files-found: error
+          retention-days: 7
+ supabase/config.toml | grep -q 'enabled = true'
           supabase db diff --remote="${DCDS_PRODUCTION_DB_URL}" --strict-coverage \
             > "${GITHUB_WORKSPACE}/dcds-production-complete-baseline.sql"
           cd "${GITHUB_WORKSPACE}"

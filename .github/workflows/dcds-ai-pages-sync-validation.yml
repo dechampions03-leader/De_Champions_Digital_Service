@@ -23,6 +23,7 @@ on:
       - "supabase/migrations/20261113160000_dcds_ai_global_age_access_controls.sql"
       - "supabase/migrations/20261113160210_dcds_ai_age_policy_autoapproval_guard.sql"
       - "supabase/migrations/20261124130000_dcds_ai_root_admin_identity.sql"
+      - "supabase/migrations/20261125120000_dcds_ai_superintendent_one_year_memory.sql"
       - ".github/workflows/dcds-ai-pages-sync-validation.yml"
 
 permissions:
@@ -53,6 +54,7 @@ jobs:
               "speech": Path("supabase/functions/dcds-ai-speech-session/index.ts").read_text(encoding="utf-8"),
               "age-policy-migration": Path("supabase/migrations/20261113160000_dcds_ai_global_age_access_controls.sql").read_text(encoding="utf-8"),
               "root-admin-migration": Path("supabase/migrations/20261124130000_dcds_ai_root_admin_identity.sql").read_text(encoding="utf-8"),
+              "owner-memory-migration": Path("supabase/migrations/20261125120000_dcds_ai_superintendent_one_year_memory.sql").read_text(encoding="utf-8"),
               "brain": Path("ai-config/DCDS-MASTER-BRAIN.md").read_text(encoding="utf-8"),
               "memory": Path("ai-config/DCDS-AI-MEMORY-GOVERNANCE.md").read_text(encoding="utf-8"),
               "playbook": Path("ai-config/DCDS-RESPONSE-PLAYBOOK.md").read_text(encoding="utf-8"),
@@ -127,6 +129,13 @@ jobs:
               "Operational snapshot reporting standard requires timestamp, findings, recommendations and unchecked systems": "Operational Snapshot Reporting Standard" in files["playbook"] and all(term in files["playbook"] for term in ("Snapshot timestamp", "Evidence-based findings", "Recommendations and next steps", "Systems not checked")),
               "Verified Superintendent Admin title preserves the protected super_admin role": "Superintendent Admin" in files["brain"] and "super_admin" in files["edge"] and "is_dcds_super_admin" in files["edge"] and "Superintendent Admin" in files["ai"],
               "Superintendent Admin is the only owner salutation shown in verified owner greeting": "Hello, Superintendent Admin." in files["ai"] and "Address this person exactly as" in files["edge"] and "VERIFIED DCDS SUPERINTENDENT ADMIN" in files["edge"],
+              "Superintendent Admin conversations persist only for the server-verified owner": "role === \"admin\" && isRootAdmin" in files["edge"] and "canPersistConversation" in files["edge"] and "isPersistentOwner=true" in files["ai"],
+              "Superintendent Admin one-year memory search is owner-scoped and bounded": "dcds_ai_search_superintendent_memory" in files["edge"] and "interval '365 days'" in files["owner-memory-migration"] and "SECURITY INVOKER" in files["owner-memory-migration"] and "public.is_dcds_super_admin()" in files["owner-memory-migration"] and "auth.uid()" in files["owner-memory-migration"],
+              "Superintendent Admin archive excludes financial/account-secret text": "payment|payments|payout|payouts|wallet|bank|transaction|refund|receipt|beneficiary|card|cvv|otp|password|account number|balance" in files["owner-memory-migration"],
+              "Superintendent Admin short-term and historical context exclude financial/account-secret text": "safeStoredMessages" in files["edge"] and "safeRecentMessages" in files["edge"] and "safeMemoryMatches" in files["edge"],
+              "Ordinary admins and visitors remain without persistent conversation history": "role === \"admin\" && isRootAdmin" in files["edge"] and "isPersistentOwner=false" in files["ai"],
+              "Superintendent Admin history controls explain 365-day private recall": "365-day recall" in files["ai"] and "previous 365 days" in files["ai"],
+              "Conversation memory governance documents one-year owner archive": "Superintendent Admin long-term conversation memory" in files["memory"] and "365 days" in files["memory"],
               "Student self-identity uses the current account profile and own enrolments only": "studentIdentityGuidance" in files["edge"] and "needsIdentity" in files["edge"] and "own_enrolments" in files["edge"],
               "Fresh student chats carry forward only the latest private conversation": "RECENT PRIVATE STUDENT CONVERSATION CONTINUITY" in files["edge"] and '.eq("user_id", user.id)' in files["edge"] and ".limit(10)" in files["edge"],
               "Deyriva's approved knowledge includes a route-aware platform directory": '"platform_directory"' in files["knowledge"] and "student_programmes" in files["knowledge"] and "administrative_workspaces" in files["knowledge"],
