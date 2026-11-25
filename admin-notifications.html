@@ -567,19 +567,19 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
             <!-- DCDS STUDENT SUPPORT INBOX -->
             <section id="supportInboxSection" data-admin-view-panel="support">
                 <div class="section-heading">
-                    <h2>🎧 Student Support Inbox</h2>
-                    <p>Review student requests, respond directly, and track each request through resolution.</p>
+                    <h2>🎧 Student Support &amp; Resolution Centre</h2>
+                    <p>Identify the correct student by their exact registered email address or mobile number, open a linked support case, reply to the student, and move the case through Open, In progress, Resolved or Closed.</p>
                 </div>
                 <section class="support-account-lookup" aria-labelledby="supportLookupHeading">
                     <h3 id="supportLookupHeading">Find a Student &amp; Open an Issue</h3>
-                    <p>Ask the student for the email address or mobile number registered on their DCDS account. Their matching name and basic account status will appear here. You do not need to recreate their account or request their password, OTP, PIN or banking credentials.</p>
+                    <p>Ask the student for the email address or mobile number registered on their DCDS account. As soon as a complete exact match is found, their name and basic account status appear here. Continue in this same workspace to record the issue and resolve it; never rebuild or recreate the student's account just to troubleshoot it. Never request a password, OTP, PIN or banking credentials.</p>
                     <form id="supportStudentLookupForm" class="support-lookup-form">
                         <label for="supportLookupInput">Registered email address or mobile number
                             <input id="supportLookupInput" type="search" autocomplete="off" inputmode="search" maxlength="254" placeholder="student@example.com or +234…" required>
                         </label>
                         <button type="submit" id="supportLookupButton">Find Student</button>
                     </form>
-                    <p id="supportLookupStatus" class="support-lookup-status" role="status" aria-live="polite">Enter the complete registered email address or mobile number. Matching is exact.</p>
+                    <p id="supportLookupStatus" class="support-lookup-status" role="status" aria-live="polite">Enter a complete registered email address or mobile number. The name appears automatically after a secure exact match.</p>
                     <article id="supportStudentMatch" class="support-student-match" hidden></article>
                     <form id="supportCaseForm" class="support-case-form" hidden>
                         <label>Issue subject
@@ -3204,7 +3204,7 @@ function renderSupportStudentMatch(student) {
     supportStudentMatch.hidden = false;
     supportCaseForm.hidden = false;
     supportCaseStatus.textContent = student.open_support_count > 0
-        ? "This student already has an open request. Check the inbox below before creating a duplicate case."
+        ? "This student already has an open request. Review the inbox below before creating a duplicate case."
         : "Student matched. Record the issue below to open an auditable support case.";
 }
 
@@ -3347,9 +3347,9 @@ async function loadSupportInbox() {
         meta.append(
             supportNode("span", "", "Category: " + supportLabel(ticket.category)),
             supportNode("span", "", "Submitted: " + supportDate(ticket.created_at)),
-            supportNode("span", "", supportIdentityCache.has(ticket.user_id)
-                ? "Student: " + supportIdentityCache.get(ticket.user_id).full_name + " · " + (supportIdentityCache.get(ticket.user_id).email || supportIdentityCache.get(ticket.user_id).phone || ticket.user_id)
-                : "Student ID: " + ticket.user_id),
+            supportNode("span", "", supportIdentityCache.has(ticket.user_id) && supportIdentityCache.get(ticket.user_id).full_name
+                ? "Student: " + supportIdentityCache.get(ticket.user_id).full_name
+                : "Student identity not loaded in this view · use the exact email/mobile lookup above"),
             supportNode("span", "support-ticket-status", supportLabel(ticket.status))
         );
                 const message = supportNode("p", "support-ticket-message", ticket.message);
