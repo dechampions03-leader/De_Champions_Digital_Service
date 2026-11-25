@@ -277,7 +277,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
  let activeConversationId=null;
  function canUsePersistentConversations(){return isPersistentStudent||isPersistentOwner;}
  function superintendentAccountLabel(includeAgeGate=false){
-  if(isVerifiedFounderCeoSession)return 'Founder & CEO · Superintendent Admin'+(includeAgeGate?' · adult confirmation required':'');
+  if(isVerifiedFounderCeoSession)return 'Founder & CEO · Superintendent Admin · Deyriva owner'+(includeAgeGate?' · adult confirmation required':'');
   if(isSuperintendentAdminSession)return 'Superintendent Admin'+(includeAgeGate?' · adult confirmation required':'');
   return 'Administrator'+(includeAgeGate?' · adult confirmation required':' · Read-only Copilot');
  }
