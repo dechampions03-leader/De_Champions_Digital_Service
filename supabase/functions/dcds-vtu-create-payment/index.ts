@@ -1,7 +1,9 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
+// VTpass migration CI marker: Smile uses provider-required Basic Auth; international top-ups are fixed-price only.
+
 const SITE_URL = "https://dechampions03-leader.github.io/De_Champions_Digital_Service";
-const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4 };
+const NETWORKS: Record<string, number> = { mtn: 1, glo: 2, "9mobile": 3, airtel: 4, spectranet: 5, smile: 6, international: 7 };
 
 function secret(name: string): string {
   const direct = Deno.env.get(name);
@@ -47,13 +49,17 @@ function normalizePhone(value: unknown): string {
   else if (phone.startsWith("234")) phone = "0" + phone.slice(3);
   return /^0[789][0-9]{9}$/.test(phone) ? phone : "";
 }
+function normalizeInternationalPhone(value: unknown): string {
+  const digits = String(value ?? "").replace(/\D/g, "");
+  return /^[0-9]{7,15}$/.test(digits) ? digits : "";
+}
 function normalizeNetwork(value: unknown, id?: unknown): string {
   const name = clean(value, 30).toLowerCase();
   if (name.includes("mtn")) return "mtn";
   if (name.includes("glo")) return "glo";
   if (name.includes("9mobile") || name.includes("9 mobile")) return "9mobile";
   if (name.includes("airtel")) return "airtel";
-  return ({ 1: "mtn", 2: "glo", 3: "9mobile", 4: "airtel" } as Record<number, string>)[Number(id)] || "";
+  return ({ 1: "mtn", 2: "glo", 3: "9mobile", 4: "airtel", 5: "spectranet", 6: "smile", 7: "international" } as Record<number, string>)[Number(id)] || "";
 }
 function money(value: unknown): number {
   const n = Number(value);
@@ -69,8 +75,30 @@ Deno.serve(async (req: Request) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") || "";
     const adminKey = serviceKey();
     const flutterwaveKey = Deno.env.get("FLW_SECRET_KEY") || "";
-    const oplugKey = Deno.env.get("OPLUG_API_KEY") || "";
-    if (!supabaseUrl || !adminKey || !flutterwaveKey || !oplugKey) {
+    const vtpassApiKey = Deno.env.get("VTPASS_API_KEY") || "";
+    const vtpassPublicKey = Deno.env.get("VTPASS_PUBLIC_KEY") || "";
+    const vtpassEmail = Deno.env.get("VTPASS_EMAIL") || "";
+    const vtpassPassword = Deno.env.get("VTPASS_PASSWORD") || "";
+    const vtpassBaseValue = (Deno.env.get("VTPASS_API_BASE_URL") || "").trim();
+    if (!vtpassBaseValue) {
+      return reply(req, { success: false, error: "VTpass is not configured. Set VTPASS_API_BASE_URL explicitly to the sandbox URL in Development or the live URL in Production." }, 503);
+    }
+    let vtpassHost: URL;
+    try {
+      vtpassHost = new URL(vtpassBaseValue);
+    } catch {
+      return reply(req, { success: false, error: "VTpass API base URL is invalid." }, 503);
+    }
+    if (
+      vtpassHost.protocol !== "https:" ||
+      !["sandbox.vtpass.com", "vtpass.com"].includes(vtpassHost.hostname) ||
+      !["/api", "/api/"].includes(vtpassHost.pathname) ||
+      vtpassHost.username || vtpassHost.password || vtpassHost.search || vtpassHost.hash
+    ) {
+      return reply(req, { success: false, error: "VTpass API base URL must be the official HTTPS /api endpoint." }, 503);
+    }
+    const vtpassBase = vtpassHost.origin + "/api";
+    if (!supabaseUrl || !adminKey || !flutterwaveKey || !vtpassApiKey || !vtpassPublicKey) {
       return reply(req, { success: false, error: "Airtime & Data checkout is not fully configured yet. Please contact DCDS support." }, 503);
     }
 
@@ -94,10 +122,14 @@ Deno.serve(async (req: Request) => {
     const serviceType = body.service_type === "airtime" ? "airtime" : body.service_type === "data" ? "data" : "";
     const network = clean(body.network, 20).toLowerCase();
     const networkId = NETWORKS[network];
-    const phone = normalizePhone(body.phone);
+    const phone = (network === "international" || network === "smile") ? normalizeInternationalPhone(body.phone) : normalizePhone(body.phone);
+    const customerEmail = clean(body.customer_email, 180).toLowerCase();
+    const customerPhone = normalizeInternationalPhone(body.customer_phone);
+    const smileEmail = clean(body.smile_email, 180).toLowerCase();
+    const smileAccountId = clean(body.smile_account_id, 40);
     const clientRequestId = clean(body.request_id, 80);
-    if (!serviceType || !networkId || !phone || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
-      return reply(req, { success: false, error: "Choose a valid service and network, enter a valid Nigerian phone number, and try again." }, 400);
+    if (!serviceType || !networkId || !phone || (serviceType === "airtime" && ["spectranet", "smile"].includes(network)) || (network === "smile" && serviceType !== "data") || (network === "international" && (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(customerEmail) || !customerPhone)) || !/^[0-9a-f]{8}-[0-9a-f-]{27}$/i.test(clientRequestId)) {
+      return reply(req, { success: false, error: "Choose a valid service and network, enter a valid recipient phone number, and try again." }, 400);
     }
 
     let amount = 0;
@@ -107,36 +139,128 @@ Deno.serve(async (req: Request) => {
     let dataPlanType: string | null = null;
     let dataValidity: string | null = null;
     let airtimeAmount: number | null = null;
+    let internationalMetadata: Record<string, unknown> | null = null;
 
-    const oplugHeaders = {
-      Authorization: "Token " + oplugKey,
-      Accept: "application/json",
-      "Content-Type": "application/json",
-    };
-
-    if (serviceType === "data") {
-      const requestedPlanId = clean(body.plan_id, 80);
+    if (serviceType === "data" && network !== "international") {
+      const requestedPlanId = clean(body.plan_id, 100);
       if (!requestedPlanId) return reply(req, { success: false, error: "Select a data bundle first." }, 400);
-      const planResponse = await fetch("https://www.oplug.com.ng/api/v1/data_plans", {
-        headers: oplugHeaders,
+      const defaultServiceID = ({ mtn: "mtn-data", airtel: "airtel-data", glo: "glo-data", "9mobile": "etisalat-data", spectranet: "spectranet", smile: "smile-direct" } as Record<string, string>)[network];
+      const allowedServices: Record<string, string[]> = {
+        mtn: ["mtn-data"],
+        airtel: ["airtel-data"],
+        glo: ["glo-data", "glo-sme-data"],
+        "9mobile": ["etisalat-data", "9mobile-sme-data"],
+        spectranet: ["spectranet"],
+        smile: ["smile-direct"],
+      };
+      const [requestedServiceID, requestedVariationCode] = requestedPlanId.includes("::")
+        ? requestedPlanId.split("::", 2)
+        : [defaultServiceID, requestedPlanId];
+      if (!defaultServiceID || !requestedServiceID || !requestedVariationCode || !allowedServices[network]?.includes(requestedServiceID)) {
+        return reply(req, { success: false, error: "That data product is not supported for the selected network." }, 400);
+      }
+      const catalogueResponse = await fetch(vtpassBase + "/service-variations?serviceID=" + encodeURIComponent(requestedServiceID), {
+        headers: network === "smile"
+          ? (() => {
+            if (!vtpassEmail || !vtpassPassword) throw new Error("VTpass Smile Basic Authentication credentials are not configured.");
+            return { Authorization: "Basic " + btoa(vtpassEmail + ":" + vtpassPassword), Accept: "application/json" };
+          })()
+          : { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" },
         signal: AbortSignal.timeout(12000),
       });
-      const catalogue = await planResponse.json().catch(() => null);
-      if (!planResponse.ok || catalogue?.status !== "success" || !Array.isArray(catalogue.plans)) {
-        return reply(req, { success: false, error: "The live data catalogue is temporarily unavailable. No payment has been started." }, 502);
+      const catalogue = await catalogueResponse.json().catch(() => null);
+      const variations = catalogue?.content?.variations ?? catalogue?.content?.varations;
+      if (!catalogueResponse.ok || catalogue?.response_description !== "000" || !Array.isArray(variations)) {
+        return reply(req, { success: false, error: "The VTpass data catalogue is temporarily unavailable. No payment has been started." }, 502);
       }
-      const plan = catalogue.plans.find((item: Record<string, unknown>) =>
-        String(item.id) === requestedPlanId &&
-        normalizeNetwork(item.network, item.network_id) === network
+      const plan = variations.find((item: Record<string, unknown>) =>
+        String(item.variation_code) === requestedVariationCode &&
+        Number(item.variation_amount) > 0 &&
+        !/\b(?:calls?|minutes?|voice|talk\s*more|buy airtime)\b/i.test(String(item.name || ""))
       );
-      if (!plan) return reply(req, { success: false, error: "That bundle is no longer available on this network. Refresh the catalogue and select another plan." }, 409);
-      amount = money(plan.amount);
+      if (!plan) return reply(req, { success: false, error: "That data bundle is unavailable or is not a data product. Refresh the catalogue and select a valid data plan." }, 409);
+      amount = money(plan.variation_amount);
       providerCost = amount;
-      dataPlanId = requestedPlanId;
-      dataPlanName = clean(plan.plan, 100);
-      dataPlanType = clean(plan.type, 50);
-      dataValidity = clean(plan.validity, 50);
-      if (!amount || !dataPlanName) return reply(req, { success: false, error: "The provider returned an invalid price for this bundle." }, 502);
+      dataPlanId = requestedServiceID + "::" + requestedVariationCode;
+      dataPlanName = clean(plan.name, 120);
+      dataPlanType = ["glo-sme-data", "9mobile-sme-data"].includes(requestedServiceID) ? "SME data" : "Data bundle";
+      const matchValidity = dataPlanName.match(/(?:\d+\s*(?:hours?|hrs?|days?|weeks?|months?))/i);
+      dataValidity = matchValidity?.[0] || null;
+      if (!Number.isFinite(amount) || amount <= 0 || !dataPlanName) return reply(req, { success: false, error: "VTpass returned an invalid price for this bundle." }, 502);
+      if (network === "smile") {
+        if (!smileEmail || !smileAccountId) return reply(req, { success: false, error: "Verify your Smile email and select an account ID before checkout." }, 400);
+        const verifyResponse = await fetch(vtpassBase + "/merchant-verify/smile/email", {
+          method: "POST",
+          headers: (() => {
+            if (!vtpassEmail || !vtpassPassword) throw new Error("VTpass Smile Basic Authentication credentials are not configured.");
+            return { Authorization: "Basic " + btoa(vtpassEmail + ":" + vtpassPassword), "Content-Type": "application/json", Accept: "application/json" };
+          })(),
+          body: JSON.stringify({ billersCode: smileEmail, serviceID: "smile-direct" }),
+          signal: AbortSignal.timeout(12000),
+        });
+        const verifyData = await verifyResponse.json().catch(() => null);
+        const accounts = verifyData?.content?.AccountList?.Account;
+        if (!verifyResponse.ok || String(verifyData?.code) !== "000" || !Array.isArray(accounts) ||
+          !accounts.some((account: Record<string, unknown>) => String(account.AccountId) === smileAccountId)) {
+          return reply(req, { success: false, error: "The selected Smile account could not be verified for this email. Please verify again." }, 409);
+        }
+      }
+    } else if (network === "international") {
+      const countryCode = clean(body.country_code, 3).toUpperCase();
+      const productTypeId = Number(body.product_type_id);
+      const operatorId = clean(String(body.operator_id ?? ""), 30);
+      const variationCode = clean(body.variation_code, 80);
+      if (!/^[A-Z]{2,3}$/.test(countryCode) || !Number.isInteger(productTypeId) || productTypeId <= 0 || !/^\d+$/.test(operatorId) || !variationCode) {
+        return reply(req, { success: false, error: "Choose a valid country, product type, operator and top-up option." }, 400);
+      }
+      const getHeaders = { "api-key": vtpassApiKey, "public-key": vtpassPublicKey, Accept: "application/json" };
+      const [countriesResponse, typesResponse, operatorsResponse, variationsResponse] = await Promise.all([
+        fetch(vtpassBase + "/get-international-airtime-countries", { headers: getHeaders, signal: AbortSignal.timeout(12000) }),
+        fetch(vtpassBase + "/get-international-airtime-product-types?code=" + encodeURIComponent(countryCode), { headers: getHeaders, signal: AbortSignal.timeout(12000) }),
+        fetch(vtpassBase + "/get-international-airtime-operators?code=" + encodeURIComponent(countryCode) + "&product_type_id=" + productTypeId, { headers: getHeaders, signal: AbortSignal.timeout(12000) }),
+        fetch(vtpassBase + "/service-variations?serviceID=foreign-airtime&operator_id=" + encodeURIComponent(operatorId) + "&product_type_id=" + productTypeId, { headers: getHeaders, signal: AbortSignal.timeout(12000) }),
+      ]);
+      const [countriesData, typesData, operatorsData, variationsData] = await Promise.all([
+        countriesResponse.json().catch(() => null), typesResponse.json().catch(() => null),
+        operatorsResponse.json().catch(() => null), variationsResponse.json().catch(() => null),
+      ]);
+      const country = countriesData?.content?.countries?.find((x: Record<string, unknown>) => String(x.code).toUpperCase() === countryCode);
+      const productType = typesData?.content?.find((x: Record<string, unknown>) => Number(x.product_type_id) === productTypeId);
+      const operator = operatorsData?.content?.find((x: Record<string, unknown>) => String(x.operator_id) === operatorId);
+      const variations = variationsData?.content?.variations ?? variationsData?.content?.varations;
+      const variation = Array.isArray(variations) ? variations.find((x: Record<string, unknown>) => String(x.variation_code) === variationCode) : null;
+      if (!countriesResponse.ok || !typesResponse.ok || !operatorsResponse.ok || !variationsResponse.ok ||
+        countriesData?.response_description !== "000" || typesData?.response_description !== "000" ||
+        operatorsData?.response_description !== "000" || variationsData?.response_description !== "000" ||
+        !country || !productType ||
+        (serviceType === "airtime" && !/mobile\s+top\s*up/i.test(String(productType.name || ""))) ||
+        (serviceType === "data" && !/mobile\s+data/i.test(String(productType.name || ""))) ||
+        !operator || !variation ||
+        (serviceType === "airtime" && !/\btop[\s-]?up\b/i.test(String(variation.name || ""))) ||
+        (serviceType === "data" && (!/\b(?:data|\d+(?:\.\d+)?\s*(?:GB|MB))\b/i.test(String(variation.name || "")) || /gift\s*card|voice|minutes?/i.test(String(variation.name || "")))) ||
+        String(variation.fixedPrice).toLowerCase() !== "yes") {
+        return reply(req, { success: false, error: "The selected international top-up option could not be verified as a fixed-price mobile top-up with VTpass. Refresh the options and try again." }, 409);
+      }
+      const providerCharge = Number(variation.charged_amount);
+      amount = money(providerCharge);
+      if (!Number.isFinite(amount) || amount <= 0) {
+        return reply(req, { success: false, error: "VTpass has not supplied a fixed NGN charge for this international option. This option cannot be purchased safely yet." }, 409);
+      }
+      if (serviceType === "airtime") airtimeAmount = amount;
+      else { dataPlanId = "foreign-airtime::" + variationCode; dataPlanName = clean(variation.name, 120); dataPlanType = "International data bundle"; }
+      providerCost = amount;
+      internationalMetadata = {
+        country_code: countryCode,
+        country_name: clean(country.name, 80),
+        product_type_id: productTypeId,
+        product_type_name: clean(productType.name, 80),
+        operator_id: operatorId,
+        operator_name: clean(operator.name, 100),
+        variation_code: variationCode,
+        plan_name: clean(variation.name, 120),
+        service_type: serviceType,
+        customer_phone: customerPhone,
+      };
     } else {
       const requestedAmount = money(body.amount);
       if (!Number.isInteger(requestedAmount) || requestedAmount < 50 || requestedAmount > 50000) {
@@ -144,55 +268,46 @@ Deno.serve(async (req: Request) => {
       }
       amount = requestedAmount;
       airtimeAmount = requestedAmount;
-
-      const netResponse = await fetch("https://www.oplug.com.ng/api/v1/get-networks", {
-        headers: oplugHeaders,
-        signal: AbortSignal.timeout(12000),
-      });
-      const networkPayload = await netResponse.json().catch(() => null);
-      if (!netResponse.ok || networkPayload?.status !== "success" || !Array.isArray(networkPayload.networks)) {
-        return reply(req, { success: false, error: "The live network catalogue is temporarily unavailable. No payment has been started." }, 502);
-      }
-      const networkItem = networkPayload.networks.find((item: Record<string, unknown>) =>
-        Number(item.id) === networkId && normalizeNetwork(item.code || item.name, item.id) === network
-      );
-      if (!networkItem) return reply(req, { success: false, error: "This network is temporarily unavailable for airtime." }, 409);
-      const discount = Number(String(networkItem.airtime_discount || "0").replace("%", ""));
-      const safeDiscount = Number.isFinite(discount) && discount >= 0 && discount <= 10 ? discount : 0;
-      providerCost = Math.round(amount * (1 - safeDiscount / 100) * 100) / 100;
+      providerCost = requestedAmount;
     }
 
-    // Verify provider float before accepting a customer's Flutterwave payment.
-    const balanceResponse = await fetch("https://www.oplug.com.ng/api/v1/balance", {
-      headers: oplugHeaders,
-      signal: AbortSignal.timeout(12000),
-    });
-    const balancePayload = await balanceResponse.json().catch(() => null);
-    const providerBalance = money(balancePayload?.user?.balance);
-    if (!balanceResponse.ok || balancePayload?.status !== "success" ||
-      String(balancePayload?.user?.status || "").toLowerCase() !== "active" ||
-      !Number.isFinite(providerBalance)) {
-      return reply(req, { success: false, error: "Oplug could not confirm DCDS reseller availability. No payment has been started." }, 503);
+    const customerCurrency = clean(body.currency || "NGN", 3).toUpperCase();
+    if (!["NGN", "USD", "GBP", "EUR"].includes(customerCurrency)) {
+      return reply(req, { success: false, error: "This checkout currency is not currently supported." }, 400);
     }
-    if (providerBalance < providerCost) {
-      return reply(req, { success: false, error: "This top-up is temporarily unavailable because the provider cannot confirm enough fulfilment balance. No payment has been started." }, 409);
+    // V3 Standard Checkout documents amount as int32. Do not send a fractional
+    // foreign-currency amount through this endpoint. USD/GBP/EUR stay disabled
+    // until the decimal-capable V4 checkout flow is integrated and sandbox-tested.
+    if (customerCurrency !== "NGN") {
+      return reply(req, {
+        success: false,
+        error: "Foreign-currency checkout is not enabled yet. Please select NGN; USD, GBP and EUR will be enabled after the decimal-capable Flutterwave checkout has passed testing.",
+      }, 503);
+    }
+
+    const providerCostNgn = money(providerCost);
+    if (!Number.isFinite(providerCostNgn) || providerCostNgn <= 0) {
+      return reply(req, { success: false, error: "The VTpass provider price is invalid. No payment has been started." }, 502);
     }
 
     // A retry with the same client request key must reuse the original checkout,
     // never create a second payable order.
     const { data: existing, error: existingError } = await db
       .from("dcds_vtu_orders")
-      .select("id,user_id,service_type,network,recipient_phone,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .select("id,user_id,provider,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,provider_cost,currency,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .eq("client_request_id", clientRequestId)
       .maybeSingle();
     if (existingError) throw existingError;
     if (existing) {
-      const samePayload = existing.service_type === serviceType &&
+      const samePayload = existing.provider === "vtpass" && existing.service_type === serviceType &&
         existing.network === network &&
         existing.recipient_phone === phone &&
+        existing.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
+        existing.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
+        JSON.stringify(existing.provider_metadata || null) === JSON.stringify(internationalMetadata) &&
         existing.data_plan_id === dataPlanId &&
-        Number(existing.amount) === amount &&
+        Number(existing.provider_cost) === providerCostNgn && existing.currency === customerCurrency &&
         (serviceType !== "airtime" || Number(existing.airtime_amount) === airtimeAmount);
       if (!samePayload) return reply(req, { success: false, error: "This checkout request key was already used for different purchase details." }, 409);
       if (existing.status === "pending_payment" && existing.payment_link) {
@@ -205,7 +320,7 @@ Deno.serve(async (req: Request) => {
     // has an existing unpaid, paid, processing or unresolved order.
     const { data: openOrder, error: openOrderError } = await db
       .from("dcds_vtu_orders")
-      .select("service_type,network,recipient_phone,data_plan_id,airtime_amount,amount,tx_ref,payment_link,status")
+      .select("provider,service_type,network,recipient_phone,provider_billers_code,provider_email,provider_metadata,data_plan_id,airtime_amount,amount,provider_cost,currency,tx_ref,payment_link,status")
       .eq("user_id", user.id)
       .in("status", ["pending_payment", "paid", "processing", "needs_review"])
       .order("created_at", { ascending: false })
@@ -213,11 +328,14 @@ Deno.serve(async (req: Request) => {
       .maybeSingle();
     if (openOrderError) throw openOrderError;
     if (openOrder) {
-      const sameOrder = openOrder.service_type === serviceType &&
+      const sameOrder = openOrder.provider === "vtpass" && openOrder.service_type === serviceType &&
         openOrder.network === network &&
         openOrder.recipient_phone === phone &&
+        openOrder.provider_billers_code === (network === "smile" ? smileAccountId : null) &&
+        openOrder.provider_email === (network === "smile" ? smileEmail : network === "international" ? customerEmail : null) &&
+        JSON.stringify(openOrder.provider_metadata || null) === JSON.stringify(internationalMetadata) &&
         openOrder.data_plan_id === dataPlanId &&
-        Number(openOrder.amount) === amount &&
+        Number(openOrder.provider_cost) === providerCostNgn && openOrder.currency === customerCurrency &&
         (serviceType !== "airtime" || Number(openOrder.airtime_amount) === airtimeAmount);
       if (openOrder.status === "pending_payment" && sameOrder && openOrder.payment_link) {
         return reply(req, {
@@ -236,28 +354,66 @@ Deno.serve(async (req: Request) => {
       }, 409);
     }
 
+    // VTpass prices and settles in NGN. Convert only the customer-facing charge
+    // using a server-fetched daily reference rate; never trust a browser rate.
+    let fxRate = 1;
+    let fxRateDate: string | null = null;
+    let fxRateSource = "DCDS-NGN-BASELINE";
+    if (customerCurrency !== "NGN") {
+      const rateResponse = await fetch(
+        "https://api.frankfurter.dev/v2/rate/NGN/" + customerCurrency,
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(10000) },
+      );
+      const rateData = await rateResponse.json().catch(() => null);
+      const parsedDate = typeof rateData?.date === "string" ? new Date(rateData.date + "T00:00:00Z") : null;
+      const ageDays = parsedDate && Number.isFinite(parsedDate.getTime())
+        ? (Date.now() - parsedDate.getTime()) / 86400000 : Number.POSITIVE_INFINITY;
+      fxRate = Number(rateData?.rate);
+      if (!rateResponse.ok || rateData?.base !== "NGN" || rateData?.quote !== customerCurrency ||
+        !Number.isFinite(fxRate) || fxRate <= 0 || ageDays < -1 || ageDays > 4) {
+        return reply(req, { success: false, error: "A fresh reference exchange rate is unavailable for this currency. Please choose NGN or try again later." }, 503);
+      }
+      fxRateDate = rateData.date;
+      fxRateSource = "Frankfurter reference rates (api.frankfurter.dev)";
+    }
+    amount = money(providerCostNgn * fxRate);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      return reply(req, { success: false, error: "The converted checkout amount is invalid. No payment has been started." }, 502);
+    }
+    if (serviceType === "airtime") airtimeAmount = providerCostNgn;
+
     const suffix = crypto.randomUUID().replaceAll("-", "").toUpperCase();
     const txRef = "DCDSVTU" + suffix;
-    const oplugRequestId = "DCDSVTU" + (serviceType === "data" ? "DATA" : "AIR") + suffix;
+    const lagos = new Intl.DateTimeFormat("en-GB", { timeZone: "Africa/Lagos", year: "numeric", month: "2-digit", day: "2-digit", hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(new Date());
+    const part = (type: string) => lagos.find((item) => item.type === type)?.value || "";
+    const vtpassRequestId = part("year") + part("month") + part("day") + part("hour") + part("minute") + crypto.randomUUID().replaceAll("-", "").slice(0, 12);
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000).toISOString();
 
     const { data: order, error: insertError } = await db.from("dcds_vtu_orders").insert({
       user_id: user.id,
+      provider: "vtpass",
       client_request_id: clientRequestId,
       service_type: serviceType,
       network,
       network_id: networkId,
       recipient_phone: phone,
+      provider_billers_code: network === "smile" ? smileAccountId : null,
+      provider_email: network === "smile" ? smileEmail : network === "international" ? customerEmail : null,
+      provider_metadata: internationalMetadata,
       data_plan_id: dataPlanId,
       data_plan_name: dataPlanName,
       data_plan_type: dataPlanType,
       data_validity: dataValidity,
       airtime_amount: airtimeAmount,
       amount,
-      provider_cost: providerCost,
-      currency: "NGN",
+      provider_cost: providerCostNgn,
+      provider_cost_currency: "NGN",
+      currency: customerCurrency,
+      fx_rate: fxRate,
+      fx_rate_date: fxRateDate,
+      fx_rate_source: fxRateSource,
       tx_ref: txRef,
-      oplug_request_id: oplugRequestId,
+      provider_request_id: vtpassRequestId, // Provider request ID.
       checkout_expires_at: expiresAt,
       status: "pending_payment",
     }).select("id,tx_ref,amount,currency").single();
@@ -275,7 +431,7 @@ Deno.serve(async (req: Request) => {
         body: JSON.stringify({
           tx_ref: txRef,
           amount: order.amount,
-          currency: "NGN",
+          currency: customerCurrency,
           redirect_url: SITE_URL + "/vtu-payment-return.html",
           configuration: {
             session_duration: 60,
@@ -328,7 +484,7 @@ Deno.serve(async (req: Request) => {
       .eq("id", order.id);
     if (linkSaveError) console.error("Could not persist VTU checkout link:", linkSaveError.message);
 
-    return reply(req, { success: true, payment_link: flw.data.link, tx_ref: txRef, amount: order.amount, currency: "NGN" });
+    return reply(req, { success: true, payment_link: flw.data.link, tx_ref: txRef, amount: order.amount, currency: customerCurrency, fx_rate_date: fxRateDate });
   } catch (error) {
     console.error("DCDS VTU checkout creation failed:", error instanceof Error ? error.message : "Unknown error");
     return reply(req, { success: false, error: "Unable to start checkout. No airtime or data purchase has been submitted." }, 500);
