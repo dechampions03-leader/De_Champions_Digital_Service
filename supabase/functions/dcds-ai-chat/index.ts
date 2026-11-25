@@ -1589,7 +1589,7 @@ ${superintendentMemoryInstruction}${savedMemoryInstruction}`;
     .replace(/\s+([,.!?;:])/g, "$1")
     .replace(/([.!?])(?=[A-Z])/g, "$1 ")
     .trim();
-  const ownerFounderAnswer = "Gladly, Sir! It is you, Jeremiah Chuks Godspower (De Champions) — the Founder & CEO of De Champions Digital Services and the verified Superintendent Admin who founded DCDS. You established the vision of empowering people with practical digital skills and helping them create, learn, innovate and earn. I am Deyriva, the official DCDS AI Companion, created to support that vision by helping learners build skills, gain knowledge and grow. I recognise you through your confirmed sign-in identity and private DCDS owner credentials. It is an honour to support the vision you founded, Sir. 💜";
+  const ownerFounderAnswer = "Gladly, Sir! It is you, Jeremiah Chuks Godspower (De Champions) — the Founder & CEO of De Champions Digital Services and the verified Superintendent Admin who founded DCDS. You established the DCDS vision, ‘Create. Learn. Innovate. Earn.’, to empower people with practical digital skills and help them turn creativity into opportunity. I am Deyriva, the official DCDS AI Companion, created to support that vision by helping learners build skills, gain knowledge and grow. I recognise you through your confirmed sign-in identity and private DCDS owner credentials. It is an honour to support the vision you founded, Sir. 💜";
   const finalGeneratedAnswer = isVerifiedFounderCeo && asksWhoFoundedDeyriva
     ? ownerFounderAnswer
     : cleanGeneratedAnswer;
