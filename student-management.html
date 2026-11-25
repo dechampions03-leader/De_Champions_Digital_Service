@@ -513,6 +513,37 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
     </div>
   </section>
 
+  <section class="panel" id="dcdsReleaseReadiness" data-admin-view-panel="overview" aria-labelledby="releaseReadinessHeading" style="margin:18px 0">
+    <div class="admin-quick-heading">
+      <div>
+        <span class="admin-eyebrow">SAFE RELEASE TRACKER</span>
+        <h3 id="releaseReadinessHeading">Production readiness</h3>
+        <p class="intro">Track the release gates before any live deployment. Statuses stay honest until checks are completed and verified.</p>
+      </div>
+      <span class="admin-quick-spark" aria-hidden="true">✓</span>
+    </div>
+    <div class="release-gate-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px">
+      <article class="release-gate" style="border:1px solid var(--border-color);border-radius:12px;padding:13px">
+        <strong>Development branch</strong><p style="margin:7px 0;color:var(--muted-text)">Isolated upgrade work</p><span class="release-gate-status" style="color:var(--success-green);font-weight:800">STARTED</span>
+      </article>
+      <article class="release-gate" style="border:1px solid var(--border-color);border-radius:12px;padding:13px">
+        <strong>Implementation &amp; review</strong><p style="margin:7px 0;color:var(--muted-text)">Pull request ready; code review pending</p><span class="release-gate-status" style="color:var(--danger-red);font-weight:800">IN PROGRESS</span>
+      </article>
+      <article class="release-gate" style="border:1px solid var(--border-color);border-radius:12px;padding:13px">
+        <strong>CI &amp; automated tests</strong><p style="margin:7px 0;color:var(--muted-text)">All 4 workflows passed on this commit; preview deployed successfully</p><span class="release-gate-status" style="color:var(--success-green);font-weight:800">4 PASSED · PREVIEW DEPLOYED</span>
+      </article>
+      <article class="release-gate" style="border:1px solid var(--border-color);border-radius:12px;padding:13px">
+        <strong>Sandbox &amp; integration</strong><p style="margin:7px 0;color:var(--muted-text)">AI provider, payment and system integration tests</p><span class="release-gate-status" style="color:#a66b00;font-weight:800">PENDING</span>
+      </article>
+      <article class="release-gate" style="border:1px solid var(--border-color);border-radius:12px;padding:13px">
+        <strong>Production readiness review</strong><p style="margin:7px 0;color:var(--muted-text)">Auth security, manual backup, secrets and rollback checks</p><span class="release-gate-status" style="color:#a66b00;font-weight:800">PENDING</span>
+      </article>
+      <article class="release-gate" style="border:1px solid var(--border-color);border-radius:12px;padding:13px">
+        <strong>Launch approval</strong><p style="margin:7px 0;color:var(--muted-text)">Your approval before release</p><span class="release-gate-status" style="color:#a66b00;font-weight:800">NOT APPROVED</span>
+      </article>
+    </div>
+  </section>
+
   <section class="panel" id="aiAccessPolicyPanel" data-admin-view-panel="overview" style="margin:18px 0">
     <div class="admin-quick-heading">
       <div><span class="admin-eyebrow">PUBLIC AI ACCESS · AGE SAFETY</span><h3>🛡️ DCDS AI Access &amp; Safeguards</h3>
@@ -1020,8 +1051,15 @@ html{scroll-padding-bottom:112px}body{padding-bottom:calc(112px + env(safe-area-
 </div>
 
 <script>
-const SUPABASE_URL = "https://qxsenflgaweeadvggnyp.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
+// Keep Cloudflare branch previews isolated from live Production data.
+const DCDS_DEV_PREVIEW_HOST = window.location.hostname === "dcds-dev-auth-preview.pages.dev"
+  || window.location.hostname.endsWith(".dcds-dev-auth-preview.pages.dev");
+const SUPABASE_URL = DCDS_DEV_PREVIEW_HOST
+  ? "https://tjgsxbmkpvktlqulbktv.supabase.co"
+  : "https://qxsenflgaweeadvggnyp.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = DCDS_DEV_PREVIEW_HOST
+  ? "sb_publishable_HHR1gFS6wHvljkTZ0nLWMw_7kfVM3Mn"
+  : "sb_publishable_pjQHFevEKbynxM710gAHAA_a33-yeNP";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
   auth: { persistSession:true, autoRefreshToken:true, detectSessionInUrl:true }
 });
