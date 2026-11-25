@@ -77,7 +77,7 @@ jobs:
               "Student dashboard links to DCDS AI": 'href="ai-learning-assistant.html?source=student-dashboard"' in files["dashboard"],
               "Admin dashboard links directly to AI Access Review": 'href="dcds-ai-access-review.html"' in files["student-management"] and "is_dcds_admin" in files["student-management"],
               "Homepage retains its public AI entry point": "ai-learning-assistant.html" in files["home"],
-              "Production readiness tracker is located in the Admin overview": bool(release_tracker) and 'data-admin-view-panel="overview"' in files["student-management"].split('id="dcdsReleaseReadiness"', 1)[0][-200:],
+              "Production readiness tracker is located in the Admin overview": bool(release_tracker) and 'id="dcdsReleaseReadiness" data-admin-view-panel="overview"' in files["student-management"],
               "Production readiness tracker has exactly six release gates": release_tracker.count('class="release-gate"') == 6,
               "Production readiness tracker keeps sandbox, production review and launch approval pending": all(term in release_tracker for term in ("Sandbox &amp; integration", "Production readiness review", "Launch approval", "NOT APPROVED", "PENDING")),
               "Main admin dashboard exposes a direct Student Support & Resolution route": 'href="admin-notifications.html?view=support"' in files["student-management"] and "Student Support &amp; Resolution" in files["student-management"],
