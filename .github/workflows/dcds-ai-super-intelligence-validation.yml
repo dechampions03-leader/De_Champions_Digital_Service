@@ -133,6 +133,12 @@ jobs:
                   'role === "guest" ? 3' in function
                   and 'role === "guest" ? 5' in function
                   and "p_daily_limit" in function,
+              "verified Superintendent Admin has a higher but bounded account-only allowance":
+                  "const rateLimit = isSuperintendentAdmin ? 30" in function
+                  and "const dailyLimit = isSuperintendentAdmin ? 120" in function
+                  and "ordinary admins, students and visitors keep" in function
+                  and "DCDS AI account usage allowance reached." in function
+                  and "p_daily_limit: dailyLimit" in function,
               "provider quota exhaustion returns a dedicated recoverable code":
                   "PROVIDER_DAILY_QUOTA" in function
                   and "no-cost provider allowance" in function,
@@ -383,7 +389,7 @@ jobs:
               "deyriva-official-launch-age-dynamic-001", "dcds-founded-date-and-dynamic-age-001",
               "dcds-academy-launch-year-2026-001", "dcds-academy-launch-year-2027-001",
               "founder-birth-date-and-live-age-001", "founder-biography-includes-dob-no-fixed-age-001",
-              "founder-birthday-recognition-001",
+              "founder-birthday-recognition-001", "root-admin-ai-allowance-elevated-bounded-001",
           }
           missing = sorted(required_tests - test_ids)
           if missing:

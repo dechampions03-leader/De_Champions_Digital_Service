@@ -892,8 +892,11 @@ Deno.serve(async (request: Request) => {
   }
 
   // Per-session limits protect the no-cost model key from simple automated abuse.
-  const rateLimit = role === "guest" ? 3 : role === "student" ? 10 : 15;
-  const dailyLimit = role === "guest" ? 5 : role === "student" ? 20 : 30;
+  // The unique, server-verified Founder/Superintendent Admin receives a larger
+  // operational testing allowance; ordinary admins, students and visitors keep
+  // their existing caps. This does not increase any Google provider quota.
+  const rateLimit = isSuperintendentAdmin ? 30 : role === "guest" ? 3 : role === "student" ? 10 : 15;
+  const dailyLimit = isSuperintendentAdmin ? 120 : role === "guest" ? 5 : role === "student" ? 20 : 30;
   const { data: allowed, error: quotaError } = await userClient.rpc("dcds_consume_ai_request", {
     p_limit: rateLimit,
     p_daily_limit: dailyLimit,
@@ -903,6 +906,13 @@ Deno.serve(async (request: Request) => {
     return respond({ success: false, error_code: "USAGE_CHECK_UNAVAILABLE", error: "The DCDS AI usage check is temporarily unavailable." }, 503);
   }
   if (allowed !== true) {
+    console.warn("DCDS AI account usage allowance reached.", {
+      requestId,
+      role,
+      isSuperintendentAdmin,
+      perMinuteLimit: rateLimit,
+      dailyLimit,
+    });
     return respond({
       success: false,
       error_code: role === "guest" ? "GUEST_RATE_LIMIT" : "USER_RATE_LIMIT",
