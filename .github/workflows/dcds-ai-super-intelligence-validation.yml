@@ -258,7 +258,7 @@ jobs:
               "Gemma uses a smaller compact fallback system prompt": 'candidate.startsWith("gemma-") ? fallbackSystemInstruction : systemInstruction' in function and "fallbackSystemInstruction.length" in function,
               "request-specific knowledge selection is bounded": "compactKnowledgeForRequest" in function and "let remaining = 6200" in function and 'compactKnowledge.slice(0, 1400)' in function,
               "conversation history and live platform evidence are bounded": "value.slice(-6)" in function and "row.text.trim().slice(0, 450)" in function and "sources.slice(0, 6)" in function and 'slice(0, 3600)' in function,
-              "founder biography requests avoid unnecessary live platform lookup": "skipPlatformSearch" in function and "isRootAdmin &&" in function and "biography" in function,
+              "founder biography requests avoid unnecessary live platform lookup": "skipPlatformSearch" in function and "isSuperintendentAdmin &&" in function and "biography" in function,
           }
           for name, passed in provider_invariants.items():
               print(("PASS " if passed else "FAIL ") + name)
@@ -274,7 +274,7 @@ jobs:
               "diagnostic response states the unchecked-services list":
                   "SYSTEMS NOT INSPECTED" in function and "not_checked" in function,
               "root-only admin directory remains explicitly gated":
-                  "isRootAdmin && adminDirectoryRequested" in function
+                  "isSuperintendentAdmin && adminDirectoryRequested" in function
                   and "platformSnapshotData.admin_directory_visible === true" in function,
               "student provider outage still routes human support requests":
                   "dcds-human-support-route" in support_fallback
@@ -292,14 +292,14 @@ jobs:
               raise SystemExit("Deyriva provider-outage fallback checks failed: " + "; ".join(diagnostic_failures))
 
           diagnostics_invariants = {
-              "ordinary root-admin wording does not automatically request a directory":
-                  "root admin" not in admin_directory_matcher.lower() and "super_admin" not in admin_directory_matcher.lower(),
+              "ordinary Superintendent Admin wording does not automatically request a directory":
+                  "superintendent admin" not in admin_directory_matcher.lower() and "super_admin" not in admin_directory_matcher.lower(),
               "answer cleaner normalises repeated exclamation marks":
                   '.replace(/([!?])' in answer_cleaner and '1+/g' in answer_cleaner,
               "platform health uses authenticated read-only snapshot RPC":
                   "dcds_ai_platform_snapshot" in function and "isPlatformDiagnosticsRequest" in function,
-              "admin directory is only requested for verified root admins":
-                  "isRootAdmin && adminDirectoryRequested" in function,
+              "admin directory is only requested for verified Superintendent Admins":
+                  "isSuperintendentAdmin && adminDirectoryRequested" in function,
               "ordinary admin identity requests are denied":
                   "ADMINISTRATOR IDENTITY PRIVACY" in function,
               "student ticket lookups are scoped to the signed-in student":
