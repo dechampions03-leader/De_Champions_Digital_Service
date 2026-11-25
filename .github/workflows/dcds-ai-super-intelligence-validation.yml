@@ -115,7 +115,7 @@ jobs:
               "new admin 18+ declaration is persisted to the authenticated user":
                   "dcds_ai_access_eligibility').insert({user_id:currentUser.id,age_band:'18_plus'})" in ai_page,
               "saved under-18 admin eligibility cannot be bypassed by browser state":
-                  "adminEligibility?.age_band==='13_17'" in ai_page
+                  'adminEligibility?.age_band === "13_17"' in ai_page
                   and "adminAdultAllowed" in function
                   and "UNDER_18_AI_UNAVAILABLE" in function,
               "student dashboard motion-off stops legacy reveal observers":
