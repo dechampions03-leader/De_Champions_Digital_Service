@@ -313,7 +313,7 @@ footer{text-align:center;color:#8a7b96;font-size:11px;letter-spacing:.04em;paddi
    :`Hello, my name is Deyriva, the DCDS AI Companion. How can I assist you today?`;
   if(mode==='admin'){
    welcomeMessage=isRootAdminSession
-    ? "Hello, Administrator. I'm Deyriva, your DCDS AI Companion. I recognise your verified authority to direct DCDS and my approved improvements. I will address you as Administrator or Director and keep founder and CEO details private unless you ask directly."
+    ? "Hello, Superintendent Admin. I'm Deyriva, your DCDS AI Companion. I recognise your server-verified authority to direct DCDS and approve improvements. I will address you as Superintendent Admin and keep founder and CEO details private unless you ask directly."
     : "Hello, Administrator. I'm Deyriva, the DCDS AI Companion. I can assist with DCDS procedures, planning, policy explanations and practical digital-learning questions. My administrator mode is read-only; I cannot change student records, payments or payouts.";
   }else if(mode==='student'){
    welcomeMessage=`${personalIntro} I can help you learn step by step, practise digital skills and continue your learning journey. I can refer to your own saved conversations and learning context while keeping them private to your account. What shall we work on today?`;
@@ -892,9 +892,9 @@ async function submitAiEligibilityRequest(){
   if(!adminAdultConfirm.checked){setStatus('Please confirm that you are 18 or older before continuing.',true);return;}
   adminAgeGate.hidden=true;isAdminSession=true;setChatEnabled(true);
   await loadResourceIndex();configureWelcomeGreeting('admin');
-  document.getElementById('accountLabel').textContent=isRootAdminSession?'Director · Deyriva owner':'Administrator · Read-only Copilot';
+  document.getElementById('accountLabel').textContent=isRootAdminSession?'Superintendent Admin':'Administrator · Read-only Copilot';
   setStatus(isRootAdminSession
-   ? 'Verified DCDS Root Administrator access. I can help identify gaps and prepare system, knowledge and playbook improvements for your review.'
+   ? 'Verified DCDS Superintendent Admin access. I can help identify gaps and prepare system, knowledge and playbook improvements for your review.'
    : 'Administrator access confirmed for an adult account. This assistant is read-only and cannot change student records, payments or payouts.');
   input.focus();
  }
@@ -979,7 +979,7 @@ async function submitAiEligibilityRequest(){
    if(!data?.success||!data?.answer)throw new Error(data?.error||'The DCDS AI could not complete this response.');
    const roleLabels={student:'Student · Learning Assistant',admin:'Administrator · Read-only Copilot',guest:'Visitor · Public learning access'};
    if(!roleLabels[data.role])throw new Error('The DCDS AI returned an unrecognised access mode. Your draft has been kept.');
-   const resolvedRoleLabel=data.role==='admin'&&data.is_root_admin===true?'Director · Deyriva owner':roleLabels[data.role];
+   const resolvedRoleLabel=data.role==='admin'&&data.is_root_admin===true?'Superintendent Admin':roleLabels[data.role];
    if(userRow)userRow.dataset.delivery='sent';
    conversation.push({role:'model',text:data.answer});
    addMessage('assistant',data.answer,Array.isArray(data.resources)?data.resources:inferResourceActions(data.answer));
@@ -993,7 +993,7 @@ async function submitAiEligibilityRequest(){
    }else if(data.role==='guest'){
     setStatus('Your answer is ready. Visitor chats are temporary and are not saved to a student account.');
    }else if(data.is_root_admin===true){
-    setStatus('Connected to your verified DCDS Root Administrator account. I will point out gaps and prepare proposed upgrades to my knowledge, instructions and playbook. Actual production changes still require the approved release process; I cannot change student records, payments or payouts in this chat.');
+    setStatus('Connected to your verified DCDS Superintendent Admin account. I will point out gaps and prepare proposed upgrades to my knowledge, instructions and playbook. Actual production changes still require the approved release process; I cannot change student records, payments or payouts in this chat.');
    }else{
     setStatus('Connected to the read-only DCDS administrator assistant. No administrative actions can be performed here.');
    }
